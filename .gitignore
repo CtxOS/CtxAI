@@ -18,6 +18,12 @@ build/
 *.bak
 *.tmp
 *.swp
+.ruff_cache/
+
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
 
 #Ignore IDE files
 .cursor/
