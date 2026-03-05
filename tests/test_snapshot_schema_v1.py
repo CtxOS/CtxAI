@@ -9,7 +9,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.api.poll import Poll
+from backend.interfaces.api.routes.chat.poll import Poll
 
 
 EXPECTED_SNAPSHOT_KEYS = {

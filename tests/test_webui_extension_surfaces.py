@@ -14,32 +14,64 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.api.load_webui_extensions import LoadWebuiExtensions
+from backend.interfaces.api.routes.settings.load_webui_extensions import (
+    LoadWebuiExtensions,
+)
 
 
 SURFACE_SCENARIOS: list[tuple[str, str]] = [
     ("sidebar-start", "webui/components/sidebar/left-sidebar.html"),
     ("sidebar-end", "webui/components/sidebar/left-sidebar.html"),
-    ("sidebar-top-wrapper-start", "webui/components/sidebar/top-section/sidebar-top.html"),
-    ("sidebar-top-wrapper-end", "webui/components/sidebar/top-section/sidebar-top.html"),
-    ("sidebar-quick-actions-main-start", "webui/components/sidebar/top-section/quick-actions.html"),
-    ("sidebar-quick-actions-main-end", "webui/components/sidebar/top-section/quick-actions.html"),
-    ("sidebar-quick-actions-dropdown-start", "webui/components/sidebar/top-section/quick-actions.html"),
-    ("sidebar-quick-actions-dropdown-end", "webui/components/sidebar/top-section/quick-actions.html"),
+    (
+        "sidebar-top-wrapper-start",
+        "webui/components/sidebar/top-section/sidebar-top.html",
+    ),
+    (
+        "sidebar-top-wrapper-end",
+        "webui/components/sidebar/top-section/sidebar-top.html",
+    ),
+    (
+        "sidebar-quick-actions-main-start",
+        "webui/components/sidebar/top-section/quick-actions.html",
+    ),
+    (
+        "sidebar-quick-actions-main-end",
+        "webui/components/sidebar/top-section/quick-actions.html",
+    ),
+    (
+        "sidebar-quick-actions-dropdown-start",
+        "webui/components/sidebar/top-section/quick-actions.html",
+    ),
+    (
+        "sidebar-quick-actions-dropdown-end",
+        "webui/components/sidebar/top-section/quick-actions.html",
+    ),
     ("sidebar-chats-list-start", "webui/components/sidebar/chats/chats-list.html"),
     ("sidebar-chats-list-end", "webui/components/sidebar/chats/chats-list.html"),
     ("sidebar-tasks-list-start", "webui/components/sidebar/tasks/tasks-list.html"),
     ("sidebar-tasks-list-end", "webui/components/sidebar/tasks/tasks-list.html"),
-    ("sidebar-bottom-wrapper-start", "webui/components/sidebar/bottom/sidebar-bottom.html"),
-    ("sidebar-bottom-wrapper-end", "webui/components/sidebar/bottom/sidebar-bottom.html"),
+    (
+        "sidebar-bottom-wrapper-start",
+        "webui/components/sidebar/bottom/sidebar-bottom.html",
+    ),
+    (
+        "sidebar-bottom-wrapper-end",
+        "webui/components/sidebar/bottom/sidebar-bottom.html",
+    ),
     ("chat-input-start", "webui/components/chat/input/chat-bar.html"),
     ("chat-input-end", "webui/components/chat/input/chat-bar.html"),
     ("chat-input-progress-start", "webui/components/chat/input/progress.html"),
     ("chat-input-progress-end", "webui/components/chat/input/progress.html"),
     ("chat-input-box-start", "webui/components/chat/input/chat-bar-input.html"),
     ("chat-input-box-end", "webui/components/chat/input/chat-bar-input.html"),
-    ("chat-input-bottom-actions-start", "webui/components/chat/input/bottom-actions.html"),
-    ("chat-input-bottom-actions-end", "webui/components/chat/input/bottom-actions.html"),
+    (
+        "chat-input-bottom-actions-start",
+        "webui/components/chat/input/bottom-actions.html",
+    ),
+    (
+        "chat-input-bottom-actions-end",
+        "webui/components/chat/input/bottom-actions.html",
+    ),
     ("chat-top-start", "webui/components/chat/top-section/chat-top.html"),
     ("chat-top-end", "webui/components/chat/top-section/chat-top.html"),
     ("welcome-screen-start", "webui/components/welcome/welcome-screen.html"),
@@ -91,7 +123,10 @@ def _temporary_probe_plugin(surface: str) -> Iterator[tuple[str, str]]:
         )
         # Create plugin.yaml to ensure it is recognized as a plugin
         plugin_yaml = Path(temp_plugin_dir) / "plugin.yaml"
-        plugin_yaml.write_text("title: Test Probe Plugin\nversion: 0.1.0\nalways_enabled: true", encoding="utf-8")
+        plugin_yaml.write_text(
+            "title: Test Probe Plugin\nversion: 0.1.0\nalways_enabled: true",
+            encoding="utf-8",
+        )
         yield plugin_id, probe_file.name
 
 
@@ -114,12 +149,12 @@ async def test_webui_surface_extension_point_end_to_end(
         )
         assert isinstance(payload, dict)
         extensions = payload.get("extensions", [])
-        expected_suffix = (
-            f"{plugin_id}/extensions/webui/{surface}/{probe_file_name}"
-        )
+        expected_suffix = f"{plugin_id}/extensions/webui/{surface}/{probe_file_name}"
 
         assert any(
             extension.get("plugin_id") == plugin_id
-            and str(extension.get("path", "")).replace("\\", "/").endswith(expected_suffix)
+            and str(extension.get("path", ""))
+            .replace("\\", "/")
+            .endswith(expected_suffix)
             for extension in extensions
         )

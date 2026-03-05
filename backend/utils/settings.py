@@ -7,8 +7,13 @@ import subprocess
 from typing import Any, Literal, TypedDict, TypeVar, cast
 
 from backend.core import models
-from backend.utils import defer, dirty_json, git, runtime, subagents, whisper
-from backend.utils.notification import NotificationManager, NotificationPriority, NotificationType
+from backend.utils import defer, dirty_json, runtime, subagents, whisper
+from backend.infrastructure.system import git
+from backend.utils.notification import (
+    NotificationManager,
+    NotificationPriority,
+    NotificationType,
+)
 from backend.utils.print_style import PrintStyle
 from backend.utils.providers import FieldOption as ProvidersFO
 from backend.utils.providers import get_providers
@@ -21,17 +26,17 @@ T = TypeVar("T")
 
 def get_default_value(name: str, value: T) -> T:
     """
-    Load setting value from .env with A0_SET_ prefix, falling back to default.
+    Load setting value from .env with CTX_SET_ prefix, falling back to default.
 
     Args:
-        name: Setting name (will be prefixed with A0_SET_)
+        name: Setting name (will be prefixed with CTX_SET_)
         value: Default value to use if env var not set
 
     Returns:
         Environment variable value (type-normalized) or default value
     """
     env_value = dotenv.get_dotenv_value(
-        f"A0_SET_{name}", dotenv.get_dotenv_value(f"A0_SET_{name.upper()}", None)
+        f"CTX_SET_{name}", dotenv.get_dotenv_value(f"CTX_SET_{name.upper()}", None)
     )
 
     if env_value is None:
@@ -49,7 +54,7 @@ def get_default_value(name: str, value: T) -> T:
             return type(value)(env_value.strip())  # type: ignore
     except (ValueError, TypeError, json.JSONDecodeError) as e:
         PrintStyle(background_color="yellow", font_color="black").print(
-            f"Warning: Invalid value for A0_SET_{name}='{env_value}': {e}. Using default: {value}"
+            f"Warning: Invalid value for CTX_SET_{name}='{env_value}': {e}. Using default: {value}"
         )
         return value
 
@@ -312,7 +317,9 @@ def convert_out(settings: Settings) -> SettingsOutput:
     providers = get_providers("chat") + get_providers("embedding")
     for provider in providers:
         provider_name = provider["value"]
-        api_key = settings["api_keys"].get(provider_name, models.get_api_key(provider_name))
+        api_key = settings["api_keys"].get(
+            provider_name, models.get_api_key(provider_name)
+        )
         settings["api_keys"][provider_name] = (
             API_KEY_PLACEHOLDER if api_key and api_key != "None" else ""
         )
@@ -320,13 +327,17 @@ def convert_out(settings: Settings) -> SettingsOutput:
     # load auth from dotenv
     out["settings"]["auth_login"] = dotenv.get_dotenv_value(dotenv.KEY_AUTH_LOGIN) or ""
     out["settings"]["auth_password"] = (
-        PASSWORD_PLACEHOLDER if dotenv.get_dotenv_value(dotenv.KEY_AUTH_PASSWORD) else ""
+        PASSWORD_PLACEHOLDER
+        if dotenv.get_dotenv_value(dotenv.KEY_AUTH_PASSWORD)
+        else ""
     )
     out["settings"]["rfc_password"] = (
         PASSWORD_PLACEHOLDER if dotenv.get_dotenv_value(dotenv.KEY_RFC_PASSWORD) else ""
     )
     out["settings"]["root_password"] = (
-        PASSWORD_PLACEHOLDER if dotenv.get_dotenv_value(dotenv.KEY_ROOT_PASSWORD) else ""
+        PASSWORD_PLACEHOLDER
+        if dotenv.get_dotenv_value(dotenv.KEY_ROOT_PASSWORD)
+        else ""
     )
 
     # secrets
@@ -345,7 +356,9 @@ def convert_out(settings: Settings) -> SettingsOutput:
     # normalize certain fields
     for key, value in list(out["settings"].items()):
         # convert kwargs dicts to .env format
-        if (key.endswith("_kwargs") or key == "browser_http_headers") and isinstance(value, dict):
+        if (key.endswith("_kwargs") or key == "browser_http_headers") and isinstance(
+            value, dict
+        ):
             out["settings"][key] = _dict_to_env(value)
     return out
 
@@ -366,7 +379,9 @@ def convert_in(settings: Settings) -> Settings:
 
     for key, value in settings.items():
         # Special handling for browser_http_headers and *_kwargs (stored as .env text)
-        if (key == "browser_http_headers" or key.endswith("_kwargs")) and isinstance(value, str):
+        if (key == "browser_http_headers" or key.endswith("_kwargs")) and isinstance(
+            value, str
+        ):
             current[key] = _env_to_dict(value)
             continue
 
@@ -463,7 +478,9 @@ def _load_sensitive_settings(settings: Settings):
     providers = get_providers("chat") + get_providers("embedding")
     for provider in providers:
         provider_name = provider["value"]
-        api_key = settings["api_keys"].get(provider_name) or models.get_api_key(provider_name)
+        api_key = settings["api_keys"].get(provider_name) or models.get_api_key(
+            provider_name
+        )
         if api_key and api_key != "None":
             settings["api_keys"][provider_name] = api_key
 
@@ -520,7 +537,9 @@ def _write_sensitive_settings(settings: Settings):
         dotenv.save_dotenv_value(dotenv.KEY_RFC_PASSWORD, settings["rfc_password"])
     if settings["root_password"] != PASSWORD_PLACEHOLDER:
         if runtime.is_dockerized():
-            dotenv.save_dotenv_value(dotenv.KEY_ROOT_PASSWORD, settings["root_password"])
+            dotenv.save_dotenv_value(
+                dotenv.KEY_ROOT_PASSWORD, settings["root_password"]
+            )
             set_root_password(settings["root_password"])
 
     # Handle secrets separately - merge with existing preserving comments/order and support deletions
@@ -534,7 +553,9 @@ def get_default_settings() -> Settings:
     return Settings(
         version=_get_version(),
         chat_model_provider=get_default_value("chat_model_provider", "openrouter"),
-        chat_model_name=get_default_value("chat_model_name", "anthropic/claude-sonnet-4.6"),
+        chat_model_name=get_default_value(
+            "chat_model_name", "anthropic/claude-sonnet-4.6"
+        ),
         chat_model_api_base=get_default_value("chat_model_api_base", ""),
         chat_model_kwargs=get_default_value("chat_model_kwargs", {}),
         chat_model_ctx_length=get_default_value("chat_model_ctx_length", 100000),
@@ -544,7 +565,9 @@ def get_default_settings() -> Settings:
         chat_model_rl_input=get_default_value("chat_model_rl_input", 0),
         chat_model_rl_output=get_default_value("chat_model_rl_output", 0),
         util_model_provider=get_default_value("util_model_provider", "openrouter"),
-        util_model_name=get_default_value("util_model_name", "google/gemini-3-flash-preview"),
+        util_model_name=get_default_value(
+            "util_model_name", "google/gemini-3-flash-preview"
+        ),
         util_model_api_base=get_default_value("util_model_api_base", ""),
         util_model_ctx_length=get_default_value("util_model_ctx_length", 100000),
         util_model_ctx_input=get_default_value("util_model_ctx_input", 0.7),
@@ -560,8 +583,12 @@ def get_default_settings() -> Settings:
         embed_model_kwargs=get_default_value("embed_model_kwargs", {}),
         embed_model_rl_requests=get_default_value("embed_model_rl_requests", 0),
         embed_model_rl_input=get_default_value("embed_model_rl_input", 0),
-        browser_model_provider=get_default_value("browser_model_provider", "openrouter"),
-        browser_model_name=get_default_value("browser_model_name", "anthropic/claude-sonnet-4.6"),
+        browser_model_provider=get_default_value(
+            "browser_model_provider", "openrouter"
+        ),
+        browser_model_name=get_default_value(
+            "browser_model_name", "anthropic/claude-sonnet-4.6"
+        ),
         browser_model_api_base=get_default_value("browser_model_api_base", ""),
         browser_model_vision=get_default_value("browser_model_vision", True),
         browser_model_rl_requests=get_default_value("browser_model_rl_requests", 0),
@@ -595,7 +622,9 @@ def get_default_settings() -> Settings:
         websocket_server_restart_enabled=get_default_value(
             "websocket_server_restart_enabled", True
         ),
-        uvicorn_access_logs_enabled=get_default_value("uvicorn_access_logs_enabled", False),
+        uvicorn_access_logs_enabled=get_default_value(
+            "uvicorn_access_logs_enabled", False
+        ),
         stt_model_size=get_default_value("stt_model_size", "base"),
         stt_language=get_default_value("stt_language", "en"),
         stt_silence_threshold=get_default_value("stt_silence_threshold", 0.3),
@@ -652,9 +681,9 @@ def _apply_settings(previous: Settings | None):
             from backend.utils.mcp_handler import MCPConfig
 
             async def update_mcp_settings(mcp_servers: str):
-                PrintStyle(background_color="black", font_color="white", padding=True).print(
-                    "Updating MCP config..."
-                )
+                PrintStyle(
+                    background_color="black", font_color="white", padding=True
+                ).print("Updating MCP config...")
                 NotificationManager.send_notification(
                     type=NotificationType.INFO,
                     priority=NotificationPriority.NORMAL,
@@ -667,7 +696,6 @@ def _apply_settings(previous: Settings | None):
                 try:
                     MCPConfig.update(mcp_servers)
                 except Exception as e:
-
                     NotificationManager.send_notification(
                         type=NotificationType.ERROR,
                         priority=NotificationPriority.HIGH,
@@ -675,23 +703,23 @@ def _apply_settings(previous: Settings | None):
                         detail=str(e),
                     )
                     (
-                        PrintStyle(background_color="red", font_color="black", padding=True).print(
-                            "Failed to update MCP settings"
-                        )
+                        PrintStyle(
+                            background_color="red", font_color="black", padding=True
+                        ).print("Failed to update MCP settings")
                     )
                     (
-                        PrintStyle(background_color="black", font_color="red", padding=True).print(
-                            f"{e}"
-                        )
+                        PrintStyle(
+                            background_color="black", font_color="red", padding=True
+                        ).print(f"{e}")
                     )
 
-                PrintStyle(background_color="#6734C3", font_color="white", padding=True).print(
-                    "Parsed MCP config:"
-                )
+                PrintStyle(
+                    background_color="#6734C3", font_color="white", padding=True
+                ).print("Parsed MCP config:")
                 (
-                    PrintStyle(background_color="#334455", font_color="white", padding=False).print(
-                        mcp_config.model_dump_json()
-                    )
+                    PrintStyle(
+                        background_color="#334455", font_color="white", padding=False
+                    ).print(mcp_config.model_dump_json())
                 )
                 NotificationManager.send_notification(
                     type=NotificationType.INFO,
@@ -705,13 +733,11 @@ def _apply_settings(previous: Settings | None):
             )  # TODO overkill, replace with background task
 
         # update token in mcp server
-        current_token = (
-            create_auth_token()
-        )  # TODO - ugly, token in settings is generated from dotenv and does not always correspond
+        current_token = create_auth_token()  # TODO - ugly, token in settings is generated from dotenv and does not always correspond
         if not previous or current_token != previous["mcp_server_token"]:
 
             async def update_mcp_token(token: str):
-                from backend.utils.mcp_server import DynamicMcpProxy
+                from backend.interfaces.mcp.server import DynamicMcpProxy
 
                 DynamicMcpProxy.get_instance().reconfigure(token=token)
 
@@ -723,7 +749,7 @@ def _apply_settings(previous: Settings | None):
         if not previous or current_token != previous["mcp_server_token"]:
 
             async def update_a2a_token(token: str):
-                from backend.utils.fasta2a_server import DynamicA2AProxy
+                from backend.interfaces.a2a.server import DynamicA2AProxy
 
                 DynamicA2AProxy.get_instance().reconfigure(token=token)
 
@@ -770,7 +796,7 @@ def _dict_to_env(data_dict):
             lines.append(f'{key}="{escaped_value}"')
         elif isinstance(value, (dict, list, bool)) or value is None:
             # Serialize as unquoted JSON
-            lines.append(f'{key}={json.dumps(value, separators=(",", ":"))}')
+            lines.append(f"{key}={json.dumps(value, separators=(',', ':'))}")
         else:
             # Numbers and other types as unquoted strings
             lines.append(f"{key}={value}")

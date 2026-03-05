@@ -7,7 +7,7 @@ from backend.utils.state_snapshot import (
     StateRequestValidationError,
     parse_state_request_payload,
 )
-from backend.utils.websocket import WebSocketHandler, WebSocketResult
+from backend.interfaces.websockets.websocket import WebSocketHandler, WebSocketResult
 
 
 class StateSyncHandler(WebSocketHandler):

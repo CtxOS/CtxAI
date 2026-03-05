@@ -1,6 +1,7 @@
 import hashlib
 
-from backend.utils import git, runtime
+from backend.infrastructure.system import git
+from backend.utils import runtime
 
 
 async def check_version():

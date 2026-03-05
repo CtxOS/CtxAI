@@ -158,7 +158,7 @@ async def call_extensions(extension_point: str, agent: "Agent|None" = None, **kw
 
     all_exts = [cls for path in paths for cls in _get_extensions(path)]
 
-    # merge: first ocurrence of file name is the override
+    # merge: first occurrence of file name is the override
     unique = {}
     for cls in all_exts:
         file = _get_file_from_module(cls.__module__)

@@ -57,7 +57,7 @@ class Message(ApiHandler):
         # Obtain agent context
         context = self.use_context(ctxid)
 
-        # call extension point, alow it to modify data
+        # call extension point, allow it to modify data
         data = {"message": message, "attachment_paths": attachment_paths}
         await extension.call_extensions("user_message_ui", agent=context.get_agent(), data=data)
         message = data.get("message", "")

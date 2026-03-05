@@ -1,6 +1,7 @@
 import threading
 from flask import Flask, request
-from backend.utils import runtime, dotenv, process
+from backend.infrastructure.system import process
+from backend.utils import runtime, dotenv
 from backend.utils.print_style import PrintStyle
 
 from backend.api.tunnel import Tunnel

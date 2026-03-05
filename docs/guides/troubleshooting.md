@@ -33,7 +33,7 @@ The built-in browser agent is currently unstable on some systems. Use Skills or 
 Secrets are stored in `/ctx/usr/secrets.env` and are not always included in backup archives. Copy them manually.
 
 **10. Where can I find more documentation or tutorials?**
-- Join the Ctx AI [Skool](https://www.skool.com/ctxai) or [Discord](https://discord.gg/B8KZKNsPpj) community.
+- Join the Ctx AI [School](https://www.school.com/ctxai) or [Discord](https://discord.gg/B8KZKNsPpj) community.
 
 **11. How do I adjust API rate limits?**
 Use the model rate limit fields in Settings (Chat/Utility/Browser model sections) to set request/input/output limits. These map to the model config limits (for example `limit_requests`, `limit_input`, `limit_output`).

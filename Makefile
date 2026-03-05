@@ -1,14 +1,25 @@
-.PHONY: help install install-dev run test test-coverage clean lint format check docker-build docker-run docker-stop prepare maintenance update-reqs
+.PHONY: help install install-dev run test test-coverage clean lint format check docker-build docker-run docker-stop prepare maintenance update-reqs venv
 
 PYTHON := python3
-PIP := pip
-PYTEST := pytest
+PIP := $(PYTHON) -m pip
 SHELL := $(shell which bash)
+VENV := .venv
+VENV_PYTEST := $(VENV)/bin/pytest
+SYSTEM_PYTEST := $(shell which pytest 2>/dev/null)
+
+ifeq ($(wildcard $(VENV_PYTEST)),$(VENV_PYTEST))
+    PYTEST := $(VENV_PYTEST)
+else ifneq ($(SYSTEM_PYTEST),)
+    PYTEST := $(SYSTEM_PYTEST)
+else
+    PYTEST := pytest
+endif
 
 help:
 	@echo "Ctx AI - Makefile Commands"
 	@echo ""
 	@echo "=== Setup ==="
+	@echo "  make venv           Create virtual environment"
 	@echo "  make install         Install production dependencies"
 	@echo "  make install-dev    Install development dependencies"
 	@echo "  make setup-dev      Run development setup script"
@@ -34,22 +45,22 @@ help:
 	@echo "  make maintenance    Run maintenance tool"
 	@echo "  make update-reqs   Update requirements versions"
 
-install:
+install: venv
 	@echo "Installing production dependencies..."
-	$(PIP) install -r requirements.txt
-	$(PIP) install -r requirements2.txt
+	./$(VENV)/bin/$(PIP) install -r requirements.txt
+	./$(VENV)/bin/$(PIP) install -r requirements2.txt
 
-install-dev:
+install-dev: venv
 	@echo "Installing development dependencies..."
-	$(PIP) install -r requirements.txt
-	$(PIP) install -r requirements2.txt
-	$(PIP) install -r requirements.dev.txt
+	./$(VENV)/bin/$(PIP) install -r requirements.txt
+	./$(VENV)/bin/$(PIP) install -r requirements2.txt
+	./$(VENV)/bin/$(PIP) install -r requirements.dev.txt
 
 setup-dev:
 	@bash scripts/setup_dev.sh
 
-run:
-	$(PYTHON) run_ui.py
+run: venv
+	./$(VENV)/bin/$(PYTHON) run_ui.py
 
 test:
 	$(PYTEST) tests/ -v
@@ -77,11 +88,20 @@ docker-run:
 docker-stop:
 	@bash scripts/docker.sh stop
 
-prepare:
-	$(PYTHON) scripts/prepare.py
+prepare: venv
+	./$(VENV)/bin/$(PYTHON) scripts/prepare.py
 
-maintenance:
-	$(PYTHON) scripts/maintenance_tool.py
+maintenance: venv
+	./$(VENV)/bin/$(PYTHON) scripts/maintenance_tool.py
 
-update-reqs:
-	$(PYTHON) scripts/update_reqs.py
+update-reqs: venv
+	./$(VENV)/bin/$(PYTHON) scripts/update_reqs.py
+
+venv:
+	@if [ ! -d "$(VENV)" ]; then \
+		echo "Creating virtual environment..."; \
+		$(PYTHON) -m venv $(VENV); \
+		echo "Virtual environment created successfully!"; \
+	else \
+		echo "Virtual environment already exists."; \
+	fi

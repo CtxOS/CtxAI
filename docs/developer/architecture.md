@@ -3,7 +3,7 @@ Ctx AI is built on a flexible and modular architecture designed for extensibilit
 
 ## System Architecture
 
-The user or Agent 0 is at the top of the hierarchy, delegating tasks to subordinate agents, which can further delegate to other agents. Each agent can utilize tools and access the shared assets (prompts, memory, knowledge, extensions and skills) to perform its tasks.
+The user or Ctx AI is at the top of the hierarchy, delegating tasks to subordinate agents, which can further delegate to other agents. Each agent can utilize tools and access the shared assets (prompts, memory, knowledge, extensions and skills) to perform its tasks.
 
 ## Runtime Architecture
 Ctx AI's runtime architecture is built around Docker containers:
@@ -95,13 +95,13 @@ Communication flows between agents through messages, which are structured accord
 #### Interaction Flow
 A typical interaction flow within Ctx AI might look like this:
 
-1. The user provides an instruction to Agent 0
-2. Agent 0 initializes VectorDB and access memory
-3. Agent 0 analyzes the instruction and formulates a plan using `thoughts` argument, possibly involving the use of tools or the creation of sub-agents
-4. If necessary, Agent 0 delegates sub-tasks to subordinate agents
+1. The user provides an instruction to Ctx AI
+2. Ctx AI initializes VectorDB and access memory
+3. Ctx AI analyzes the instruction and formulates a plan using `thoughts` argument, possibly involving the use of tools or the creation of sub-agents
+4. If necessary, Ctx AI delegates sub-tasks to subordinate agents
 5. Agents use tools to perform actions, both providing arguments and responses or queries
 6. Agents communicate results and feedback back up the hierarchy
-7. Agent 0 provides the final response to the user
+7. Ctx AI provides the final response to the user
 
 ### 2. Tools
 Tools are functionalities that agents can leverage. These can include anything from web search and code execution to interacting with APIs or controlling external software. Ctx AI provides a mechanism for defining and integrating both built-in and custom tools.

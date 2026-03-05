@@ -160,7 +160,7 @@ def detect_language_simple(text):
             " y ",
             " en ",
             " un ",
-            " ser ",
+            " set ",
             " se ",
             " no ",
         }

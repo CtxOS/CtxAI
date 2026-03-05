@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 import socketio
 
 if TYPE_CHECKING:  # pragma: no cover - hints only
-    from backend.utils.websocket_manager import WebSocketManager
+    from backend.interfaces.websockets.websocket_manager import WebSocketManager
 
 _EVENT_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 _RESERVED_EVENT_NAMES: set[str] = {
@@ -245,12 +245,16 @@ class WebSocketResult:
             "ok": self._ok,
         }
 
-        effective_duration = self._duration_ms if self._duration_ms is not None else duration_ms
+        effective_duration = (
+            self._duration_ms if self._duration_ms is not None else duration_ms
+        )
         if effective_duration is not None:
             result["durationMs"] = round(effective_duration, 4)
 
         correlation = (
-            self._correlation_id if self._correlation_id is not None else fallback_correlation_id
+            self._correlation_id
+            if self._correlation_id is not None
+            else fallback_correlation_id
         )
         if correlation is not None:
             result["correlationId"] = correlation
@@ -362,7 +366,9 @@ class WebSocketHandler(ABC):
             if not isinstance(event, str):
                 raise TypeError("Event type declarations must be strings")
             if not _EVENT_NAME_PATTERN.fullmatch(event):
-                raise ValueError(f"Invalid event type '{event}' – must match lowercase_snake_case")
+                raise ValueError(
+                    f"Invalid event type '{event}' – must match lowercase_snake_case"
+                )
             if event in _RESERVED_EVENT_NAMES:
                 raise ValueError(
                     f"Event type '{event}' is reserved by Socket.IO and cannot be used"

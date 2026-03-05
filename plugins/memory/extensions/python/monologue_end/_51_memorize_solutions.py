@@ -27,7 +27,7 @@ class MemorizeSolutions(Extension):
         # show full util message
         log_item = self.agent.context.log.log(
             type="util",
-            heading="Memorizing succesful solutions...",
+            heading="Memorizing successful solutions...",
         )
 
         # memorize in background
@@ -185,7 +185,7 @@ class MemorizeSolutions(Extension):
                         update_progress="none"
                     )
                 else:
-                    # remove previous solutions too similiar to this one
+                    # remove previous solutions too similar to this one
                     if set["memory_memorize_replace_threshold"] > 0:
                         rem += await db.delete_documents_by_query(
                             query=txt,

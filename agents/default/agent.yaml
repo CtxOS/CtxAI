@@ -1,4 +1,4 @@
 title: Default
-description: Default prompt file templates. Should be inherited and overriden by specialized
+description: Default prompt file templates. Should be inherited and overridden by specialized
   prompt profiles.
 context: ''

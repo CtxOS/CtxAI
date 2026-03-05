@@ -11,7 +11,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from backend.core.agent import AgentContext
 from initialize import initialize_agent
-from backend.api.poll import Poll
+from backend.interfaces.api.routes.chat.poll import Poll
 
 
 @pytest.mark.asyncio

@@ -9,7 +9,8 @@ from typing import Any, Dict, List, Optional
 from pathspec import PathSpec
 from pathspec.patterns.gitwildmatch import GitWildMatchPattern
 
-from backend.utils import files, git, runtime
+from backend.infrastructure.system import git
+from backend.utils import files, runtime
 from backend.utils.print_style import PrintStyle
 
 

@@ -598,7 +598,7 @@ function drawStandaloneMessage({
   kvps = null,
   actionButtons = [],
 }) {
-  // end last process group on any standalone messge
+  // end last process group on any standalone message
   completeLastProcessGroup();
 
   const container = getOrCreateMessageContainer(
@@ -915,7 +915,7 @@ export function drawMessageResponse({
     });
   }
 
-  // response of agent 0, render as response to user
+  // response of Ctx AI, render as response to user
   // get last process group or create new container (if first message)
 
   const group = getLastProcessGroup();

@@ -1,29 +1,29 @@
 /** Async function that waits for specified number of time units. */
-export async function sleep(miliseconds = 0, seconds = 0, minutes = 0, hours = 0, days = 0) {
+export async function sleep(milliseconds = 0, seconds = 0, minutes = 0, hours = 0, days = 0) {
   hours += days * 24;
   minutes += hours * 60;
   seconds += minutes * 60;
-  miliseconds += seconds * 1000;
+  milliseconds += seconds * 1000;
   
   // Maximum safe timeout is 1 hour (in milliseconds)
   const MAX_TIMEOUT = 60 * 60 * 1000;
   
-  // if miliseconds is 0, wait at least one frame
-  if (miliseconds === 0) {
+  // if milliseconds is 0, wait at least one frame
+  if (milliseconds === 0) {
     await new Promise((resolve) => setTimeout(resolve, 0));
     return;
   }
 
   // If the timeout is too large, break it into smaller chunks
-  while (miliseconds > 0) {
+  while (milliseconds > 0) {
     // Calculate the current chunk duration (1 hour max)
-    const chunkDuration = Math.min(miliseconds, MAX_TIMEOUT);
+    const chunkDuration = Math.min(milliseconds, MAX_TIMEOUT);
     
     // Wait for the current chunk
     await new Promise((resolve) => setTimeout(resolve, chunkDuration));
     
     // Subtract the time we've waited
-    miliseconds -= chunkDuration;
+    milliseconds -= chunkDuration;
   }
 }
 export default sleep;

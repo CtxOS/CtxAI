@@ -12,8 +12,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.utils.websocket import ConnectionNotFoundError, WebSocketHandler, WebSocketResult
-from backend.utils.websocket_manager import (
+from backend.interfaces.websockets.websocket import (
+    ConnectionNotFoundError,
+    WebSocketHandler,
+    WebSocketResult,
+)
+from backend.interfaces.websockets.websocket_manager import (
     WebSocketManager,
     BUFFER_TTL,
     DIAGNOSTIC_EVENT,
@@ -354,7 +358,9 @@ async def test_buffer_overflow_drops_oldest(monkeypatch):
     await manager.handle_connect(NAMESPACE, "offline")
     await manager.handle_disconnect(NAMESPACE, "offline")
 
-    monkeypatch.setattr("backend.utils.websocket_manager.BUFFER_MAX_SIZE", 2)
+    monkeypatch.setattr(
+        "backend.interfaces.websockets.websocket_manager.BUFFER_MAX_SIZE", 2
+    )
 
     await manager.emit_to(NAMESPACE, "offline", "event", {"idx": 0})
     await manager.emit_to(NAMESPACE, "offline", "event", {"idx": 1})
@@ -385,7 +391,7 @@ async def test_expired_buffer_entries_are_discarded(monkeypatch):
     socketio.emit.reset_mock()
 
     monkeypatch.setattr(
-        "backend.utils.websocket_manager._utcnow",
+        "backend.interfaces.websockets.websocket_manager._utcnow",
         lambda: future,
     )
     await manager.handle_connect(NAMESPACE, "sid-expired")
@@ -479,10 +485,11 @@ async def test_timestamps_are_timezone_aware():
     assert info.connected_at.tzinfo is not None
     assert info.last_activity.tzinfo is not None
 
-    with patch("backend.utils.websocket_manager._utcnow") as mocked_now:
+    with patch("backend.interfaces.websockets.websocket_manager._utcnow") as mocked_now:
         mocked_now.return_value = info.last_activity
         await manager.route_event(NAMESPACE, "unknown", {}, "sid-utc")
         assert info.last_activity.tzinfo is not None
+
 
 class DuplicateHandler(WebSocketHandler):
     @classmethod
@@ -566,7 +573,9 @@ class ResultHandler(WebSocketHandler):
 
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         if event_type == "result_event":
-            return WebSocketResult.ok({"sid": sid}, correlation_id="explicit", duration_ms=1.234)
+            return WebSocketResult.ok(
+                {"sid": sid}, correlation_id="explicit", duration_ms=1.234
+            )
         return WebSocketResult.error(
             code="E_RESULT",
             message="boom",
@@ -721,7 +730,9 @@ async def test_route_event_all_respects_exclude_handlers():
     for entry in aggregated:
         assert entry["correlationId"]
         assert entry["results"]
-        assert all(result["handlerId"] == alpha.identifier for result in entry["results"])
+        assert all(
+            result["handlerId"] == alpha.identifier for result in entry["results"]
+        )
 
 
 @pytest.mark.asyncio
@@ -804,15 +815,23 @@ def test_debug_logging_respects_runtime_flag(monkeypatch):
     def capture(message: str) -> None:
         logs.append(message)
 
-    monkeypatch.setattr("backend.utils.print_style.PrintStyle.debug", staticmethod(capture))
-    monkeypatch.setattr("backend.utils.websocket_manager.runtime.is_development", lambda: False)
-    monkeypatch.setenv("A0_WS_DEBUG", "0")
+    monkeypatch.setattr(
+        "backend.utils.print_style.PrintStyle.debug", staticmethod(capture)
+    )
+    monkeypatch.setattr(
+        "backend.interfaces.websockets.websocket_manager.runtime.is_development",
+        lambda: False,
+    )
+    monkeypatch.setenv("CTX_WS_DEBUG", "0")
 
     manager._debug("should-not-log")  # noqa: SLF001
     assert logs == []
 
-    monkeypatch.setattr("backend.utils.websocket_manager.runtime.is_development", lambda: True)
-    monkeypatch.setenv("A0_WS_DEBUG", "1")
+    monkeypatch.setattr(
+        "backend.interfaces.websockets.websocket_manager.runtime.is_development",
+        lambda: True,
+    )
+    monkeypatch.setenv("CTX_WS_DEBUG", "1")
     manager._debug("should-log")  # noqa: SLF001
     assert logs == ["should-log"]
 

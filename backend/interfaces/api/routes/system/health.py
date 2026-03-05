@@ -1,4 +1,5 @@
-from backend.utils import errors, git
+from backend.infrastructure.system import git
+from backend.utils import errors
 from backend.utils.api import ApiHandler, Request, Response
 
 

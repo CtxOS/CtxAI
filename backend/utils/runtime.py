@@ -35,7 +35,9 @@ def initialize():
         default=False,
         help="Use cloudflare tunnel for public URL",
     )
-    parser.add_argument("--development", type=bool, default=False, help="Development mode")
+    parser.add_argument(
+        "--development", type=bool, default=False, help="Development mode"
+    )
 
     known, unknown = parser.parse_known_args()
     args = vars(known)
@@ -78,15 +80,17 @@ def get_runtime_id() -> str:
 
 
 def get_persistent_id() -> str:
-    id = dotenv.get_dotenv_value("A0_PERSISTENT_RUNTIME_ID")
+    id = dotenv.get_dotenv_value("CTX_PERSISTENT_RUNTIME_ID")
     if not id:
         id = secrets.token_hex(16)
-        dotenv.save_dotenv_value("A0_PERSISTENT_RUNTIME_ID", id)
+        dotenv.save_dotenv_value("CTX_PERSISTENT_RUNTIME_ID", id)
     return id
 
 
 @overload
-async def call_development_function(func: Callable[..., Awaitable[T]], *args, **kwargs) -> T: ...
+async def call_development_function(
+    func: Callable[..., Awaitable[T]], *args, **kwargs
+) -> T: ...
 
 
 @overload
@@ -100,7 +104,9 @@ async def call_development_function(
         url = _get_rfc_url()
         password = _get_rfc_password()
         # Normalize path components to build a valid Python module path across OSes
-        module_path = Path(files.deabsolute_path(func.__code__.co_filename)).with_suffix("")
+        module_path = Path(
+            files.deabsolute_path(func.__code__.co_filename)
+        ).with_suffix("")
         module = ".".join(module_path.parts)  # __module__ is not reliable
         result = await rfc.call_rfc(
             url=url,
@@ -163,13 +169,17 @@ def call_development_function_sync(
 
 
 def get_web_ui_port():
-    web_ui_port = get_arg("port") or int(dotenv.get_dotenv_value("WEB_UI_PORT", 0)) or 5000
+    web_ui_port = (
+        get_arg("port") or int(dotenv.get_dotenv_value("WEB_UI_PORT", 0)) or 5000
+    )
     return web_ui_port
 
 
 def get_tunnel_api_port():
     tunnel_api_port = (
-        get_arg("tunnel_api_port") or int(dotenv.get_dotenv_value("TUNNEL_API_PORT", 0)) or 55520
+        get_arg("tunnel_api_port")
+        or int(dotenv.get_dotenv_value("TUNNEL_API_PORT", 0))
+        or 55520
     )
     return tunnel_api_port
 

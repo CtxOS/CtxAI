@@ -61,7 +61,7 @@ class SSHInteractiveSession:
                     look_for_keys=False,
                 )
 
-                # --------- NEW: enable transport-level keep-alives -------------
+                # --------- NEW: enable transport-level keep-alive -------------
                 transport = self.client.get_transport()
                 if transport and keepalive_interval > 0:
                     # sends an SSH_MSG_IGNORE every <keepalive_interval> seconds

@@ -51,8 +51,8 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
     from flask import Flask
     import socketio
 
-    from backend.utils.websocket import WebSocketHandler
-    from backend.utils.websocket_manager import WebSocketManager
+    from backend.interfaces.websockets.websocket import WebSocketHandler
+    from backend.interfaces.websockets.websocket_manager import WebSocketManager
     from run_ui import configure_websocket_namespaces
 
     app = Flask("test_ws_root_namespace")
@@ -79,7 +79,9 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
 
     HelloHandler._reset_instance_for_testing()
 
-    sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*", namespaces="*")
+    sio = socketio.AsyncServer(
+        async_mode="asgi", cors_allowed_origins="*", namespaces="*"
+    )
     lock = __import__("threading").RLock()
     manager = WebSocketManager(sio, lock)
 
@@ -103,11 +105,15 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
             wait_timeout=2,
         )
         try:
-            res_unknown = await client.call("unknown_event", {"x": 1}, namespace="/", timeout=2)
+            res_unknown = await client.call(
+                "unknown_event", {"x": 1}, namespace="/", timeout=2
+            )
             assert res_unknown["results"][0]["ok"] is False
             assert res_unknown["results"][0]["error"]["code"] == "NO_HANDLERS"
 
-            res_known_elsewhere = await client.call("hello_request", {"name": "x"}, namespace="/", timeout=2)
+            res_known_elsewhere = await client.call(
+                "hello_request", {"name": "x"}, namespace="/", timeout=2
+            )
             assert res_known_elsewhere["results"][0]["ok"] is False
             assert res_known_elsewhere["results"][0]["error"]["code"] == "NO_HANDLERS"
             assert calls == []
@@ -116,7 +122,9 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
 
 
 @pytest.mark.asyncio
-async def test_root_namespace_fire_and_forget_does_not_invoke_application_handlers() -> None:
+async def test_root_namespace_fire_and_forget_does_not_invoke_application_handlers() -> (
+    None
+):
     """
     Fire-and-forget emits on `/` must not invoke any application handler.
     """
@@ -124,8 +132,8 @@ async def test_root_namespace_fire_and_forget_does_not_invoke_application_handle
     from flask import Flask
     import socketio
 
-    from backend.utils.websocket import WebSocketHandler
-    from backend.utils.websocket_manager import WebSocketManager
+    from backend.interfaces.websockets.websocket import WebSocketHandler
+    from backend.interfaces.websockets.websocket_manager import WebSocketManager
     from run_ui import configure_websocket_namespaces
 
     app = Flask("test_ws_root_fire_and_forget")
@@ -152,7 +160,9 @@ async def test_root_namespace_fire_and_forget_does_not_invoke_application_handle
 
     SideEffectHandler._reset_instance_for_testing()
 
-    sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*", namespaces="*")
+    sio = socketio.AsyncServer(
+        async_mode="asgi", cors_allowed_origins="*", namespaces="*"
+    )
     lock = __import__("threading").RLock()
     manager = WebSocketManager(sio, lock)
 

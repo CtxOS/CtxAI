@@ -124,21 +124,21 @@ docker run hello-world
 
 ```bash
 # Choose your installation path
-A0_NAME="a0-instance"  # Change this to your instance name
-A0_PATH="/opt/${A0_NAME}"
+CTX_NAME="ctx-instance"  # Change this to your instance name
+CTX_PATH="/opt/${CTX_NAME}"
 
 # Create directories
-mkdir -p ${A0_PATH}
-mkdir -p ${A0_PATH}/work_dir
-mkdir -p ${A0_PATH}/memory
-mkdir -p ${A0_PATH}/logs
+mkdir -p ${CTX_PATH}
+mkdir -p ${CTX_PATH}/work_dir
+mkdir -p ${CTX_PATH}/memory
+mkdir -p ${CTX_PATH}/logs
 ```
 
 ### Step 2: Create Environment Configuration
 
 ```bash
 # Create .env file with authentication
-cat > ${A0_PATH}/.env << 'EOF'
+cat > ${CTX_PATH}/.env << 'EOF'
 # Ctx AI Configuration
 # Authentication (REQUIRED for web access)
 AUTH_LOGIN=your_username_here
@@ -165,28 +165,28 @@ EOF
 
 ```bash
 # Set variables
-A0_NAME="a0-instance"
-A0_PATH="/opt/${A0_NAME}"
-A0_PORT="50080"
+CTX_NAME="ctx-instance"
+CTX_PATH="/opt/${CTX_NAME}"
+CTX_PORT="50080"
 
 # Pull latest image
 docker pull ctxos/ctxai:latest
 
 # Run container
-docker run -d   --name ${A0_NAME}   --restart unless-stopped   -p ${A0_PORT}:80   -v ${A0_PATH}/.env:/ctx/.env   -v ${A0_PATH}/usr:/ctx/usr   ctxos/ctxai:latest
+docker run -d   --name ${CTX_NAME}   --restart unless-stopped   -p ${CTX_PORT}:80   -v ${CTX_PATH}/.env:/ctx/.env   -v ${CTX_PATH}/usr:/ctx/usr   ctxos/ctxai:latest
 ```
 
 ### Step 5: Verify Container
 
 ```bash
 # Check container is running
-docker ps | grep ${A0_NAME}
+docker ps | grep ${CTX_NAME}
 
 # Check logs
-docker logs ${A0_NAME}
+docker logs ${CTX_NAME}
 
 # Test local access
-curl -I http://127.0.0.1:${A0_PORT}/
+curl -I http://127.0.0.1:${CTX_PORT}/
 ```
 
 Expected response: `HTTP/1.1 302 FOUND` with `Location: /login` (if auth enabled)

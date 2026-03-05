@@ -11,10 +11,13 @@ from flask import Flask, request, Response, session, redirect, url_for, render_t
 from werkzeug.wrappers.request import Request as WerkzeugRequest
 
 import initialize
-from backend.utils import files, git, mcp_server, fasta2a_server, settings as settings_helper, extension
+from backend.utils import files, settings as settings_helper, extension
+from backend.infrastructure.system import git, process
+from backend.interfaces.mcp import server as mcp_server
+from backend.interfaces.a2a import server as fasta2a_server
 from backend.utils.files import get_abs_path
-from backend.utils import runtime, dotenv, process
-from backend.utils.websocket import WebSocketHandler, validate_ws_origin
+from backend.utils import runtime, dotenv
+from backend.interfaces.websockets.websocket import WebSocketHandler, validate_ws_origin
 from backend.utils.api import register_api_route, requires_auth, csrf_protect
 from backend.utils.print_style import PrintStyle
 from backend.utils import login
@@ -23,8 +26,8 @@ from socketio import ASGIApp, packet
 from starlette.applications import Starlette
 from starlette.routing import Mount
 from uvicorn.middleware.wsgi import WSGIMiddleware
-from backend.utils.websocket_manager import WebSocketManager
-from backend.utils.websocket_namespace_discovery import discover_websocket_namespaces
+from backend.interfaces.websockets.websocket_manager import WebSocketManager
+from backend.interfaces.websockets.websocket_namespace_discovery import discover_websocket_namespaces
 
 # disable logging
 import logging
@@ -184,7 +187,7 @@ def _build_websocket_handlers_by_namespace(
     lock: threading.RLock,
 ) -> dict[str, list[WebSocketHandler]]:
     discoveries = discover_websocket_namespaces(
-        handlers_folder="backend/websocket_handlers",
+        handlers_folder="backend/interfaces/websockets",
         include_root_default=True,
     )
 

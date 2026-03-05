@@ -7,7 +7,17 @@ from functools import wraps
 from pathlib import Path
 from typing import Any, Dict, TypedDict, Union
 
-from flask import Flask, Request, Response, jsonify, redirect, request, send_file, session, url_for
+from flask import (
+    Flask,
+    Request,
+    Response,
+    jsonify,
+    redirect,
+    request,
+    send_file,
+    session,
+    url_for,
+)
 from werkzeug.wrappers.response import Response as BaseResponse
 
 from backend.core.agent import AgentContext
@@ -79,7 +89,9 @@ class ApiHandler:
                 return output
             else:
                 response_json = json.dumps(output)
-                return Response(response=response_json, status=200, mimetype="application/json")
+                return Response(
+                    response=response_json, status=200, mimetype="application/json"
+                )
 
             # return exceptions with 500
         except Exception as e:
@@ -101,7 +113,9 @@ class ApiHandler:
             if got:
                 return got
             if create_if_not_exists:
-                context = AgentContext(config=initialize_agent(), id=ctxid, set_current=True)
+                context = AgentContext(
+                    config=initialize_agent(), id=ctxid, set_current=True
+                )
                 return context
             else:
                 raise Exception(f"Context {ctxid} not found")
@@ -109,7 +123,9 @@ class ApiHandler:
 
 def is_loopback_address(address: str) -> bool:
     loopback_checker = {
-        socket.AF_INET: lambda x: (struct.unpack("!I", socket.inet_aton(x))[0] >> (32 - 8)) == 127,
+        socket.AF_INET: lambda x: (
+            (struct.unpack("!I", socket.inet_aton(x))[0] >> (32 - 8)) == 127
+        ),
         socket.AF_INET6: lambda x: x == "::1",
     }
     address_type = "hostname"
@@ -212,17 +228,36 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
             return await cached()
 
         # Resolve file path for the handler
-        # Try built-in api folder first, then plugin api folders
+        # Try built-in api folders first, then plugin api folders
         handler_cls: type[ApiHandler] | None = None
 
-        # Check built-in backend/api/<path>.py
-        builtin_file = files.get_abs_path(f"backend/api/{path}.py")
-        if files.is_in_dir(builtin_file, files.get_abs_path("backend/api")) and files.exists(
-            builtin_file
-        ):
-            classes = load_classes_from_file(builtin_file, ApiHandler)
-            if classes:
-                handler_cls = classes[0]
+        # Check built-in backend/api/<path>.py (Legacy) or backend/interfaces/api/routes/<path>.py
+        locations = [
+            files.get_abs_path("backend/api"),
+            files.get_abs_path("backend/interfaces/api/routes"),
+        ]
+
+        # Search for file in locations, potentially in subdirectories
+        for base_dir in locations:
+            # First try direct match
+            builtin_file = Path(base_dir) / f"{path}.py"
+            if builtin_file.is_file():
+                classes = load_classes_from_file(str(builtin_file), ApiHandler)
+                if classes:
+                    handler_cls = classes[0]
+                    break
+
+            # If path has no extension and not found, try searching subdirectories
+            # This allows /api/message to find /api/chat/message.py
+            if handler_cls is None:
+                # Use glob to find file with this name in any subdirectory
+                matches = list(Path(base_dir).glob(f"**/{path}.py"))
+                if matches:
+                    # Take first match
+                    classes = load_classes_from_file(str(matches[0]), ApiHandler)
+                    if classes:
+                        handler_cls = classes[0]
+                        break
 
         # Check plugin api folders: path format plugins/<plugin_name>/<handler>
         if handler_cls is None and path.startswith("plugins/"):

@@ -16,7 +16,11 @@ from backend.utils import runtime
 from backend.utils.defer import DeferredTask
 from backend.utils.print_style import PrintStyle
 from backend.utils.state_monitor import _ws_debug_enabled
-from backend.utils.websocket import ConnectionNotFoundError, WebSocketHandler, WebSocketResult
+from backend.interfaces.websockets.websocket import (
+    ConnectionNotFoundError,
+    WebSocketHandler,
+    WebSocketResult,
+)
 
 BUFFER_MAX_SIZE = 100
 BUFFER_TTL = timedelta(hours=1)
@@ -62,11 +66,13 @@ class WebSocketManager:
     def __init__(self, socketio: socketio.AsyncServer, lock) -> None:
         self.socketio = socketio
         self.lock = lock
-        self.handlers: defaultdict[str, defaultdict[str, List[WebSocketHandler]]] = defaultdict(
-            lambda: defaultdict(list)
+        self.handlers: defaultdict[str, defaultdict[str, List[WebSocketHandler]]] = (
+            defaultdict(lambda: defaultdict(list))
         )
         self.connections: Dict[ConnectionIdentity, ConnectionInfo] = {}
-        self.buffers: defaultdict[ConnectionIdentity, Deque[BufferedEvent]] = defaultdict(deque)
+        self.buffers: defaultdict[ConnectionIdentity, Deque[BufferedEvent]] = (
+            defaultdict(deque)
+        )
         self._known_sids: Set[ConnectionIdentity] = set()
         self._identifier: str = f"{self.__class__.__module__}.{self.__class__.__name__}"
         # Session tracking (single-user default)
@@ -81,7 +87,7 @@ class WebSocketManager:
 
     # Internal: development-only debug logging to avoid noise in production
     def _debug(self, message: str) -> None:
-        value = os.getenv("A0_WS_DEBUG", "").strip().lower()
+        value = os.getenv("CTX_WS_DEBUG", "").strip().lower()
         if value in {"1", "true", "yes", "on"}:
             PrintStyle.debug(message)
 
@@ -195,7 +201,10 @@ class WebSocketManager:
         if not watchers:
             return
         effective_payload = payload() if callable(payload) else payload
-        if isinstance(effective_payload, dict) and "sourceNamespace" not in effective_payload:
+        if (
+            isinstance(effective_payload, dict)
+            and "sourceNamespace" not in effective_payload
+        ):
             origin = effective_payload.get("namespace")
             if isinstance(origin, str) and origin.strip():
                 effective_payload = {
@@ -243,12 +252,16 @@ class WebSocketManager:
         try:
             iterator = iter(value)
         except TypeError as exc:  # pragma: no cover - defensive
-            raise ValueError(f"{field_name} must be an array of handler identifiers") from exc
+            raise ValueError(
+                f"{field_name} must be an array of handler identifiers"
+            ) from exc
 
         normalized: Set[str] = set()
         for item in iterator:
             if not isinstance(item, str):
-                raise ValueError(f"{field_name} values must be handler identifier strings")
+                raise ValueError(
+                    f"{field_name} values must be handler identifier strings"
+                )
             normalized.add(item)
         return normalized
 
@@ -318,7 +331,9 @@ class WebSocketManager:
                 try:
                     validated_events = handler.validate_event_types(declared)
                 except Exception as exc:
-                    PrintStyle.error(f"Failed to register handler {handler.identifier}: {exc}")
+                    PrintStyle.error(
+                        f"Failed to register handler {handler.identifier}: {exc}"
+                    )
                     raise
 
                 if _ws_debug_enabled():
@@ -357,12 +372,18 @@ class WebSocketManager:
                 handler.process_event, event_type, payload, sid
             )
         except Exception as exc:  # pragma: no cover - handled by caller
-            duration_ms = (time.perf_counter() - start) * 1000 if start is not None else None
+            duration_ms = (
+                (time.perf_counter() - start) * 1000 if start is not None else None
+            )
             return _HandlerExecution(handler, exc, duration_ms)
-        duration_ms = (time.perf_counter() - start) * 1000 if start is not None else None
+        duration_ms = (
+            (time.perf_counter() - start) * 1000 if start is not None else None
+        )
         return _HandlerExecution(handler, value, duration_ms)
 
-    async def handle_connect(self, namespace: str, sid: str, user_id: str | None = None) -> None:
+    async def handle_connect(
+        self, namespace: str, sid: str, user_id: str | None = None
+    ) -> None:
         self._ensure_dispatcher_loop()
         user_bucket = user_id or "single_user"
         identity: ConnectionIdentity = (namespace, sid)
@@ -409,7 +430,9 @@ class WebSocketManager:
                 **lifecycle_payload,
             }
         )
-        self._schedule_lifecycle_broadcast(namespace, LIFECYCLE_CONNECT_EVENT, lifecycle_payload)
+        self._schedule_lifecycle_broadcast(
+            namespace, LIFECYCLE_CONNECT_EVENT, lifecycle_payload
+        )
 
     async def handle_disconnect(self, namespace: str, sid: str) -> None:
         self._ensure_dispatcher_loop()
@@ -445,7 +468,9 @@ class WebSocketManager:
                 **lifecycle_payload,
             }
         )
-        self._schedule_lifecycle_broadcast(namespace, LIFECYCLE_DISCONNECT_EVENT, lifecycle_payload)
+        self._schedule_lifecycle_broadcast(
+            namespace, LIFECYCLE_DISCONNECT_EVENT, lifecycle_payload
+        )
 
     async def route_event(
         self,
@@ -480,7 +505,9 @@ class WebSocketManager:
         handler_payload["correlationId"] = correlation_id
 
         try:
-            include_meta = self._normalize_handler_filter(include_meta_raw, "includeHandlers")
+            include_meta = self._normalize_handler_filter(
+                include_meta_raw, "includeHandlers"
+            )
         except ValueError as exc:
             error = self._build_error_result(
                 handler_id=handler_id or self._identifier,
@@ -493,7 +520,9 @@ class WebSocketManager:
             return {"correlationId": correlation_id, "results": [error]}
 
         try:
-            exclude_meta = self._normalize_handler_filter(exclude_meta_raw, "excludeHandlers")
+            exclude_meta = self._normalize_handler_filter(
+                exclude_meta_raw, "excludeHandlers"
+            )
         except ValueError as exc:
             error = self._build_error_result(
                 handler_id=handler_id or self._identifier,
@@ -709,7 +738,9 @@ class WebSocketManager:
             try:
                 return await asyncio.wait_for(_invoke(), timeout=timeout_ms / 1000)
             except asyncio.TimeoutError:
-                PrintStyle.warning(f"request timeout for sid {sid} event '{event_type}'")
+                PrintStyle.warning(
+                    f"request timeout for sid {sid} event '{event_type}'"
+                )
                 return {
                     "correlationId": correlation_id,
                     "results": [
@@ -742,7 +773,9 @@ class WebSocketManager:
 
         if exclude_meta_raw is not None:
             try:
-                exclude_meta = self._normalize_handler_filter(exclude_meta_raw, "excludeHandlers")
+                exclude_meta = self._normalize_handler_filter(
+                    exclude_meta_raw, "excludeHandlers"
+                )
             except ValueError as exc:
                 error = self._build_error_result(
                     handler_id=handler_id or self._identifier,
@@ -810,7 +843,9 @@ class WebSocketManager:
 
             try:
                 task = asyncio.create_task(_dispatch())
-                return await asyncio.wait_for(asyncio.shield(task), timeout=timeout_seconds)
+                return await asyncio.wait_for(
+                    asyncio.shield(task), timeout=timeout_seconds
+                )
             except asyncio.TimeoutError:
                 PrintStyle.warning(
                     f"requestAll timeout for sid {target_sid} correlation={correlation_id}"
@@ -998,7 +1033,9 @@ class WebSocketManager:
                 }
             )
 
-    async def _run_lifecycle(self, namespace: str, fn: Callable[[WebSocketHandler], Any]) -> None:
+    async def _run_lifecycle(
+        self, namespace: str, fn: Callable[[WebSocketHandler], Any]
+    ) -> None:
         seen: Set[WebSocketHandler] = set()
         coros: list[Any] = []
         for handler_list in self.handlers.get(namespace, {}).values():
@@ -1048,7 +1085,9 @@ class WebSocketManager:
         while buffer:
             event = buffer.popleft()
             if now - event.timestamp > BUFFER_TTL:
-                self._debug(f"Discarding expired buffered event '{event.event_type}' for sid {sid}")
+                self._debug(
+                    f"Discarding expired buffered event '{event.event_type}' for sid {sid}"
+                )
                 continue
             envelope = self._wrap_envelope(
                 event.handler_id,
@@ -1066,7 +1105,9 @@ class WebSocketManager:
                 )
             )
             await self._run_on_dispatcher_loop(
-                self.socketio.emit(event.event_type, envelope, to=sid, namespace=namespace)
+                self.socketio.emit(
+                    event.event_type, envelope, to=sid, namespace=namespace
+                )
             )
             delivered += 1
         if identity in self.buffers:

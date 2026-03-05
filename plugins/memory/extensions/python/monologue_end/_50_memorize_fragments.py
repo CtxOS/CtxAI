@@ -177,7 +177,7 @@ class MemorizeMemories(Extension):
 
                 else:
 
-                    # remove previous fragments too similiar to this one
+                    # remove previous fragments too similar to this one
                     if set["memory_memorize_replace_threshold"] > 0:
                         rem += await db.delete_documents_by_query(
                             query=txt,

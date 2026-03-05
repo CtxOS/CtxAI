@@ -89,7 +89,7 @@ def create_project(name: str, data: BasicProjectData):
 
 def clone_git_project(name: str, git_url: str, git_token: str, data: BasicProjectData):
     """Clone a git repository as a new CTX project. Token is used only for cloning via http header."""
-    from backend.utils import git
+    from backend.infrastructure.system import git
 
     abs_path = files.create_dir_safe(
         files.get_abs_path(PROJECTS_PARENT_DIR, name), rename_format="{name}_{number}"
@@ -233,7 +233,7 @@ def load_basic_project_data(name: str) -> BasicProjectData:
 
 
 def load_edit_project_data(name: str) -> EditProjectData:
-    from backend.utils import git
+    from backend.infrastructure.system import git
 
     data = load_basic_project_data(name)
     additional_instructions = get_additional_instructions_files(name)

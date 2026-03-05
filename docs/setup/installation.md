@@ -522,31 +522,31 @@ For developers or users who need to run Ctx AI directly on their system, see the
 
 ## Advanced: Automated Configuration via Environment Variables
 
-Ctx AI settings can be automatically configured using environment variables with the `A0_SET_` prefix in your `.env` file. This enables automated deployments without manual configuration.
+Ctx AI settings can be automatically configured using environment variables with the `CTX_SET_` prefix in your `.env` file. This enables automated deployments without manual configuration.
 
 **Usage:**
 
 Add variables to your `.env` file in the format:
 
 ```env
-A0_SET_{setting_name}={value}
+CTX_SET_{setting_name}={value}
 ```
 
 **Examples:**
 
 ```env
 # Model configuration
-A0_SET_chat_model_provider=anthropic
-A0_SET_chat_model_name=claude-3-5-sonnet-20241022
-A0_SET_chat_model_ctx_length=200000
+CTX_SET_chat_model_provider=anthropic
+CTX_SET_chat_model_name=claude-3-5-sonnet-20241022
+CTX_SET_chat_model_ctx_length=200000
 
 # Memory settings
-A0_SET_memory_recall_enabled=true
-A0_SET_memory_recall_interval=5
+CTX_SET_memory_recall_enabled=true
+CTX_SET_memory_recall_interval=5
 
 # Agent configuration
-A0_SET_agent_profile=custom
-A0_SET_agent_memory_subdir=production
+CTX_SET_agent_profile=custom
+CTX_SET_agent_memory_subdir=production
 ```
 
 **Docker usage:**
@@ -555,8 +555,8 @@ When running Docker, you can pass these as environment variables:
 
 ```bash
 docker run -p 50080:80 \
-  -e A0_SET_chat_model_provider=anthropic \
-  -e A0_SET_chat_model_name=claude-3-5-sonnet-20241022 \
+  -e CTX_SET_chat_model_provider=anthropic \
+  -e CTX_SET_chat_model_name=claude-3-5-sonnet-20241022 \
   ctxos/ctxai
 ```
 
@@ -582,4 +582,4 @@ After following the instructions for your specific operating system, you should 
 - For development setup and extensions, see the [Development Setup Guide](dev-setup.md)
 - For remote access via tunnel, see [Remote Access via Tunneling](../guides/usage.md#remote-access-via-tunneling)
 
-If you encounter any issues during the installation process, please consult the [Troubleshooting section](../guides/troubleshooting.md) of this documentation or refer to the Ctx AI [Skool](https://www.skool.com/ctxai) or [Discord](https://discord.gg/B8KZKNsPpj) community for assistance.
+If you encounter any issues during the installation process, please consult the [Troubleshooting section](../guides/troubleshooting.md) of this documentation or refer to the Ctx AI [School](https://www.school.com/ctxai) or [Discord](https://discord.gg/B8KZKNsPpj) community for assistance.

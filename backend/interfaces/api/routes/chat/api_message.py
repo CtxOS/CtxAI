@@ -95,7 +95,7 @@ class ApiMessage(ApiHandler):
                     mimetype="application/json",
                 )
 
-            # Validation: if agent profile is provided, it must match the exising
+            # Validation: if agent profile is provided, it must match the existing
             if agent_profile and context.ctx.config.profile != agent_profile:
                 return Response(
                     '{"error": "Cannot override agent profile on existing context"}',

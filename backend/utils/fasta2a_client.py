@@ -88,7 +88,7 @@ class AgentConnection:
         if not self._agent_card:
             await self.get_agent_card()
 
-        # Re-use context automatically if caller did not supply one
+        # Reuse context automatically if caller did not supply one
         if context_id is None:
             context_id = self._context_id
 
