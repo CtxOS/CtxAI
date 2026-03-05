@@ -25,12 +25,12 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: pip3 install -r requirements.txt
 
       - name: Run unit tests
         env:
-          A0_WS_DEBUG: "0"
-        run: uv run pytest --no-cov -q
+          CTX_WS_DEBUG: "0"
+        run: make check
 
   build-and-push:
     name: Build and Push Docker Image
