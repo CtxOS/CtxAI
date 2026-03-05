@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+echo "====================BASE PACKAGES2 START===================="
+
+
+apt-get install -y --no-install-recommends \
+    openssh-server ffmpeg supervisor
+
+apt-get clean && rm -rf /var/lib/apt/lists/*
+
+echo "====================BASE PACKAGES2 END===================="

@@ -1,0 +1,79 @@
+###############################################################################
+# Keep essential runtime files
+###############################################################################
+
+# Project structure needed at runtime
+backend/
+python/
+webui/
+plugins/
+prompts/
+agents/
+conf/
+usr/
+run_ui.py
+initialize.py
+agent.py
+models.py
+
+# Keep .gitkeep markers
+!**/.gitkeep
+
+
+###############################################################################
+# Development / Build files (not needed in Docker image)
+###############################################################################
+
+# Git
+.git/
+.github/
+
+# Tests & Docs
+tests/
+docs/
+AGENTS.md
+README.md
+LICENSE
+
+# Config (dev only)
+pyproject.toml
+uv.lock
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.egg-info/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+.windsurf/
+
+# Virtual environments
+.venv/
+.conda/
+
+# Environment & Logs
+.env
+*.log
+logs/
+
+# Temp / Cache
+tmp/
+.cache/
+*.tmp
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Root test files
+*.test.py

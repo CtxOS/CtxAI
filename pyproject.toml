@@ -1,0 +1,174 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ctxai"
+version = "0.1.0"
+description = "A personal, organic agentic framework that grows and learns with you"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Ctx AI Team", email = "team@ctxai.ai"}
+]
+maintainers = [
+    {name = "Ctx AI Team", email = "team@ctxai.ai"}
+]
+keywords = ["ai", "agents", "framework", "llm", "automation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "a2wsgi==1.10.8",
+    "ansio==0.0.1",
+    "browser-use==0.5.11",
+    "docker==7.1.0",
+    "duckduckgo-search==6.1.12",
+    "fastmcp==2.13.1",
+    "fasta2a==0.5.0",
+    "flask[async]==3.0.3",
+    "flask-basicauth==0.2.0",
+    "flaredantic==0.1.5",
+    "GitPython==3.1.43",
+    "inputimeout==1.0.4",
+    "kokoro>=0.7.0",
+    "simpleeval==1.0.3",
+    "langchain-core==0.3.49",
+    "langchain-community==0.3.19",
+    # "langchain-unstructured[all-docs]==0.1.6",  # Requires onnxruntime (no Python 3.14 support)
+    # "openai-whisper==20250625",  # Requires torch (no Python 3.14 support)
+    "lxml_html_clean==0.3.1",
+    "markdown==3.7",
+    "mcp==1.22.0",
+    "newspaper3k==0.2.8",
+    "paramiko==3.5.0",
+    "playwright==1.52.0",
+    "pypdf==6.0.0",
+    "python-dotenv==1.1.0",
+    "pytz==2024.2",
+    # "sentence-transformers==3.0.1",  # Requires torch (no Python 3.14 support)
+    "tiktoken==0.8.0",
+    # "unstructured[all-docs]==0.16.23",  # Requires onnxruntime (no Python 3.14 support)
+    "unstructured-client==0.31.0",
+    "webcolors==24.6.0",
+    "nest-asyncio==1.6.0",
+    "crontab==1.0.1",
+    "markdownify==1.1.0",
+    "pydantic==2.11.7",
+    "pymupdf==1.25.3",
+    "pytesseract==0.3.13",
+    "pdf2image==1.17.0",
+    "pathspec>=0.12.1",
+    "psutil>=7.0.0",
+    "soundfile==0.13.1",
+    "imapclient>=3.0.1",
+    "html2text>=2024.2.26",
+    "beautifulsoup4>=4.12.3",
+    "boto3>=1.35.0",
+    "exchangelib>=5.4.3",
+    "pywinpty==3.0.2; sys_platform == 'win32'",
+    "python-socketio>=5.14.2",
+    "uvicorn>=0.38.0",
+    "wsproto>=1.2.0",
+    "litellm>=1.75.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+
+[project.urls]
+Homepage = "https://ctxai.ai"
+Documentation = "https://docs.ctxai.ai"
+Repository = "https://github.com/ctxos/ctxai"
+"Bug Tracker" = "https://github.com/ctxos/ctxai/issues"
+
+[project.scripts]
+ctxai = "app.cli:main"
+ctxai-web = "app.web_server:main"
+ctxai-main = "app.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*", "app*"]
+exclude = ["tests*", "docs*", "scripts*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=backend",
+    "--cov=app",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
