@@ -1,33 +1,30 @@
+import asyncio
+import json
 import mimetypes
 import os
-import asyncio
+
 import aiohttp
-import json
 
 from backend.utils.vector_db import VectorDB
 
 os.environ["USER_AGENT"] = "@mixedbread-ai/unstructured"  # noqa E402
+from datetime import datetime
+from typing import Callable, List, Optional, Sequence, Tuple
+from urllib.parse import urlparse
+
+from langchain.schema import HumanMessage, SystemMessage
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import AsyncHtmlLoader
+from langchain_community.document_loaders.parsers.images import TesseractBlobParser
+from langchain_community.document_loaders.pdf import PyMuPDFLoader
+from langchain_community.document_loaders.text import TextLoader
+from langchain_community.document_transformers import MarkdownifyTransformer
+from langchain_core.documents import Document
 from langchain_unstructured import UnstructuredLoader  # noqa E402
 
-from urllib.parse import urlparse
-from typing import Callable, Sequence, List, Optional, Tuple
-from datetime import datetime
-
-from langchain_community.document_loaders import AsyncHtmlLoader
-from langchain_community.document_loaders.text import TextLoader
-from langchain_community.document_loaders.pdf import PyMuPDFLoader
-from langchain_community.document_transformers import MarkdownifyTransformer
-from langchain_community.document_loaders.parsers.images import TesseractBlobParser
-
-from langchain_core.documents import Document
-from langchain.schema import SystemMessage, HumanMessage
-
-from backend.utils.print_style import PrintStyle
-from backend.utils import files, errors
 from backend.core.agent import Agent
-
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-
+from backend.utils import errors, files
+from backend.utils.print_style import PrintStyle
 
 DEFAULT_SEARCH_THRESHOLD = 0.5
 
@@ -83,9 +80,7 @@ class DocumentQueryStore:
 
         # Normalize based on scheme
         if scheme == "file":
-            path = files.fix_dev_path(
-                normalized.removeprefix("file://").removeprefix("file:")
-            )
+            path = files.fix_dev_path(normalized.removeprefix("file://").removeprefix("file:"))
             normalized = f"file://{path}"
 
         elif scheme in ["http", "https"]:
@@ -146,9 +141,7 @@ class DocumentQueryStore:
                 self.vector_db = self.init_vector_db()
 
             ids = await self.vector_db.insert_documents(docs)
-            PrintStyle.standard(
-                f"Added document '{document_uri}' with {len(docs)} chunks"
-            )
+            PrintStyle.standard(f"Added document '{document_uri}' with {len(docs)} chunks")
             return True, ids
         except Exception as e:
             err_text = errors.format_error(e)
@@ -268,9 +261,7 @@ class DocumentQueryStore:
         # Delete from vector store
         if ids_to_delete:
             dels = await self.vector_db.delete_documents_by_ids(ids_to_delete)
-            PrintStyle.standard(
-                f"Deleted document '{document_uri}' with {len(dels)} chunks"
-            )
+            PrintStyle.standard(f"Deleted document '{document_uri}' with {len(dels)} chunks")
             return True
 
         return False
@@ -353,9 +344,7 @@ class DocumentQueryStore:
 
 class DocumentQueryHelper:
 
-    def __init__(
-        self, agent: Agent, progress_callback: Callable[[str], None] | None = None
-    ):
+    def __init__(self, agent: Agent, progress_callback: Callable[[str], None] | None = None):
         self.agent = agent
         self.store = DocumentQueryStore.get(agent)
         self.progress_callback = progress_callback or (lambda x: None)
@@ -364,38 +353,28 @@ class DocumentQueryHelper:
     async def document_qa(
         self, document_uris: List[str], questions: Sequence[str]
     ) -> Tuple[bool, str]:
-        self.progress_callback(
-            f"Starting Q&A process for {len(document_uris)} documents"
-        )
+        self.progress_callback(f"Starting Q&A process for {len(document_uris)} documents")
         await self.agent.handle_intervention()
 
         # index documents
-        await asyncio.gather(
-            *[self.document_get_content(uri, True) for uri in document_uris]
-        )
+        await asyncio.gather(*[self.document_get_content(uri, True) for uri in document_uris])
         await self.agent.handle_intervention()
         selected_chunks = {}
         for question in questions:
             self.progress_callback(f"Optimizing query: {question}")
             await self.agent.handle_intervention()
             human_content = f'Search Query: "{question}"'
-            system_content = self.agent.parse_prompt(
-                "fw.document_query.optmimize_query.md"
-            )
+            system_content = self.agent.parse_prompt("fw.document_query.optmimize_query.md")
 
             optimized_query = (
-                await self.agent.call_utility_model(
-                    system=system_content, message=human_content
-                )
+                await self.agent.call_utility_model(system=system_content, message=human_content)
             ).strip()
 
             await self.agent.handle_intervention()
             self.progress_callback(f"Searching documents with query: {optimized_query}")
 
             normalized_uris = [self.store.normalize_uri(uri) for uri in document_uris]
-            doc_filter = " or ".join(
-                [f"document_uri == '{uri}'" for uri in normalized_uris]
-            )
+            doc_filter = " or ".join([f"document_uri == '{uri}'" for uri in normalized_uris])
 
             chunks = await self.store.search_documents(
                 query=optimized_query,
@@ -420,13 +399,9 @@ class DocumentQueryHelper:
         await self.agent.handle_intervention()
 
         questions_str = "\n".join([f" *  {question}" for question in questions])
-        content = "\n\n----\n\n".join(
-            [chunk.page_content for chunk in selected_chunks.values()]
-        )
+        content = "\n\n----\n\n".join([chunk.page_content for chunk in selected_chunks.values()])
 
-        qa_system_message = self.agent.parse_prompt(
-            "fw.document_query.system_prompt.md"
-        )
+        qa_system_message = self.agent.parse_prompt("fw.document_query.system_prompt.md")
         qa_user_message = f"# Document:\n{content}\n\n# Queries:\n{questions_str}"
 
         ai_response, _reasoning = await self.agent.call_chat_model(
@@ -441,9 +416,7 @@ class DocumentQueryHelper:
 
         return True, str(ai_response)
 
-    async def document_get_content(
-        self, document_uri: str, add_to_db: bool = False
-    ) -> str:
+    async def document_get_content(self, document_uri: str, add_to_db: bool = False) -> str:
         self.progress_callback(f"Fetching document content")
         await self.agent.handle_intervention()
         url = urlparse(document_uri)
@@ -480,9 +453,7 @@ class DocumentQueryHelper:
 
                 mimetype = response.headers["content-type"]
                 if "content-length" in response.headers:
-                    content_length = (
-                        float(response.headers["content-length"]) / 1024 / 1024
-                    )  # MB
+                    content_length = float(response.headers["content-length"]) / 1024 / 1024  # MB
                     if content_length > 50.0:
                         raise ValueError(
                             f"Document content length exceeds max. 50MB: {content_length} MB ({document_uri})"
@@ -497,14 +468,10 @@ class DocumentQueryHelper:
                 raise ValueError(f"Invalid document path '{url.path}'") from e
 
         if encoding:
-            raise ValueError(
-                f"Compressed documents are unsupported '{encoding}' ({document_uri})"
-            )
+            raise ValueError(f"Compressed documents are unsupported '{encoding}' ({document_uri})")
 
         if mimetype == "application/octet-stream":
-            raise ValueError(
-                f"Unsupported document mimetype '{mimetype}' ({document_uri})"
-            )
+            raise ValueError(f"Unsupported document mimetype '{mimetype}' ({document_uri})")
 
         # Use the store's normalization method
         document_uri_norm = self.store.normalize_uri(document_uri)
@@ -523,9 +490,7 @@ class DocumentQueryHelper:
             elif mimetype == "application/pdf":
                 document_content = self.handle_pdf_document(document_uri, scheme)
             else:
-                document_content = self.handle_unstructured_document(
-                    document_uri, scheme
-                )
+                document_content = self.handle_unstructured_document(document_uri, scheme)
             if add_to_db:
                 self.progress_callback(f"Indexing document")
                 await self.agent.handle_intervention()
@@ -582,9 +547,7 @@ class DocumentQueryHelper:
             file_content_bytes = files.read_file_bin(document)
             file_content = file_content_bytes.decode("utf-8")
             # Create Document manually since we're not using TextLoader
-            elements = [
-                Document(page_content=file_content, metadata={"source": document})
-            ]
+            elements = [Document(page_content=file_content, metadata={"source": document})]
         else:
             raise ValueError(f"Unsupported scheme: {scheme}")
 
@@ -603,8 +566,9 @@ class DocumentQueryHelper:
                 temp_file_path = temp_file.name
         elif scheme in ["http", "https"]:
             # download the file from the web url to a temporary file using python libraries for downloading
-            import requests
             import tempfile
+
+            import requests
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
                 response = requests.get(document, timeout=10.0)
@@ -674,8 +638,8 @@ class DocumentQueryHelper:
             # Use RFC file operations to read the file as binary
             file_content_bytes = files.read_file_bin(document)
             # Create a temporary file for UnstructuredLoader since it needs a file path
-            import tempfile
             import os
+            import tempfile
 
             # Get file extension to preserve it for proper processing
             _, ext = os.path.splitext(document)

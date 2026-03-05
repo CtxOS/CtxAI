@@ -1,11 +1,15 @@
-from backend.utils import persist_chat, tokens
-from backend.utils.extension import Extension
-from backend.core.agent import LoopData
 import asyncio
-from backend.utils.log import LogItem
-from backend.utils import log
 import math
-from backend.extensions.before_main_llm_call._10_log_for_stream import build_heading, build_default_heading
+
+from backend.core.agent import LoopData
+from backend.extensions.before_main_llm_call._10_log_for_stream import (
+    build_default_heading,
+    build_heading,
+)
+from backend.utils import log, persist_chat, tokens
+from backend.utils.extension import Extension
+from backend.utils.log import LogItem
+
 
 class LogFromStream(Extension):
 
@@ -13,18 +17,14 @@ class LogFromStream(Extension):
 
         # thought length indicator
         length = f"({len(text)})" if text else ""
-        pipes = "|" * math.ceil(math.sqrt(len(text))/2)
+        pipes = "|" * math.ceil(math.sqrt(len(text)) / 2)
         heading = build_heading(self.agent, f"Reasoning... {pipes}")
         step = f"Reasoning... {length}"
 
         # create log message and store it in loop data temporary params
         if "log_item_generating" not in loop_data.params_temporary:
-            loop_data.params_temporary["log_item_generating"] = (
-                self.agent.context.log.log(
-                    type="agent",
-                    heading=heading,
-                    step=step
-                )
+            loop_data.params_temporary["log_item_generating"] = self.agent.context.log.log(
+                type="agent", heading=heading, step=step
             )
 
         # update log message

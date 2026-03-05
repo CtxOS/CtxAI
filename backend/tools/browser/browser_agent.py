@@ -1,19 +1,20 @@
 import asyncio
 import time
-from typing import Optional, cast
-from backend.core.agent import Agent, InterventionException
-from pathlib import Path
-
-from backend.utils.tool import Tool, Response
-from backend.utils import files, defer, persist_chat, strings
-from backend.utils.browser_use import browser_use  # type: ignore[attr-defined]
-from backend.utils.print_style import PrintStyle
-from backend.utils.playwright import ensure_playwright_binary
-from backend.utils.secrets import get_secrets_manager
-from backend.extensions.message_loop_start._10_iteration_no import get_iter_no
-from pydantic import BaseModel
 import uuid
+from pathlib import Path
+from typing import Optional, cast
+
+from pydantic import BaseModel
+
+from backend.core.agent import Agent, InterventionException
+from backend.extensions.message_loop_start._10_iteration_no import get_iter_no
+from backend.utils import defer, files, persist_chat, strings
+from backend.utils.browser_use import browser_use  # type: ignore[attr-defined]
 from backend.utils.dirty_json import DirtyJson
+from backend.utils.playwright import ensure_playwright_binary
+from backend.utils.print_style import PrintStyle
+from backend.utils.secrets import get_secrets_manager
+from backend.utils.tool import Response, Tool
 
 
 class State:
@@ -32,15 +33,11 @@ class State:
 
     def __del__(self):
         self.kill_task()
-        files.delete_dir(self.get_user_data_dir()) # cleanup user data dir
+        files.delete_dir(self.get_user_data_dir())  # cleanup user data dir
 
     def get_user_data_dir(self):
         return str(
-            Path.home()
-            / ".config"
-            / "browseruse"
-            / "profiles"
-            / f"agent_{self.agent.context.id}"
+            Path.home() / ".config" / "browseruse" / "profiles" / f"agent_{self.agent.context.id}"
         )
 
     async def _initialize(self):
@@ -49,7 +46,7 @@ class State:
 
         # for some reason we need to provide exact path to headless shell, otherwise it looks for headed browser
         pw_binary = ensure_playwright_binary()
-                
+
         self.browser_session = browser_use.BrowserSession(
             browser_profile=browser_use.BrowserProfile(
                 headless=True,
@@ -71,7 +68,7 @@ class State:
                 # Use a unique user data directory to avoid conflicts
                 user_data_dir=self.get_user_data_dir(),
                 extra_http_headers=self.agent.config.browser_http_headers or {},
-                )
+            )
         )
 
         await self.browser_session.start() if self.browser_session else None
@@ -92,20 +89,22 @@ class State:
             except Exception as e:
                 PrintStyle().warning(f"Could not force set viewport size: {e}")
 
-        # --------------------------------------------------------------------------    
-        
+        # --------------------------------------------------------------------------
+
         # Add init script to the browser session
         if self.browser_session and self.browser_session.browser_context:
             js_override = files.get_abs_path("lib/browser/init_override.js")
-            await self.browser_session.browser_context.add_init_script(path=js_override) if self.browser_session else None
+            (
+                await self.browser_session.browser_context.add_init_script(path=js_override)
+                if self.browser_session
+                else None
+            )
 
     def start_task(self, task: str):
         if self.task and self.task.is_alive():
             self.kill_task()
 
-        self.task = defer.DeferredTask(
-            thread_name="BrowserAgent" + self.agent.context.id
-        )
+        self.task = defer.DeferredTask(thread_name="BrowserAgent" + self.agent.context.id)
         if self.agent.context.task:
             self.agent.context.task.add_child_task(self.task, terminate_thread=True)
         self.task.start_task(self._run_task, task) if self.task else None
@@ -121,7 +120,11 @@ class State:
 
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                loop.run_until_complete(self.browser_session.close()) if self.browser_session else None
+                (
+                    loop.run_until_complete(self.browser_session.close())
+                    if self.browser_session
+                    else None
+                )
                 loop.close()
             except Exception as e:
                 PrintStyle().error(f"Error closing browser session: {e}")
@@ -161,13 +164,13 @@ class State:
                 browser_session=self.browser_session,
                 llm=model,
                 use_vision=self.agent.config.browser_model.vision,
-                extend_system_message=self.agent.read_prompt(
-                    "prompts/browser_agent.system.md"
-                ),
+                extend_system_message=self.agent.read_prompt("prompts/browser_agent.system.md"),
                 controller=controller,
                 enable_memory=False,  # Disable memory to avoid state conflicts
-                llm_timeout=3000, # TODO rem
-                sensitive_data=cast(dict[str, str | dict[str, str]] | None, secrets_dict or {}),  # Pass secrets
+                llm_timeout=3000,  # TODO rem
+                sensitive_data=cast(
+                    dict[str, str | dict[str, str]] | None, secrets_dict or {}
+                ),  # Pass secrets
             )
         except Exception as e:
             raise Exception(
@@ -184,15 +187,17 @@ class State:
         # try:
         result = None
         if self.use_agent:
-            result = await self.use_agent.run(
-                max_steps=50, on_step_start=hook, on_step_end=hook
-            )
+            result = await self.use_agent.run(max_steps=50, on_step_start=hook, on_step_end=hook)
         return result
 
     async def get_page(self):
         if self.use_agent and self.browser_session:
             try:
-                return await self.use_agent.browser_session.get_current_page() if self.use_agent.browser_session else None
+                return (
+                    await self.use_agent.browser_session.get_current_page()
+                    if self.use_agent.browser_session
+                    else None
+                )
             except Exception:
                 # Browser session might be closed or invalid
                 return None
@@ -201,8 +206,18 @@ class State:
     async def get_selector_map(self):
         """Get the selector map for the current page state."""
         if self.use_agent:
-            await self.use_agent.browser_session.get_state_summary(cache_clickable_elements_hashes=True) if self.use_agent.browser_session else None
-            return await self.use_agent.browser_session.get_selector_map() if self.use_agent.browser_session else None
+            (
+                await self.use_agent.browser_session.get_state_summary(
+                    cache_clickable_elements_hashes=True
+                )
+                if self.use_agent.browser_session
+                else None
+            )
+            return (
+                await self.use_agent.browser_session.get_selector_map()
+                if self.use_agent.browser_session
+                else None
+            )
             await self.use_agent.browser_session.get_state_summary(
                 cache_clickable_elements_hashes=True
             )
@@ -213,10 +228,12 @@ class State:
 class BrowserAgent(Tool):
 
     async def execute(self, message="", reset="", **kwargs):
-        self.guid = self.agent.context.generate_id() # short random id
+        self.guid = self.agent.context.generate_id()  # short random id
         reset = str(reset).lower().strip() == "true"
         await self.prepare_state(reset=reset)
-        message = get_secrets_manager(self.agent.context).mask_values(message, placeholder="<secret>{key}</secret>") # mask any potential passwords passed from A0 to browser-use to browser-use format
+        message = get_secrets_manager(self.agent.context).mask_values(
+            message, placeholder="<secret>{key}</secret>"
+        )  # mask any potential passwords passed from CTX to browser-use to browser-use format
         task = self.state.start_task(message) if self.state else None
 
         # wait for browser agent to finish and update progress with timeout
@@ -228,7 +245,9 @@ class BrowserAgent(Tool):
             # Check for timeout to prevent infinite waiting
             if time.time() - start_time > timeout_seconds:
                 PrintStyle().warning(
-                    self._mask(f"Browser agent task timeout after {timeout_seconds} seconds, forcing completion")
+                    self._mask(
+                        f"Browser agent task timeout after {timeout_seconds} seconds, forcing completion"
+                    )
                 )
                 break
 
@@ -247,7 +266,9 @@ class BrowserAgent(Tool):
                     )
                     if fail_counter >= 3:
                         PrintStyle().warning(
-                            self._mask("3 consecutive browser_agent.get_update timeouts, breaking loop")
+                            self._mask(
+                                "3 consecutive browser_agent.get_update timeouts, breaking loop"
+                            )
                         )
                         break
                     continue
@@ -294,14 +315,10 @@ class BrowserAgent(Tool):
                     answer_data = DirtyJson.parse_string(answer)
                     answer_text = strings.dict_to_text(answer_data)  # type: ignore
                 else:
-                    answer_text = (
-                        str(answer) if answer else "Task completed successfully"
-                    )
+                    answer_text = str(answer) if answer else "Task completed successfully"
             except Exception as e:
                 answer_text = (
-                    str(answer)
-                    if answer
-                    else f"Task completed with parse error: {str(e)}"
+                    str(answer) if answer else f"Task completed with parse error: {str(e)}"
                 )
         else:
             # Task hit max_steps without calling done()
@@ -319,11 +336,7 @@ class BrowserAgent(Tool):
         self.log.update(answer=answer_text)
 
         # add screenshot to the answer if we have it
-        if (
-            self.log.kvps
-            and "screenshot" in self.log.kvps
-            and self.log.kvps["screenshot"]
-        ):
+        if self.log.kvps and "screenshot" in self.log.kvps and self.log.kvps["screenshot"]:
             path = self.log.kvps["screenshot"].split("//", 1)[-1].split("&", 1)[0]
             answer_text += f"\n\nScreenshot: {path}"
 

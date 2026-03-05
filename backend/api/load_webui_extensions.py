@@ -1,5 +1,5 @@
-from backend.utils.api import ApiHandler, Request, Response
 from backend.utils import plugins
+from backend.utils.api import ApiHandler, Request, Response
 
 
 class LoadWebuiExtensions(ApiHandler):
@@ -14,7 +14,9 @@ class LoadWebuiExtensions(ApiHandler):
 
         if not extension_point:
             return Response(status=400, response="Missing extension_point")
-        
-        exts = plugins.get_webui_extensions(agent=None, extension_point=extension_point, filters=filters)
-        
+
+        exts = plugins.get_webui_extensions(
+            agent=None, extension_point=extension_point, filters=filters
+        )
+
         return {"extensions": exts or []}

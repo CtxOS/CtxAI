@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
-from backend.utils.extension import Extension
+
 from backend.core.agent import LoopData
-from backend.utils.localization import Localization
-from backend.utils.errors import RepairableException
 from backend.utils import errors
+from backend.utils.errors import RepairableException
+from backend.utils.extension import Extension
+from backend.utils.localization import Localization
 from backend.utils.print_style import PrintStyle
 
 
@@ -22,5 +23,3 @@ class HandleRepairableException(Extension):
             PrintStyle(font_color="red", padding=True).print(msg["message"])
             self.agent.context.log.log(type="warning", content=msg["message"])
             data["exception"] = None
-
-        

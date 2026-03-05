@@ -1,5 +1,4 @@
 from backend.utils.api import ApiHandler, Request, Response
-
 from backend.utils.state_snapshot import build_snapshot
 
 

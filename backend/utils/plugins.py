@@ -1,20 +1,24 @@
 from __future__ import annotations
 
-import re, json, glob
+import glob
+import json
+import re
 from pathlib import Path
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     Iterator,
     List,
     Literal,
     Optional,
-    TYPE_CHECKING,
     TypedDict,
 )
 
-from backend.utils import files, print_style, yaml as yaml_helper, cache
 from pydantic import BaseModel, Field
+
+from backend.utils import cache, files, print_style
+from backend.utils import yaml as yaml_helper
 
 if TYPE_CHECKING:
     from backend.core.agent import Agent
@@ -99,9 +103,7 @@ def get_plugins_list():
     return result
 
 
-def get_enhanced_plugins_list(
-    custom: bool = True, builtin: bool = True
-) -> List[PluginListItem]:
+def get_enhanced_plugins_list(custom: bool = True, builtin: bool = True) -> List[PluginListItem]:
     """Discover plugins by directory convention. First root wins on ID conflict."""
     results = []
 
@@ -172,9 +174,7 @@ def find_plugin_dir(plugin_name: str):
         return files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR, plugin_name)
 
     # check if the plugin is in the default directory
-    default_plugin_path = files.get_abs_path(
-        files.PLUGINS_DIR, plugin_name, META_FILE_NAME
-    )
+    default_plugin_path = files.get_abs_path(files.PLUGINS_DIR, plugin_name, META_FILE_NAME)
     if files.exists(default_plugin_path):
         return files.get_abs_path(files.PLUGINS_DIR, plugin_name)
 
@@ -195,9 +195,7 @@ def get_plugin_paths(*subpaths: str) -> List[str]:
     sub = "*/" + "/".join(subpaths) if subpaths else "*"
     paths: List[str] = []
     for root in get_plugin_roots():
-        paths.extend(
-            files.find_existing_paths_by_pattern(files.get_abs_path(root, sub))
-        )
+        paths.extend(files.find_existing_paths_by_pattern(files.get_abs_path(root, sub)))
     return paths
 
 
@@ -262,9 +260,7 @@ def determined_toggle_from_paths(default: bool, paths: Iterator[str]):
     enabled = default
     for plugin_path in paths:
         if enabled:
-            enabled = not files.exists(
-                files.get_abs_path(plugin_path, DISABLED_FILE_NAME)
-            )
+            enabled = not files.exists(files.get_abs_path(plugin_path, DISABLED_FILE_NAME))
         else:
             enabled = files.exists(files.get_abs_path(plugin_path, ENABLED_FILE_NAME))
     return enabled
@@ -279,11 +275,7 @@ def get_toggle_state(plugin_name: str) -> ToggleState:
 
     # root plugin paths
     plugin_paths = get_plugin_roots(plugin_name)
-    state = (
-        "enabled"
-        if determined_toggle_from_paths(True, reversed(plugin_paths))
-        else "disabled"
-    )
+    state = "enabled" if determined_toggle_from_paths(True, reversed(plugin_paths)) else "disabled"
 
     # global toggles
     usr_toggles = [
@@ -291,9 +283,7 @@ def get_toggle_state(plugin_name: str) -> ToggleState:
             files.get_abs_path(files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN)
         ),
         files.find_existing_paths_by_pattern(
-            files.get_abs_path(
-                files.USER_DIR, files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN
-            )
+            files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN)
         ),
     ]
 
@@ -349,7 +339,9 @@ def toggle_plugin(
         files.write_file(disabled_file, "")
 
 
-def get_webui_extensions(agent: Agent | None, extension_point: str, filters: List[str] | None = None):
+def get_webui_extensions(
+    agent: Agent | None, extension_point: str, filters: List[str] | None = None
+):
     entries: List[dict] = []
     effective_filters = filters or ["*"]
     enabled = get_enabled_plugins(agent)
@@ -360,14 +352,13 @@ def get_webui_extensions(agent: Agent | None, extension_point: str, filters: Lis
             continue
 
         for filter in effective_filters:
-            path_pattern = files.get_abs_path(base_dir, "extensions", "webui", extension_point, filter)
+            path_pattern = files.get_abs_path(
+                base_dir, "extensions", "webui", extension_point, filter
+            )
             extensions = files.find_existing_paths_by_pattern(path_pattern)
             for extension in extensions:
                 rel_path = files.deabsolute_path(extension)
-                entries.append({
-                    "plugin_id": plugin,
-                    "path": rel_path
-                })
+                entries.append({"plugin_id": plugin, "path": rel_path})
 
     return entries
 
@@ -397,28 +388,24 @@ def get_plugin_config(
 
     # use default config if not found
     if not file_path:
-        file_path = files.get_abs_path(
-            find_plugin_dir(plugin_name), CONFIG_DEFAULT_FILE_NAME
-        )
+        file_path = files.get_abs_path(find_plugin_dir(plugin_name), CONFIG_DEFAULT_FILE_NAME)
     if file_path and files.exists(file_path):
-        return (
-            json.loads if file_path.lower().endswith(".json") else yaml_helper.loads
-        )(files.read_file(file_path))
+        return (json.loads if file_path.lower().endswith(".json") else yaml_helper.loads)(
+            files.read_file(file_path)
+        )
     return None
 
 
 def get_default_plugin_config(plugin_name: str):
     file_path = files.get_abs_path(find_plugin_dir(plugin_name), CONFIG_DEFAULT_FILE_NAME)
     if file_path and files.exists(file_path):
-        return (
-            json.loads if file_path.lower().endswith(".json") else yaml_helper.loads
-        )(files.read_file(file_path))
+        return (json.loads if file_path.lower().endswith(".json") else yaml_helper.loads)(
+            files.read_file(file_path)
+        )
     return None
 
 
-def save_plugin_config(
-    plugin_name: str, project_name: str, agent_profile: str, settings: dict
-):
+def save_plugin_config(plugin_name: str, project_name: str, agent_profile: str, settings: dict):
     file_path = determine_plugin_asset_path(
         plugin_name, project_name, agent_profile, CONFIG_FILE_NAME
     )
@@ -426,9 +413,7 @@ def save_plugin_config(
         files.write_file(file_path, json.dumps(settings))
 
 
-def find_plugin_asset(
-    plugin_name: str, *subpaths: str, project_name="", agent_profile=""
-):
+def find_plugin_asset(plugin_name: str, *subpaths: str, project_name="", agent_profile=""):
     result = find_plugin_assets(
         *subpaths,
         plugin_name=plugin_name,
@@ -471,9 +456,7 @@ def find_plugin_assets(
 
         for matched in matched_paths:
             inferred_proj = _after(matched, "/projects/") if need_proj else proj
-            inferred_prof = (
-                _after(matched, "/agents/", last=True) if need_prof else profile
-            )
+            inferred_prof = _after(matched, "/agents/", last=True) if need_prof else profile
             results.append(
                 {
                     "project_name": inferred_proj,

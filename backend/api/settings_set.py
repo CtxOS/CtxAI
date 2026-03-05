@@ -1,8 +1,7 @@
-from backend.utils.api import ApiHandler, Request, Response
+from typing import Any
 
 from backend.utils import settings
-
-from typing import Any
+from backend.utils.api import ApiHandler, Request, Response
 
 
 class SetSettings(ApiHandler):

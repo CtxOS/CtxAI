@@ -1,13 +1,13 @@
+import json
+import uuid
 from collections import OrderedDict
 from datetime import datetime
 from typing import Any
-import uuid
+
 from backend.core.agent import Agent, AgentConfig, AgentContext, AgentContextType
 from backend.utils import files, history
-import json
-from initialize import initialize_agent
-
 from backend.utils.log import Log, LogItem
+from initialize import initialize_agent
 
 CHATS_FOLDER = "usr/chats"
 LOG_SIZE = 1000
@@ -26,8 +26,10 @@ def get_chat_folder_path(ctxid: str):
     """
     return files.get_abs_path(CHATS_FOLDER, ctxid)
 
+
 def get_chat_msg_files_folder(ctxid: str):
     return files.get_abs_path(get_chat_folder_path(ctxid), "messages")
+
 
 def save_tmp_chat(context: AgentContext):
     """Save context to the chats folder"""
@@ -118,11 +120,10 @@ def remove_msg_files(ctxid):
 def _serialize_context(context: AgentContext):
     # serialize agents
     agents = []
-    agent = context.agent0
+    agent = context.ctx
     while agent:
         agents.append(_serialize_agent(agent))
         agent = agent.data.get(Agent.DATA_NAME_SUBORDINATE, None)
-
 
     data = {k: v for k, v in context.data.items() if not k.startswith("_")}
     output_data = {k: v for k, v in context.output_data.items() if not k.startswith("_")}
@@ -142,9 +143,7 @@ def _serialize_context(context: AgentContext):
             else datetime.fromtimestamp(0).isoformat()
         ),
         "agents": agents,
-        "streaming_agent": (
-            context.streaming_agent.number if context.streaming_agent else 0
-        ),
+        "streaming_agent": (context.streaming_agent.number if context.streaming_agent else 0),
         "log": _serialize_log(context.log),
         "data": data,
         "output_data": output_data,
@@ -194,25 +193,23 @@ def _deserialize_context(data):
         ),
         type=AgentContextType(data.get("type", AgentContextType.USER.value)),
         last_message=(
-            datetime.fromisoformat(
-                data.get("last_message", datetime.fromtimestamp(0).isoformat())
-            )
+            datetime.fromisoformat(data.get("last_message", datetime.fromtimestamp(0).isoformat()))
         ),
         log=log,
         paused=False,
         data=data.get("data", {}),
         output_data=data.get("output_data", {}),
-        # agent0=agent0,
+        # ctx=ctx,
         # streaming_agent=straming_agent,
     )
 
     agents = data.get("agents", [])
-    agent0 = _deserialize_agents(agents, config, context)
-    streaming_agent = agent0
+    ctx = _deserialize_agents(agents, config, context)
+    streaming_agent = ctx
     while streaming_agent and streaming_agent.number != data.get("streaming_agent", 0):
         streaming_agent = streaming_agent.data.get(Agent.DATA_NAME_SUBORDINATE, None)
 
-    context.agent0 = agent0
+    context.ctx = ctx
     context.streaming_agent = streaming_agent
 
     return context
@@ -231,9 +228,7 @@ def _deserialize_agents(
             context=context,
         )
         current.data = ag.get("data", {})
-        current.history = history.deserialize_history(
-            ag.get("history", ""), agent=current
-        )
+        current.history = history.deserialize_history(ag.get("history", ""), agent=current)
         if not zero:
             zero = current
 

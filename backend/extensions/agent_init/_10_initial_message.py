@@ -1,4 +1,5 @@
 import json
+
 from backend.core.agent import LoopData
 from backend.utils.extension import Extension
 
@@ -11,7 +12,7 @@ class InitialMessage(Extension):
         Called only once per session via _process_chain method.
         """
 
-        # Only add initial message for main agent (A0), not subordinate agents
+        # Only add initial message for main agent (CTX), not subordinate agents
         if self.agent.number != 0:
             return
 
@@ -30,7 +31,9 @@ class InitialMessage(Extension):
 
         # json parse the message, get the tool_args text
         initial_message_json = json.loads(initial_message)
-        initial_message_text = initial_message_json.get("tool_args", {}).get("text", "Hello! How can I help you?")
+        initial_message_text = initial_message_json.get("tool_args", {}).get(
+            "text", "Hello! How can I help you?"
+        )
 
         # Add to log (green bubble) for immediate UI display
         self.agent.context.log.log(

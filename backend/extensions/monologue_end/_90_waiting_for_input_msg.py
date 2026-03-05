@@ -1,5 +1,6 @@
-from backend.utils.extension import Extension
 from backend.core.agent import LoopData
+from backend.utils.extension import Extension
+
 
 class WaitingForInputMsg(Extension):
 

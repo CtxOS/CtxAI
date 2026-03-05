@@ -1,9 +1,9 @@
 from datetime import datetime
 
 from backend.utils.api import ApiHandler, Input, Output, Request
+from backend.utils.localization import Localization
 from backend.utils.print_style import PrintStyle
 from backend.utils.task_scheduler import TaskScheduler
-from backend.utils.localization import Localization
 
 
 class SchedulerTick(ApiHandler):
@@ -51,5 +51,5 @@ class SchedulerTick(ApiHandler):
             "scheduler": "tick",
             "timestamp": timestamp,
             "tasks_count": tasks_count,
-            "tasks": serialized_tasks
+            "tasks": serialized_tasks,
         }

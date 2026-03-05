@@ -1,17 +1,19 @@
-from abc import ABC, abstractmethod
-from fnmatch import fnmatch
+import base64
+import glob
 import json
-from ntpath import isabs
+import mimetypes
 import os
 import re
-import base64
 import shutil
 import tempfile
-from typing import Any, Literal
 import zipfile
-import glob
-import mimetypes
+from abc import ABC, abstractmethod
+from fnmatch import fnmatch
+from ntpath import isabs
+from typing import Any, Literal
+
 from simpleeval import simple_eval
+
 from backend.utils import yaml
 
 AGENTS_DIR = "agents"
@@ -84,9 +86,7 @@ def load_plugin_variables(
 from backend.utils.strings import sanitize_string
 
 
-def parse_file(
-    _filename: str, _directories: list[str] | None = None, _encoding="utf-8", **kwargs
-):
+def parse_file(_filename: str, _directories: list[str] | None = None, _encoding="utf-8", **kwargs):
     if _directories is None:
         _directories = []
 
@@ -311,13 +311,9 @@ def replace_placeholders_dict(_content: dict, **kwargs):
                         if value == f"{{{{{placeholder}}}}}":
                             return replacement
                         elif isinstance(replacement, (dict, list)):
-                            value = value.replace(
-                                f"{{{{{placeholder}}}}}", json.dumps(replacement)
-                            )
+                            value = value.replace(f"{{{{{placeholder}}}}}", json.dumps(replacement))
                         else:
-                            value = value.replace(
-                                f"{{{{{placeholder}}}}}", str(replacement)
-                            )
+                            value = value.replace(f"{{{{{placeholder}}}}}", str(replacement))
             return value
         elif isinstance(value, dict):
             return {k: replace_value(v) for k, v in value.items()}
@@ -362,9 +358,7 @@ def find_file_in_dirs(_filename: str, _directories: list[str]):
             return full_path
 
     # If the file is not found, raise FileNotFoundError
-    raise FileNotFoundError(
-        f"File '{_filename}' not found in any of the provided directories."
-    )
+    raise FileNotFoundError(f"File '{_filename}' not found in any of the provided directories.")
 
 
 def get_unique_filenames_in_dirs(

@@ -1,5 +1,6 @@
-from backend.utils import dotenv
 import hashlib
+
+from backend.utils import dotenv
 
 
 def get_credentials_hash():

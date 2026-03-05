@@ -1,16 +1,18 @@
-from initialize import initialize_agent
-from backend.utils import dirty_json, files, subagents, projects
+from backend.utils import dirty_json, files, projects, subagents
 from backend.utils.extension import Extension
+from initialize import initialize_agent
 
 
 class LoadProfileSettings(Extension):
-    
+
     async def execute(self, **kwargs) -> None:
 
         if not self.agent or not self.agent.config.profile:
             return
 
-        config_files = subagents.get_paths(self.agent, "settings.json", include_default=False, include_user=False)
+        config_files = subagents.get_paths(
+            self.agent, "settings.json", include_default=False, include_user=False
+        )
         settings_override = {}
         for settings_path in config_files:
             if files.exists(settings_path):
@@ -51,4 +53,3 @@ class LoadProfileSettings(Extension):
             #         f"{self.agent.number} with profile '{self.agent.config.profile}'."
             #     ),
             # )
-

@@ -1,5 +1,5 @@
-from backend.utils.extension import Extension
 from backend.core.agent import Agent, LoopData
+from backend.utils.extension import Extension
 from backend.utils.secrets import get_secrets_manager
 
 
@@ -34,6 +34,7 @@ class MaskResponseStreamChunk(Extension):
             # Print the processed chunk (this is where printing should happen)
             if processed_chunk:
                 from backend.utils.print_style import PrintStyle
+
                 PrintStyle().stream(processed_chunk)
         except Exception as e:
             # If masking fails, proceed without masking

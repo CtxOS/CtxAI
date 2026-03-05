@@ -34,7 +34,7 @@ fi
 # # Install some packages in specific variants
 # pip install torch --index-url https://download.pytorch.org/whl/cpu
 
-# Install remaining A0 python packages
+# Install remaining CTX python packages
 uv pip install -r /git/ctxai/requirements.txt
 # override for packages that have unnecessarily strict dependencies
 uv pip install -r /git/ctxai/requirements2.txt
@@ -42,5 +42,5 @@ uv pip install -r /git/ctxai/requirements2.txt
 # install playwright
 bash /ins/install_playwright.sh "$@"
 
-# Preload A0
+# Preload CTX
 python /git/ctxai/preload.py --dockerized=true

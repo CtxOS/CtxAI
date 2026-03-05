@@ -1,10 +1,9 @@
 import asyncio
 
+from backend.utils import errors
+from backend.utils.errors import HandledException
 from backend.utils.extension import Extension
 from backend.utils.print_style import PrintStyle
-from backend.utils import errors
-
-from backend.utils.errors import HandledException
 
 
 class HandleCriticalException(Extension):
@@ -12,12 +11,12 @@ class HandleCriticalException(Extension):
         if not self.agent:
             return
 
-        if not (exception:= data.get("exception")):
+        if not (exception := data.get("exception")):
             return
 
         # when exception is HandledException, keep it active, no logging here
         if isinstance(exception, HandledException):
-            return 
+            return
 
         # asyncio cancel - chat is being terminated, print out and re-raise as handledException
         if isinstance(exception, asyncio.CancelledError):
@@ -36,8 +35,6 @@ class HandleCriticalException(Extension):
             type="error",
             content=error_message,
         )
-        PrintStyle(font_color="red", padding=True).print(
-            f"{self.agent.agent_name}: {error_text}"
-        )
+        PrintStyle(font_color="red", padding=True).print(f"{self.agent.agent_name}: {error_text}")
 
         data["exception"] = HandledException(exception)

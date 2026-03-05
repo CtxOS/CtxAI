@@ -1,21 +1,22 @@
 from __future__ import annotations
 
-import asyncio, os
-import time
+import asyncio
+import os
 import threading
+import time
+import uuid
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Deque, Dict, Iterable, List, Optional, Set
 
 import socketio
-import uuid
 
+from backend.utils import runtime
 from backend.utils.defer import DeferredTask
 from backend.utils.print_style import PrintStyle
-from backend.utils import runtime
-from backend.utils.websocket import ConnectionNotFoundError, WebSocketHandler, WebSocketResult
 from backend.utils.state_monitor import _ws_debug_enabled
+from backend.utils.websocket import ConnectionNotFoundError, WebSocketHandler, WebSocketResult
 
 BUFFER_MAX_SIZE = 100
 BUFFER_TTL = timedelta(hours=1)
@@ -194,10 +195,7 @@ class WebSocketManager:
         if not watchers:
             return
         effective_payload = payload() if callable(payload) else payload
-        if (
-            isinstance(effective_payload, dict)
-            and "sourceNamespace" not in effective_payload
-        ):
+        if isinstance(effective_payload, dict) and "sourceNamespace" not in effective_payload:
             origin = effective_payload.get("namespace")
             if isinstance(origin, str) and origin.strip():
                 effective_payload = {
@@ -237,9 +235,7 @@ class WebSocketManager:
 
         asyncio.create_task(_broadcast())
 
-    def _normalize_handler_filter(
-        self, value: Any, field_name: str
-    ) -> Set[str] | None:
+    def _normalize_handler_filter(self, value: Any, field_name: str) -> Set[str] | None:
         if value is None:
             return None
         if isinstance(value, str):
@@ -252,15 +248,11 @@ class WebSocketManager:
         normalized: Set[str] = set()
         for item in iterator:
             if not isinstance(item, str):
-                raise ValueError(
-                    f"{field_name} values must be handler identifier strings"
-                )
+                raise ValueError(f"{field_name} values must be handler identifier strings")
             normalized.add(item)
         return normalized
 
-    def _normalize_sid_filter(
-        self, value: str | Iterable[str] | None
-    ) -> Set[str]:
+    def _normalize_sid_filter(self, value: str | Iterable[str] | None) -> Set[str]:
         if value is None:
             return set()
         if isinstance(value, str):
@@ -326,11 +318,9 @@ class WebSocketManager:
                 try:
                     validated_events = handler.validate_event_types(declared)
                 except Exception as exc:
-                    PrintStyle.error(
-                        f"Failed to register handler {handler.identifier}: {exc}"
-                    )
+                    PrintStyle.error(f"Failed to register handler {handler.identifier}: {exc}")
                     raise
-                
+
                 if _ws_debug_enabled():
                     PrintStyle.info(
                         "Registered WebSocket handler %s namespace=%s for events: %s"
@@ -367,18 +357,12 @@ class WebSocketManager:
                 handler.process_event, event_type, payload, sid
             )
         except Exception as exc:  # pragma: no cover - handled by caller
-            duration_ms = (
-                (time.perf_counter() - start) * 1000 if start is not None else None
-            )
+            duration_ms = (time.perf_counter() - start) * 1000 if start is not None else None
             return _HandlerExecution(handler, exc, duration_ms)
-        duration_ms = (
-            (time.perf_counter() - start) * 1000 if start is not None else None
-        )
+        duration_ms = (time.perf_counter() - start) * 1000 if start is not None else None
         return _HandlerExecution(handler, value, duration_ms)
 
-    async def handle_connect(
-        self, namespace: str, sid: str, user_id: str | None = None
-    ) -> None:
+    async def handle_connect(self, namespace: str, sid: str, user_id: str | None = None) -> None:
         self._ensure_dispatcher_loop()
         user_bucket = user_id or "single_user"
         identity: ConnectionIdentity = (namespace, sid)
@@ -425,9 +409,7 @@ class WebSocketManager:
                 **lifecycle_payload,
             }
         )
-        self._schedule_lifecycle_broadcast(
-            namespace, LIFECYCLE_CONNECT_EVENT, lifecycle_payload
-        )
+        self._schedule_lifecycle_broadcast(namespace, LIFECYCLE_CONNECT_EVENT, lifecycle_payload)
 
     async def handle_disconnect(self, namespace: str, sid: str) -> None:
         self._ensure_dispatcher_loop()
@@ -463,9 +445,7 @@ class WebSocketManager:
                 **lifecycle_payload,
             }
         )
-        self._schedule_lifecycle_broadcast(
-            namespace, LIFECYCLE_DISCONNECT_EVENT, lifecycle_payload
-        )
+        self._schedule_lifecycle_broadcast(namespace, LIFECYCLE_DISCONNECT_EVENT, lifecycle_payload)
 
     async def route_event(
         self,
@@ -500,9 +480,7 @@ class WebSocketManager:
         handler_payload["correlationId"] = correlation_id
 
         try:
-            include_meta = self._normalize_handler_filter(
-                include_meta_raw, "includeHandlers"
-            )
+            include_meta = self._normalize_handler_filter(include_meta_raw, "includeHandlers")
         except ValueError as exc:
             error = self._build_error_result(
                 handler_id=handler_id or self._identifier,
@@ -515,9 +493,7 @@ class WebSocketManager:
             return {"correlationId": correlation_id, "results": [error]}
 
         try:
-            exclude_meta = self._normalize_handler_filter(
-                exclude_meta_raw, "excludeHandlers"
-            )
+            exclude_meta = self._normalize_handler_filter(exclude_meta_raw, "excludeHandlers")
         except ValueError as exc:
             error = self._build_error_result(
                 handler_id=handler_id or self._identifier,
@@ -733,9 +709,7 @@ class WebSocketManager:
             try:
                 return await asyncio.wait_for(_invoke(), timeout=timeout_ms / 1000)
             except asyncio.TimeoutError:
-                PrintStyle.warning(
-                    f"request timeout for sid {sid} event '{event_type}'"
-                )
+                PrintStyle.warning(f"request timeout for sid {sid} event '{event_type}'")
                 return {
                     "correlationId": correlation_id,
                     "results": [
@@ -768,9 +742,7 @@ class WebSocketManager:
 
         if exclude_meta_raw is not None:
             try:
-                exclude_meta = self._normalize_handler_filter(
-                    exclude_meta_raw, "excludeHandlers"
-                )
+                exclude_meta = self._normalize_handler_filter(exclude_meta_raw, "excludeHandlers")
             except ValueError as exc:
                 error = self._build_error_result(
                     handler_id=handler_id or self._identifier,
@@ -861,9 +833,7 @@ class WebSocketManager:
                     ],
                 }
 
-        tasks = {
-            sid: asyncio.create_task(_invoke_for_sid(sid)) for sid in active_sids
-        }
+        tasks = {sid: asyncio.create_task(_invoke_for_sid(sid)) for sid in active_sids}
 
         aggregated: list[dict[str, Any]] = []
         for sid, task in tasks.items():
@@ -1078,9 +1048,7 @@ class WebSocketManager:
         while buffer:
             event = buffer.popleft()
             if now - event.timestamp > BUFFER_TTL:
-                self._debug(
-                    f"Discarding expired buffered event '{event.event_type}' for sid {sid}"
-                )
+                self._debug(f"Discarding expired buffered event '{event.event_type}' for sid {sid}")
                 continue
             envelope = self._wrap_envelope(
                 event.handler_id,
@@ -1098,9 +1066,7 @@ class WebSocketManager:
                 )
             )
             await self._run_on_dispatcher_loop(
-                self.socketio.emit(
-                    event.event_type, envelope, to=sid, namespace=namespace
-                )
+                self.socketio.emit(event.event_type, envelope, to=sid, namespace=namespace)
             )
             delivered += 1
         if identity in self.buffers:
@@ -1139,12 +1105,12 @@ class WebSocketManager:
         """Return SIDs for a user; single-user default returns all active SIDs."""
         with self.lock:
             bucket = self._ALL_USERS_BUCKET if user is None else user
-            return list(self.user_to_sids.get(bucket, set())) # type: ignore
+            return list(self.user_to_sids.get(bucket, set()))  # type: ignore
 
     def get_user_for_sid(self, sid: str) -> str | None:
         """Return user identifier for a SID or None."""
         with self.lock:
-            return self.sid_to_user.get(sid) # type: ignore
+            return self.sid_to_user.get(sid)  # type: ignore
 
     def set_server_restart_broadcast(self, enabled: bool) -> None:
         """Enable or disable automatic server restart broadcasts."""

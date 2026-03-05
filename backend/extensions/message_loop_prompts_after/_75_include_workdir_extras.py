@@ -1,10 +1,6 @@
-from backend.utils.extension import Extension
 from backend.core.agent import LoopData
-from backend.utils import projects
-from backend.utils import settings
-from backend.utils import runtime
-from backend.utils import file_tree
-from backend.utils import files
+from backend.utils import file_tree, files, projects, runtime, settings
+from backend.utils.extension import Extension
 
 
 class IncludeWorkdirExtras(Extension):

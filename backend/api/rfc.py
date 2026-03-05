@@ -1,6 +1,6 @@
+from backend.utils import runtime
 from backend.utils.api import ApiHandler, Request, Response
 
-from backend.utils import runtime
 
 class RFC(ApiHandler):
 
@@ -13,5 +13,5 @@ class RFC(ApiHandler):
         return False
 
     async def process(self, input: dict, request: Request) -> dict | Response:
-        result = await runtime.handle_rfc(input) # type: ignore
+        result = await runtime.handle_rfc(input)  # type: ignore
         return result

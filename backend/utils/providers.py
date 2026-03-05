@@ -1,13 +1,17 @@
+from typing import Dict, List, Literal, Optional, TypedDict
+
 import yaml
+
 from backend.utils import files
-from typing import List, Dict, Optional, TypedDict, Literal
 
 ModelType = Literal["chat", "embedding"]
+
 
 # Type alias for UI option items
 class FieldOption(TypedDict):
     value: str
     label: str
+
 
 class ProviderManager:
     _instance = None
@@ -77,7 +81,9 @@ class ProviderManager:
         """Return raw provider dictionaries for advanced use-cases."""
         return self._raw.get(provider_type, []) if self._raw else []
 
-    def get_provider_config(self, provider_type: ModelType, provider_id: str) -> Optional[Dict[str, str]]:
+    def get_provider_config(
+        self, provider_type: ModelType, provider_id: str
+    ) -> Optional[Dict[str, str]]:
         """Return the metadata dict for a single provider id (case-insensitive)."""
         provider_id_low = provider_id.lower()
         for p in self.get_raw_providers(provider_type):

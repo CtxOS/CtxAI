@@ -1,9 +1,9 @@
-from backend.utils import persist_chat, tokens
-from backend.utils.extension import Extension
-from backend.core.agent import LoopData
 import asyncio
+
+from backend.core.agent import LoopData
+from backend.utils import log, persist_chat, tokens
+from backend.utils.extension import Extension
 from backend.utils.log import LogItem
-from backend.utils import log
 
 
 class LiveResponse(Extension):
@@ -27,11 +27,9 @@ class LiveResponse(Extension):
 
             # create log message and store it in loop data temporary params
             if "log_item_response" not in loop_data.params_temporary:
-                loop_data.params_temporary["log_item_response"] = (
-                    self.agent.context.log.log(
-                        type="response",
-                        heading=f"icon://chat {self.agent.agent_name}: Responding",
-                    )
+                loop_data.params_temporary["log_item_response"] = self.agent.context.log.log(
+                    type="response",
+                    heading=f"icon://chat {self.agent.agent_name}: Responding",
                 )
 
             # update log message

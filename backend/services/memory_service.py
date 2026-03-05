@@ -2,16 +2,16 @@
 Memory service for managing memory operations.
 """
 
-from typing import Optional, List, Dict, Any
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 
 class MemoryService:
     """Service for managing memory operations."""
-    
+
     def __init__(self):
         self._memories: Dict[str, Dict[str, Any]] = {}
-    
+
     def create_memory(self, content: str, tags: List[str] = None, agent_id: str = None) -> str:
         """Create a new memory."""
         memory_id = f"memory_{len(self._memories) + 1}"
@@ -24,37 +24,37 @@ class MemoryService:
             "updated_at": datetime.now(),
         }
         return memory_id
-    
+
     def get_memory(self, memory_id: str) -> Optional[Dict[str, Any]]:
         """Get a memory by ID."""
         return self._memories.get(memory_id)
-    
+
     def search_memories(self, query: str, agent_id: str = None) -> List[Dict[str, Any]]:
         """Search memories by content."""
         results = []
         query_lower = query.lower()
-        
+
         for memory in self._memories.values():
             if agent_id and memory["agent_id"] != agent_id:
                 continue
-            
+
             if query_lower in memory["content"].lower():
                 results.append(memory)
-        
+
         return results
-    
+
     def list_memories(self, agent_id: str = None, tags: List[str] = None) -> List[Dict[str, Any]]:
         """List memories, optionally filtered."""
         memories = list(self._memories.values())
-        
+
         if agent_id:
             memories = [m for m in memories if m["agent_id"] == agent_id]
-        
+
         if tags:
             memories = [m for m in memories if any(tag in m["tags"] for tag in tags)]
-        
+
         return memories
-    
+
     def delete_memory(self, memory_id: str) -> bool:
         """Delete a memory."""
         if memory_id in self._memories:

@@ -1,5 +1,6 @@
-from backend.utils.api import ApiHandler
 from flask import Request, Response
+
+from backend.utils.api import ApiHandler
 from backend.utils.notification import NotificationManager, NotificationPriority, NotificationType
 
 

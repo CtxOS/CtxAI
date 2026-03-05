@@ -1,5 +1,5 @@
-from backend.utils.extension import Extension
 from backend.core.agent import LoopData
+from backend.utils.extension import Extension
 
 
 class IncludeAgentInfo(Extension):
@@ -10,9 +10,7 @@ class IncludeAgentInfo(Extension):
             "agent.extras.agent_info.md",
             number=self.agent.number,
             profile=self.agent.config.profile or "Default",
-            llm=self.agent.config.chat_model.provider
-            + "/"
-            + self.agent.config.chat_model.name,
+            llm=self.agent.config.chat_model.provider + "/" + self.agent.config.chat_model.name,
         )
 
         # add agent info to the prompt

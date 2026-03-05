@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import types
-from typing import Any, Mapping, TypedDict, Union, get_args, get_origin, get_type_hints
-
 from dataclasses import dataclass
+from typing import Any, Mapping, TypedDict, Union, get_args, get_origin, get_type_hints
 
 import pytz  # type: ignore[import-untyped]
 
 from backend.core.agent import AgentContext, AgentContextType
-
 from backend.utils.dotenv import get_dotenv_value
 from backend.utils.localization import Localization
 from backend.utils.task_scheduler import TaskScheduler
@@ -30,6 +28,7 @@ class SnapshotV1(TypedDict):
     notifications: list[dict[str, Any]]
     notifications_guid: str
     notifications_version: int
+
 
 @dataclass(frozen=True)
 class StateRequestV1:
@@ -298,7 +297,9 @@ async def build_snapshot_from_request(*, request: StateRequestV1) -> SnapshotV1:
         "log_guid": active_context.log.guid if active_context else "",
         "log_version": log_end,
         "log_progress": active_context.log.progress if active_context else 0,
-        "log_progress_active": bool(active_context.log.progress_active) if active_context else False,
+        "log_progress_active": (
+            bool(active_context.log.progress_active) if active_context else False
+        ),
         "paused": active_context.paused if active_context else False,
         "notifications": notifications,
         "notifications_guid": notification_manager.guid,

@@ -1,7 +1,8 @@
-from backend.utils.extension import Extension
 from backend.core.agent import Agent, LoopData
+from backend.utils.extension import Extension
 
 DATA_NAME_ITER_NO = "iteration_no"
+
 
 class IterationNo(Extension):
     async def execute(self, loop_data: LoopData = LoopData(), **kwargs):

@@ -1,7 +1,7 @@
 from backend.core.agent import Agent, UserMessage
-from backend.utils.tool import Tool, Response
-from initialize import initialize_agent
 from backend.extensions.hist_add_tool_result import _90_save_tool_call_file as save_tool_call_file
+from backend.utils.tool import Response, Tool
+from initialize import initialize_agent
 
 
 class Delegation(Tool):

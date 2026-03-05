@@ -1,7 +1,8 @@
-from backend.utils.extension import Extension
-from backend.utils import skills
 from backend.tools.skills_tool import DATA_NAME_LOADED_SKILLS
+
 from backend.core.agent import LoopData
+from backend.utils import skills
+from backend.utils.extension import Extension
 
 
 class IncludeLoadedSkills(Extension):
@@ -21,7 +22,6 @@ class IncludeLoadedSkills(Extension):
         content = content.strip()
         if not content:
             return
-
 
         # Inject into extras
         extras["loaded_skills"] = self.agent.read_prompt(

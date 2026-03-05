@@ -5,11 +5,12 @@ import time
 import uuid
 from pathlib import Path
 
-from backend.utils.api import ApiHandler, Request, Response
-from backend.utils import files
-from backend.utils.skills_import import import_skills
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+
+from backend.utils import files
+from backend.utils.api import ApiHandler, Request, Response
+from backend.utils.skills_import import import_skills
 
 
 class SkillsImportPreview(ApiHandler):
@@ -79,4 +80,3 @@ class SkillsImportPreview(ApiHandler):
                 tmp_path.unlink(missing_ok=True)  # type: ignore[arg-type]
             except Exception:
                 pass
-

@@ -1,7 +1,7 @@
 from backend.utils.api import ApiHandler, Input, Output, Request
-from backend.utils.task_scheduler import TaskScheduler, TaskState
-from backend.utils.print_style import PrintStyle
 from backend.utils.localization import Localization
+from backend.utils.print_style import PrintStyle
+from backend.utils.task_scheduler import TaskScheduler, TaskState
 
 
 class SchedulerTaskRun(ApiHandler):
@@ -37,10 +37,12 @@ class SchedulerTaskRun(ApiHandler):
         if task.state == TaskState.RUNNING:
             # Return task details along with error for better frontend handling
             serialized_task = scheduler.serialize_task(task_id)
-            self._printer.error(f"SchedulerTaskRun: Task '{task_id}' is in state '{task.state}' and cannot be run")
+            self._printer.error(
+                f"SchedulerTaskRun: Task '{task_id}' is in state '{task.state}' and cannot be run"
+            )
             return {
                 "error": f"Task '{task_id}' is in state '{task.state}' and cannot be run",
-                "task": serialized_task
+                "task": serialized_task,
             }
 
         # Run the task, which now includes atomic state checks and updates
@@ -53,7 +55,7 @@ class SchedulerTaskRun(ApiHandler):
                 return {
                     "success": True,
                     "message": f"Task '{task_id}' started successfully",
-                    "task": serialized_task
+                    "task": serialized_task,
                 }
             else:
                 return {"success": True, "message": f"Task '{task_id}' started successfully"}

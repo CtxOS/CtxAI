@@ -1,23 +1,25 @@
-from abc import abstractmethod
 import json
 import socket
 import struct
 import threading
+from abc import abstractmethod
 from functools import wraps
 from pathlib import Path
-from typing import Union, TypedDict, Dict, Any
-from flask import Request, Response, jsonify, Flask, session, request, send_file, redirect, url_for
+from typing import Any, Dict, TypedDict, Union
+
+from flask import Flask, Request, Response, jsonify, redirect, request, send_file, session, url_for
 from werkzeug.wrappers.response import Response as BaseResponse
+
 from backend.core.agent import AgentContext
-from initialize import initialize_agent
-from backend.utils.print_style import PrintStyle
+from backend.utils import cache, files
 from backend.utils.errors import format_error
-from backend.utils import files, cache
+from backend.utils.print_style import PrintStyle
+from initialize import initialize_agent
 
 ThreadLockType = Union[threading.Lock, threading.RLock]
 
 CACHE_AREA = "api_handlers(api)(plugins)"
-cache.toggle_area(CACHE_AREA, False) # cache off for now
+cache.toggle_area(CACHE_AREA, False)  # cache off for now
 
 Input = dict
 Output = Union[Dict[str, Any], Response, TypedDict]  # type: ignore
@@ -69,7 +71,6 @@ class ApiHandler:
                 # input_data = {"data": request.get_data(as_text=True)}
                 input_data = {}
 
-
             # process via handler
             output = await self.process(input_data, request)
 
@@ -78,9 +79,7 @@ class ApiHandler:
                 return output
             else:
                 response_json = json.dumps(output)
-                return Response(
-                    response=response_json, status=200, mimetype="application/json"
-                )
+                return Response(response=response_json, status=200, mimetype="application/json")
 
             # return exceptions with 500
         except Exception as e:
@@ -106,15 +105,11 @@ class ApiHandler:
                 return context
             else:
                 raise Exception(f"Context {ctxid} not found")
-            
-
 
 
 def is_loopback_address(address: str) -> bool:
     loopback_checker = {
-        socket.AF_INET: lambda x: (
-            struct.unpack("!I", socket.inet_aton(x))[0] >> (32 - 8)
-        ) == 127,
+        socket.AF_INET: lambda x: (struct.unpack("!I", socket.inet_aton(x))[0] >> (32 - 8)) == 127,
         socket.AF_INET6: lambda x: x == "::1",
     }
     address_type = "hostname"
@@ -148,6 +143,7 @@ def requires_api_key(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
         from backend.utils.settings import get_settings
+
         valid_api_key = get_settings()["mcp_server_token"]
 
         if api_key := request.headers.get("X-API-KEY"):
@@ -178,6 +174,7 @@ def requires_auth(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
         from backend.utils import login
+
         user_pass_hash = login.get_credentials_hash()
         if not user_pass_hash:
             return await f(*args, **kwargs)
@@ -192,6 +189,7 @@ def csrf_protect(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
         from backend.utils import runtime
+
         token = session.get("csrf_token")
         header = request.headers.get("X-CSRF-Token")
         cookie = request.cookies.get("csrf_token_" + runtime.get_runtime_id())
@@ -204,8 +202,8 @@ def csrf_protect(f):
 
 
 def register_api_route(app: Flask, lock: ThreadLockType) -> None:
-    from backend.utils.extract_tools import load_classes_from_file
     from backend.utils import plugins
+    from backend.utils.extract_tools import load_classes_from_file
 
     async def _dispatch(path: str) -> BaseResponse:
         # Return cached wrapped handler if available
@@ -219,7 +217,9 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
 
         # Check built-in backend/api/<path>.py
         builtin_file = files.get_abs_path(f"backend/api/{path}.py")
-        if files.is_in_dir(builtin_file, files.get_abs_path("backend/api")) and files.exists(builtin_file):
+        if files.is_in_dir(builtin_file, files.get_abs_path("backend/api")) and files.exists(
+            builtin_file
+        ):
             classes = load_classes_from_file(builtin_file, ApiHandler)
             if classes:
                 handler_cls = classes[0]
@@ -268,4 +268,3 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
         _dispatch,
         methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     )
-

@@ -173,7 +173,7 @@ A0_PORT="50080"
 docker pull ctxos/ctxai:latest
 
 # Run container
-docker run -d   --name ${A0_NAME}   --restart unless-stopped   -p ${A0_PORT}:80   -v ${A0_PATH}/.env:/a0/.env   -v ${A0_PATH}/usr:/a0/usr   ctxos/ctxai:latest
+docker run -d   --name ${A0_NAME}   --restart unless-stopped   -p ${A0_PORT}:80   -v ${A0_PATH}/.env:/ctx/.env   -v ${A0_PATH}/usr:/ctx/usr   ctxos/ctxai:latest
 ```
 
 ### Step 5: Verify Container
@@ -383,18 +383,18 @@ mkdir -p /etc/ssl/a0
 chmod 700 /etc/ssl/a0
 
 # Copy your certificates
-cp certificate.crt /etc/ssl/a0/
-cp private.key /etc/ssl/a0/
-cp chain.crt /etc/ssl/a0/  # if applicable
+cp certificate.crt /etc/ssl/ctx/
+cp private.key /etc/ssl/ctx/
+cp chain.crt /etc/ssl/ctx/  # if applicable
 
-chmod 600 /etc/ssl/a0/*
+chmod 600 /etc/ssl/ctx/*
 ```
 
 ---
 
 ## Authentication Setup
 
-### Understanding A0 Authentication Variables
+### Understanding CTX Authentication Variables
 
 | Variable | Purpose | Example |
 |----------|---------|--------|
@@ -519,7 +519,7 @@ wscat -c wss://a0.example.com/ws
 **Fix:**
 ```bash
 # Verify .env inside container
-docker exec a0-instance cat /a0/.env
+docker exec a0-instance cat /ctx/.env
 
 # Ensure format is:
 # AUTH_LOGIN=username  (NOT AUTH_LOGIN=true)
@@ -620,7 +620,7 @@ journalctl -u docker --since "1 hour ago"
 docker restart a0-instance
 
 # Verify env is loaded
-docker exec a0-instance cat /a0/.env
+docker exec a0-instance cat /ctx/.env
 ```
 
 ---
@@ -638,7 +638,7 @@ docker stop a0-instance
 docker rm a0-instance
 
 # Recreate with same settings
-docker run -d   --name a0-instance   --restart unless-stopped   -p 50080:80   -v /opt/a0-instance/.env:/a0/.env   -v /opt/a0-instance/usr:/a0/usr   -v /opt/ctxai:latest
+docker run -d   --name a0-instance   --restart unless-stopped   -p 50080:80   -v /opt/a0-instance/.env:/ctx/.env   -v /opt/a0-instance/usr:/ctx/usr   -v /opt/ctxai:latest
 ```
 
 ### Backup Strategy
@@ -717,9 +717,9 @@ curl -I https://your-domain.com/login
 
 | Port | Purpose |
 |------|---------|
-| 50080 | First A0 instance |
-| 50081 | Second A0 instance |
-| 50082 | Third A0 instance |
+| 50080 | First CTX instance |
+| 50081 | Second CTX instance |
+| 50082 | Third CTX instance |
 | 80 | HTTP (redirect to HTTPS) |
 | 443 | HTTPS (main access) |
 
@@ -741,7 +741,7 @@ AUTH_PASSWORD=your_secure_password
 
 ## Appendix: Multi-Instance Setup
 
-For running multiple A0 instances on the same server:
+For running multiple CTX instances on the same server:
 
 ```bash
 # Instance 1: a0-primary on port 50080
@@ -768,4 +768,4 @@ Each instance needs:
 
 *This guide comes from successful Ctx AI deployments across DirectAdmin and standard Linux environments.*
 
-Contributed by @hurtdidit in the A0 Community.
+Contributed by @hurtdidit in the CTX Community.

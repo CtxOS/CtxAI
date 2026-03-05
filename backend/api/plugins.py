@@ -4,8 +4,8 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
+from backend.utils import files, plugins
 from backend.utils.api import ApiHandler, Request, Response
-from backend.utils import plugins, files
 
 
 class Plugins(ApiHandler):

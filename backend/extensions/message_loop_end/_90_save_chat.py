@@ -1,6 +1,6 @@
-from backend.utils.extension import Extension
-from backend.core.agent import LoopData, AgentContextType
+from backend.core.agent import AgentContextType, LoopData
 from backend.utils import persist_chat
+from backend.utils.extension import Extension
 
 
 class SaveChat(Extension):

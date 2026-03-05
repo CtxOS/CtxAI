@@ -1,12 +1,14 @@
-from backend.utils.api import ApiHandler, Request, Response
-from backend.utils import dotenv, runtime
-from backend.utils.tunnel_manager import TunnelManager
 import requests
+
+from backend.utils import dotenv, runtime
+from backend.utils.api import ApiHandler, Request, Response
+from backend.utils.tunnel_manager import TunnelManager
 
 
 class TunnelProxy(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
         return await process(input)
+
 
 async def process(input: dict) -> dict | Response:
     # Get configuration from environment
@@ -35,4 +37,5 @@ async def process(input: dict) -> dict | Response:
     else:
         # forward to API handler directly
         from backend.api.tunnel import process as local_process
+
         return await local_process(input)

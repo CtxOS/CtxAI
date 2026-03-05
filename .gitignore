@@ -1,62 +1,62 @@
-# Ignore common unwanted files globally
-**/.DS_Store
-**/.env
-**/__pycache__/
+# Python
 *.py[cod]
-**/.conda/
-**/*.egg-info/
-**/.vscode/
-**/.idea/
-**/.pytest_cache/
-**/.mypy_cache/
-**/.cache/
-**/.ipynb_checkpoints/
-dist/
-build/
+*.so
 *.egg
-*.log
-*.bak
-*.tmp
-*.swp
-.ruff_cache/
+*.egg-info/
+*.whl
+.python-version
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Coverage
+# Virtual environments
+.venv/
+.conda/
+
+# IDE / Editor
+.vscode/
+.idea/
+.cursor/
+.windsurf/
+
+# Cache / Build
+__pycache__/
+.build/
+dist/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
 .coverage
 coverage.xml
 htmlcov/
 
-#Ignore IDE files
-.cursor/
-.windsurf/
+# Jupyter
+.ipynb_checkpoints/
 
-# ignore test files in root dir
-/*.test.py
+# OS
+.DS_Store
+Thumbs.db
 
-# Ignore all contents of the virtual environment directory
-.venv/
+# Environment
+.env
+*.log
+*.bak
+*.tmp
+*.swp
 
-# obsolete folders
-/memory/
-/knowledge/custom/
-/instruments/
-
-# Handle logs directory
-logs/**
-!logs/**/
-
-# Handle tmp and usr directory
-tmp/**
-!tmp/**/
-usr/**
-!usr/**/
-
-# Handle knowledge directory
-
-# Global rule to include .gitkeep files anywhere
-!**/.gitkeep
-
-# for browser-use
+# Project specific
+memory/
+knowledge/custom/
+instruments/
+logs/
+tmp/
+usr/
 agent_history.gif
+.agent/
+.claude/
 
-.agent/**
-.claude/**
+# Root test files
+*.test.py
+
+# Keep .gitkeep
+!**/.gitkeep

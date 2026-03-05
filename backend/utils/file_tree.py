@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import os
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import os
 from typing import Any, Callable, Iterable, Literal, Optional, Sequence
 
 from pathspec import PathSpec
@@ -30,7 +30,10 @@ def file_tree(
     folders_first: bool = True,
     max_folders: int = 0,
     max_files: int = 0,
-    sort: tuple[Literal["name", "created", "modified"], Literal["asc", "desc"]] = ("modified", "desc"),
+    sort: tuple[Literal["name", "created", "modified"], Literal["asc", "desc"]] = (
+        "modified",
+        "desc",
+    ),
     ignore: str | None = None,
     output_mode: Literal["string", "flat", "nested"] = OUTPUT_MODE_STRING,
 ) -> str | list[dict]:
@@ -124,7 +127,9 @@ def file_tree(
     limit_reached = False
     visibility_cache: dict[str, bool] = {}
 
-    def make_entry(entry: os.DirEntry, parent: _TreeEntry, level: int, item_type: Literal["file", "folder"]) -> _TreeEntry:
+    def make_entry(
+        entry: os.DirEntry, parent: _TreeEntry, level: int, item_type: Literal["file", "folder"]
+    ) -> _TreeEntry:
         stat = entry.stat(follow_symlinks=False)
         rel_path = os.path.relpath(entry.path, abs_root)
         rel_posix = _normalize_relative_path(rel_path)
@@ -180,9 +185,8 @@ def file_tree(
                     break
                 trimmed_children.append(child)
                 nodes_in_order.append(child)
-                is_global_summary = (
-                    child.item_type == "comment"
-                    and child.rel_path.endswith("#summary:limit")
+                is_global_summary = child.item_type == "comment" and child.rel_path.endswith(
+                    "#summary:limit"
                 )
                 if not is_global_summary:
                     rendered_count += 1
@@ -245,7 +249,7 @@ def file_tree(
         return root_item
 
     if output_mode == OUTPUT_MODE_STRING:
-        display_name = output_root #relative_path.strip() or root_name
+        display_name = output_root  # relative_path.strip() or root_name
         root_line = f"{display_name.rstrip(os.sep)}/"
         lines = [root_line]
         for node in iter_visible():
@@ -314,7 +318,9 @@ def _directory_has_visible_entries(
                 is_dir = entry.is_dir(follow_symlinks=False)
 
                 if is_dir:
-                    ignored = ignore_spec.match_file(rel_posix) or ignore_spec.match_file(f"{rel_posix}/")
+                    ignored = ignore_spec.match_file(rel_posix) or ignore_spec.match_file(
+                        f"{rel_posix}/"
+                    )
                     if ignored:
                         next_depth = max_depth_remaining - 1 if max_depth_remaining > 0 else -1
                         if next_depth == 0:
@@ -361,7 +367,9 @@ def _create_summary_comment(parent: _TreeEntry, noun: str, count: int) -> _TreeE
     )
 
 
-def _create_global_limit_comment(parent: _TreeEntry, hidden_children: Sequence[_TreeEntry]) -> _TreeEntry:
+def _create_global_limit_comment(
+    parent: _TreeEntry, hidden_children: Sequence[_TreeEntry]
+) -> _TreeEntry:
     folders = sum(1 for child in hidden_children if child.item_type == "folder")
     files = sum(1 for child in hidden_children if child.item_type == "file")
     parts: list[str] = []
@@ -527,7 +535,9 @@ def _list_directory_children(
 
                 if ignore_spec:
                     if is_directory:
-                        ignored = ignore_spec.match_file(rel_posix) or ignore_spec.match_file(f"{rel_posix}/")
+                        ignored = ignore_spec.match_file(rel_posix) or ignore_spec.match_file(
+                            f"{rel_posix}/"
+                        )
                         if ignored:
                             if _directory_has_visible_entries(
                                 entry.path,

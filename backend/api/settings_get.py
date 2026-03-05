@@ -1,6 +1,6 @@
+from backend.utils import settings
 from backend.utils.api import ApiHandler, Request, Response
 
-from backend.utils import settings
 
 class GetSettings(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:

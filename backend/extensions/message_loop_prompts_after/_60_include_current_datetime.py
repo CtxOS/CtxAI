@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
-from backend.utils.extension import Extension
+
 from backend.core.agent import LoopData
+from backend.utils.extension import Extension
 from backend.utils.localization import Localization
 
 

@@ -1,7 +1,7 @@
+from backend.api import get_work_dir_files
+from backend.utils import runtime
 from backend.utils.api import ApiHandler, Input, Output, Request
 from backend.utils.file_browser import FileBrowser
-from backend.utils import runtime
-from backend.api import get_work_dir_files
 
 
 class RenameWorkDirFile(ApiHandler):
@@ -18,18 +18,14 @@ class RenameWorkDirFile(ApiHandler):
                 parent_path = input.get("parentPath", current_path)
                 if not parent_path:
                     return {"error": "Parent path is required"}
-                res = await runtime.call_development_function(
-                    create_folder, parent_path, new_name
-                )
+                res = await runtime.call_development_function(create_folder, parent_path, new_name)
             else:
                 file_path = input.get("path", "")
                 if not file_path:
                     return {"error": "Path is required"}
                 if not file_path.startswith("/"):
                     file_path = f"/{file_path}"
-                res = await runtime.call_development_function(
-                    rename_item, file_path, new_name
-                )
+                res = await runtime.call_development_function(rename_item, file_path, new_name)
 
             if res:
                 result = await runtime.call_development_function(

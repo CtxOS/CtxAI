@@ -1,9 +1,10 @@
-from datetime import datetime, timezone as dt_timezone, timedelta
+from datetime import datetime, timedelta
+from datetime import timezone as dt_timezone
+
 import pytz  # type: ignore
 
-from backend.utils.print_style import PrintStyle
 from backend.utils.dotenv import get_dotenv_value, save_dotenv_value
-
+from backend.utils.print_style import PrintStyle
 
 
 class Localization:
@@ -123,7 +124,7 @@ class Localization:
                     )
             except ValueError:
                 # If timezone parsing fails, try without timezone
-                base = localtime_str.split('Z')[0].split('+')[0]
+                base = localtime_str.split("Z")[0].split("+")[0]
                 local_datetime_obj = datetime.fromisoformat(base)
                 local_datetime_obj = local_datetime_obj.replace(
                     tzinfo=dt_timezone(timedelta(minutes=self._offset_minutes))
@@ -135,7 +136,9 @@ class Localization:
             PrintStyle.error(f"Error converting localtime string to UTC: {e}")
             return None
 
-    def utc_dt_to_localtime_str(self, utc_dt: datetime | None, sep: str = "T", timespec: str = "auto") -> str | None:
+    def utc_dt_to_localtime_str(
+        self, utc_dt: datetime | None, sep: str = "T", timespec: str = "auto"
+    ) -> str | None:
         """
         Convert a UTC datetime object to a local time ISO string using the fixed UTC offset.
         Returns None if input is None.

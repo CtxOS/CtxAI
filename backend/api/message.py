@@ -1,10 +1,11 @@
-from backend.core.agent import AgentContext, UserMessage
-from backend.utils.api import ApiHandler, Request, Response
-
-from backend.utils import files, extension, message_queue as mq
 import os
-from backend.utils.security import safe_filename
+
+from backend.core.agent import AgentContext, UserMessage
+from backend.utils import extension, files
+from backend.utils import message_queue as mq
+from backend.utils.api import ApiHandler, Request, Response
 from backend.utils.defer import DeferredTask
+from backend.utils.security import safe_filename
 
 
 class Message(ApiHandler):
@@ -29,9 +30,7 @@ class Message(ApiHandler):
             attachment_paths = []
 
             upload_folder_int = "/ctx/usr/uploads"
-            upload_folder_ext = files.get_abs_path(
-                "usr/uploads"
-            )  # for development environment
+            upload_folder_ext = files.get_abs_path("usr/uploads")  # for development environment
 
             if attachments:
                 os.makedirs(upload_folder_ext, exist_ok=True)
@@ -60,14 +59,12 @@ class Message(ApiHandler):
 
         # call extension point, alow it to modify data
         data = {"message": message, "attachment_paths": attachment_paths}
-        await extension.call_extensions(
-            "user_message_ui", agent=context.get_agent(), data=data
-        )
+        await extension.call_extensions("user_message_ui", agent=context.get_agent(), data=data)
         message = data.get("message", "")
         attachment_paths = data.get("attachment_paths", [])
 
         # Store attachments in agent data
-        # context.agent0.set_data("attachments", attachment_paths)
+        # context.ctx.set_data("attachments", attachment_paths)
 
         # Log to console and UI using helper function
         mq.log_user_message(context, message, attachment_paths, message_id)

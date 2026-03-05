@@ -1,5 +1,6 @@
-from backend.utils.api import ApiHandler, Request, Response
 from backend.utils import errors, git
+from backend.utils.api import ApiHandler, Request, Response
+
 
 class HealthCheck(ApiHandler):
 

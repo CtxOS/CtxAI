@@ -1,10 +1,11 @@
+import json
+import os
+from typing import TYPE_CHECKING, Literal, TypedDict
+
+from pydantic import BaseModel, model_validator
+
 from backend.utils import files
 from backend.utils import yaml as yaml_helper
-from typing import TypedDict, TYPE_CHECKING
-from pydantic import BaseModel, model_validator
-import json
-from typing import Literal
-import os
 
 GLOBAL_DIR = "."
 USER_DIR = "usr"
@@ -51,11 +52,7 @@ def get_agents_dict(
         merged: dict[str, SubAgentListItem] = dict(base)
         for name, override in overrides.items():
             base_agent = merged.get(name)
-            merged[name] = (
-                _merge_agent_list_items(base_agent, override)
-                if base_agent
-                else override
-            )
+            merged[name] = _merge_agent_list_items(base_agent, override) if base_agent else override
         return merged
 
     from backend.utils import plugins
@@ -120,9 +117,7 @@ def load_agent_data(name: str, project_name: str | None = None) -> SubAgent:
     from backend.utils import plugins
 
     # load default, plugin, and user agents and merge
-    default_agent = _load_agent_data_from_dir(
-        DEFAULT_AGENTS_DIR, name, origin="default"
-    )
+    default_agent = _load_agent_data_from_dir(DEFAULT_AGENTS_DIR, name, origin="default")
     merged = default_agent
 
     # merge with plugin agents
@@ -139,9 +134,7 @@ def load_agent_data(name: str, project_name: str | None = None) -> SubAgent:
         from backend.utils import projects
 
         project_agents_dir = projects.get_project_meta(project_name, "agents")
-        project_agent = _load_agent_data_from_dir(
-            project_agents_dir, name, origin="project"
-        )
+        project_agent = _load_agent_data_from_dir(project_agents_dir, name, origin="project")
         merged = _merge_agent(merged, project_agent)
 
     if merged is None:
@@ -238,9 +231,7 @@ def _merge_agents(base: SubAgent | None, override: SubAgent | None) -> SubAgent 
     )
 
 
-def _merge_agent_list_items(
-    base: SubAgentListItem, override: SubAgentListItem
-) -> SubAgentListItem:
+def _merge_agent_list_items(base: SubAgentListItem, override: SubAgentListItem) -> SubAgentListItem:
     return SubAgentListItem(
         name=override.name or base.name,
         title=override.title or base.title,
@@ -320,9 +311,7 @@ def get_available_agents_dict(
     # filter by project settings
     from backend.utils import projects
 
-    project_settings = (
-        projects.load_project_subagents(project_name) if project_name else {}
-    )
+    project_settings = projects.load_project_subagents(project_name) if project_name else {}
 
     filtered_agents: dict[str, SubAgentListItem] = {}
     for name, agent in all_agents.items():
@@ -336,7 +325,7 @@ def get_available_agents_dict(
 def get_paths(
     agent: "Agent|None",
     *subpaths,
-    must_exist_completely: bool = True, 
+    must_exist_completely: bool = True,
     include_project: bool = True,
     include_user: bool = True,
     include_default: bool = True,
@@ -357,9 +346,7 @@ def get_paths(
 
         if project_name and profile_name:
             # project/agents/<profile>/...
-            project_agent_dir = projects.get_project_meta(
-                project_name, "agents", profile_name
-            )
+            project_agent_dir = projects.get_project_meta(project_name, "agents", profile_name)
             if files.exists(files.get_abs_path(project_agent_dir, *check_subpaths)):
                 paths.append(files.get_abs_path(project_agent_dir, *subpaths))
 
@@ -373,20 +360,27 @@ def get_paths(
 
         # usr/agents/<profile>/...
         path = files.get_abs_path(USER_AGENTS_DIR, profile_name, *subpaths)
-        if (not must_exist_completely) or files.exists(files.get_abs_path(USER_AGENTS_DIR, profile_name, *check_subpaths)):
+        if (not must_exist_completely) or files.exists(
+            files.get_abs_path(USER_AGENTS_DIR, profile_name, *check_subpaths)
+        ):
             paths.append(path)
 
         # plugin agents/<profile>/...
         if include_plugins:
             from backend.utils import plugins
+
             for plugin_dir in plugins.get_enabled_plugin_paths(agent, "agents", profile_name):
                 path = files.get_abs_path(plugin_dir, *subpaths)
-                if (not must_exist_completely) or files.exists(files.get_abs_path(plugin_dir, *check_subpaths)):
+                if (not must_exist_completely) or files.exists(
+                    files.get_abs_path(plugin_dir, *check_subpaths)
+                ):
                     paths.append(path)
 
         # agents/<profile>/...
         path = files.get_abs_path(DEFAULT_AGENTS_DIR, profile_name, *subpaths)
-        if (not must_exist_completely) or files.exists(files.get_abs_path(DEFAULT_AGENTS_DIR, profile_name, *check_subpaths)):
+        if (not must_exist_completely) or files.exists(
+            files.get_abs_path(DEFAULT_AGENTS_DIR, profile_name, *check_subpaths)
+        ):
             paths.append(path)
 
     if include_user:

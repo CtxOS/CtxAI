@@ -1,6 +1,6 @@
+from backend.api.message import Message
 from backend.core.agent import AgentContext
 from backend.utils.defer import DeferredTask
-from backend.api.message import Message
 
 
 class MessageAsync(Message):

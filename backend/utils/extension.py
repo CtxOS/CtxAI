@@ -1,11 +1,10 @@
-from abc import abstractmethod
-from typing import Any
-from backend.utils import extract_tools, files
-from backend.utils import cache
-from typing import TYPE_CHECKING
-from functools import wraps
 import asyncio
 import inspect
+from abc import abstractmethod
+from functools import wraps
+from typing import TYPE_CHECKING, Any
+
+from backend.utils import cache, extract_tools, files
 
 if TYPE_CHECKING:
     from backend.core.agent import Agent
@@ -15,7 +14,7 @@ DEFAULT_EXTENSIONS_FOLDER = "backend/extensions"
 USER_EXTENSIONS_FOLDER = "usr/extensions"
 
 _CACHE_AREA = "extension_folder_classes(extensions)(plugins)"
-cache.toggle_area(_CACHE_AREA, False) # cache off for now
+cache.toggle_area(_CACHE_AREA, False)  # cache off for now
 
 
 class _Unset:
@@ -58,6 +57,7 @@ def extensible(func):
     Finally, if ``data["exception"]`` contains an exception it is raised;
     otherwise ``data["result"]`` is returned.
     """
+
     @wraps(func)
     async def _inner_async(*args, **kwargs):
         from backend.core.agent import Agent
@@ -146,20 +146,14 @@ class Extension:
         pass
 
 
-async def call_extensions(
-    extension_point: str, agent: "Agent|None" = None, **kwargs
-) -> Any:
-    from backend.utils import projects, subagents, plugins
+async def call_extensions(extension_point: str, agent: "Agent|None" = None, **kwargs) -> Any:
+    from backend.utils import plugins, projects, subagents
 
     # search for extension folders in all agent's paths
-    paths = subagents.get_paths(
-        agent, "extensions", extension_point, default_root="python"
-    )
+    paths = subagents.get_paths(agent, "extensions", extension_point, default_root="python")
 
     # Add plugin backend extension paths (plugins/*/extensions/python/{extension_point})
-    plugin_paths = plugins.get_enabled_plugin_paths(
-        agent, "extensions", "python", extension_point
-    )
+    plugin_paths = plugins.get_enabled_plugin_paths(agent, "extensions", "python", extension_point)
     paths.extend(p for p in plugin_paths if p not in paths)
 
     all_exts = [cls for path in paths for cls in _get_extensions(path)]
@@ -170,9 +164,7 @@ async def call_extensions(
         file = _get_file_from_module(cls.__module__)
         if file not in unique:
             unique[file] = cls
-    classes = sorted(
-        unique.values(), key=lambda cls: _get_file_from_module(cls.__module__)
-    )
+    classes = sorted(unique.values(), key=lambda cls: _get_file_from_module(cls.__module__))
 
     # execute unique extensions
     for cls in classes:

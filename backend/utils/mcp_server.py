@@ -1,31 +1,38 @@
-import os
 import asyncio
+import contextvars
+import os
+import threading
 from typing import Annotated, Literal, Union
 from urllib.parse import urlparse
-from openai import BaseModel
-from pydantic import Field
+
 import fastmcp
 from fastmcp import FastMCP
-import contextvars
-
-from backend.core.agent import AgentContext, AgentContextType, UserMessage
-from backend.utils.persist_chat import remove_chat
-from initialize import initialize_agent
-from backend.utils.print_style import PrintStyle
-from backend.utils import settings, projects
+from fastmcp.server.http import (  # type: ignore
+    build_resource_metadata_url,
+    create_base_app,
+    create_sse_app,
+)
+from openai import BaseModel
+from pydantic import Field
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.types import ASGIApp, Receive, Scope, Send
-from fastmcp.server.http import create_sse_app, create_base_app, build_resource_metadata_url # type: ignore
-from starlette.routing import Mount  # type: ignore
 from starlette.requests import Request
-import threading
+from starlette.routing import Mount  # type: ignore
+from starlette.types import ASGIApp, Receive, Scope, Send
+
+from backend.core.agent import AgentContext, AgentContextType, UserMessage
+from backend.utils import projects, settings
+from backend.utils.persist_chat import remove_chat
+from backend.utils.print_style import PrintStyle
+from initialize import initialize_agent
 
 _PRINTER = PrintStyle(italic=True, font_color="green", padding=False)
 
 # Context variable to store project name from URL (per-request)
-_mcp_project_name: contextvars.ContextVar[str | None] = contextvars.ContextVar('mcp_project_name', default=None)
+_mcp_project_name: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+    "mcp_project_name", default=None
+)
 
 mcp_server: FastMCP = FastMCP(
     name="Ctx AI integrated MCP Server",
@@ -39,22 +46,14 @@ mcp_server: FastMCP = FastMCP(
 
 
 class ToolResponse(BaseModel):
-    status: Literal["success"] = Field(
-        description="The status of the response", default="success"
-    )
-    response: str = Field(
-        description="The response from the remote Ctx AI Instance"
-    )
+    status: Literal["success"] = Field(description="The status of the response", default="success")
+    response: str = Field(description="The response from the remote Ctx AI Instance")
     chat_id: str = Field(description="The id of the chat this message belongs to.")
 
 
 class ToolError(BaseModel):
-    status: Literal["error"] = Field(
-        description="The status of the response", default="error"
-    )
-    error: str = Field(
-        description="The error message from the remote Ctx AI Instance"
-    )
+    status: Literal["error"] = Field(description="The status of the response", default="error")
+    error: str = Field(description="The error message from the remote Ctx AI Instance")
     chat_id: str = Field(description="The id of the chat this message belongs to.")
 
 
@@ -129,9 +128,7 @@ async def send_message(
     ) = None,
 ) -> Annotated[
     Union[ToolResponse, ToolError],
-    Field(
-        description="The response from the remote Ctx AI Instance", title="response"
-    ),
+    Field(description="The response from the remote Ctx AI Instance", title="response"),
 ]:
     # Get project name from context variable (set in proxy __call__)
     project_name = _mcp_project_name.get()
@@ -153,7 +150,7 @@ async def send_message(
                 if existing_project and existing_project != project_name:
                     return ToolError(
                         error=f"Chat belongs to project '{existing_project}' but URL specifies '{project_name}'",
-                        chat_id=chat_id
+                        chat_id=chat_id,
                     )
     else:
         config = initialize_agent()
@@ -167,9 +164,7 @@ async def send_message(
                 return ToolError(error=f"Failed to activate project: {str(e)}", chat_id="")
 
     if not message:
-        return ToolError(
-            error="Message is required", chat_id=context.id if persistent_chat else ""
-        )
+        return ToolError(error="Message is required", chat_id=context.id if persistent_chat else "")
 
     try:
         response = await _run_chat(context, message, attachments)
@@ -177,9 +172,7 @@ async def send_message(
             context.reset()
             AgentContext.remove(context.id)
             remove_chat(context.id)
-        return ToolResponse(
-            response=response, chat_id=context.id if persistent_chat else ""
-        )
+        return ToolResponse(response=response, chat_id=context.id if persistent_chat else "")
     except Exception as e:
         return ToolError(error=str(e), chat_id=context.id if persistent_chat else "")
 
@@ -223,12 +216,10 @@ async def finish_chat(
             description="ID of the chat to be finished. This value is returned in response to sending previous message.",
             title="chat_id",
         ),
-    ]
+    ],
 ) -> Annotated[
     Union[ToolResponse, ToolError],
-    Field(
-        description="The response from the remote Ctx AI Instance", title="response"
-    ),
+    Field(description="The response from the remote Ctx AI Instance", title="response"),
 ]:
     if not chat_id:
         return ToolError(error="Chat ID is required", chat_id="")
@@ -243,9 +234,7 @@ async def finish_chat(
         return ToolResponse(response="Chat finished", chat_id=chat_id)
 
 
-async def _run_chat(
-    context: AgentContext, message: str, attachments: list[str] | None = None
-):
+async def _run_chat(context: AgentContext, message: str, attachments: list[str] | None = None):
     try:
         _PRINTER.print("MCP Chat message received")
 
@@ -273,9 +262,7 @@ async def _run_chat(
                 _PRINTER.print(f"- {filename}")
 
         task = context.communicate(
-            UserMessage(
-                message=message, system_message=[], attachments=attachment_filenames
-            )
+            UserMessage(message=message, system_message=[], attachments=attachment_filenames)
         )
         result = await task.result()
 
@@ -354,9 +341,9 @@ class DynamicMcpProxy:
     ) -> ASGIApp:
         """Create a Streamable HTTP app with manual session manager lifecycle."""
 
-        from mcp.server.streamable_http_manager import StreamableHTTPSessionManager  # type: ignore
-        from mcp.server.auth.middleware.bearer_auth import RequireAuthMiddleware  # type: ignore
         import anyio
+        from mcp.server.auth.middleware.bearer_auth import RequireAuthMiddleware  # type: ignore
+        from mcp.server.streamable_http_manager import StreamableHTTPSessionManager  # type: ignore
 
         server_routes = []
         server_middleware = []
@@ -458,11 +445,12 @@ class DynamicMcpProxy:
         if "/p-" in path:
             # Remove /p-{project}/ segment: /t-TOKEN/p-PROJECT/sse -> /t-TOKEN/sse
             import re
-            cleaned_path = re.sub(r'/p-[^/]+/', '/', path)
+
+            cleaned_path = re.sub(r"/p-[^/]+/", "/", path)
 
         # Update scope with cleaned path for the underlying app
         modified_scope = dict(scope)
-        modified_scope['path'] = cleaned_path
+        modified_scope["path"] = cleaned_path
 
         if has_token and ("/sse" in path or "/messages" in path):
             # Route to SSE app with cleaned path
@@ -471,9 +459,7 @@ class DynamicMcpProxy:
             # Route to HTTP app with cleaned path
             await http_app(modified_scope, receive, send)
         else:
-            raise StarletteHTTPException(
-                status_code=403, detail="MCP forbidden"
-            )
+            raise StarletteHTTPException(status_code=403, detail="MCP forbidden")
 
 
 async def mcp_middleware(request: Request, call_next):
@@ -482,8 +468,6 @@ async def mcp_middleware(request: Request, call_next):
     cfg = settings.get_settings()
     if not cfg["mcp_server_enabled"]:
         PrintStyle.error("[MCP] Access denied: MCP server is disabled in settings.")
-        raise StarletteHTTPException(
-            status_code=403, detail="MCP server is disabled in settings."
-        )
+        raise StarletteHTTPException(status_code=403, detail="MCP server is disabled in settings.")
 
     return await call_next(request)

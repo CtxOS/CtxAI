@@ -1,6 +1,5 @@
-from backend.utils.api import ApiHandler, Request, Response
-
 from backend.utils import file_tree, files
+from backend.utils.api import ApiHandler, Request, Response
 
 
 class SettingsWorkdirFileStructure(ApiHandler):

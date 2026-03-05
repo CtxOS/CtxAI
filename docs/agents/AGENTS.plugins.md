@@ -163,7 +163,7 @@ your-plugin-repo/          ← GitHub repository root
 └── webui/
 ```
 
-Users install it locally by cloning (or downloading) the repo contents into `/a0/usr/plugins/<plugin_name>/`.
+Users install it locally by cloning (or downloading) the repo contents into `/ctx/usr/plugins/<plugin_name>/`.
 
 ### Submitting to the Plugin Index
 

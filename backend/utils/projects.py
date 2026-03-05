@@ -1,9 +1,8 @@
 import os
-from typing import Literal, TypedDict, TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Literal, TypedDict, cast
 
-from backend.utils import files, dirty_json, persist_chat, file_tree
+from backend.utils import dirty_json, file_tree, files, persist_chat
 from backend.utils.print_style import PrintStyle
-
 
 if TYPE_CHECKING:
     from backend.core.agent import AgentContext
@@ -89,7 +88,7 @@ def create_project(name: str, data: BasicProjectData):
 
 
 def clone_git_project(name: str, git_url: str, git_token: str, data: BasicProjectData):
-    """Clone a git repository as a new A0 project. Token is used only for cloning via http header."""
+    """Clone a git repository as a new CTX project. Token is used only for cloning via http header."""
     from backend.utils import git
 
     abs_path = files.create_dir_safe(
@@ -130,9 +129,7 @@ def clone_git_project(name: str, git_url: str, git_token: str, data: BasicProjec
 
 
 def load_project_header(name: str):
-    abs_path = files.get_abs_path(
-        PROJECTS_PARENT_DIR, name, PROJECT_META_DIR, PROJECT_HEADER_FILE
-    )
+    abs_path = files.get_abs_path(PROJECTS_PARENT_DIR, name, PROJECT_META_DIR, PROJECT_HEADER_FILE)
     header: dict = dirty_json.parse(files.read_file(abs_path))  # type: ignore
     header["name"] = name
     return header
@@ -266,9 +263,7 @@ def load_edit_project_data(name: str) -> EditProjectData:
 def save_project_header(name: str, data: BasicProjectData):
     # save project header file
     header = dirty_json.stringify(data)
-    abs_path = files.get_abs_path(
-        PROJECTS_PARENT_DIR, name, PROJECT_META_DIR, PROJECT_HEADER_FILE
-    )
+    abs_path = files.get_abs_path(PROJECTS_PARENT_DIR, name, PROJECT_META_DIR, PROJECT_HEADER_FILE)
 
     files.write_file(abs_path, header)
 
@@ -376,9 +371,7 @@ def build_system_prompt_vars(name: str):
     additional_instructions = get_additional_instructions_files(name)
     complete_instructions = (
         main_instructions
-        + "\n\n".join(
-            additional_instructions[k] for k in sorted(additional_instructions)
-        )
+        + "\n\n".join(additional_instructions[k] for k in sorted(additional_instructions))
     ).strip()
     return {
         "project_name": project_data.get("title", ""),

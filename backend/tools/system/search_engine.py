@@ -1,17 +1,17 @@
-import os
 import asyncio
-from backend.utils import dotenv, perplexity_search, duckduckgo_search
-from backend.utils.tool import Tool, Response
-from backend.utils.print_style import PrintStyle
+import os
+
+from backend.utils import dotenv, duckduckgo_search, perplexity_search
 from backend.utils.errors import handle_error
+from backend.utils.print_style import PrintStyle
 from backend.utils.searxng import search as searxng
+from backend.utils.tool import Response, Tool
 
 SEARCH_ENGINE_RESULTS = 10
 
 
 class SearchEngine(Tool):
     async def execute(self, query="", **kwargs):
-
 
         searxng_result = await self.searxng_search(query)
 
@@ -20,7 +20,6 @@ class SearchEngine(Tool):
         )  # wait for intervention and handle it, if paused
 
         return Response(message=searxng_result, break_loop=False)
-
 
     async def searxng_search(self, question):
         results = await searxng(question)

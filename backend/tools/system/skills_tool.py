@@ -3,10 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List
 
-from backend.utils.tool import Tool, Response
-from backend.utils import projects, files, file_tree
-from backend.utils import skills as skills_helper, runtime
-
+from backend.utils import file_tree, files, projects, runtime
+from backend.utils import skills as skills_helper
+from backend.utils.tool import Response, Tool
 
 DATA_NAME_LOADED_SKILLS = "loaded_skills"
 
@@ -26,9 +25,7 @@ class SkillsTool(Tool):
 
     async def execute(self, **kwargs) -> Response:
         method = (
-            (kwargs.get("method") or self.args.get("method") or self.method or "")
-            .strip()
-            .lower()
+            (kwargs.get("method") or self.args.get("method") or self.method or "").strip().lower()
         )
 
         try:
@@ -51,9 +48,7 @@ class SkillsTool(Tool):
                 message="Error: missing/invalid 'method'. Supported: list, load.",
                 break_loop=False,
             )
-        except (
-            Exception
-        ) as e:  # keep tool robust; return error instead of crashing loop
+        except Exception as e:  # keep tool robust; return error instead of crashing loop
             return Response(message=f"Error in skills_tool: {e}", break_loop=False)
 
     def _list(self) -> str:
@@ -129,10 +124,10 @@ class SkillsTool(Tool):
         if skill.name in loaded:
             loaded.remove(skill.name)
         loaded.append(skill.name)
-        self.agent.data[DATA_NAME_LOADED_SKILLS] = loaded[-max_loaded_skills():]
+        self.agent.data[DATA_NAME_LOADED_SKILLS] = loaded[-max_loaded_skills() :]
 
         return f"Loaded skill '{skill.name}' into EXTRAS."
 
 
 def max_loaded_skills() -> int:
-    return 5 # TODO move to settings
+    return 5  # TODO move to settings

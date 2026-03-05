@@ -5,10 +5,10 @@ This module contains business logic services that coordinate between
 the API layer and the data repositories.
 """
 
-from .agent_service import AgentService, AgentConfig, Agent, AgentContext
+from .agent_service import Agent, AgentConfig, AgentContext, AgentService
 from .chat_service import ChatService
-from .project_service import ProjectService
 from .memory_service import MemoryService
+from .project_service import ProjectService
 from .skill_service import SkillService
 
 __all__ = [
@@ -16,7 +16,7 @@ __all__ = [
     "AgentConfig",
     "Agent",
     "AgentContext",
-    "ChatService", 
+    "ChatService",
     "ProjectService",
     "MemoryService",
     "SkillService",

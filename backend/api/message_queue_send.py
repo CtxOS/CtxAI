@@ -1,7 +1,8 @@
-from backend.utils.api import ApiHandler, Request, Response
-from backend.utils import message_queue as mq
 from backend.core.agent import AgentContext
+from backend.utils import message_queue as mq
+from backend.utils.api import ApiHandler, Request, Response
 from backend.utils.state_monitor_integration import mark_dirty_for_context
+
 
 class MessageQueueSend(ApiHandler):
     """Send queued message(s) immediately."""

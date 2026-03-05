@@ -1,18 +1,16 @@
 from typing import Any
+
+from backend.core.agent import Agent, LoopData
+from backend.utils import projects, skills
 from backend.utils.extension import Extension
 from backend.utils.mcp_handler import MCPConfig
-from backend.core.agent import Agent, LoopData
 from backend.utils.settings import get_settings
-from backend.utils import projects, skills
 
 
 class SystemPrompt(Extension):
 
     async def execute(
-        self,
-        system_prompt: list[str] = [],
-        loop_data: LoopData = LoopData(),
-        **kwargs: Any
+        self, system_prompt: list[str] = [], loop_data: LoopData = LoopData(), **kwargs: Any
     ):
         # append main system prompt and tools
         main = get_main_prompt(self.agent)
@@ -32,7 +30,7 @@ class SystemPrompt(Extension):
             system_prompt.append(secrets_prompt)
         if project_prompt:
             system_prompt.append(project_prompt)
-       
+
 
 def get_main_prompt(agent: Agent):
     return agent.read_prompt("agent.system.main.md")
@@ -77,12 +75,11 @@ def get_project_prompt(agent: Agent):
     project_name = agent.context.get_data(projects.CONTEXT_DATA_KEY_PROJECT)
     if project_name:
         project_vars = projects.build_system_prompt_vars(project_name)
-        result += "\n\n" + agent.read_prompt(
-            "agent.system.projects.active.md", **project_vars
-        )
+        result += "\n\n" + agent.read_prompt("agent.system.projects.active.md", **project_vars)
     else:
         result += "\n\n" + agent.read_prompt("agent.system.projects.inactive.md")
     return result
+
 
 def get_skills_prompt(agent: Agent):
     available = skills.list_skills(agent=agent)

@@ -1,14 +1,15 @@
 import base64
 import os
+import threading
 from datetime import datetime, timedelta
-from backend.core.agent import AgentContext, UserMessage, AgentContextType
-from backend.utils.api import ApiHandler, Request, Response
+
+from backend.core.agent import AgentContext, AgentContextType, UserMessage
 from backend.utils import files, projects
+from backend.utils.api import ApiHandler, Request, Response
 from backend.utils.print_style import PrintStyle
 from backend.utils.projects import activate_project
 from backend.utils.security import safe_filename
 from initialize import initialize_agent
-import threading
 
 
 class ApiMessage(ApiHandler):
@@ -95,7 +96,7 @@ class ApiMessage(ApiHandler):
                 )
 
             # Validation: if agent profile is provided, it must match the exising
-            if agent_profile and context.agent0.config.profile != agent_profile:
+            if agent_profile and context.ctx.config.profile != agent_profile:
                 return Response(
                     '{"error": "Cannot override agent profile on existing context"}',
                     status=400,
@@ -144,17 +145,13 @@ class ApiMessage(ApiHandler):
 
         # Update chat lifetime
         with self._cleanup_lock:
-            self._chat_lifetimes[context_id] = datetime.now() + timedelta(
-                hours=lifetime_hours
-            )
+            self._chat_lifetimes[context_id] = datetime.now() + timedelta(hours=lifetime_hours)
 
         # Process message
         try:
             # Log the message
             attachment_filenames = (
-                [os.path.basename(path) for path in attachment_paths]
-                if attachment_paths
-                else []
+                [os.path.basename(path) for path in attachment_paths] if attachment_paths else []
             )
 
             PrintStyle(
@@ -185,9 +182,7 @@ class ApiMessage(ApiHandler):
 
         except Exception as e:
             PrintStyle.error(f"External API error: {e}")
-            return Response(
-                f'{{"error": "{str(e)}"}}', status=500, mimetype="application/json"
-            )
+            return Response(f'{{"error": "{str(e)}"}}', status=500, mimetype="application/json")
 
     @classmethod
     def _cleanup_expired_chats(cls):
@@ -195,9 +190,7 @@ class ApiMessage(ApiHandler):
         with cls._cleanup_lock:
             now = datetime.now()
             expired_contexts = [
-                context_id
-                for context_id, expiry in cls._chat_lifetimes.items()
-                if now > expiry
+                context_id for context_id, expiry in cls._chat_lifetimes.items() if now > expiry
             ]
 
             for context_id in expired_contexts:

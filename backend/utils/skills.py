@@ -4,9 +4,9 @@ import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Literal, Optional, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Literal, Optional, Tuple
 
-from backend.utils import files, subagents, projects, file_tree, runtime
+from backend.utils import file_tree, files, projects, runtime, subagents
 
 if TYPE_CHECKING:
     from backend.core.agent import Agent
@@ -53,17 +53,11 @@ def get_skill_roots(
         project_agents = files.find_existing_paths_by_pattern(
             "usr/projects/*/.a0proj/agents/*/skills"
         )  # agents in projects
-        projects = files.find_existing_paths_by_pattern(
-            "usr/projects/*/.a0proj/skills"
-        )  # projects
-        usr_agents = files.find_existing_paths_by_pattern(
-            "usr/agents/*/skills"
-        )  # agents
+        projects = files.find_existing_paths_by_pattern("usr/projects/*/.a0proj/skills")  # projects
+        usr_agents = files.find_existing_paths_by_pattern("usr/agents/*/skills")  # agents
         agents = files.find_existing_paths_by_pattern("agents/*/skills")  # agents
         plugins = files.find_existing_paths_by_pattern("plugins/*/skills")  # plugins
-        usr_plugins = files.find_existing_paths_by_pattern(
-            "usr/plugins/*/skills"
-        )  # plugins
+        usr_plugins = files.find_existing_paths_by_pattern("usr/plugins/*/skills")  # plugins
         plugins_agents = files.find_existing_paths_by_pattern(
             "plugins/*/agents/*/skills"
         )  # agents in plugins
@@ -378,10 +372,7 @@ def find_skill(
             s = skill_from_markdown(skill_md, include_content=include_content)
             if not s:
                 continue
-            if (
-                _normalize_name(s.name) == target
-                or _normalize_name(s.path.name) == target
-            ):
+            if _normalize_name(s.name) == target or _normalize_name(s.path.name) == target:
                 return s
     return None
 

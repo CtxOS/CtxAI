@@ -1,7 +1,5 @@
-from backend.utils.api import ApiHandler, Input, Output, Request, Response
-
-
 from backend.utils import persist_chat
+from backend.utils.api import ApiHandler, Input, Output, Request, Response
 from backend.utils.task_scheduler import TaskScheduler
 
 
@@ -20,6 +18,7 @@ class Reset(ApiHandler):
 
         # Reset updates context metadata (log guid/version) and must refresh other tabs' lists.
         from backend.utils.state_monitor_integration import mark_dirty_all
+
         mark_dirty_all(reason="api.chat_reset.Reset")
 
         return {

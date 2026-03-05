@@ -1,8 +1,9 @@
+import json
+
 from backend.core.agent import AgentContext
 from backend.utils.api import ApiHandler, Request, Response
 from backend.utils.persist_chat import remove_chat
 from backend.utils.print_style import PrintStyle
-import json
 
 
 class ApiTerminateChat(ApiHandler):
@@ -29,18 +30,14 @@ class ApiTerminateChat(ApiHandler):
 
             if not context_id:
                 return Response(
-                    '{"error": "context_id is required"}',
-                    status=400,
-                    mimetype="application/json"
+                    '{"error": "context_id is required"}', status=400, mimetype="application/json"
                 )
 
             # Check if context exists
             context = AgentContext.use(context_id)
             if not context:
                 return Response(
-                    '{"error": "Chat context not found"}',
-                    status=404,
-                    mimetype="application/json"
+                    '{"error": "Chat context not found"}', status=404, mimetype="application/json"
                 )
 
             # Delete the chat context
@@ -56,7 +53,7 @@ class ApiTerminateChat(ApiHandler):
             return {
                 "success": True,
                 "message": "Chat deleted successfully",
-                "context_id": context_id
+                "context_id": context_id,
             }
 
         except Exception as e:
@@ -64,5 +61,5 @@ class ApiTerminateChat(ApiHandler):
             return Response(
                 json.dumps({"error": f"Internal server error: {str(e)}"}),
                 status=500,
-                mimetype="application/json"
+                mimetype="application/json",
             )

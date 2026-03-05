@@ -5,11 +5,10 @@ import time
 import uuid
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any, Literal, Optional, TYPE_CHECKING, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypeVar, cast
 
 from backend.utils.secrets import get_secrets_manager
 from backend.utils.strings import truncate_text_by_ratio
-
 
 if TYPE_CHECKING:
     from backend.core.agent import AgentContext
@@ -343,9 +342,7 @@ class Log:
             if item.heading and item.update_progress != "none":
                 if item.no >= self.progress_no:
                     self.progress = item.heading
-                    self.progress_no = (
-                        item.no if item.update_progress == "persistent" else -1
-                    )
+                    self.progress_no = item.no if item.update_progress == "persistent" else -1
                     self.progress_active = True
         if notify_state_monitor:
             self._notify_state_monitor_for_context_update()
@@ -420,6 +417,7 @@ class Log:
         """Recursively mask secrets in nested objects."""
         try:
             from backend.core.agent import AgentContext
+
             secrets_mgr = get_secrets_manager(self.context or AgentContext.current())
 
             # debug helper to identify context mismatch

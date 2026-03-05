@@ -1,11 +1,14 @@
-from backend.utils import persist_chat, tokens
-from backend.utils.extension import Extension
-from backend.core.agent import LoopData
 import asyncio
-from backend.utils.log import LogItem
-from backend.utils import log
 import math
-from backend.extensions.before_main_llm_call._10_log_for_stream import build_heading, build_default_heading
+
+from backend.core.agent import LoopData
+from backend.extensions.before_main_llm_call._10_log_for_stream import (
+    build_default_heading,
+    build_heading,
+)
+from backend.utils import log, persist_chat, tokens
+from backend.utils.extension import Extension
+from backend.utils.log import LogItem
 
 
 class LogFromStream(Extension):

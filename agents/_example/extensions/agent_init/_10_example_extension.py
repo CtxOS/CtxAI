@@ -6,5 +6,5 @@ from backend.utils.extension import Extension
 class ExampleExtension(Extension):
 
     async def execute(self, **kwargs):
-        # rename the agent to SuperAgent0
+        # rename the agent to SuperCtx
         self.agent.agent_name = "SuperAgent" + str(self.agent.number)

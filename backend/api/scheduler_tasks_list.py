@@ -1,8 +1,9 @@
-from backend.utils.api import ApiHandler, Input, Output, Request
-from backend.utils.task_scheduler import TaskScheduler
 import traceback
-from backend.utils.print_style import PrintStyle
+
+from backend.utils.api import ApiHandler, Input, Output, Request
 from backend.utils.localization import Localization
+from backend.utils.print_style import PrintStyle
+from backend.utils.task_scheduler import TaskScheduler
 
 
 class SchedulerTasksList(ApiHandler):
@@ -26,4 +27,8 @@ class SchedulerTasksList(ApiHandler):
 
         except Exception as e:
             PrintStyle.error(f"Failed to list tasks: {str(e)} {traceback.format_exc()}")
-            return {"ok": False, "error": f"Failed to list tasks: {str(e)} {traceback.format_exc()}", "tasks": []}
+            return {
+                "ok": False,
+                "error": f"Failed to list tasks: {str(e)} {traceback.format_exc()}",
+                "tasks": [],
+            }

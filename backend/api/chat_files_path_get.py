@@ -1,5 +1,5 @@
-from backend.utils.api import ApiHandler, Request, Response
 from backend.utils import files, projects, settings
+from backend.utils.api import ApiHandler, Request, Response
 
 
 class GetChatFilesPath(ApiHandler):

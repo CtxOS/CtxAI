@@ -249,7 +249,7 @@ docker run -p 50001:80 ctxos/ctxai
 ### v0.9.4 - Connectivity, UI
 [Release video](https://www.youtube.com/watch?v=C2BAdDOduIc)
 - External API endpoints
-- Streamable HTTP MCP A0 server
+- Streamable HTTP MCP CTX server
 - A2A (Agent to Agent) protocol - server+client
 - New notifications system
 - New local terminal interface for stability

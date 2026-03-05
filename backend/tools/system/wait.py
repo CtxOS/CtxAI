@@ -1,9 +1,11 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
-from backend.utils.tool import Tool, Response
-from backend.utils.print_style import PrintStyle
-from backend.utils.wait import managed_wait
+
 from backend.utils.localization import Localization
+from backend.utils.print_style import PrintStyle
+from backend.utils.tool import Response, Tool
+from backend.utils.wait import managed_wait
+
 
 class WaitTool(Tool):
 
@@ -44,7 +46,7 @@ class WaitTool(Tool):
                     break_loop=False,
                 )
             target_time = now + wait_duration
-        
+
         if target_time <= now:
             return Response(
                 message=f"Target time {target_time.isoformat()} is in the past.",
@@ -58,16 +60,13 @@ class WaitTool(Tool):
             target_time=target_time,
             is_duration_wait=is_duration_wait,
             log=self.log,
-            get_heading_callback=self.get_heading
+            get_heading_callback=self.get_heading,
         )
 
         if self.log:
             self.log.update(heading=self.get_heading("Done", done=True))
 
-        message = self.agent.read_prompt(
-            "fw.wait_complete.md",
-            target_time=target_time.isoformat()
-        )
+        message = self.agent.read_prompt("fw.wait_complete.md", target_time=target_time.isoformat())
 
         return Response(
             message=message,

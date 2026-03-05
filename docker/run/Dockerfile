@@ -1,4 +1,4 @@
-# Use the pre-built base image for A0
+# Use the pre-built base image for CTX
 # FROM ctxai-base:local
 # FROM ctxos/ctxai-base:testing
 FROM ctxos/ctxai-base:latest
@@ -14,13 +14,13 @@ COPY ./fs/ /
 # pre installation steps
 RUN bash /ins/pre_install.sh $BRANCH
 
-# install A0
+# install CTX
 RUN bash /ins/install_A0.sh $BRANCH
 
 # install additional software
 RUN bash /ins/install_additional.sh $BRANCH
 
-# cleanup repo and install A0 without caching, this speeds up builds
+# cleanup repo and install CTX without caching, this speeds up builds
 ARG CACHE_DATE=none
 RUN echo "cache buster $CACHE_DATE" && bash /ins/install_A02.sh $BRANCH
 

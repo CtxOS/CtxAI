@@ -1,38 +1,45 @@
-import asyncio, random, string, threading
-
+import asyncio
+import random
+import string
+import threading
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Awaitable, Callable, Coroutine, Dict, Literal
 from enum import Enum
-from langchain_core.messages import BaseMessage
+from typing import Any, Awaitable, Callable, Coroutine, Dict, Literal
+
+from langchain_core.messages import BaseMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate
+
 from backend.core import models
 
-# Imports from new backend.utils structure
-from backend.utils import files
-from backend.utils import log as Log
-from backend.utils import errors
-from backend.utils import tokens
-from backend.utils import dirty_json
-from backend.utils.dirty_json import DirtyJson
-from backend.utils.defer import DeferredTask
-from backend.utils.localization import Localization
-from backend.utils import extension
-from backend.utils.extension import call_extensions, extensible
-from backend.utils.errors import (
-    RepairableException,
-    InterventionException,
-    HandledException,
-)
-from backend.utils.extract_tools import json_parse_dirty, load_classes_from_file
-
 # Imports from backend.utils structure
+# Imports from new backend.utils structure
+from backend.utils import context as context_helper
 from backend.utils import (
+    dirty_json,
+    errors,
+    extension,
+    files,
     history,
-    context as context_helper,
-    subagents,
-    print_style,
 )
+from backend.utils import log as Log
+from backend.utils import (
+    print_style,
+    subagents,
+    tokens,
+)
+from backend.utils.print_style import PrintStyle
+from backend.utils.defer import DeferredTask
+from backend.utils.dirty_json import DirtyJson
+from backend.utils.errors import (
+    HandledException,
+    InterventionException,
+    RepairableException,
+)
+from backend.utils.extension import call_extensions, extensible
+from backend.utils.extract_tools import json_parse_dirty, load_classes_from_file
+from backend.utils.localization import Localization
 
 
 class AgentContextType(Enum):
@@ -53,7 +60,7 @@ class AgentContext:
         config: "AgentConfig",
         id: str | None = None,
         name: str | None = None,
-        agent0: "Agent|None" = None,
+        ctx: "Agent|None" = None,
         log: Log.Log | None = None,
         paused: bool = False,
         streaming_agent: "Agent|None" = None,
@@ -94,7 +101,7 @@ class AgentContext:
         self.last_message = last_message or datetime.now(timezone.utc)
 
         # initialize agent at last (context is complete now)
-        self.agent0 = agent0 or Agent(0, self.config, self)
+        self.ctx = ctx or Agent(0, self.config, self)
 
     @staticmethod
     def get(id: str):
@@ -230,7 +237,7 @@ class AgentContext:
     def reset(self):
         self.kill_process()
         self.log.reset()
-        self.agent0 = Agent(0, self.config, self)
+        self.ctx = Agent(0, self.config, self)
         self.streaming_agent = None
         self.paused = False
 
@@ -239,13 +246,13 @@ class AgentContext:
         self.kill_process()
         self.paused = False
         self.task = self.communicate(
-            UserMessage(self.agent0.read_prompt("fw.msg_nudge.md"))
+            UserMessage(self.ctx.read_prompt("fw.msg_nudge.md"))
         )
         return self.task
 
     @extensible
     def get_agent(self):
-        return self.streaming_agent or self.agent0
+        return self.streaming_agent or self.ctx
 
     def is_running(self) -> bool:
         return (self.task and self.task.is_alive()) or False
@@ -370,7 +377,7 @@ class Agent:
         self.config = config
 
         # agent context
-        self.context = context or AgentContext(config=config, agent0=self)
+        self.context = context or AgentContext(config=config, ctx=self)
 
         # non-config vars
         self.number = number
@@ -976,6 +983,7 @@ class Agent:
         **kwargs,
     ):
         from backend.tools.unknown import Unknown
+
         from backend.utils.tool import Tool
 
         classes = []

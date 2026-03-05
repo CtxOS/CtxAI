@@ -1,6 +1,6 @@
-from backend.utils.api import ApiHandler, Input, Output, Request, Response
 from backend.core.agent import AgentContext
 from backend.utils import persist_chat
+from backend.utils.api import ApiHandler, Input, Output, Request, Response
 from backend.utils.task_scheduler import TaskScheduler
 
 
@@ -27,6 +27,7 @@ class RemoveChat(ApiHandler):
 
         # Context removal affects global chat/task lists in all tabs.
         from backend.utils.state_monitor_integration import mark_dirty_all
+
         mark_dirty_all(reason="api.chat_remove.RemoveChat")
 
         return {

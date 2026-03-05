@@ -1,9 +1,10 @@
 import base64
-import os
-from backend.utils.api import ApiHandler, Request, Response
-from backend.utils import files
-from backend.utils.print_style import PrintStyle
 import json
+import os
+
+from backend.utils import files
+from backend.utils.api import ApiHandler, Request, Response
+from backend.utils.print_style import PrintStyle
 
 
 class ApiFilesGet(ApiHandler):
@@ -73,9 +74,7 @@ class ApiFilesGet(ApiHandler):
                         base64_content = base64.b64encode(file_content).decode("utf-8")
                         result[filename] = base64_content
 
-                    PrintStyle().print(
-                        f"Retrieved file: {filename} ({len(file_content)} bytes)"
-                    )
+                    PrintStyle().print(f"Retrieved file: {filename} ({len(file_content)} bytes)")
 
                 except Exception as e:
                     PrintStyle.error(f"Failed to read file {path}: {str(e)}")

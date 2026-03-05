@@ -1,6 +1,7 @@
 import os
 import uuid
 from typing import TYPE_CHECKING
+
 from backend.utils import guids
 
 if TYPE_CHECKING:
@@ -36,9 +37,7 @@ def _sync_output(context: "AgentContext"):
             {
                 "id": item["id"],
                 "seq": item.get("seq", 0),
-                "text": item["text"][:100] + "..."
-                if len(item["text"]) > 100
-                else item["text"],
+                "text": item["text"][:100] + "..." if len(item["text"]) > 100 else item["text"],
                 "attachments": [a.split("/")[-1] for a in item.get("attachments", [])],
                 "attachment_count": len(item.get("attachments", [])),
             }
@@ -125,16 +124,12 @@ def log_user_message(
     """Log user message to console and UI. Used by message API and queue processing."""
     # Prepare attachment filenames for logging
     attachment_filenames = (
-        [os.path.basename(path) for path in attachment_paths]
-        if attachment_paths
-        else []
+        [os.path.basename(path) for path in attachment_paths] if attachment_paths else []
     )
 
     # Print to console
     label = f"User message{source}:"
-    PrintStyle(
-        background_color="#6C3483", font_color="white", bold=True, padding=True
-    ).print(label)
+    PrintStyle(background_color="#6C3483", font_color="white", bold=True, padding=True).print(label)
     PrintStyle(font_color="white", padding=False).print(f"> {message}")
     if attachment_filenames:
         PrintStyle(font_color="white", padding=False).print("Attachments:")

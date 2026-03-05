@@ -1,51 +1,49 @@
-from dataclasses import dataclass, field
-from enum import Enum
 import logging
 import os
+from dataclasses import dataclass, field
+from enum import Enum
 from typing import (
     Any,
+    AsyncIterator,
     Awaitable,
     Callable,
+    Iterator,
     List,
     Optional,
-    Iterator,
-    AsyncIterator,
     Tuple,
     TypedDict,
 )
 
-from litellm import completion, acompletion, embedding
 import litellm
 import openai
-from litellm.types.utils import ModelResponse
-
-# Imports from new backend.utils structure
-from backend.utils import dotenv
-from backend.utils import dirty_json
-from backend.utils.dotenv import load_dotenv
-from backend.utils.providers import ModelType as ProviderModelType, get_provider_config
-from backend.utils.rate_limiter import RateLimiter
-from backend.utils.tokens import approximate_tokens
-
-# Imports from backend.utils structure
-from backend.utils import settings, browser_use_monkeypatch
-
-from langchain_core.language_models.chat_models import SimpleChatModel
-from langchain_core.outputs.chat_generation import ChatGenerationChunk
+from langchain.embeddings.base import Embeddings
 from langchain_core.callbacks.manager import (
-    CallbackManagerForLLMRun,
     AsyncCallbackManagerForLLMRun,
+    CallbackManagerForLLMRun,
 )
+from langchain_core.language_models.chat_models import SimpleChatModel
 from langchain_core.messages import (
-    BaseMessage,
     AIMessageChunk,
+    BaseMessage,
     HumanMessage,
     SystemMessage,
 )
-from langchain.embeddings.base import Embeddings
+from langchain_core.outputs.chat_generation import ChatGenerationChunk
+from litellm import acompletion, completion, embedding
+from litellm.types.utils import ModelResponse
 
 # from sentence_transformers import SentenceTransformer  # Temporarily disabled for Python 3.14 compatibility
 from pydantic import ConfigDict
+from sentence_transformers import SentenceTransformer
+
+# Imports from backend.utils structure
+# Imports from new backend.utils structure
+from backend.utils import browser_use_monkeypatch, dirty_json, dotenv, settings
+from backend.utils.dotenv import load_dotenv
+from backend.utils.providers import ModelType as ProviderModelType
+from backend.utils.providers import get_provider_config
+from backend.utils.rate_limiter import RateLimiter
+from backend.utils.tokens import approximate_tokens
 
 
 # disable extra logging, must be done repeatedly, otherwise browser-use will turn it back on for some reason
@@ -266,9 +264,7 @@ def _is_transient_litellm_error(exc: Exception) -> bool:
 async def apply_rate_limiter(
     model_config: ModelConfig | None,
     input_text: str,
-    rate_limiter_callback: (
-        Callable[[str, str, int, int], Awaitable[bool]] | None
-    ) = None,
+    rate_limiter_callback: Callable[[str, str, int, int], Awaitable[bool]] | None = None,
 ):
     if not model_config:
         return
@@ -288,18 +284,16 @@ async def apply_rate_limiter(
 def apply_rate_limiter_sync(
     model_config: ModelConfig | None,
     input_text: str,
-    rate_limiter_callback: (
-        Callable[[str, str, int, int], Awaitable[bool]] | None
-    ) = None,
+    rate_limiter_callback: Callable[[str, str, int, int], Awaitable[bool]] | None = None,
 ):
     if not model_config:
         return
-    import asyncio, nest_asyncio
+    import asyncio
+
+    import nest_asyncio
 
     nest_asyncio.apply()
-    return asyncio.run(
-        apply_rate_limiter(model_config, input_text, rate_limiter_callback)
-    )
+    return asyncio.run(apply_rate_limiter(model_config, input_text, rate_limiter_callback))
 
 
 class LiteLLMChatWrapper(SimpleChatModel):
@@ -322,7 +316,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
     ):
         model_value = f"{provider}/{model}"
         super().__init__(model_name=model_value, provider=provider, kwargs=kwargs)  # type: ignore
-        # Set A0 model config as instance attribute after parent init
+        # Set CTX model config as instance attribute after parent init
         self.a0_model_conf = model_config
 
     @property
@@ -378,9 +372,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
 
             # Skip messages with empty content
             content = message_dict.get("content")
-            has_content = (
-                bool(content) if not isinstance(content, list) else len(content) > 0
-            )
+            has_content = bool(content) if not isinstance(content, list) else len(content) > 0
             if not has_content:
                 continue
             result.append(message_dict)
@@ -448,9 +440,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
 
             # Only yield chunks with non-None content
             if output["response_delta"]:
-                yield ChatGenerationChunk(
-                    message=AIMessageChunk(content=output["response_delta"])
-                )
+                yield ChatGenerationChunk(message=AIMessageChunk(content=output["response_delta"]))
 
     async def _astream(
         self,
@@ -480,9 +470,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
 
             # Only yield chunks with non-None content
             if output["response_delta"]:
-                yield ChatGenerationChunk(
-                    message=AIMessageChunk(content=output["response_delta"])
-                )
+                yield ChatGenerationChunk(message=AIMessageChunk(content=output["response_delta"]))
 
     async def unified_call(
         self,
@@ -492,9 +480,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
         response_callback: Callable[[str, str], Awaitable[None]] | None = None,
         reasoning_callback: Callable[[str, str], Awaitable[None]] | None = None,
         tokens_callback: Callable[[str, int], Awaitable[None]] | None = None,
-        rate_limiter_callback: (
-            Callable[[str, str, int, int], Awaitable[bool]] | None
-        ) = None,
+        rate_limiter_callback: Callable[[str, str, int, int], Awaitable[bool]] | None = None,
         explicit_caching: bool = False,
         **kwargs: Any,
     ) -> Tuple[str, str]:
@@ -517,7 +503,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
             self.a0_model_conf, str(msgs_conv), rate_limiter_callback
         )
 
-        # Prepare call kwargs and retry config (strip A0-only params before calling LiteLLM)
+        # Prepare call kwargs and retry config (strip CTX-only params before calling LiteLLM)
         call_kwargs: dict[str, Any] = {**self.kwargs, **kwargs}
         max_retries: int = int(call_kwargs.pop("a0_retry_attempts", 2))
         retry_delay_s: float = float(call_kwargs.pop("a0_retry_delay_seconds", 1.5))
@@ -563,15 +549,11 @@ class LiteLLMChatWrapper(SimpleChatModel):
                                 )
                             # Add output tokens to rate limiter if configured
                             if limiter:
-                                limiter.add(
-                                    output=approximate_tokens(output["reasoning_delta"])
-                                )
+                                limiter.add(output=approximate_tokens(output["reasoning_delta"]))
                         # collect response delta and call callbacks
                         if output["response_delta"]:
                             if response_callback:
-                                await response_callback(
-                                    output["response_delta"], result.response
-                                )
+                                await response_callback(output["response_delta"], result.response)
                             if tokens_callback:
                                 await tokens_callback(
                                     output["response_delta"],
@@ -579,9 +561,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
                                 )
                             # Add output tokens to rate limiter if configured
                             if limiter:
-                                limiter.add(
-                                    output=approximate_tokens(output["response_delta"])
-                                )
+                                limiter.add(output=approximate_tokens(output["response_delta"]))
 
                 # non-stream response
                 else:
@@ -589,13 +569,9 @@ class LiteLLMChatWrapper(SimpleChatModel):
                     output = result.add_chunk(parsed)
                     if limiter:
                         if output["response_delta"]:
-                            limiter.add(
-                                output=approximate_tokens(output["response_delta"])
-                            )
+                            limiter.add(output=approximate_tokens(output["response_delta"]))
                         if output["reasoning_delta"]:
-                            limiter.add(
-                                output=approximate_tokens(output["reasoning_delta"])
-                            )
+                            limiter.add(output=approximate_tokens(output["reasoning_delta"]))
 
                 # Successful completion of stream
                 return result.response, result.reasoning
@@ -604,11 +580,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
                 import asyncio
 
                 # Retry only if no chunks received and error is transient
-                if (
-                    got_any_chunk
-                    or not _is_transient_litellm_error(e)
-                    or attempt >= max_retries
-                ):
+                if got_any_chunk or not _is_transient_litellm_error(e) or attempt >= max_retries:
                     raise
                 attempt += 1
                 await asyncio.sleep(retry_delay_s)
@@ -633,12 +605,12 @@ class AsyncAIChatReplacement:
 
 
 from browser_use.llm import (
-    ChatOllama,
-    ChatOpenRouter,
-    ChatGoogle,
     ChatAnthropic,
+    ChatGoogle,
     ChatGroq,
+    ChatOllama,
     ChatOpenAI,
+    ChatOpenRouter,
 )
 
 
@@ -688,9 +660,9 @@ class BrowserCompatibleChatWrapper(ChatOpenRouter):
                 and "json_schema" in kwrgs["response_format"]
                 and model.startswith("gemini/")
             ):
-                kwrgs["response_format"]["json_schema"] = ChatGoogle(
-                    ""
-                )._fix_gemini_schema(kwrgs["response_format"]["json_schema"])
+                kwrgs["response_format"]["json_schema"] = ChatGoogle("")._fix_gemini_schema(
+                    kwrgs["response_format"]["json_schema"]
+                )
 
             resp = await acompletion(
                 model=self._wrapper.model_name,
@@ -702,9 +674,7 @@ class BrowserCompatibleChatWrapper(ChatOpenRouter):
             # Gemini: strip triple backticks and conform schema
             try:
                 msg = resp.choices[0].message  # type: ignore
-                if self.provider == "gemini" and isinstance(
-                    getattr(msg, "content", None), str
-                ):
+                if self.provider == "gemini" and isinstance(getattr(msg, "content", None), str):
                     cleaned = browser_use_monkeypatch.gemini_clean_and_conform(
                         msg.content
                     )  # type: ignore
@@ -725,7 +695,9 @@ class BrowserCompatibleChatWrapper(ChatOpenRouter):
             ):
                 if resp.choices[0].message.content is not None and not resp.choices[
                     0
-                ].message.content.startswith("{"):  # type: ignore
+                ].message.content.startswith(
+                    "{"
+                ):  # type: ignore
                     js = dirty_json.parse(resp.choices[0].message.content)  # type: ignore
                     resp.choices[0].message.content = dirty_json.stringify(js)  # type: ignore
         except Exception as e:
@@ -813,9 +785,7 @@ class LocalSentenceTransformerWrapper(Embeddings):
         apply_rate_limiter_sync(self.a0_model_conf, text)
 
         embedding = self.model.encode([text], convert_to_tensor=False)  # type: ignore
-        result = (
-            embedding[0].tolist() if hasattr(embedding[0], "tolist") else embedding[0]
-        )
+        result = embedding[0].tolist() if hasattr(embedding[0], "tolist") else embedding[0]
         return result  # type: ignore
 
 
@@ -833,12 +803,8 @@ def _get_litellm_chat(
     if api_key and api_key not in ("None", "NA"):
         kwargs["api_key"] = api_key
 
-    provider_name, model_name, kwargs = _adjust_call_args(
-        provider_name, model_name, kwargs
-    )
-    return cls(
-        provider=provider_name, model=model_name, model_config=model_config, **kwargs
-    )
+    provider_name, model_name, kwargs = _adjust_call_args(provider_name, model_name, kwargs)
+    return cls(provider=provider_name, model=model_name, model_config=model_config, **kwargs)
 
 
 def _get_litellm_embedding(
@@ -848,13 +814,9 @@ def _get_litellm_embedding(
     **kwargs: Any,
 ):
     # Check if this is a local sentence-transformers model
-    if provider_name == "huggingface" and model_name.startswith(
-        "sentence-transformers/"
-    ):
+    if provider_name == "huggingface" and model_name.startswith("sentence-transformers/"):
         # Use local sentence-transformers instead of LiteLLM for local models
-        provider_name, model_name, kwargs = _adjust_call_args(
-            provider_name, model_name, kwargs
-        )
+        provider_name, model_name, kwargs = _adjust_call_args(provider_name, model_name, kwargs)
         return LocalSentenceTransformerWrapper(
             provider=provider_name,
             model=model_name,
@@ -869,9 +831,7 @@ def _get_litellm_embedding(
     if api_key and api_key not in ("None", "NA"):
         kwargs["api_key"] = api_key
 
-    provider_name, model_name, kwargs = _adjust_call_args(
-        provider_name, model_name, kwargs
-    )
+    provider_name, model_name, kwargs = _adjust_call_args(provider_name, model_name, kwargs)
     return LiteLLMEmbeddingWrapper(
         model=model_name, provider=provider_name, model_config=model_config, **kwargs
     )
@@ -883,11 +843,7 @@ def _parse_chunk(chunk: Any) -> ChatChunk:
         "model_extra", {}
     ).get("message", {})
     response_delta = (
-        (
-            delta.get("content", "")
-            if isinstance(delta, dict)
-            else getattr(delta, "content", "")
-        )
+        (delta.get("content", "") if isinstance(delta, dict) else getattr(delta, "content", ""))
         or (
             message.get("content", "")
             if isinstance(message, dict)
@@ -980,9 +936,7 @@ def get_chat_model(
 ) -> LiteLLMChatWrapper:
     orig = provider.lower()
     provider_name, kwargs = _merge_provider_defaults("chat", orig, kwargs)
-    return _get_litellm_chat(
-        LiteLLMChatWrapper, name, provider_name, model_config, **kwargs
-    )
+    return _get_litellm_chat(LiteLLMChatWrapper, name, provider_name, model_config, **kwargs)
 
 
 def get_browser_model(

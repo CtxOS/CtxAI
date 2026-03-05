@@ -1,55 +1,79 @@
 ###############################################################################
-# Project‑specific exclusions / re‑includes
+# Keep essential runtime files
 ###############################################################################
 
-# Obsolete
-memory/**
-instruments/**
-knowledge/custom/**
+# Project structure needed at runtime
+backend/
+python/
+webui/
+plugins/
+prompts/
+agents/
+conf/
+usr/
+run_ui.py
+initialize.py
+agent.py
+models.py
 
-# Logs, tmp, usr
-logs/*
-tmp/*
-usr/*
-
-
-# Keep .gitkeep markers anywhere
+# Keep .gitkeep markers
 !**/.gitkeep
 
 
 ###############################################################################
-# Environment / tooling
+# Development / Build files (not needed in Docker image)
 ###############################################################################
-.conda/
-.cursor/
-.venv/
+
+# Git
 .git/
+.github/
 
+# Tests & Docs
+tests/
+docs/
+AGENTS.md
+README.md
+LICENSE
 
-###############################################################################
-# Tests (root‑level only)
-###############################################################################
-/*.test.py
+# Config (dev only)
+pyproject.toml
+uv.lock
 
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.egg-info/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
 
-###############################################################################
-# ─── LAST SECTION: universal junk / caches (MUST BE LAST) ───
-#   Put these at the *bottom* so they override any ! re‑includes above
-###############################################################################
-# OS / editor junk
-**/.DS_Store
-**/Thumbs.db
+# IDE
+.vscode/
+.idea/
+.cursor/
+.windsurf/
 
-# Python caches / compiled artefacts
-**/__pycache__/
-**/*.py[cod]
-**/*.pyo
-**/*.pyd
-**/.mypy_cache/
-**/.pytest_cache/
-**/.ipynb_checkpoints/
-**/.cache/
-**/*.egg-info/
+# Virtual environments
+.venv/
+.conda/
 
-# Environment files anywhere
-*.env
+# Environment & Logs
+.env
+*.log
+logs/
+
+# Temp / Cache
+tmp/
+.cache/
+*.tmp
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Root test files
+*.test.py

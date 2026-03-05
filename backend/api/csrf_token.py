@@ -1,5 +1,8 @@
+import fnmatch
 import secrets
 from urllib.parse import urlparse
+
+from backend.utils import dotenv, login, runtime
 from backend.utils.api import (
     ApiHandler,
     Input,
@@ -8,8 +11,6 @@ from backend.utils.api import (
     Response,
     session,
 )
-from backend.utils import runtime, dotenv, login
-import fnmatch
 
 ALLOWED_ORIGINS_KEY = "ALLOWED_ORIGINS"
 
@@ -64,10 +65,7 @@ class GetCsrfToken(ApiHandler):
         allowed_origins = await self.get_allowed_origins()
 
         # check if the origin is allowed
-        match = any(
-            fnmatch.fnmatch(origin, allowed_origin)
-            for allowed_origin in allowed_origins
-        )
+        match = any(fnmatch.fnmatch(origin, allowed_origin) for allowed_origin in allowed_origins)
         return {"ok": match, "origin": origin, "allowed_origins": allowed_origins}
 
     def get_origin_from_request(self, request: Request):
@@ -92,9 +90,7 @@ class GetCsrfToken(ApiHandler):
         # get the allowed origins from the environment
         allowed_origins = [
             origin.strip()
-            for origin in (dotenv.get_dotenv_value(ALLOWED_ORIGINS_KEY) or "").split(
-                ","
-            )
+            for origin in (dotenv.get_dotenv_value(ALLOWED_ORIGINS_KEY) or "").split(",")
             if origin.strip()
         ]
 
@@ -126,7 +122,7 @@ class GetCsrfToken(ApiHandler):
 
     def initialize_allowed_origins(self, request: Request):
         """
-        If A0 is hosted on a server, add the first visit origin to ALLOWED_ORIGINS.
+        If CTX is hosted on a server, add the first visit origin to ALLOWED_ORIGINS.
         This simplifies deployment process as users can access their new instance without
         additional setup while keeping it secure.
         """
@@ -143,8 +139,7 @@ class GetCsrfToken(ApiHandler):
         # check if the origin is allowed by default
         allowed_origins = self.get_default_allowed_origins()
         match = any(
-            fnmatch.fnmatch(req_origin, allowed_origin)
-            for allowed_origin in allowed_origins
+            fnmatch.fnmatch(req_origin, allowed_origin) for allowed_origin in allowed_origins
         )
         if match:
             return

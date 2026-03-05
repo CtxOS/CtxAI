@@ -3,8 +3,8 @@ from __future__ import annotations
 import re
 import threading
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Iterable, Optional
 from urllib.parse import urlparse
-from typing import Any, Iterable, Optional, TYPE_CHECKING
 
 import socketio
 
@@ -245,16 +245,12 @@ class WebSocketResult:
             "ok": self._ok,
         }
 
-        effective_duration = (
-            self._duration_ms if self._duration_ms is not None else duration_ms
-        )
+        effective_duration = self._duration_ms if self._duration_ms is not None else duration_ms
         if effective_duration is not None:
             result["durationMs"] = round(effective_duration, 4)
 
         correlation = (
-            self._correlation_id
-            if self._correlation_id is not None
-            else fallback_correlation_id
+            self._correlation_id if self._correlation_id is not None else fallback_correlation_id
         )
         if correlation is not None:
             result["correlationId"] = correlation
@@ -262,10 +258,14 @@ class WebSocketResult:
         if self._ok:
             result["data"] = dict(self._data) if self._data is not None else {}
         else:
-            result["error"] = dict(self._error) if self._error is not None else {
-                "code": "INTERNAL_ERROR",
-                "error": "Internal server error",
-            }
+            result["error"] = (
+                dict(self._error)
+                if self._error is not None
+                else {
+                    "code": "INTERNAL_ERROR",
+                    "error": "Internal server error",
+                }
+            )
         return result
 
 
@@ -362,9 +362,7 @@ class WebSocketHandler(ABC):
             if not isinstance(event, str):
                 raise TypeError("Event type declarations must be strings")
             if not _EVENT_NAME_PATTERN.fullmatch(event):
-                raise ValueError(
-                    f"Invalid event type '{event}' – must match lowercase_snake_case"
-                )
+                raise ValueError(f"Invalid event type '{event}' – must match lowercase_snake_case")
             if event in _RESERVED_EVENT_NAMES:
                 raise ValueError(
                     f"Event type '{event}' is reserved by Socket.IO and cannot be used"

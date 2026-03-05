@@ -5,7 +5,7 @@ import os
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from backend.utils import runtime
 from backend.utils.print_style import PrintStyle
@@ -73,9 +73,7 @@ class StateMonitor:
             # Use the manager's dispatcher loop for all scheduling so mark_dirty can be
             # invoked safely from non-async contexts and other threads.
             self._dispatcher_loop = getattr(manager, "_dispatcher_loop", None)
-        _debug_log(
-            f"[StateMonitor] bind_manager handler_id={handler_id or self._emit_handler_id}"
-        )
+        _debug_log(f"[StateMonitor] bind_manager handler_id={handler_id or self._emit_handler_id}")
 
     def register_sid(self, namespace: str, sid: str) -> None:
         identity: ConnectionIdentity = (namespace, sid)
@@ -188,9 +186,7 @@ class StateMonitor:
             projection.dirty_version += 1
             if runtime.is_development():
                 projection.dirty_reason = (
-                    reason.strip()
-                    if isinstance(reason, str) and reason.strip()
-                    else "unknown"
+                    reason.strip() if isinstance(reason, str) and reason.strip() else "unknown"
                 )
                 projection.dirty_wave_id = wave_id
         self._schedule_debounce_on_loop(identity)
@@ -217,9 +213,7 @@ class StateMonitor:
             if running is not None and not running.done():
                 return
 
-            handle = loop.call_later(
-                self.debounce_seconds, self._on_debounce_fire, identity
-            )
+            handle = loop.call_later(self.debounce_seconds, self._on_debounce_fire, identity)
             self._debounce_handles[identity] = handle
             _debug_log(
                 f"[StateMonitor] schedule_push namespace={projection.namespace} sid={projection.sid} "

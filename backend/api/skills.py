@@ -1,5 +1,5 @@
+from backend.utils import files, projects, runtime, skills
 from backend.utils.api import ApiHandler, Input, Output, Request, Response
-from backend.utils import runtime, skills, projects, files
 
 
 class Skills(ApiHandler):
@@ -32,9 +32,7 @@ class Skills(ApiHandler):
             project_folder = projects.get_project_folder(project_name)
             if runtime.is_development():
                 project_folder = files.normalize_ctx_path(project_folder)
-            skill_list = [
-                s for s in skill_list if files.is_in_dir(str(s.path), project_folder)
-            ]
+            skill_list = [s for s in skill_list if files.is_in_dir(str(s.path), project_folder)]
 
         # filter by agent profile
         if agent_profile := (input.get("agent_profile") or "").strip() or None:
@@ -44,15 +42,11 @@ class Skills(ApiHandler):
             ]
             if project_name:
                 roots.append(
-                    projects.get_project_meta(
-                        project_name, "agents", agent_profile, "skills"
-                    )
+                    projects.get_project_meta(project_name, "agents", agent_profile, "skills")
                 )
 
             skill_list = [
-                s
-                for s in skill_list
-                if any(files.is_in_dir(str(s.path), r) for r in roots)
+                s for s in skill_list if any(files.is_in_dir(str(s.path), r) for r in roots)
             ]
 
         result = []

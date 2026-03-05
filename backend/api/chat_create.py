@@ -1,14 +1,12 @@
-from backend.utils.api import ApiHandler, Input, Output, Request, Response
-
-
-from backend.utils import settings, projects, guids
 from backend.core.agent import AgentContext
+from backend.utils import guids, projects, settings
+from backend.utils.api import ApiHandler, Input, Output, Request, Response
 
 
 class CreateChat(ApiHandler):
     async def process(self, input: Input, request: Request) -> Output:
-        current_ctxid = input.get("current_context", "") # current context id
-        new_ctxid = input.get("new_context", guids.generate_id()) # given or new guid
+        current_ctxid = input.get("current_context", "")  # current context id
+        new_ctxid = input.get("new_context", guids.generate_id())  # given or new guid
 
         # context instance - get or create
         current_context = AgentContext.get(current_ctxid)
@@ -27,6 +25,7 @@ class CreateChat(ApiHandler):
 
         # New context should appear in other tabs' chat lists via state_push.
         from backend.utils.state_monitor_integration import mark_dirty_all
+
         mark_dirty_all(reason="api.chat_create.CreateChat")
 
         return {

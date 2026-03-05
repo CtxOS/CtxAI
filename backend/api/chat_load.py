@@ -1,7 +1,6 @@
+from backend.utils import persist_chat
 from backend.utils.api import ApiHandler, Input, Output, Request, Response
 
-
-from backend.utils import persist_chat
 
 class LoadChats(ApiHandler):
     async def process(self, input: Input, request: Request) -> Output:

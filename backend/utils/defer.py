@@ -1,8 +1,8 @@
 import asyncio
-from dataclasses import dataclass
 import threading
 from concurrent.futures import Future
-from typing import Any, Callable, Optional, Coroutine, TypeVar, Awaitable
+from dataclasses import dataclass
+from typing import Any, Awaitable, Callable, Coroutine, Optional, TypeVar
 
 T = TypeVar("T")
 
@@ -89,9 +89,7 @@ class DeferredTask:
         self._future: Optional[Future] = None
         self.children: list[ChildTask] = []
 
-    def start_task(
-        self, func: Callable[..., Coroutine[Any, Any, Any]], *args: Any, **kwargs: Any
-    ):
+    def start_task(self, func: Callable[..., Coroutine[Any, Any, Any]], *args: Any, **kwargs: Any):
         self.func = func
         self.args = args
         self.kwargs = kwargs
@@ -122,9 +120,7 @@ class DeferredTask:
         try:
             return self._future.result(timeout)
         except TimeoutError:
-            raise TimeoutError(
-                "The task did not complete within the specified timeout."
-            )
+            raise TimeoutError("The task did not complete within the specified timeout.")
 
     async def result(self, timeout: Optional[float] = None) -> Any:
         if not self._future:
@@ -138,9 +134,7 @@ class DeferredTask:
                 # self.kill()
                 return result
             except TimeoutError:
-                raise TimeoutError(
-                    "The task did not complete within the specified timeout."
-                )
+                raise TimeoutError("The task did not complete within the specified timeout.")
 
         return await loop.run_in_executor(None, _get_result)
 
@@ -174,14 +168,10 @@ class DeferredTask:
         self.kill(terminate_thread=terminate_thread)
         self._start_task()
 
-    def add_child_task(
-        self, task: "DeferredTask", terminate_thread: bool = False
-    ) -> None:
+    def add_child_task(self, task: "DeferredTask", terminate_thread: bool = False) -> None:
         self.children.append(ChildTask(task, terminate_thread))
 
-    async def _execute_in_task_context(
-        self, func: Callable[..., T], *args, **kwargs
-    ) -> T:
+    async def _execute_in_task_context(self, func: Callable[..., T], *args, **kwargs) -> T:
         """Execute a function in the task's context and return its result."""
         result = func(*args, **kwargs)
         if asyncio.iscoroutine(result):
@@ -202,13 +192,9 @@ class DeferredTask:
                 # Keep awaiting until we get a concrete value
                 while isinstance(result, Awaitable):
                     result = await result
-                self.event_loop_thread.loop.call_soon_threadsafe(
-                    future.set_result, result
-                )
+                self.event_loop_thread.loop.call_soon_threadsafe(future.set_result, result)
             except Exception as e:
-                self.event_loop_thread.loop.call_soon_threadsafe(
-                    future.set_exception, e
-                )
+                self.event_loop_thread.loop.call_soon_threadsafe(future.set_exception, e)
 
         asyncio.run_coroutine_threadsafe(wrapped(), self.event_loop_thread.loop)
         return asyncio.wrap_future(future)
@@ -218,11 +204,7 @@ class DeferredTask:
         """Cancel and await all pending tasks on the current event loop."""
         loop = asyncio.get_running_loop()
         current_task = asyncio.current_task(loop=loop)
-        pending = [
-            task
-            for task in asyncio.all_tasks(loop=loop)
-            if task is not current_task
-        ]
+        pending = [task for task in asyncio.all_tasks(loop=loop) if task is not current_task]
         if not pending:
             return
         for task in pending:

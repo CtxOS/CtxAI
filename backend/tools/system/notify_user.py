@@ -1,6 +1,7 @@
-from backend.utils.tool import Tool, Response
 from backend.core.agent import AgentContext
 from backend.utils.notification import NotificationPriority, NotificationType
+from backend.utils.tool import Response, Tool
+
 
 class NotifyUserTool(Tool):
 
@@ -10,13 +11,19 @@ class NotifyUserTool(Tool):
         title = self.args.get("title", "")
         detail = self.args.get("detail", "")
         notification_type = self.args.get("type", NotificationType.INFO)
-        priority = self.args.get("priority", NotificationPriority.HIGH) # by default, agents should notify with high priority
-        timeout = int(self.args.get("timeout", 30)) # agent's notifications should have longer timeouts
+        priority = self.args.get(
+            "priority", NotificationPriority.HIGH
+        )  # by default, agents should notify with high priority
+        timeout = int(
+            self.args.get("timeout", 30)
+        )  # agent's notifications should have longer timeouts
 
         try:
             notification_type = NotificationType(notification_type)
         except ValueError:
-            return Response(message=f"Invalid notification type: {notification_type}", break_loop=False)
+            return Response(
+                message=f"Invalid notification type: {notification_type}", break_loop=False
+            )
 
         try:
             priority = NotificationPriority(priority)
@@ -34,4 +41,6 @@ class NotifyUserTool(Tool):
             priority=priority,
             display_time=timeout,
         )
-        return Response(message=self.agent.read_prompt("fw.notify_user.notification_sent.md"), break_loop=False)
+        return Response(
+            message=self.agent.read_prompt("fw.notify_user.notification_sent.md"), break_loop=False
+        )
