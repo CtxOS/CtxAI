@@ -22,7 +22,9 @@ USER_DIR = "usr"
 
 class VariablesPlugin(ABC):
     @abstractmethod
-    def get_variables(self, file: str, backup_dirs: list[str] | None = None, **kwargs) -> dict[str, Any]:  # type: ignore
+    def get_variables(
+        self, file: str, backup_dirs: list[str] | None = None, **kwargs
+    ) -> dict[str, Any]:  # type: ignore
         pass
 
 
@@ -44,7 +46,6 @@ def load_plugin_variables(
         plugin_file = None
 
     if plugin_file and exists(plugin_file):
-
         from backend.utils import extract_tools
 
         classes = extract_tools.load_classes_from_file(
@@ -213,6 +214,7 @@ def read_file(relative_path: str, encoding="utf-8"):
     with open(absolute_path, "r", encoding=encoding) as f:
         return f.read()
 
+
 def read_file_json(relative_path: str, encoding="utf-8"):
     # Try to get the absolute path for the file from the original directory or backup directories
     absolute_path = get_abs_path(relative_path)
@@ -221,11 +223,13 @@ def read_file_json(relative_path: str, encoding="utf-8"):
     with open(absolute_path, "r", encoding=encoding) as f:
         return json.load(f)
 
+
 def read_file_yaml(relative_path: str, encoding="utf-8"):
     absolute_path = get_abs_path(relative_path)
 
     with open(absolute_path, "r", encoding=encoding) as f:
         return yaml.loads(f.read())
+
 
 def read_file_bin(relative_path: str):
     # Try to get the absolute path for the file from the original directory or backup directories
@@ -426,10 +430,12 @@ def write_file(relative_path: str, content: str, encoding: str = "utf-8"):
     with open(abs_path, "w", encoding=encoding) as f:
         f.write(content)
 
+
 def delete_file(relative_path: str):
     abs_path = get_abs_path(relative_path)
     if exists(abs_path):
         os.remove(abs_path)
+
 
 def write_file_bin(relative_path: str, content: bytes):
     abs_path = get_abs_path(relative_path)
@@ -534,13 +540,13 @@ def get_abs_path(*relative_paths):
 
 
 def get_abs_path_dockerized(*relative_paths):
-    "Ensures the abs path is dockerized (i.e. /a0/... path)"
+    "Ensures the abs path is dockerized (i.e. /ctx/... path)"
     abs = get_abs_path(*relative_paths)
     from backend.utils import runtime
 
     if runtime.is_dockerized():
         return abs
-    return normalize_a0_path(abs)
+    return normalize_ctx_path(abs)
 
 
 def get_abs_path_development(*relative_paths):
@@ -555,21 +561,24 @@ def deabsolute_path(path: str):
 
 
 def fix_dev_path(path: str):
-    "On dev environment, convert /a0/... paths to local absolute paths"
+    "On dev environment, convert /ctx/... paths to local absolute paths"
     from backend.utils.runtime import is_development
 
     if is_development():
-        if path.startswith("/a0/"):
-            path = path.replace("/a0/", "")
+        if path.startswith("/ctx/"):
+            path = path.replace("/ctx/", "")
     return get_abs_path(path)
 
 
-def normalize_a0_path(path: str):
-    "Convert absolute paths into /a0/... paths"
+def normalize_ctx_path(path: str):
+    "Convert absolute paths into /ctx/... paths"
     if is_in_base_dir(path):
         deabs = deabsolute_path(path)
-        return "/a0/" + deabs
+        return "/ctx/" + deabs
     return path
+
+
+normalize_a0_path = normalize_ctx_path
 
 
 def exists(*relative_paths):

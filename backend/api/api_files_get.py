@@ -32,14 +32,14 @@ class ApiFilesGet(ApiHandler):
                 return Response(
                     '{"error": "paths array is required"}',
                     status=400,
-                    mimetype="application/json"
+                    mimetype="application/json",
                 )
 
             if not isinstance(paths, list):
                 return Response(
                     '{"error": "paths must be an array"}',
                     status=400,
-                    mimetype="application/json"
+                    mimetype="application/json",
                 )
 
             result = {}
@@ -47,14 +47,14 @@ class ApiFilesGet(ApiHandler):
             for path in paths:
                 try:
                     # Convert internal paths to external paths
-                    if path.startswith("/a0/tmp/uploads/"):
+                    if path.startswith("/ctx/tmp/uploads/"):
                         # Internal path - convert to external
-                        filename = path.replace("/a0/tmp/uploads/", "")
+                        filename = path.replace("/ctx/tmp/uploads/", "")
                         external_path = files.get_abs_path("usr/uploads", filename)
                         filename = os.path.basename(external_path)
-                    elif path.startswith("/a0/"):
+                    elif path.startswith("/ctx/"):
                         # Other internal Ctx AI paths
-                        relative_path = path.replace("/a0/", "")
+                        relative_path = path.replace("/ctx/", "")
                         external_path = files.get_abs_path(relative_path)
                         filename = os.path.basename(external_path)
                     else:
@@ -70,10 +70,12 @@ class ApiFilesGet(ApiHandler):
                     # Read and encode file
                     with open(external_path, "rb") as f:
                         file_content = f.read()
-                        base64_content = base64.b64encode(file_content).decode('utf-8')
+                        base64_content = base64.b64encode(file_content).decode("utf-8")
                         result[filename] = base64_content
 
-                    PrintStyle().print(f"Retrieved file: {filename} ({len(file_content)} bytes)")
+                    PrintStyle().print(
+                        f"Retrieved file: {filename} ({len(file_content)} bytes)"
+                    )
 
                 except Exception as e:
                     PrintStyle.error(f"Failed to read file {path}: {str(e)}")
@@ -91,5 +93,5 @@ class ApiFilesGet(ApiHandler):
             return Response(
                 json.dumps({"error": f"Internal server error: {str(e)}"}),
                 status=500,
-                mimetype="application/json"
+                mimetype="application/json",
             )

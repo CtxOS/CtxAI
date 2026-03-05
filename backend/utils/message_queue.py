@@ -10,7 +10,7 @@ from backend.utils.print_style import PrintStyle
 
 QUEUE_KEY = "message_queue"
 QUEUE_SEQ_KEY = "message_queue_seq"
-UPLOAD_FOLDER = "/a0/usr/uploads"
+UPLOAD_FOLDER = "/ctx/usr/uploads"
 
 
 def get_queue(context: "AgentContext") -> list:
@@ -32,13 +32,17 @@ def _sync_output(context: "AgentContext"):
     # Truncate text for frontend display
     truncated = []
     for item in queue:
-        truncated.append({
-            "id": item["id"],
-            "seq": item.get("seq", 0),
-            "text": item["text"][:100] + "..." if len(item["text"]) > 100 else item["text"],
-            "attachments": [a.split("/")[-1] for a in item.get("attachments", [])],
-            "attachment_count": len(item.get("attachments", [])),
-        })
+        truncated.append(
+            {
+                "id": item["id"],
+                "seq": item.get("seq", 0),
+                "text": item["text"][:100] + "..."
+                if len(item["text"]) > 100
+                else item["text"],
+                "attachments": [a.split("/")[-1] for a in item.get("attachments", [])],
+                "attachment_count": len(item.get("attachments", [])),
+            }
+        )
     context.set_output_data(QUEUE_KEY, truncated)
 
 
@@ -50,15 +54,15 @@ def add(
 ) -> dict:
     """Add message to queue. Attachments should be filenames, will be converted to full paths."""
     queue = get_queue(context)
-    
+
     # Convert filenames to full paths
     full_paths = []
-    for att in (attachments or []):
+    for att in attachments or []:
         if att.startswith("/"):
             full_paths.append(att)
         else:
             full_paths.append(f"{UPLOAD_FOLDER}/{att}")
-    
+
     item = {
         "id": item_id or guids.generate_id(),
         "seq": _get_next_seq(context),
@@ -125,7 +129,7 @@ def log_user_message(
         if attachment_paths
         else []
     )
-    
+
     # Print to console
     label = f"User message{source}:"
     PrintStyle(
@@ -136,7 +140,7 @@ def log_user_message(
         PrintStyle(font_color="white", padding=False).print("Attachments:")
         for filename in attachment_filenames:
             PrintStyle(font_color="white", padding=False).print(f"- {filename}")
-    
+
     # Log to UI
     context.log.log(
         type="user",
@@ -150,7 +154,7 @@ def log_user_message(
 def send_message(context: "AgentContext", item: dict, source: str = " (from queue)"):
     """Send a single queued message (log + communicate)."""
     from backend.core.agent import UserMessage  # Import here to avoid circular import
-    
+
     message = item.get("text", "")
     attachments = item.get("attachments", [])
     log_user_message(context, message, attachments, source=source)
@@ -171,18 +175,18 @@ def send_next(context: "AgentContext") -> bool:
 def send_all_aggregated(context: "AgentContext") -> int:
     """Aggregate and send all queued messages as one. Returns count of items sent."""
     from backend.core.agent import UserMessage  # Import here to avoid circular import
-    
+
     if not has_queue(context):
         return 0
-    
+
     items = []
     while has_queue(context):
         items.append(pop_first(context))
-    
+
     # Combine texts with separator
     text = "\n\n---\n\n".join(i["text"] for i in items if i["text"])
     attachments = [a for i in items for a in i.get("attachments", [])]
-    
+
     log_user_message(context, text, attachments, source=" (queued batch)")
     context.communicate(UserMessage(text, attachments))
     return len(items)
