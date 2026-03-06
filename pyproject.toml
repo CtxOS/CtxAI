@@ -172,3 +172,16 @@ markers = [
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "B", "C4", "UP"]
+ignore = ["E501", "B006", "B008", "E701", "E402", "C408", "B904", "B905", "B007", "UP047", "UP042", "UP007", "UP045", "E722", "B024", "N802", "C416", "W291", "C414", "B015", "UP031", "N818", "F811", "N812", "B023"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]
+"test_litellm2.py" = ["E402"]
+"test_litellm.py" = ["E402"]

@@ -1,5 +1,4 @@
 import os
-import re
 from typing import Any
 
 from backend.utils import files, persist_chat

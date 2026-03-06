@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from datetime import timezone as dt_timezone
 
 import pytz  # type: ignore
@@ -131,7 +131,7 @@ class Localization:
                 )
 
             # Convert to UTC
-            return local_datetime_obj.astimezone(dt_timezone.utc)
+            return local_datetime_obj.astimezone(UTC)
         except Exception as e:
             PrintStyle.error(f"Error converting localtime string to UTC: {e}")
             return None
@@ -152,9 +152,9 @@ class Localization:
         try:
             # Ensure datetime is timezone aware in UTC
             if utc_dt.tzinfo is None:
-                utc_dt = utc_dt.replace(tzinfo=dt_timezone.utc)
+                utc_dt = utc_dt.replace(tzinfo=UTC)
             else:
-                utc_dt = utc_dt.astimezone(dt_timezone.utc)
+                utc_dt = utc_dt.astimezone(UTC)
 
             # Convert to local time using fixed offset
             local_tz = dt_timezone(timedelta(minutes=self._offset_minutes))
@@ -178,7 +178,7 @@ class Localization:
         try:
             # Ensure datetime is timezone aware (if not, assume UTC)
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=dt_timezone.utc)
+                dt = dt.replace(tzinfo=UTC)
 
             local_tz = dt_timezone(timedelta(minutes=self._offset_minutes))
             local_dt = dt.astimezone(local_tz)

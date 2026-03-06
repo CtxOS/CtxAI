@@ -1,4 +1,4 @@
-from backend.utils.tool import Tool, Response
+from backend.utils.tool import Response, Tool
 
 # example of a tool redefinition
 # the original response tool is in backend/tools/response.py

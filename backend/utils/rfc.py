@@ -5,7 +5,7 @@ from typing import Any, TypedDict
 
 import aiohttp
 
-from backend.utils import crypto, dotenv
+from backend.utils import crypto
 
 # Remote Function Call library
 # Call function via http request

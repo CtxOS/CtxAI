@@ -4,7 +4,7 @@ import os
 import platform
 import tempfile
 import zipfile
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pathspec import PathSpec
 from pathspec.patterns.gitwildmatch import GitWildMatchPattern
@@ -35,7 +35,7 @@ class BackupService:
             self.ctxai_root: self.ctxai_root,
         }
 
-    def get_default_backup_metadata(self) -> Dict[str, Any]:
+    def get_default_backup_metadata(self) -> dict[str, Any]:
         """Get default backup patterns and metadata"""
         timestamp = datetime.datetime.now().isoformat()
 
@@ -113,7 +113,7 @@ class BackupService:
 
         return "\n".join(patterns)
 
-    async def _get_system_info(self) -> Dict[str, Any]:
+    async def _get_system_info(self) -> dict[str, Any]:
         """Collect system information for metadata"""
         import psutil
 
@@ -135,7 +135,7 @@ class BackupService:
         except Exception as e:
             return {"error": f"Failed to collect system info: {str(e)}"}
 
-    async def _get_environment_info(self) -> Dict[str, Any]:
+    async def _get_environment_info(self) -> dict[str, Any]:
         """Collect environment information for metadata"""
         try:
             return {
@@ -166,7 +166,7 @@ class BackupService:
         except Exception:
             return "unknown"
 
-    def _count_directories(self, matched_files: List[Dict[str, Any]]) -> int:
+    def _count_directories(self, matched_files: list[dict[str, Any]]) -> int:
         """Count unique directories in file list"""
         directories = set()
         for file_info in matched_files:
@@ -175,7 +175,7 @@ class BackupService:
                 directories.add(dir_path)
         return len(directories)
 
-    def _get_explicit_patterns(self, include_patterns: List[str]) -> set[str]:
+    def _get_explicit_patterns(self, include_patterns: list[str]) -> set[str]:
         """Extract explicit (non-wildcard) patterns that should always be included"""
         explicit_patterns = set()
 
@@ -199,8 +199,8 @@ class BackupService:
         return relative_path in explicit_patterns
 
     def _translate_patterns(
-        self, patterns: List[str], backup_metadata: Dict[str, Any]
-    ) -> List[str]:
+        self, patterns: list[str], backup_metadata: dict[str, Any]
+    ) -> list[str]:
         """Translate patterns from backed up system to current system.
 
         Replaces the backed up Ctx AI root path with the current Ctx AI root path
@@ -246,8 +246,8 @@ class BackupService:
         return translated_patterns
 
     async def test_patterns(
-        self, metadata: Dict[str, Any], max_files: int = 1000
-    ) -> List[Dict[str, Any]]:
+        self, metadata: dict[str, Any], max_files: int = 1000
+    ) -> list[dict[str, Any]]:
         """Test backup patterns and return list of matched files"""
         include_patterns = metadata.get("include_patterns", [])
         exclude_patterns = metadata.get("exclude_patterns", [])
@@ -325,7 +325,7 @@ class BackupService:
                                     }
                                 )
                                 processed_count += 1
-                            except (OSError, IOError):
+                            except OSError:
                                 # Skip files we can't access
                                 continue
 
@@ -342,8 +342,8 @@ class BackupService:
 
     async def create_backup(
         self,
-        include_patterns: List[str],
-        exclude_patterns: List[str],
+        include_patterns: list[str],
+        exclude_patterns: list[str],
         include_hidden: bool = True,
         backup_name: str = "ctxai-backup",
     ) -> str:
@@ -416,7 +416,7 @@ class BackupService:
                     try:
                         if os.path.exists(real_path) and os.path.isfile(real_path):
                             zipf.write(real_path, archive_path)
-                    except (OSError, IOError) as e:
+                    except OSError as e:
                         # Log error but continue with other files
                         PrintStyle().warning(f"Warning: Could not backup file {real_path}: {e}")
                         continue
@@ -429,7 +429,7 @@ class BackupService:
                 os.remove(zip_path)
             raise Exception(f"Error creating backup: {str(e)}")
 
-    async def inspect_backup(self, backup_file) -> Dict[str, Any]:
+    async def inspect_backup(self, backup_file) -> dict[str, Any]:
         """Inspect backup archive and return metadata"""
 
         # Save uploaded file temporarily
@@ -467,12 +467,12 @@ class BackupService:
     async def preview_restore(
         self,
         backup_file,
-        restore_include_patterns: Optional[List[str]] = None,
-        restore_exclude_patterns: Optional[List[str]] = None,
+        restore_include_patterns: list[str] | None = None,
+        restore_exclude_patterns: list[str] | None = None,
         overwrite_policy: str = "overwrite",
         clean_before_restore: bool = False,
-        user_edited_metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        user_edited_metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Preview which files would be restored based on patterns"""
 
         # Save uploaded file temporarily
@@ -620,12 +620,12 @@ class BackupService:
     async def restore_backup(
         self,
         backup_file,
-        restore_include_patterns: Optional[List[str]] = None,
-        restore_exclude_patterns: Optional[List[str]] = None,
+        restore_include_patterns: list[str] | None = None,
+        restore_exclude_patterns: list[str] | None = None,
         overwrite_policy: str = "overwrite",
         clean_before_restore: bool = False,
-        user_edited_metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        user_edited_metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Restore files from backup archive"""
 
         # Save uploaded file temporarily
@@ -813,7 +813,7 @@ class BackupService:
             if os.path.exists(temp_dir):
                 os.rmdir(temp_dir)
 
-    def _translate_restore_path(self, archive_path: str, backup_metadata: Dict[str, Any]) -> str:
+    def _translate_restore_path(self, archive_path: str, backup_metadata: dict[str, Any]) -> str:
         """Translate file path from backed up system to current system.
 
         Replaces the backed up Ctx AI root path with the current Ctx AI root path
@@ -864,8 +864,8 @@ class BackupService:
             return absolute_archive_path
 
     async def _find_files_to_clean_with_user_metadata(
-        self, user_metadata: Dict[str, Any], original_metadata: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        self, user_metadata: dict[str, Any], original_metadata: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """Find existing files that match patterns from user-edited metadata for clean operations"""
         # Use user-edited patterns for what to clean
         user_include_patterns = user_metadata.get("include_patterns", [])

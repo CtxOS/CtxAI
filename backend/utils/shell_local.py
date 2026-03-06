@@ -1,9 +1,3 @@
-import platform
-import select
-import subprocess
-import sys
-import time
-from typing import Optional, Tuple
 
 from backend.utils import runtime, tty_session
 from backend.utils.shell_ssh import clean_string
@@ -33,7 +27,7 @@ class LocalInteractiveSession:
 
     async def read_output(
         self, timeout: float = 0, reset_full_output: bool = False
-    ) -> Tuple[str, Optional[str]]:
+    ) -> tuple[str, str | None]:
         if not self.session:
             raise Exception("Shell not connected")
 

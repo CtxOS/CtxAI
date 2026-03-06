@@ -6,7 +6,6 @@ import sys
 
 _IS_WIN = platform.system() == "Windows"
 if _IS_WIN:
-    import msvcrt
 
     import winpty  # pip install pywinpty # type: ignore
 
@@ -107,7 +106,7 @@ class TTYSession:
         # Return any decoded text the child produced, or None on timeout
         try:
             return await asyncio.wait_for(self._buf.get(), timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return None
 
     # backward-compat alias:

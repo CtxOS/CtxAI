@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from flask import Flask, Response
 
-import pytest
-
 from backend.utils import runtime
 
 

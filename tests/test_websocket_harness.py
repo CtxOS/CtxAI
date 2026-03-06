@@ -9,10 +9,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.interfaces.websockets.websocket_manager import WebSocketManager
 from backend.interfaces.websockets.dev_websocket_test_handler import (
     DevWebsocketTestHandler,
 )
+from backend.interfaces.websockets.websocket_manager import WebSocketManager
 
 NAMESPACE = "/dev_websocket_test"
 

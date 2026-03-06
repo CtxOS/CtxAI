@@ -1,5 +1,5 @@
 from backend.utils import projects
-from backend.utils.api import ApiHandler, Input, Output, Request, Response
+from backend.utils.api import ApiHandler, Input, Output, Request
 from backend.utils.notification import NotificationManager, NotificationPriority, NotificationType
 
 
@@ -72,10 +72,10 @@ class Projects(ApiHandler):
             raise Exception("Git URL is required")
 
         # Progress notification
-        notification = NotificationManager.send_notification(
+        NotificationManager.send_notification(
             NotificationType.PROGRESS,
             NotificationPriority.NORMAL,
-            f"Cloning repository...",
+            "Cloning repository...",
             "Git Clone",
             display_time=999,
             group="git_clone",
@@ -89,7 +89,7 @@ class Projects(ApiHandler):
             NotificationManager.send_notification(
                 NotificationType.SUCCESS,
                 NotificationPriority.NORMAL,
-                f"Repository cloned successfully",
+                "Repository cloned successfully",
                 "Git Clone",
                 display_time=3,
                 group="git_clone",

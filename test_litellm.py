@@ -1,7 +1,7 @@
 import asyncio
-from backend.core.models import get_utility_model, ModelConfig, ModelType
-from litellm import acompletion
-import logging
+
+from backend.core.models import ModelConfig, ModelType, get_utility_model
+
 
 async def main():
     try:
@@ -12,7 +12,7 @@ async def main():
         )
         model = get_utility_model("openrouter", "openai/gpt-3.5-turbo", config)
         print("Model created")
-        
+
         response, reasoning = await model.unified_call(
             system_message="Hello",
             user_message="Are you there?"

@@ -3,16 +3,16 @@ Memory service for managing memory operations.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class MemoryService:
     """Service for managing memory operations."""
 
     def __init__(self):
-        self._memories: Dict[str, Dict[str, Any]] = {}
+        self._memories: dict[str, dict[str, Any]] = {}
 
-    def create_memory(self, content: str, tags: List[str] = None, agent_id: str = None) -> str:
+    def create_memory(self, content: str, tags: list[str] = None, agent_id: str = None) -> str:
         """Create a new memory."""
         memory_id = f"memory_{len(self._memories) + 1}"
         self._memories[memory_id] = {
@@ -25,11 +25,11 @@ class MemoryService:
         }
         return memory_id
 
-    def get_memory(self, memory_id: str) -> Optional[Dict[str, Any]]:
+    def get_memory(self, memory_id: str) -> dict[str, Any] | None:
         """Get a memory by ID."""
         return self._memories.get(memory_id)
 
-    def search_memories(self, query: str, agent_id: str = None) -> List[Dict[str, Any]]:
+    def search_memories(self, query: str, agent_id: str = None) -> list[dict[str, Any]]:
         """Search memories by content."""
         results = []
         query_lower = query.lower()
@@ -43,7 +43,7 @@ class MemoryService:
 
         return results
 
-    def list_memories(self, agent_id: str = None, tags: List[str] = None) -> List[Dict[str, Any]]:
+    def list_memories(self, agent_id: str = None, tags: list[str] = None) -> list[dict[str, Any]]:
         """List memories, optionally filtered."""
         memories = list(self._memories.values())
 

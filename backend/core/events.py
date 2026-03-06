@@ -6,9 +6,10 @@ to communicate through events without tight coupling.
 """
 
 import asyncio
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 
 @dataclass
@@ -16,7 +17,7 @@ class Event:
     """Represents an event in the system."""
 
     name: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
     timestamp: datetime
     source: str = "unknown"
 
@@ -25,7 +26,7 @@ class EventManager:
     """Manages event subscription and publishing."""
 
     def __init__(self):
-        self._subscribers: Dict[str, List[Callable]] = {}
+        self._subscribers: dict[str, list[Callable]] = {}
         self._lock = asyncio.Lock()
 
     async def subscribe(self, event_name: str, callback: Callable[[Event], None]) -> None:
@@ -65,7 +66,7 @@ class EventManager:
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
-    def get_subscribed_events(self) -> List[str]:
+    def get_subscribed_events(self) -> list[str]:
         """Get list of all subscribed event names."""
         return list(self._subscribers.keys())
 

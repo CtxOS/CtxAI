@@ -2,7 +2,6 @@ import requests
 
 from backend.utils import dotenv, runtime
 from backend.utils.api import ApiHandler, Request, Response
-from backend.utils.tunnel_manager import TunnelManager
 
 
 class TunnelProxy(ApiHandler):
@@ -24,7 +23,7 @@ async def process(input: dict) -> dict | Response:
         response = requests.post(f"http://localhost:{tunnel_api_port}/", json={"action": "health"})
         if response.status_code == 200:
             service_ok = True
-    except Exception as e:
+    except Exception:
         service_ok = False
 
     # forward this request to the tunnel service if OK

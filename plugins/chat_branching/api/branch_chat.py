@@ -1,12 +1,12 @@
 from datetime import datetime
 
+from backend.core.agent import AgentContext
 from backend.utils.api import ApiHandler, Input, Output, Request, Response
 from backend.utils.persist_chat import (
-    _serialize_context,
     _deserialize_context,
+    _serialize_context,
     save_tmp_chat,
 )
-from backend.core.agent import AgentContext
 
 
 class BranchChat(ApiHandler):

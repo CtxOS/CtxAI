@@ -3,14 +3,14 @@ Chat service for managing chat operations.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ChatService:
     """Service for managing chat operations."""
 
     def __init__(self):
-        self._chats: Dict[str, Dict[str, Any]] = {}
+        self._chats: dict[str, dict[str, Any]] = {}
 
     def create_chat(self, agent_id: str, title: str = None) -> str:
         """Create a new chat session."""
@@ -25,11 +25,11 @@ class ChatService:
         }
         return chat_id
 
-    def get_chat(self, chat_id: str) -> Optional[Dict[str, Any]]:
+    def get_chat(self, chat_id: str) -> dict[str, Any] | None:
         """Get a chat by ID."""
         return self._chats.get(chat_id)
 
-    def add_message(self, chat_id: str, message: Dict[str, Any]) -> bool:
+    def add_message(self, chat_id: str, message: dict[str, Any]) -> bool:
         """Add a message to a chat."""
         if chat_id in self._chats:
             self._chats[chat_id]["messages"].append(message)
@@ -37,7 +37,7 @@ class ChatService:
             return True
         return False
 
-    def list_chats(self, agent_id: str = None) -> List[Dict[str, Any]]:
+    def list_chats(self, agent_id: str = None) -> list[dict[str, Any]]:
         """List chats, optionally filtered by agent."""
         chats = list(self._chats.values())
         if agent_id:

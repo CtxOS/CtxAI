@@ -1,10 +1,7 @@
-import atexit
 import time
-from typing import Optional
 
 import docker
 from backend.utils.errors import format_error
-from backend.utils.files import get_abs_path
 from backend.utils.log import Log
 from backend.utils.print_style import PrintStyle
 
@@ -14,8 +11,8 @@ class DockerContainerManager:
         self,
         image: str,
         name: str,
-        ports: Optional[dict[str, int]] = None,
-        volumes: Optional[dict[str, dict[str, str]]] = None,
+        ports: dict[str, int] | None = None,
+        volumes: dict[str, dict[str, str]] | None = None,
         logger: Log | None = None,
     ):
         self.logger = logger

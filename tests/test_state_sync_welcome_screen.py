@@ -32,9 +32,9 @@ async def test_state_sync_handshake_and_initial_snapshot_work_with_no_selected_c
     is null. We must still handshake and receive an initial `state_push` quickly (no hang).
     """
 
-    from backend.utils.state_snapshot import validate_snapshot_schema_v1
-    from backend.utils.state_monitor import _reset_state_monitor_for_testing
     from backend.interfaces.websockets.state_sync_handler import StateSyncHandler
+    from backend.utils.state_monitor import _reset_state_monitor_for_testing
+    from backend.utils.state_snapshot import validate_snapshot_schema_v1
 
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())

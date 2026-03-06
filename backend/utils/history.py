@@ -2,14 +2,12 @@ import asyncio
 import json
 import math
 from abc import abstractmethod
-from collections import OrderedDict
 from collections.abc import Mapping
-from enum import Enum
-from typing import Any, Coroutine, Dict, List, Literal, TypedDict, Union, cast
+from typing import TypedDict, Union, cast
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
-from backend.utils import call_llm, messages, settings, tokens
+from backend.utils import messages, settings, tokens
 
 BULK_MERGE_COUNT = 3
 TOPICS_MERGE_COUNT = 3
@@ -32,11 +30,11 @@ class RawMessage(TypedDict):
 
 
 MessageContent = Union[
-    List["MessageContent"],
-    Dict[str, "MessageContent"],
-    List[Dict[str, "MessageContent"]],
+    list["MessageContent"],
+    dict[str, "MessageContent"],
+    list[dict[str, "MessageContent"]],
     str,
-    List[str],
+    list[str],
     RawMessage,
 ]
 
@@ -280,7 +278,7 @@ class Bulk(Record):
     def from_dict(data: dict, history: "History"):
         bulk = Bulk(history=history)
         bulk.summary = data["summary"]
-        cls = data["_cls"]
+        data["_cls"]
         bulk.records = [Record.from_dict(r, history=history) for r in data["records"]]
         return bulk
 
@@ -563,8 +561,8 @@ def _merge_outputs(a: MessageContent, b: MessageContent) -> MessageContent:
 
 
 def _merge_properties(
-    a: Dict[str, MessageContent], b: Dict[str, MessageContent]
-) -> Dict[str, MessageContent]:
+    a: dict[str, MessageContent], b: dict[str, MessageContent]
+) -> dict[str, MessageContent]:
     result = a.copy()
     for k, v in b.items():
         if k in result:

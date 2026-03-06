@@ -1,11 +1,11 @@
 #!/usr/bin/python
-import sys
-import os
 import logging
+import os
 import subprocess
+import sys
 import time
 
-from supervisor.childutils import listener # type: ignore
+from supervisor.childutils import listener  # type: ignore
 
 
 def main(args):

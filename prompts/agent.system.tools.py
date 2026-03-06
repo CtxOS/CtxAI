@@ -1,7 +1,8 @@
 import os
 from typing import Any
-from backend.utils.files import VariablesPlugin
+
 from backend.utils import files
+from backend.utils.files import VariablesPlugin
 from backend.utils.print_style import PrintStyle
 
 
@@ -17,7 +18,7 @@ class BuidToolsPrompt(VariablesPlugin):
 
         # collect all tool instruction files
         prompt_files = files.get_unique_filenames_in_dirs(folders, "agent.system.tool.*.md")
-        
+
         # load tool instructions
         tools = []
         for prompt_file in prompt_files:

@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import List
-
-from backend.utils import file_tree, files, projects, runtime
 from backend.utils import skills as skills_helper
 from backend.utils.tool import Response, Tool
 
@@ -62,7 +58,7 @@ class SkillsTool(Tool):
         # Stable output: sort by name
         skills_sorted = sorted(skills, key=lambda s: s.name.lower())
 
-        lines: List[str] = []
+        lines: list[str] = []
         lines.append(f"Available skills ({len(skills_sorted)}):")
         for s in skills_sorted:
             tags = f" tags={','.join(s.tags)}" if s.tags else ""

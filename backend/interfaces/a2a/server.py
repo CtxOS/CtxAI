@@ -4,7 +4,7 @@ import atexit
 import contextlib
 import threading
 import uuid
-from typing import Any, List
+from typing import Any
 
 from starlette.requests import Request
 
@@ -144,11 +144,11 @@ class CtxAiWorker(Worker):  # type: ignore[misc]
 
         # Note: No context cleanup needed since contexts are always temporary and cleaned up in run_task
 
-    def build_message_history(self, history: List[Any]) -> List[Message]:  # type: ignore
+    def build_message_history(self, history: list[Any]) -> list[Message]:  # type: ignore
         # Not used in this simplified implementation
         return []
 
-    def build_artifacts(self, result: Any) -> List[Artifact]:  # type: ignore
+    def build_artifacts(self, result: Any) -> list[Artifact]:  # type: ignore
         # No artifacts for now
         return []
 
@@ -218,7 +218,7 @@ class DynamicA2AProxy:
             broker = InMemoryBroker()  # type: ignore[arg-type]
 
             # Define Ctx AI's skills
-            skills: List[Skill] = [
+            skills: list[Skill] = [
                 {  # type: ignore
                     "id": "general_assistance",
                     "name": "General AI Assistant",

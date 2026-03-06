@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from backend.utils.print_style import PrintStyle
 
@@ -18,7 +18,7 @@ _PRINTER = PrintStyle(italic=True, font_color="cyan", padding=False)
 class AgentConnection:
     """Helper class for connecting to and communicating with other Ctx AI instances via FastA2A."""
 
-    def __init__(self, agent_url: str, timeout: int = 30, token: Optional[str] = None):
+    def __init__(self, agent_url: str, timeout: int = 30, token: str | None = None):
         """Initialize connection to an agent.
 
         Args:
@@ -45,11 +45,11 @@ class AgentConnection:
             headers["X-API-KEY"] = token
         self._http_client = httpx.AsyncClient(timeout=timeout, headers=headers)  # type: ignore
         self._a2a_client = A2AClient(base_url=self.agent_url, http_client=self._http_client)  # type: ignore
-        self._agent_card: Optional[Dict[str, Any]] = None
+        self._agent_card: dict[str, Any] | None = None
         # Track conversation context automatically
-        self._context_id: Optional[str] = None
+        self._context_id: str | None = None
 
-    async def get_agent_card(self) -> Dict[str, Any]:
+    async def get_agent_card(self) -> dict[str, Any]:
         """Retrieve the agent card from the remote agent."""
         if self._agent_card is None:
             try:
@@ -80,10 +80,10 @@ class AgentConnection:
     async def send_message(
         self,
         message: str,
-        attachments: Optional[List[str]] = None,
-        context_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        attachments: list[str] | None = None,
+        context_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Send a message to the remote agent and return task response."""
         if not self._agent_card:
             await self.get_agent_card()
@@ -131,7 +131,7 @@ class AgentConnection:
             _PRINTER.print(f"[A2A] Error sending message: {e}")
             raise
 
-    async def get_task(self, task_id: str) -> Dict[str, Any]:
+    async def get_task(self, task_id: str) -> dict[str, Any]:
         """Get the status and results of a task.
 
         Args:
@@ -149,7 +149,7 @@ class AgentConnection:
 
     async def wait_for_completion(
         self, task_id: str, poll_interval: int = 2, max_wait: int = 300
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Wait for a task to complete and return the final result.
 
         Args:

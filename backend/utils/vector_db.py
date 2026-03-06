@@ -1,4 +1,5 @@
-from typing import Any, List, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import faiss
 from langchain.embeddings import CacheBackedEmbeddings
@@ -14,16 +15,16 @@ from simpleeval import simple_eval
 from backend.core.agent import Agent
 
 # faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
-from backend.utils import faiss_monkey_patch, guids
+from backend.utils import guids
 
 
 class MyFaiss(FAISS):
     # override aget_by_ids
-    def get_by_ids(self, ids: Sequence[str], /) -> List[Document]:
+    def get_by_ids(self, ids: Sequence[str], /) -> list[Document]:
         # return all self.docstore._dict[id] in ids
         return [self.docstore._dict[id] for id in (ids if isinstance(ids, list) else [ids]) if id in self.docstore._dict]  # type: ignore
 
-    async def aget_by_ids(self, ids: Sequence[str], /) -> List[Document]:
+    async def aget_by_ids(self, ids: Sequence[str], /) -> list[Document]:
         return self.get_by_ids(ids)
 
     def get_all_docs(self) -> dict[str, Document]:
@@ -135,7 +136,7 @@ def get_comparator(condition: str):
         try:
             result = simple_eval(condition, names=data)
             return result
-        except Exception as e:
+        except Exception:
             # PrintStyle.error(f"Error evaluating condition: {e}")
             return False
 

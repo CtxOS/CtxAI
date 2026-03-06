@@ -1,8 +1,7 @@
-import asyncio
 import contextvars
 import os
 import threading
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
 from urllib.parse import urlparse
 
 import fastmcp
@@ -127,7 +126,7 @@ async def send_message(
         | None
     ) = None,
 ) -> Annotated[
-    Union[ToolResponse, ToolError],
+    ToolResponse | ToolError,
     Field(description="The response from the remote Ctx AI Instance", title="response"),
 ]:
     # Get project name from context variable (set in proxy __call__)
@@ -218,7 +217,7 @@ async def finish_chat(
         ),
     ],
 ) -> Annotated[
-    Union[ToolResponse, ToolError],
+    ToolResponse | ToolError,
     Field(description="The response from the remote Ctx AI Instance", title="response"),
 ]:
     if not chat_id:

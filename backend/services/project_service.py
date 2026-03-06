@@ -3,14 +3,14 @@ Project service for managing project operations.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ProjectService:
     """Service for managing project operations."""
 
     def __init__(self):
-        self._projects: Dict[str, Dict[str, Any]] = {}
+        self._projects: dict[str, dict[str, Any]] = {}
 
     def create_project(self, name: str, description: str = "", repo_url: str = "") -> str:
         """Create a new project."""
@@ -26,15 +26,15 @@ class ProjectService:
         }
         return project_id
 
-    def get_project(self, project_id: str) -> Optional[Dict[str, Any]]:
+    def get_project(self, project_id: str) -> dict[str, Any] | None:
         """Get a project by ID."""
         return self._projects.get(project_id)
 
-    def list_projects(self) -> List[Dict[str, Any]]:
+    def list_projects(self) -> list[dict[str, Any]]:
         """List all projects."""
         return list(self._projects.values())
 
-    def update_project(self, project_id: str, updates: Dict[str, Any]) -> bool:
+    def update_project(self, project_id: str, updates: dict[str, Any]) -> bool:
         """Update a project."""
         if project_id in self._projects:
             self._projects[project_id].update(updates)

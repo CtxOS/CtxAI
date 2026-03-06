@@ -1,5 +1,4 @@
 import os
-import uuid
 from typing import TYPE_CHECKING
 
 from backend.utils import guids

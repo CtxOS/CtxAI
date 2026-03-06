@@ -1,5 +1,4 @@
-import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from backend.utils.localization import Localization
 from backend.utils.print_style import PrintStyle
@@ -20,7 +19,7 @@ class WaitTool(Tool):
 
         is_duration_wait = not bool(until_timestamp_str)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         target_time = None
 
         if until_timestamp_str:
@@ -84,5 +83,5 @@ class WaitTool(Tool):
     def get_heading(self, text: str = "", done: bool = False):
         done_icon = " icon://done_all" if done else ""
         if not text:
-            text = f"Waiting..."
+            text = "Waiting..."
         return f"icon://timer Wait: {text}{done_icon}"

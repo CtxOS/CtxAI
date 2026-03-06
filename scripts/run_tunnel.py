@@ -1,10 +1,11 @@
 import threading
-from flask import Flask, request
-from backend.infrastructure.system import process
-from backend.utils import runtime, dotenv
-from backend.utils.print_style import PrintStyle
 
 from backend.api.tunnel import Tunnel
+from flask import Flask, request
+
+from backend.infrastructure.system import process
+from backend.utils import dotenv, runtime
+from backend.utils.print_style import PrintStyle
 
 # initialize the internal Flask server
 app = Flask("app")
@@ -13,8 +14,7 @@ app.config["JSON_SORT_KEYS"] = False  # Disable key sorting in jsonify
 
 def run():
     # Suppress only request logs but keep the startup messages
-    from werkzeug.serving import WSGIRequestHandler
-    from werkzeug.serving import make_server
+    from werkzeug.serving import WSGIRequestHandler, make_server
 
     PrintStyle().print("Starting tunnel server...")
 
@@ -44,7 +44,7 @@ def run():
             request_handler=NoRequestLoggingWSGIRequestHandler,
             threaded=True,
         )
-        
+
         process.set_server(server)
         # server.log_startup()
         server.serve_forever()

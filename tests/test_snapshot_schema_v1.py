@@ -11,7 +11,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from backend.interfaces.api.routes.chat.poll import Poll
 
-
 EXPECTED_SNAPSHOT_KEYS = {
     "deselect_chat",
     "context",

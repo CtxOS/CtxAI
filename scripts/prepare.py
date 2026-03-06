@@ -1,8 +1,8 @@
-from backend.utils import dotenv, runtime, settings
-import string
 import random
-from backend.utils.print_style import PrintStyle
+import string
 
+from backend.utils import dotenv, runtime, settings
+from backend.utils.print_style import PrintStyle
 
 PrintStyle.standard("Preparing environment...")
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from backend.utils.api import ApiHandler, Request, Response
 from backend.utils.backup import BackupService
@@ -61,7 +61,7 @@ class BackupPreviewGrouped(ApiHandler):
                 all_files = [f for f in all_files if search_lower in f["path"].lower()]
 
             # Group files by directory structure
-            groups: Dict[str, Dict[str, Any]] = {}
+            groups: dict[str, dict[str, Any]] = {}
             total_size = 0
 
             for file_info in all_files:

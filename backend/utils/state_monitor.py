@@ -65,7 +65,7 @@ class StateMonitor:
         self._dispatcher_loop: asyncio.AbstractEventLoop | None = None
         self._dirty_wave_seq: int = 0
 
-    def bind_manager(self, manager: "WebSocketManager", *, handler_id: str | None = None) -> None:
+    def bind_manager(self, manager: WebSocketManager, *, handler_id: str | None = None) -> None:
         with self._lock:
             self._manager = manager
             if handler_id:

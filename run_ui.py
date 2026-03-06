@@ -1,36 +1,38 @@
-from datetime import timedelta
-import os
-import secrets
-import time
-import threading
 import asyncio
 
+# disable logging
+import logging
+import os
+import secrets
+import threading
+import time
 import urllib.request
-import uvicorn
-from flask import Flask, request, Response, session, redirect, url_for, render_template_string
-from werkzeug.wrappers.request import Request as WerkzeugRequest
+from datetime import timedelta
 
-import initialize
-from backend.utils import files, settings as settings_helper, extension
-from backend.infrastructure.system import git, process
-from backend.interfaces.mcp import server as mcp_server
-from backend.interfaces.a2a import server as fasta2a_server
-from backend.utils.files import get_abs_path
-from backend.utils import runtime, dotenv
-from backend.interfaces.websockets.websocket import WebSocketHandler, validate_ws_origin
-from backend.utils.api import register_api_route, requires_auth, csrf_protect
-from backend.utils.print_style import PrintStyle
-from backend.utils import login
 import socketio  # type: ignore[import-untyped]
+import uvicorn
+from flask import Flask, Response, redirect, render_template_string, request, session, url_for
 from socketio import ASGIApp, packet
 from starlette.applications import Starlette
 from starlette.routing import Mount
 from uvicorn.middleware.wsgi import WSGIMiddleware
-from backend.interfaces.websockets.websocket_manager import WebSocketManager
-from backend.interfaces.websockets.websocket_namespace_discovery import discover_websocket_namespaces
+from werkzeug.wrappers.request import Request as WerkzeugRequest
 
-# disable logging
-import logging
+import initialize
+from backend.infrastructure.system import git, process
+from backend.interfaces.a2a import server as fasta2a_server
+from backend.interfaces.mcp import server as mcp_server
+from backend.interfaces.websockets.websocket import WebSocketHandler, validate_ws_origin
+from backend.interfaces.websockets.websocket_manager import WebSocketManager
+from backend.interfaces.websockets.websocket_namespace_discovery import (
+    discover_websocket_namespaces,
+)
+from backend.utils import dotenv, extension, files, login, runtime
+from backend.utils import settings as settings_helper
+from backend.utils.api import register_api_route, requires_auth
+from backend.utils.files import get_abs_path
+from backend.utils.print_style import PrintStyle
+
 logging.getLogger().setLevel(logging.WARNING)
 
 
@@ -154,28 +156,29 @@ async def _serve_plugin_asset(plugin_name, asset_path):
     Serve static assets from plugin directories.
     Resolves using the plugin system (with overrides).
     """
-    from backend.utils import plugins
     from flask import send_file
-    
+
+    from backend.utils import plugins
+
     # Use the new find_plugin helper
     plugin_dir = plugins.find_plugin_dir(plugin_name)
     if not plugin_dir:
         return Response("Plugin not found", 404)
-    
+
     # Resolve the plugin asset path with security checks
     try:
         # Construct path using plugin root
         asset_file = files.get_abs_path(plugin_dir, asset_path)
         webui_dir = files.get_abs_path(plugin_dir, "webui")
         webui_extensions_dir = files.get_abs_path(plugin_dir, "extensions/webui")
-        
+
         # Security: ensure the resolved path is within the plugin webui directory
         if not files.is_in_dir(str(asset_file), str(webui_dir)) and not files.is_in_dir(str(asset_file), str(webui_extensions_dir)):
             return Response("Access denied", 403)
-            
+
         if not files.is_file(asset_file):
             return Response("Asset not found", 404)
-            
+
         return send_file(str(asset_file))
     except Exception as e:
         PrintStyle.error(f"Error serving plugin asset: {e}")

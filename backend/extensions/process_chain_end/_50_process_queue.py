@@ -1,6 +1,6 @@
 import asyncio
 
-from backend.core.agent import Agent, AgentContext, LoopData
+from backend.core.agent import AgentContext, LoopData
 from backend.utils import message_queue as mq
 from backend.utils.extension import Extension
 

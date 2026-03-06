@@ -1,9 +1,5 @@
-import asyncio
-import os
 
-from backend.utils import dotenv, duckduckgo_search, perplexity_search
 from backend.utils.errors import handle_error
-from backend.utils.print_style import PrintStyle
 from backend.utils.searxng import search as searxng
 from backend.utils.tool import Response, Tool
 

@@ -75,7 +75,7 @@ async def load_file(file_path: str) -> dict:
 
     mime_type, _ = mimetypes.guess_type(full_path)
     try:
-        with open(full_path, "r", encoding="utf-8", errors="strict") as file:
+        with open(full_path, encoding="utf-8", errors="strict") as file:
             content = file.read()
     except UnicodeDecodeError:
         raise Exception("Unable to decode file as UTF-8; editing is not supported")

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import types
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping, TypedDict, Union, get_args, get_origin, get_type_hints
+from typing import Any, TypedDict, Union, get_args, get_origin, get_type_hints
 
 import pytz  # type: ignore[import-untyped]
 

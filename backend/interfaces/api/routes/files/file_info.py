@@ -2,7 +2,7 @@ import os
 from typing import TypedDict
 
 from backend.utils import files, runtime
-from backend.utils.api import ApiHandler, Input, Output, Request, Response
+from backend.utils.api import ApiHandler, Input, Output, Request
 
 
 class FileInfoApi(ApiHandler):

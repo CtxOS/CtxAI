@@ -1,10 +1,9 @@
 import base64
-import os
 
 from backend.api import get_work_dir_files
 from werkzeug.datastructures import FileStorage
 
-from backend.utils import files, runtime
+from backend.utils import runtime
 from backend.utils.api import ApiHandler, Request, Response
 from backend.utils.file_browser import FileBrowser
 

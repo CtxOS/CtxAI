@@ -1,9 +1,6 @@
-import asyncio
 
 from backend.core.agent import LoopData
-from backend.utils import log, persist_chat, tokens
 from backend.utils.extension import Extension
-from backend.utils.log import LogItem
 
 
 class LiveResponse(Extension):
@@ -17,7 +14,7 @@ class LiveResponse(Extension):
     ):
         try:
             if (
-                not "tool_name" in parsed
+                "tool_name" not in parsed
                 or parsed["tool_name"] != "response"
                 or "tool_args" not in parsed
                 or "text" not in parsed["tool_args"]
@@ -35,5 +32,5 @@ class LiveResponse(Extension):
             # update log message
             log_item = loop_data.params_temporary["log_item_response"]
             log_item.update(content=parsed["tool_args"]["text"])
-        except Exception as e:
+        except Exception:
             pass

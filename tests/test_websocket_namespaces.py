@@ -3,8 +3,9 @@ import contextlib
 import socket
 import sys
 import threading
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
@@ -13,8 +14,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.utils.state_monitor import StateMonitor
 from backend.interfaces.websockets.websocket_manager import WebSocketManager
+from backend.utils.state_monitor import StateMonitor
 
 
 class FakeSocketIOServer:
@@ -109,8 +110,8 @@ async def test_namespace_isolation_state_sync_vs_dev_websocket_test() -> None:
     Acceptance proof for `/state_sync` vs `/dev_websocket_test` namespaces.
     """
 
-    from flask import Flask
     import socketio
+    from flask import Flask
 
     from backend.interfaces.websockets.websocket import WebSocketHandler
     from backend.interfaces.websockets.websocket_manager import WebSocketManager

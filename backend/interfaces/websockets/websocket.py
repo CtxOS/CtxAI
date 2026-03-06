@@ -3,7 +3,8 @@ from __future__ import annotations
 import re
 import threading
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Iterable, Optional
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 import socketio
@@ -197,7 +198,7 @@ class WebSocketResult:
         *,
         correlation_id: str | None = None,
         duration_ms: float | None = None,
-    ) -> "WebSocketResult":
+    ) -> WebSocketResult:
         if data is not None and not isinstance(data, dict):
             raise TypeError("WebSocketResult.ok data must be a dict or None")
         payload = dict(data) if data is not None else None
@@ -217,7 +218,7 @@ class WebSocketResult:
         details: Any | None = None,
         correlation_id: str | None = None,
         duration_ms: float | None = None,
-    ) -> "WebSocketResult":
+    ) -> WebSocketResult:
         if not isinstance(code, str) or not code.strip():
             raise ValueError("Error code must be a non-empty string")
         if not isinstance(message, str) or not message.strip():
@@ -277,8 +278,8 @@ class WebSocketHandler(ABC):
     conventions.
     """
 
-    _instances: dict[type["WebSocketHandler"], "WebSocketHandler"] = {}
-    _construction_tokens: dict[type["WebSocketHandler"], bool] = {}
+    _instances: dict[type[WebSocketHandler], WebSocketHandler] = {}
+    _construction_tokens: dict[type[WebSocketHandler], bool] = {}
     _singleton_lock = threading.RLock()
 
     def __init__(self, socketio: socketio.AsyncServer, lock: threading.RLock) -> None:
@@ -292,7 +293,7 @@ class WebSocketHandler(ABC):
 
         self.socketio: socketio.AsyncServer = socketio
         self.lock: threading.RLock = lock
-        self._manager: Optional[WebSocketManager] = None
+        self._manager: WebSocketManager | None = None
         self._namespace: str | None = None
 
     @classmethod
@@ -302,7 +303,7 @@ class WebSocketHandler(ABC):
         lock: threading.RLock | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> "WebSocketHandler":
+    ) -> WebSocketHandler:
         """Return the singleton instance for ``cls``.
 
         Args:

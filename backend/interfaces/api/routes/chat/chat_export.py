@@ -1,5 +1,5 @@
 from backend.utils import persist_chat
-from backend.utils.api import ApiHandler, Input, Output, Request, Response
+from backend.utils.api import ApiHandler, Input, Output, Request
 
 
 class ExportChat(ApiHandler):

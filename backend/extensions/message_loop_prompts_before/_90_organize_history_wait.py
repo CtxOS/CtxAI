@@ -1,6 +1,6 @@
 from backend.core.agent import LoopData
 from backend.extensions.message_loop_end._10_organize_history import DATA_NAME_TASK
-from backend.utils.defer import THREAD_BACKGROUND, DeferredTask
+from backend.utils.defer import DeferredTask
 from backend.utils.extension import Extension
 
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Dict
+from typing import Any
 
 from backend.interfaces.websockets.websocket import WebSocketHandler, WebSocketResult
 from backend.utils import runtime
@@ -25,7 +25,7 @@ class DevWebsocketTestHandler(WebSocketHandler):
         ]
 
     async def process_event(
-        self, event_type: str, data: Dict[str, Any], sid: str
+        self, event_type: str, data: dict[str, Any], sid: str
     ) -> dict[str, Any] | WebSocketResult | None:
         if event_type == "ws_event_console_subscribe":
             if not runtime.is_development():

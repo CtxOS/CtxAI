@@ -2,8 +2,9 @@ import asyncio
 import contextlib
 import socket
 import sys
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
 
 import pytest
 
@@ -126,8 +127,8 @@ def test_discovery_folder_suffix_handler_stripped(tmp_path: Path) -> None:
 def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(
     tmp_path: Path, monkeypatch
 ) -> None:
-    from flask import Flask
     import socketio
+    from flask import Flask
 
     from backend.interfaces.websockets.websocket_manager import WebSocketManager
     from backend.interfaces.websockets.websocket_namespace_discovery import (

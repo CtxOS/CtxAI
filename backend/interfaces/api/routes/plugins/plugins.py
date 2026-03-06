@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from backend.utils import files, plugins
 from backend.utils.api import ApiHandler, Request, Response
@@ -237,7 +237,7 @@ class Plugins(ApiHandler):
             if not files.exists(init_script):
                 return Response(status=404, response="initialize.py not found")
 
-            executed_at = datetime.now(timezone.utc).isoformat()
+            executed_at = datetime.now(UTC).isoformat()
             try:
                 result = subprocess.run(
                     [sys.executable, init_script],

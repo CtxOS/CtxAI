@@ -5,16 +5,14 @@ import threading
 from abc import abstractmethod
 from functools import wraps
 from pathlib import Path
-from typing import Any, Dict, TypedDict, Union
+from typing import Any, TypedDict, Union
 
 from flask import (
     Flask,
     Request,
     Response,
-    jsonify,
     redirect,
     request,
-    send_file,
     session,
     url_for,
 )
@@ -32,7 +30,7 @@ CACHE_AREA = "api_handlers(api)(plugins)"
 cache.toggle_area(CACHE_AREA, False)  # cache off for now
 
 Input = dict
-Output = Union[Dict[str, Any], Response, TypedDict]  # type: ignore
+Output = Union[dict[str, Any], Response, TypedDict]  # type: ignore
 
 
 class ApiHandler:
@@ -128,11 +126,11 @@ def is_loopback_address(address: str) -> bool:
     try:
         socket.inet_pton(socket.AF_INET6, address)
         address_type = "ipv6"
-    except socket.error:
+    except OSError:
         try:
             socket.inet_pton(socket.AF_INET, address)
             address_type = "ipv4"
-        except socket.error:
+        except OSError:
             address_type = "hostname"
 
     if address_type == "ipv4":

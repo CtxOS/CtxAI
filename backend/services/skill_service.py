@@ -3,14 +3,14 @@ Skill service for managing skill operations.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class SkillService:
     """Service for managing skill operations."""
 
     def __init__(self):
-        self._skills: Dict[str, Dict[str, Any]] = {}
+        self._skills: dict[str, dict[str, Any]] = {}
 
     def create_skill(self, name: str, description: str, code: str, category: str = "custom") -> str:
         """Create a new skill."""
@@ -27,11 +27,11 @@ class SkillService:
         }
         return skill_id
 
-    def get_skill(self, skill_id: str) -> Optional[Dict[str, Any]]:
+    def get_skill(self, skill_id: str) -> dict[str, Any] | None:
         """Get a skill by ID."""
         return self._skills.get(skill_id)
 
-    def list_skills(self, category: str = None, enabled_only: bool = False) -> List[Dict[str, Any]]:
+    def list_skills(self, category: str = None, enabled_only: bool = False) -> list[dict[str, Any]]:
         """List skills, optionally filtered."""
         skills = list(self._skills.values())
 
@@ -43,7 +43,7 @@ class SkillService:
 
         return skills
 
-    def update_skill(self, skill_id: str, updates: Dict[str, Any]) -> bool:
+    def update_skill(self, skill_id: str, updates: dict[str, Any]) -> bool:
         """Update a skill."""
         if skill_id in self._skills:
             self._skills[skill_id].update(updates)

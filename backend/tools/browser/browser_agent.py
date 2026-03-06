@@ -1,8 +1,7 @@
 import asyncio
 import time
-import uuid
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 from pydantic import BaseModel
 
@@ -25,10 +24,10 @@ class State:
 
     def __init__(self, agent: Agent):
         self.agent = agent
-        self.browser_session: Optional[browser_use.BrowserSession] = None
-        self.task: Optional[defer.DeferredTask] = None
-        self.use_agent: Optional[browser_use.Agent] = None
-        self.secrets_dict: Optional[dict[str, str]] = None
+        self.browser_session: browser_use.BrowserSession | None = None
+        self.task: defer.DeferredTask | None = None
+        self.use_agent: browser_use.Agent | None = None
+        self.secrets_dict: dict[str, str] | None = None
         self.iter_no = 0
 
     def __del__(self):
@@ -259,7 +258,7 @@ class BrowserAgent(Tool):
                 try:
                     update = await asyncio.wait_for(self.get_update(), timeout=10)
                     fail_counter = 0  # reset on success
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     fail_counter += 1
                     PrintStyle().warning(
                         self._mask(f"browser_agent.get_update timed out ({fail_counter}/3)")
@@ -408,7 +407,7 @@ class BrowserAgent(Tool):
     def _mask(self, text: str) -> str:
         try:
             return get_secrets_manager(self.agent.context).mask_values(text or "")
-        except Exception as e:
+        except Exception:
             return text or ""
 
     # def __del__(self):

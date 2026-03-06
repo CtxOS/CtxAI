@@ -1,10 +1,6 @@
-import asyncio
-import math
 
 from backend.core.agent import LoopData
-from backend.utils import log, persist_chat, tokens
 from backend.utils.extension import Extension
-from backend.utils.log import LogItem
 
 
 class LogForStream(Extension):

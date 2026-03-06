@@ -1,7 +1,6 @@
-from backend.core.agent import AgentConfig
 from backend.core import models
-from backend.utils import runtime, settings, defer, extension
-from backend.utils.print_style import PrintStyle
+from backend.core.agent import AgentConfig
+from backend.utils import defer, extension, runtime, settings
 
 
 @extension.extensible
@@ -151,8 +150,8 @@ def initialize_job_loop():
 
 @extension.extensible
 def initialize_preload():
-    import sys
     import os
+    import sys
 
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scripts"))
     import preload
@@ -162,7 +161,7 @@ def initialize_preload():
 
 @extension.extensible
 def initialize_migration():
-    from backend.utils import migration, dotenv
+    from backend.utils import dotenv, migration
 
     # run migration
     migration.startup_migration()

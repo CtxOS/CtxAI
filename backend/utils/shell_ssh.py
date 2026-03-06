@@ -1,7 +1,6 @@
 import asyncio
 import re
 import time
-from typing import Tuple
 
 import paramiko
 
@@ -116,14 +115,13 @@ class SSHInteractiveSession:
 
     async def read_output(
         self, timeout: float = 0, reset_full_output: bool = False
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         if not self.shell:
             raise Exception("Shell not connected")
 
         if reset_full_output:
             self.full_output = b""
         partial_output = b""
-        leftover = b""
         start_time = time.time()
 
         while self.shell.recv_ready() and (timeout <= 0 or time.time() - start_time < timeout):

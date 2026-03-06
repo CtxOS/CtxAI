@@ -2,7 +2,6 @@
 Agent service for managing agent operations.
 """
 
-from typing import Any, Dict, List, Optional
 
 
 # Temporary placeholder classes until core dependencies are resolved
@@ -30,8 +29,8 @@ class AgentService:
     """Service for managing agent operations."""
 
     def __init__(self):
-        self._agents: Dict[str, Agent] = {}
-        self._contexts: Dict[str, AgentContext] = {}
+        self._agents: dict[str, Agent] = {}
+        self._contexts: dict[str, AgentContext] = {}
 
     def create_agent(self, config: AgentConfig) -> Agent:
         """Create a new agent."""
@@ -39,7 +38,7 @@ class AgentService:
         self._agents[agent.id] = agent
         return agent
 
-    def get_agent(self, agent_id: str) -> Optional[Agent]:
+    def get_agent(self, agent_id: str) -> Agent | None:
         """Get an agent by ID."""
         return self._agents.get(agent_id)
 
@@ -49,11 +48,11 @@ class AgentService:
         self._contexts[context.id] = context
         return context
 
-    def get_context(self, context_id: str) -> Optional[AgentContext]:
+    def get_context(self, context_id: str) -> AgentContext | None:
         """Get a context by ID."""
         return self._contexts.get(context_id)
 
-    def list_agents(self) -> List[Agent]:
+    def list_agents(self) -> list[Agent]:
         """List all agents."""
         return list(self._agents.values())
 

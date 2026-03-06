@@ -138,7 +138,7 @@ def extensible(func):
 class Extension:
 
     def __init__(self, agent: "Agent|None", **kwargs):
-        self.agent: "Agent|None" = agent
+        self.agent: Agent|None = agent
         self.kwargs = kwargs
 
     @abstractmethod
@@ -147,7 +147,7 @@ class Extension:
 
 
 async def call_extensions(extension_point: str, agent: "Agent|None" = None, **kwargs) -> Any:
-    from backend.utils import plugins, projects, subagents
+    from backend.utils import plugins, subagents
 
     # search for extension folders in all agent's paths
     paths = subagents.get_paths(agent, "extensions", extension_point, default_root="python")

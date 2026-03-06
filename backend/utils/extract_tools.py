@@ -5,12 +5,12 @@ import os
 import re
 from fnmatch import fnmatch
 from types import ModuleType
-from typing import Any, Type, TypeVar
+from typing import Any, TypeVar
 
 import regex
 
 from .dirty_json import DirtyJson
-from .files import deabsolute_path, get_abs_path
+from .files import get_abs_path
 
 
 def json_parse_dirty(json: str) -> dict[str, Any] | None:
@@ -89,8 +89,8 @@ def import_module(file_path: str) -> ModuleType:
 
 
 def load_classes_from_folder(
-    folder: str, name_pattern: str, base_class: Type[T], one_per_file: bool = True
-) -> list[Type[T]]:
+    folder: str, name_pattern: str, base_class: type[T], one_per_file: bool = True
+) -> list[type[T]]:
     classes = []
     abs_folder = get_abs_path(folder)
 

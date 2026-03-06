@@ -2,13 +2,12 @@ import base64
 import hashlib
 import json
 import os
-import re
 import subprocess
 from typing import Any, Literal, TypedDict, TypeVar, cast
 
 from backend.core import models
 from backend.infrastructure.system import git
-from backend.utils import defer, dirty_json, runtime, subagents, whisper
+from backend.utils import defer, runtime, subagents, whisper
 from backend.utils.notification import (
     NotificationManager,
     NotificationPriority,
@@ -638,7 +637,7 @@ def _apply_settings(previous: Settings | None):
 
         # reload whisper model if necessary
         if not previous or _settings["stt_model_size"] != previous["stt_model_size"]:
-            task = defer.DeferredTask().start_task(
+            defer.DeferredTask().start_task(
                 whisper.preload, _settings["stt_model_size"]
             )  # TODO overkill, replace with background task
 
@@ -704,7 +703,7 @@ def _apply_settings(previous: Settings | None):
                     group="settings-mcp",
                 )
 
-            task2 = defer.DeferredTask().start_task(
+            defer.DeferredTask().start_task(
                 update_mcp_settings, config.mcp_servers
             )  # TODO overkill, replace with background task
 
@@ -719,7 +718,7 @@ def _apply_settings(previous: Settings | None):
 
                 DynamicMcpProxy.get_instance().reconfigure(token=token)
 
-            task3 = defer.DeferredTask().start_task(
+            defer.DeferredTask().start_task(
                 update_mcp_token, current_token
             )  # TODO overkill, replace with background task
 
@@ -731,7 +730,7 @@ def _apply_settings(previous: Settings | None):
 
                 DynamicA2AProxy.get_instance().reconfigure(token=token)
 
-            task4 = defer.DeferredTask().start_task(
+            defer.DeferredTask().start_task(
                 update_a2a_token, current_token
             )  # TODO overkill, replace with background task
 

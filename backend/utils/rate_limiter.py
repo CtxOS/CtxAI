@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Awaitable, Callable
+from collections.abc import Awaitable, Callable
 
 
 class RateLimiter:
@@ -16,7 +16,7 @@ class RateLimiter:
     def add(self, **kwargs: int):
         now = time.time()
         for key, value in kwargs.items():
-            if not key in self.values:
+            if key not in self.values:
                 self.values[key] = []
             self.values[key].append((now, value))
 
@@ -29,7 +29,7 @@ class RateLimiter:
 
     async def get_total(self, key: str) -> int:
         async with self._lock:
-            if not key in self.values:
+            if key not in self.values:
                 return 0
             return sum(value for _, value in self.values[key])
 

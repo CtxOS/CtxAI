@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 
 from backend.utils import subagents
-from backend.utils.api import ApiHandler, Input, Output, Request, Response
+from backend.utils.api import ApiHandler, Input, Output, Request
 
 if TYPE_CHECKING:
-    from backend.utils import projects
+    pass
 
 
 class Subagents(ApiHandler):

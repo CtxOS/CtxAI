@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import os
 import shutil
-import tempfile
 import time
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Literal, Optional, Tuple
+from typing import Literal
 
 from backend.utils import files
 from backend.utils.skills import discover_skill_md_files
@@ -27,8 +25,8 @@ class ImportPlanItem:
 
 @dataclass(slots=True)
 class ImportResult:
-    imported: List[Path]
-    skipped: List[Path]
+    imported: list[Path]
+    skipped: list[Path]
     source_root: Path
     destination_root: Path
     namespace: str
@@ -47,14 +45,14 @@ def _derive_namespace(source: Path) -> str:
     return (source.stem or source.name or "import").strip()
 
 
-def _candidate_skill_roots(source_dir: Path) -> List[Path]:
+def _candidate_skill_roots(source_dir: Path) -> list[Path]:
     """
     Heuristics to find likely skill roots inside a repo/pack:
     - <source>/skills
     - <source>/plugins/*/skills (Claude Code style)
     - fallback: <source>
     """
-    candidates: List[Path] = []
+    candidates: list[Path] = []
 
     direct = source_dir / "skills"
     if direct.is_dir() and discover_skill_md_files(direct):
@@ -70,7 +68,7 @@ def _candidate_skill_roots(source_dir: Path) -> List[Path]:
                 candidates.append(skills_dir)
 
     # Deduplicate while preserving order
-    unique: List[Path] = []
+    unique: list[Path] = []
     seen = set()
     for c in candidates:
         key = str(c.resolve())
@@ -106,8 +104,8 @@ def build_import_plan(
     source: Path,
     dest_root: Path,
     *,
-    namespace: Optional[str] = None,
-) -> Tuple[List[ImportPlanItem], Path]:
+    namespace: str | None = None,
+) -> tuple[list[ImportPlanItem], Path]:
     """
     Build a copy plan for importing skills from a source folder.
 
@@ -115,7 +113,7 @@ def build_import_plan(
     """
     source_dir = source
     roots = _candidate_skill_roots(source_dir)
-    plan: List[ImportPlanItem] = []
+    plan: list[ImportPlanItem] = []
     ns = (namespace or _derive_namespace(source)).strip()
     dest_ns_root = dest_root / ns
 
@@ -137,7 +135,7 @@ def build_import_plan(
 
     # Deduplicate by destination path (keep first occurrence)
     seen_dest = set()
-    deduped: List[ImportPlanItem] = []
+    deduped: list[ImportPlanItem] = []
     for item in plan:
         key = str(item.dest_skill_dir.resolve())
         if key in seen_dest:
@@ -148,7 +146,7 @@ def build_import_plan(
     return deduped, roots[0]
 
 
-def _resolve_conflict(dest: Path, policy: ConflictPolicy) -> Tuple[Path, bool]:
+def _resolve_conflict(dest: Path, policy: ConflictPolicy) -> tuple[Path, bool]:
     """
     Returns (final_dest_path, should_copy).
     """
@@ -189,8 +187,8 @@ def get_project_agent_profile_skills_folder(project_name: str, profile_name: str
 
 
 def resolve_skills_destination_root(
-    project_name: Optional[str],
-    agent_profile: Optional[str],
+    project_name: str | None,
+    agent_profile: str | None,
 ) -> Path:
     if project_name and agent_profile:
         return get_project_agent_profile_skills_folder(project_name, agent_profile)
@@ -204,11 +202,11 @@ def resolve_skills_destination_root(
 def import_skills(
     source_path: str,
     *,
-    namespace: Optional[str] = None,
+    namespace: str | None = None,
     conflict: ConflictPolicy = "skip",
     dry_run: bool = False,
-    project_name: Optional[str] = None,
-    agent_profile: Optional[str] = None,
+    project_name: str | None = None,
+    agent_profile: str | None = None,
 ) -> ImportResult:
     """
     Import external Skills into usr/skills/<namespace>/...
@@ -227,7 +225,7 @@ def import_skills(
     dest_root = resolve_skills_destination_root(project_name, agent_profile)
     dest_root.mkdir(parents=True, exist_ok=True)
 
-    extracted_root: Optional[Path] = None
+    extracted_root: Path | None = None
     source_dir: Path
     if src.is_file() and src.suffix.lower() == ".zip":
         extracted_root = _unzip_to_temp_dir(src)
@@ -242,8 +240,8 @@ def import_skills(
         ns = "import"
 
     plan, root_used = build_import_plan(source_dir, dest_root, namespace=ns)
-    imported: List[Path] = []
-    skipped: List[Path] = []
+    imported: list[Path] = []
+    skipped: list[Path] = []
 
     for item in plan:
         final_dest, should_copy = _resolve_conflict(item.dest_skill_dir, conflict)

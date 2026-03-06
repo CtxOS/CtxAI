@@ -5,8 +5,9 @@ import queue
 import secrets
 import sys
 import threading
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Awaitable, Callable, TypeVar, Union, cast, overload
+from typing import TypeVar, cast, overload
 
 import nest_asyncio
 
@@ -94,7 +95,7 @@ async def call_development_function(func: Callable[..., T], *args, **kwargs) -> 
 
 
 async def call_development_function(
-    func: Union[Callable[..., T], Callable[..., Awaitable[T]]], *args, **kwargs
+    func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs
 ) -> T:
     if is_development():
         url = _get_rfc_url()
@@ -132,7 +133,7 @@ def _get_rfc_password() -> str:
 def _get_rfc_url() -> str:
     set = settings.get_settings()
     url = set["rfc_url"]
-    if not "://" in url:
+    if "://" not in url:
         url = "http://" + url
     if url.endswith("/"):
         url = url[:-1]
@@ -142,7 +143,7 @@ def _get_rfc_url() -> str:
 
 
 def call_development_function_sync(
-    func: Union[Callable[..., T], Callable[..., Awaitable[T]]], *args, **kwargs
+    func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs
 ) -> T:
     # run async function in sync manner
     result_queue = queue.Queue()

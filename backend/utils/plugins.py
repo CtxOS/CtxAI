@@ -3,15 +3,11 @@ from __future__ import annotations
 import glob
 import json
 import re
+from collections.abc import Iterator
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
-    Any,
-    Dict,
-    Iterator,
-    List,
     Literal,
-    Optional,
     TypedDict,
 )
 
@@ -50,7 +46,7 @@ class PluginMetadata(BaseModel):
     title: str = ""
     description: str = ""
     version: str = ""
-    settings_sections: List[str] = Field(default_factory=list)
+    settings_sections: list[str] = Field(default_factory=list)
     per_project_config: bool = False
     per_agent_config: bool = False
     always_enabled: bool = False
@@ -62,7 +58,7 @@ class PluginListItem(BaseModel):
     display_name: str = ""
     description: str = ""
     version: str = ""
-    settings_sections: List[str] = Field(default_factory=list)
+    settings_sections: list[str] = Field(default_factory=list)
     per_project_config: bool = False
     per_agent_config: bool = False
     always_enabled: bool = False
@@ -79,7 +75,7 @@ def invalidate_plugin_cache():
     cache.clear("*(plugins)*")
 
 
-def get_plugin_roots(plugin_name: str = "") -> List[str]:
+def get_plugin_roots(plugin_name: str = "") -> list[str]:
     """Plugin root directories, ordered by priority (user first)."""
     return [
         files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR, plugin_name),
@@ -103,7 +99,7 @@ def get_plugins_list():
     return result
 
 
-def get_enhanced_plugins_list(custom: bool = True, builtin: bool = True) -> List[PluginListItem]:
+def get_enhanced_plugins_list(custom: bool = True, builtin: bool = True) -> list[PluginListItem]:
     """Discover plugins by directory convention. First root wins on ID conflict."""
     results = []
 
@@ -191,15 +187,15 @@ def delete_plugin(plugin_name: str):
     files.delete_dir(plugin_dir)
 
 
-def get_plugin_paths(*subpaths: str) -> List[str]:
+def get_plugin_paths(*subpaths: str) -> list[str]:
     sub = "*/" + "/".join(subpaths) if subpaths else "*"
-    paths: List[str] = []
+    paths: list[str] = []
     for root in get_plugin_roots():
         paths.extend(files.find_existing_paths_by_pattern(files.get_abs_path(root, sub)))
     return paths
 
 
-def get_enabled_plugin_paths(agent: Agent | None, *subpaths: str) -> List[str]:
+def get_enabled_plugin_paths(agent: Agent | None, *subpaths: str) -> list[str]:
     enabled = get_enabled_plugins(agent)
     paths: list[str] = []
 
@@ -278,7 +274,7 @@ def get_toggle_state(plugin_name: str) -> ToggleState:
     state = "enabled" if determined_toggle_from_paths(True, reversed(plugin_paths)) else "disabled"
 
     # global toggles
-    usr_toggles = [
+    [
         files.find_existing_paths_by_pattern(
             files.get_abs_path(files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN)
         ),
@@ -340,9 +336,9 @@ def toggle_plugin(
 
 
 def get_webui_extensions(
-    agent: Agent | None, extension_point: str, filters: List[str] | None = None
+    agent: Agent | None, extension_point: str, filters: list[str] | None = None
 ):
-    entries: List[dict] = []
+    entries: list[dict] = []
     effective_filters = filters or ["*"]
     enabled = get_enabled_plugins(agent)
 

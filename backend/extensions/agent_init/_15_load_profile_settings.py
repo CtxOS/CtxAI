@@ -1,4 +1,4 @@
-from backend.utils import dirty_json, files, projects, subagents
+from backend.utils import dirty_json, files, subagents
 from backend.utils.extension import Extension
 from initialize import initialize_agent
 

@@ -1,6 +1,6 @@
 # api/synthesize.py
 
-from backend.utils import kokoro_tts, runtime, settings
+from backend.utils import kokoro_tts
 from backend.utils.api import ApiHandler, Request, Response
 
 
@@ -10,7 +10,7 @@ class Synthesize(ApiHandler):
         ctxid = input.get("ctxid", "")
 
         if ctxid:
-            context = self.use_context(ctxid)
+            self.use_context(ctxid)
 
         # if not await kokoro_tts.is_downloaded():
         #     context.log.log(type="info", content="Kokoro TTS model is currently being initialized, please wait...")

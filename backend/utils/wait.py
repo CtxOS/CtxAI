@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from backend.utils.print_style import PrintStyle
 
@@ -41,10 +41,10 @@ def format_remaining_time(total_seconds: float) -> str:
 
 async def managed_wait(agent, target_time, is_duration_wait, log, get_heading_callback):
 
-    while datetime.now(timezone.utc) < target_time:
-        before_intervention = datetime.now(timezone.utc)
+    while datetime.now(UTC) < target_time:
+        before_intervention = datetime.now(UTC)
         await agent.handle_intervention()
-        after_intervention = datetime.now(timezone.utc)
+        after_intervention = datetime.now(UTC)
 
         if is_duration_wait:
             pause_duration = after_intervention - before_intervention
@@ -56,7 +56,7 @@ async def managed_wait(agent, target_time, is_duration_wait, log, get_heading_ca
                     f"Wait extended by {pause_duration.total_seconds():.1f}s to {target_time.isoformat()}...",
                 )
 
-        current_time = datetime.now(timezone.utc)
+        current_time = datetime.now(UTC)
         if current_time >= target_time:
             break
 

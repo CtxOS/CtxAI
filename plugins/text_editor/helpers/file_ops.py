@@ -102,7 +102,7 @@ def read_file(
         )
 
     try:
-        with open(path, "r", encoding="utf-8", errors="replace") as f:
+        with open(path, encoding="utf-8", errors="replace") as f:
             all_lines = f.readlines()
     except OSError as exc:
         return ReadResult(
@@ -278,7 +278,7 @@ def apply_patch(path: str, edits: list[dict]) -> int:
     fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
     try:
         with (
-            open(path, "r", encoding="utf-8", errors="replace") as src,
+            open(path, encoding="utf-8", errors="replace") as src,
             os.fdopen(fd, "w", encoding="utf-8") as dst,
         ):
             edit_idx = 0

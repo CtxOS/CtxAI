@@ -8,8 +8,8 @@ import aiohttp
 from backend.utils.vector_db import VectorDB
 
 os.environ["USER_AGENT"] = "@mixedbread-ai/unstructured"  # noqa E402
+from collections.abc import Callable, Sequence
 from datetime import datetime
-from typing import Callable, List, Optional, Sequence, Tuple
 from urllib.parse import urlparse
 
 from langchain.schema import HumanMessage, SystemMessage
@@ -17,7 +17,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.parsers.images import TesseractBlobParser
 from langchain_community.document_loaders.pdf import PyMuPDFLoader
-from langchain_community.document_loaders.text import TextLoader
 from langchain_community.document_transformers import MarkdownifyTransformer
 from langchain_core.documents import Document
 from langchain_unstructured import UnstructuredLoader  # noqa E402
@@ -148,7 +147,7 @@ class DocumentQueryStore:
             PrintStyle.error(f"Error adding document '{document_uri}': {err_text}")
             return False, []
 
-    async def get_document(self, document_uri: str) -> Optional[Document]:
+    async def get_document(self, document_uri: str) -> Document | None:
         """
         Retrieve a document by its URI.
 
@@ -183,7 +182,7 @@ class DocumentQueryStore:
 
         return Document(page_content=full_content, metadata=metadata)
 
-    async def _get_document_chunks(self, document_uri: str) -> List[Document]:
+    async def _get_document_chunks(self, document_uri: str) -> list[Document]:
         """
         Get all chunks for a document.
 
@@ -268,7 +267,7 @@ class DocumentQueryStore:
 
     async def search_documents(
         self, query: str, limit: int = 10, threshold: float = 0.5, filter: str = ""
-    ) -> List[Document]:
+    ) -> list[Document]:
         """
         Search for documents similar to the query across the entire store.
 
@@ -303,7 +302,7 @@ class DocumentQueryStore:
 
     async def search_document(
         self, document_uri: str, query: str, limit: int = 10, threshold: float = 0.5
-    ) -> List[Document]:
+    ) -> list[Document]:
         """
         Search for content within a specific document.
 
@@ -320,7 +319,7 @@ class DocumentQueryStore:
             query, limit, threshold, f"document_uri == '{document_uri}'"
         )
 
-    async def list_documents(self) -> List[str]:
+    async def list_documents(self) -> list[str]:
         """
         Get a list of all document URIs in the store.
 
@@ -351,8 +350,8 @@ class DocumentQueryHelper:
         self.store_lock = asyncio.Lock()
 
     async def document_qa(
-        self, document_uris: List[str], questions: Sequence[str]
-    ) -> Tuple[bool, str]:
+        self, document_uris: list[str], questions: Sequence[str]
+    ) -> tuple[bool, str]:
         self.progress_callback(f"Starting Q&A process for {len(document_uris)} documents")
         await self.agent.handle_intervention()
 
@@ -412,12 +411,12 @@ class DocumentQueryHelper:
             explicit_caching=False,
         )
 
-        self.progress_callback(f"Q&A process completed")
+        self.progress_callback("Q&A process completed")
 
         return True, str(ai_response)
 
     async def document_get_content(self, document_uri: str, add_to_db: bool = False) -> str:
-        self.progress_callback(f"Fetching document content")
+        self.progress_callback("Fetching document content")
         await self.agent.handle_intervention()
         url = urlparse(document_uri)
         scheme = url.scheme or "file"
@@ -492,14 +491,14 @@ class DocumentQueryHelper:
             else:
                 document_content = self.handle_unstructured_document(document_uri, scheme)
             if add_to_db:
-                self.progress_callback(f"Indexing document")
+                self.progress_callback("Indexing document")
                 await self.agent.handle_intervention()
                 async with self.store_lock:
                     success, ids = await self.store.add_document(
                         document_content, document_uri_norm
                     )
                 if not success:
-                    self.progress_callback(f"Failed to index document")
+                    self.progress_callback("Failed to index document")
                     raise ValueError(
                         f"DocumentQueryHelper::document_get_content: Failed to index document: {document_uri_norm}"
                     )

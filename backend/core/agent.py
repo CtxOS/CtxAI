@@ -3,10 +3,11 @@ import random
 import string
 import threading
 from collections import OrderedDict
+from collections.abc import Awaitable, Callable, Coroutine
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Awaitable, Callable, Coroutine, Dict, Literal
+from typing import Any
 
 from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -18,23 +19,16 @@ from backend.core import models
 from backend.utils import context as context_helper
 from backend.utils import (
     dirty_json,
-    errors,
-    extension,
     files,
     history,
-)
-from backend.utils import log as Log
-from backend.utils import (
-    print_style,
     subagents,
     tokens,
 )
+from backend.utils import log as Log
 from backend.utils.defer import DeferredTask
 from backend.utils.dirty_json import DirtyJson
 from backend.utils.errors import (
-    HandledException,
     InterventionException,
-    RepairableException,
 )
 from backend.utils.extension import call_extensions, extensible
 from backend.utils.extract_tools import json_parse_dirty, load_classes_from_file
@@ -94,11 +88,11 @@ class AgentContext:
         self.paused = paused
         self.streaming_agent = streaming_agent
         self.task: DeferredTask | None = None
-        self.created_at = created_at or datetime.now(timezone.utc)
+        self.created_at = created_at or datetime.now(UTC)
         self.type = type
         AgentContext._counter += 1
         self.no = AgentContext._counter
-        self.last_message = last_message or datetime.now(timezone.utc)
+        self.last_message = last_message or datetime.now(UTC)
 
         # initialize agent at last (context is complete now)
         self.ctx = ctx or Agent(0, self.config, self)
@@ -284,7 +278,7 @@ class AgentContext:
     @extensible
     async def _process_chain(self, agent: "Agent", msg: "UserMessage|str", user=True):
         try:
-            msg_template = (
+            (
                 agent.hist_add_user_message(msg)  # type: ignore
                 if user
                 else agent.hist_add_tool_result(
@@ -327,7 +321,7 @@ class AgentConfig:
     code_exec_ssh_port: int = 55022
     code_exec_ssh_user: str = "root"
     code_exec_ssh_pass: str = ""
-    additional: Dict[str, Any] = field(default_factory=dict)
+    additional: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -627,7 +621,7 @@ class Agent:
 
     @extensible
     def hist_add_message(self, ai: bool, content: history.MessageContent, tokens: int = 0):
-        self.last_message = datetime.now(timezone.utc)
+        self.last_message = datetime.now(UTC)
         # Allow extensions to process content before adding to history
         content_data = {"content": content}
         asyncio.run(self.call_extensions("hist_add_before", content_data=content_data, ai=ai))
@@ -925,7 +919,7 @@ class Agent:
                     parsed=response,
                 )
 
-        except Exception as e:
+        except Exception:
             pass
 
     @extensible

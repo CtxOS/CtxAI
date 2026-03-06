@@ -10,8 +10,8 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.core.agent import AgentContext
-from initialize import initialize_agent
 from backend.interfaces.api.routes.chat.poll import Poll
+from initialize import initialize_agent
 
 
 @pytest.mark.asyncio

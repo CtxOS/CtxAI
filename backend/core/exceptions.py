@@ -5,13 +5,12 @@ This module defines custom exception classes that are used throughout
 the application to provide better error handling and debugging.
 """
 
-from typing import Any, Optional
 
 
 class CtxAIException(Exception):
     """Base exception class for all Ctx AI framework exceptions."""
 
-    def __init__(self, message: str, details: Optional[dict] = None):
+    def __init__(self, message: str, details: dict | None = None):
         super().__init__(message)
         self.message = message
         self.details = details or {}
@@ -63,7 +62,7 @@ class RateLimitException(CtxAIException):
     """Exception raised when rate limits are exceeded."""
 
     def __init__(
-        self, message: str, retry_after: Optional[int] = None, details: Optional[dict] = None
+        self, message: str, retry_after: int | None = None, details: dict | None = None
     ):
         super().__init__(message, details)
         self.retry_after = retry_after
@@ -73,7 +72,7 @@ class TimeoutException(CtxAIException):
     """Exception raised when operations timeout."""
 
     def __init__(
-        self, message: str, timeout_seconds: Optional[float] = None, details: Optional[dict] = None
+        self, message: str, timeout_seconds: float | None = None, details: dict | None = None
     ):
         super().__init__(message, details)
         self.timeout_seconds = timeout_seconds

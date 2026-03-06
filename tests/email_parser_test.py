@@ -1,11 +1,14 @@
-import sys, os
+import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import asyncio
+
 import pytest
-from backend.utils.email_client import read_messages
+
 from backend.utils.dotenv import get_dotenv_value, load_dotenv
+from backend.utils.email_client import read_messages
 
 
 @pytest.mark.skip(reason="This test is disabled as it has eternal dependencies and tests nothing automatically, please move it to a script or a manual test")
