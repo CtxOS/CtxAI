@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from backend.interfaces.websockets.websocket import WebSocketHandler, WebSocketResult
 from backend.utils import runtime
 from backend.utils.print_style import PrintStyle
 from backend.utils.state_monitor import _ws_debug_enabled, get_state_monitor
@@ -7,7 +8,6 @@ from backend.utils.state_snapshot import (
     StateRequestValidationError,
     parse_state_request_payload,
 )
-from backend.interfaces.websockets.websocket import WebSocketHandler, WebSocketResult
 
 
 class StateSyncHandler(WebSocketHandler):

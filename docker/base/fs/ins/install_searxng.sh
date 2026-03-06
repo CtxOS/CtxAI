@@ -26,4 +26,3 @@ echo "====================SEARXNG1 END===================="
 
 # Start a new shell as the searxng user and run the installation script
 su - searxng -c "bash /ins/install_searxng2.sh"
-

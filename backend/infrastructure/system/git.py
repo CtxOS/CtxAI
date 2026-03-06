@@ -40,9 +40,7 @@ def get_git_info():
     commit_hash = repo.head.commit.hexsha
 
     # Get the commit date (ISO 8601 format)
-    commit_time = datetime.fromtimestamp(repo.head.commit.committed_date).strftime(
-        "%y-%m-%d %H:%M"
-    )
+    commit_time = datetime.fromtimestamp(repo.head.commit.committed_date).strftime("%y-%m-%d %H:%M")
 
     # Get the latest tag description (if available)
     short_tag = ""
@@ -180,9 +178,7 @@ def get_repo_status(repo_path: str) -> dict:
                 "hash": commit.hexsha[:7],
                 "message": commit.message.split("\n")[0][:80],
                 "author": str(commit.author),
-                "date": datetime.fromtimestamp(commit.committed_date).strftime(
-                    "%Y-%m-%d %H:%M"
-                ),
+                "date": datetime.fromtimestamp(commit.committed_date).strftime("%Y-%m-%d %H:%M"),
             }
         except Exception:
             pass

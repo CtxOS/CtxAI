@@ -3,6 +3,10 @@
 
 cd "$(dirname "$0")/.."
 
+if [ -d ".venv" ]; then
+    source .venv/bin/activate
+fi
+
 ACTION=${1:-check}
 
 case "$ACTION" in

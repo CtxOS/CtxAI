@@ -579,6 +579,19 @@ class LiteLLMChatWrapper(SimpleChatModel):
             except Exception as e:
                 import asyncio
 
+                from litellm.exceptions import AuthenticationError
+
+                # Wrap confusing OpenRouter errors with a clear explanation
+                if isinstance(e, AuthenticationError) and getattr(e, "status_code", None) == 401:
+                    if self.provider == "openrouter" and "cookie" in str(e).lower():
+                        raise Exception(
+                            f"Authentication failed for {self.model_name}. Please configure your OPENROUTER_API_KEY correctly. (Original error: {str(e)})"
+                        ) from None
+                    # Fallback for other providers 401 auth errors
+                    raise Exception(
+                        f"Authentication failed for {self.model_name}. Please check your API key configuration. (Original error: {str(e)})"
+                    ) from None
+
                 # Retry only if no chunks received and error is transient
                 if got_any_chunk or not _is_transient_litellm_error(e) or attempt >= max_retries:
                     raise

@@ -4,6 +4,7 @@
 FROM ctxos/ctxai-base:latest
 
 # Check if the argument is provided, else throw an error
+# This is needed because the base image might not have the BRANCH environment variable set
 ARG BRANCH
 RUN if [ -z "$BRANCH" ]; then echo "ERROR: BRANCH is not set!" >&2; exit 1; fi
 ENV BRANCH=$BRANCH

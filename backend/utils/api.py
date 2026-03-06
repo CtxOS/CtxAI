@@ -89,9 +89,7 @@ class ApiHandler:
                 return output
             else:
                 response_json = json.dumps(output)
-                return Response(
-                    response=response_json, status=200, mimetype="application/json"
-                )
+                return Response(response=response_json, status=200, mimetype="application/json")
 
             # return exceptions with 500
         except Exception as e:
@@ -113,9 +111,7 @@ class ApiHandler:
             if got:
                 return got
             if create_if_not_exists:
-                context = AgentContext(
-                    config=initialize_agent(), id=ctxid, set_current=True
-                )
+                context = AgentContext(config=initialize_agent(), id=ctxid, set_current=True)
                 return context
             else:
                 raise Exception(f"Context {ctxid} not found")

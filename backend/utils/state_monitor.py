@@ -7,6 +7,7 @@ import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from backend.interfaces.websockets.websocket import ConnectionNotFoundError
 from backend.utils import runtime
 from backend.utils.print_style import PrintStyle
 from backend.utils.state_snapshot import (
@@ -14,7 +15,6 @@ from backend.utils.state_snapshot import (
     advance_state_request_after_snapshot,
     build_snapshot_from_request,
 )
-from backend.interfaces.websockets.websocket import ConnectionNotFoundError
 
 if TYPE_CHECKING:  # pragma: no cover - hints only
     from backend.interfaces.websockets.websocket_manager import WebSocketManager
@@ -65,9 +65,7 @@ class StateMonitor:
         self._dispatcher_loop: asyncio.AbstractEventLoop | None = None
         self._dirty_wave_seq: int = 0
 
-    def bind_manager(
-        self, manager: "WebSocketManager", *, handler_id: str | None = None
-    ) -> None:
+    def bind_manager(self, manager: "WebSocketManager", *, handler_id: str | None = None) -> None:
         with self._lock:
             self._manager = manager
             if handler_id:
@@ -75,9 +73,7 @@ class StateMonitor:
             # Use the manager's dispatcher loop for all scheduling so mark_dirty can be
             # invoked safely from non-async contexts and other threads.
             self._dispatcher_loop = getattr(manager, "_dispatcher_loop", None)
-        _debug_log(
-            f"[StateMonitor] bind_manager handler_id={handler_id or self._emit_handler_id}"
-        )
+        _debug_log(f"[StateMonitor] bind_manager handler_id={handler_id or self._emit_handler_id}")
 
     def register_sid(self, namespace: str, sid: str) -> None:
         identity: ConnectionIdentity = (namespace, sid)
@@ -110,9 +106,7 @@ class StateMonitor:
         for namespace, sid in identities:
             self.mark_dirty(namespace, sid, reason=reason, wave_id=wave_id)
 
-    def mark_dirty_for_context(
-        self, context_id: str, *, reason: str | None = None
-    ) -> None:
+    def mark_dirty_for_context(self, context_id: str, *, reason: str | None = None) -> None:
         if not isinstance(context_id, str) or not context_id.strip():
             return
         target = context_id.strip()
@@ -125,8 +119,7 @@ class StateMonitor:
             identities = [
                 identity
                 for identity, projection in self._projections.items()
-                if projection.request is not None
-                and projection.request.context == target
+                if projection.request is not None and projection.request.context == target
             ]
         for namespace, sid in identities:
             self.mark_dirty(namespace, sid, reason=reason, wave_id=wave_id)
@@ -193,9 +186,7 @@ class StateMonitor:
             projection.dirty_version += 1
             if runtime.is_development():
                 projection.dirty_reason = (
-                    reason.strip()
-                    if isinstance(reason, str) and reason.strip()
-                    else "unknown"
+                    reason.strip() if isinstance(reason, str) and reason.strip() else "unknown"
                 )
                 projection.dirty_wave_id = wave_id
         self._schedule_debounce_on_loop(identity)
@@ -222,9 +213,7 @@ class StateMonitor:
             if running is not None and not running.done():
                 return
 
-            handle = loop.call_later(
-                self.debounce_seconds, self._on_debounce_fire, identity
-            )
+            handle = loop.call_later(self.debounce_seconds, self._on_debounce_fire, identity)
             self._debounce_handles[identity] = handle
             _debug_log(
                 f"[StateMonitor] schedule_push namespace={projection.namespace} sid={projection.sid} "
@@ -285,9 +274,7 @@ class StateMonitor:
                 seq = projection.seq
 
                 # Advance cursors after successful snapshot emission (incremental mode).
-                projection.request = advance_state_request_after_snapshot(
-                    request, snapshot
-                )
+                projection.request = advance_state_request_after_snapshot(request, snapshot)
 
                 # Mark all dirties up to `base_version` as pushed. If new dirties
                 # arrived while building/emitting, a follow-up push will be scheduled.

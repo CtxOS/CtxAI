@@ -43,4 +43,4 @@ uv pip install -r /git/ctxai/requirements2.txt
 bash /ins/install_playwright.sh "$@"
 
 # Preload CTX
-python /git/ctxai/preload.py --dockerized=true
+python /git/ctxai/scripts/preload.py --dockerized=true

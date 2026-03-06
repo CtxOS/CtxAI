@@ -7,9 +7,9 @@ from dataclasses import dataclass
 from types import ModuleType
 from typing import Iterable
 
+from backend.interfaces.websockets.websocket import WebSocketHandler
 from backend.utils.files import get_abs_path
 from backend.utils.print_style import PrintStyle
-from backend.interfaces.websockets.websocket import WebSocketHandler
 
 
 @dataclass(frozen=True)
@@ -22,11 +22,7 @@ class NamespaceDiscovery:
 def _to_namespace(entry_name: str) -> str:
     if entry_name == "_default":
         return "/"
-    stripped = (
-        entry_name[: -len("_handler")]
-        if entry_name.endswith("_handler")
-        else entry_name
-    )
+    stripped = entry_name[: -len("_handler")] if entry_name.endswith("_handler") else entry_name
     if not stripped:
         raise ValueError(f"Invalid handler entry name: {entry_name!r}")
     return f"/{stripped}"

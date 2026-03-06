@@ -1,3 +1,8 @@
+-r requirements2.txt
 pytest>=8.4.2
 pytest-asyncio>=1.2.0
 pytest-mock>=3.15.1
+pytest-cov>=5.0.0
+flake8>=7.1.0
+black>=24.0.0
+isort>=5.13.0

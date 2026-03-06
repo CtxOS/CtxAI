@@ -4,9 +4,9 @@ import os
 from io import BytesIO
 from urllib.parse import quote
 
+from backend.api import file_info
 from flask import Response
 
-from backend.api import file_info
 from backend.utils import files, runtime
 from backend.utils.api import ApiHandler, Input, Output, Request
 
