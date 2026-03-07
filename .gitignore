@@ -75,3 +75,12 @@ htmlcov/
 .tox/
 .nox/
 .hypothesis/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+dist/
+build/
+*.egg-info/

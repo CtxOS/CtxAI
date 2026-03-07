@@ -1,0 +1,24 @@
+{
+  "name": "Python Codespaces Starter",
+  "dockerFile": "Dockerfile",
+  "context": "..",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12" 
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-pyright.pyright",
+        "ms-python.python"
+      ],
+      "settings": {
+        "python.analysis.typeCheckingMode": "basic",
+        "python.languageServer": "Pylance"
+      }
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "remoteUser": "codespaces"
+}
