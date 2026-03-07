@@ -48,7 +48,7 @@ dependencies = [
     "tiktoken==0.8.0",
     "unstructured==0.16.23",
     "unstructured-client==0.31.0",
-    "webcolors==24.6.0",
+    "webcolors==25.10.0",
     "nest-asyncio==1.6.0",
     "crontab==1.0.1",
     "markdownify==1.1.0",
