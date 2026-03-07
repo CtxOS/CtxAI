@@ -17,7 +17,7 @@ dependencies = [
     "werkzeug>=3.1.6",
     "typer>=0.16.0",
     "rich>=14.3.3",
-    "ansio==0.0.1",
+    "ansio==0.0.2",
     "browser-use==0.7.12",
     "docker==7.1.0",
     "duckduckgo-search==6.1.12",
