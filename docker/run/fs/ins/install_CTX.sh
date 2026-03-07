@@ -35,10 +35,12 @@ fi
 # pip install torch --index-url https://download.pytorch.org/whl/cpu
 
 # Install CTX python packages
+export UV_MAX_RETRIES=10
+export UV_HTTP_TIMEOUT=300
 uv pip install -e /git/ctxai
 
 # install playwright
 bash /ins/install_playwright.sh "$@"
 
 # Preload CTX
-python /git/ctxai/preload.py --dockerized=true
+python3 -m ctxai.core.preload --dockerized=true

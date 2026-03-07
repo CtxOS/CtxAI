@@ -13,5 +13,5 @@ bash /ins/install_CTX.sh "$@"
 
 # remove python packages cache
 . "/ins/setup_venv.sh" "$@"
-pip cache purge
-uv cache prune
+pip cache purge || true
+uv cache prune || true

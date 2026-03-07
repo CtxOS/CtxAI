@@ -32,6 +32,7 @@ def save_dotenv_value(key: str, value: str):
         value = ""
     dotenv_path = get_dotenv_file_path()
     if not os.path.isfile(dotenv_path):
+        os.makedirs(os.path.dirname(dotenv_path), exist_ok=True)
         with open(dotenv_path, "w") as f:
             f.write("")
     with open(dotenv_path, "r+") as f:

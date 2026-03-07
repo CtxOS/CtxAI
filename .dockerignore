@@ -55,7 +55,9 @@ AGENTS.md
 *.env
 **/*.key
 **/*.pem
-**/secrets.*
+**/secrets.json
+**/secrets.yaml
+**/secrets.txt
 
 # --- Build Artifacts ---
 dist/

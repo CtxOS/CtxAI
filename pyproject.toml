@@ -44,7 +44,7 @@ dependencies = [
     "pypdf==6.0.0",
     "pytz==2024.2",
     "sentence-transformers==3.0.1",
-    "torch==2.2.2",
+    "torch==2.4.0",
     "tiktoken==0.8.0",
     "unstructured==0.16.23",
     "unstructured-client==0.31.0",

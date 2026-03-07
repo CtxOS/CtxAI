@@ -1,0 +1,23 @@
+# Data & Logs
+data/
+logs/
+tmp/
+memory/
+usr/
+
+# Build & Environments
+.venv/
+venv/
+.uv/
+dist/
+build/
+*.egg-info/
+
+# Python Cache
+**/__pycache__/
+**/*.py[cod]
+
+# IDEs & System
+.DS_Store
+.idea/
+.vscode/
