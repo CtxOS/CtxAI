@@ -174,10 +174,10 @@ You can pick any location you find convenient:
 - **Windows:** `C:\ctxai-data`
 - **macOS/Linux:** `/home/user/ctxai-data`
 
-You can map just the `/a0/usr` directory (recommended) or individual subfolders of `/a0` to a local directory.
+You can map just the `/ctx/usr` directory (recommended) or individual subfolders of `/ctx` to a local directory.
 
 > [!CAUTION]
-> Do **not** map the entire `/a0` directory: it contains the application code and can break upgrades.
+> Do **not** map the entire `/ctx` directory: it contains the application code and can break upgrades.
 
 > [!TIP]
 > Choose a location that's easy to access and backup. All your Ctx AI data will be directly accessible in this directory.
@@ -207,7 +207,7 @@ The framework will take a few seconds to initialize. Find the mapped port in Doc
 
 Open `http://localhost:<PORT>` in your browser. The Web UI will open - Ctx AI is ready for configuration!
 
-![docker ui](../res/setup/6-docker-a0-running-new.png)
+![docker ui](../res/setup/6-docker-ctx-running-new.png)
 
 > [!TIP]
 > You can also access the Web UI by clicking the port link directly under the container ID in Docker Desktop.
@@ -215,10 +215,10 @@ Open `http://localhost:<PORT>` in your browser. The Web UI will open - Ctx AI is
 > [!NOTE]
 > After starting the container, you'll find all Ctx AI files in your chosen directory. You can access and edit these files directly on your machine, and the changes will be immediately reflected in the running container.
 
-**Running A0 using Terminal?**
+**Running CTX using Terminal?**
 
 ```bash
-docker run -p 0:80 -v /path/to/your/work_dir:/a0/usr ctxos/ctxai
+docker run -p 0:80 -v /path/to/your/work_dir:/ctx/usr ctxos/ctxai
 ```
 
 - Replace `0` with a fixed port if you prefer (e.g., `50080:80`)
@@ -227,7 +227,7 @@ docker run -p 0:80 -v /path/to/your/work_dir:/a0/usr ctxos/ctxai
 
 ## Step 3: Configure Ctx AI
 
-The UI will show a warning banner "Missing LLM API Key for current settings". Click on `Add your API key` to enter Settings and start configuring A0.
+The UI will show a warning banner "Missing LLM API Key for current settings". Click on `Add your API key` to enter Settings and start configuring CTX.
 
 ### Settings Configuration
 
@@ -240,7 +240,7 @@ Ctx AI provides a comprehensive settings interface to customize various aspects 
 - **Knowledge Subdirectory:** Specify the location of custom knowledge files to enhance the agent's understanding.
 
 > [!NOTE]
-> Since v0.9.7, custom prompts belong in `/a0/agents/<agent_name>/prompts/` rather than a shared `/prompts` folder. See the [Extensions guide](../developer/extensions.md#prompts) for details.
+> Since v0.9.7, custom prompts belong in `/ctx/agents/<agent_name>/prompts/` rather than a shared `/prompts` folder. See the [Extensions guide](../developer/extensions.md#prompts) for details.
 
 > [!NOTE]
 > The Hacker profile is included in the main image. After launch, choose the **hacker** agent profile in Settings if you want the security-focused prompts and tooling. The "hacker" branch is deprecated.
@@ -333,7 +333,7 @@ The Settings page is the control center for selecting the Large Language Models 
 | `chat_llm` | This is the primary LLM used for conversations and generating responses. |
 | `utility_llm` | This LLM handles internal tasks like summarizing messages, managing memory, and processing internal prompts. Using a smaller, less expensive model here can improve efficiency. |
 | `browser_llm` | This LLM powers the browser agent for web navigation and interaction tasks. Vision support is recommended for better page understanding. |
-| `embedding_llm` | The embedding model shipped with A0 runs on CPU and is responsible for generating embeddings used for memory retrieval and knowledge base lookups. Changing the `embedding_llm` will re-index all of A0's memory. |
+| `embedding_llm` | The embedding model shipped with CTX runs on CPU and is responsible for generating embeddings used for memory retrieval and knowledge base lookups. Changing the `embedding_llm` will re-index all of CTX's memory. |
 
 **How to Change:**
 
@@ -482,7 +482,7 @@ ollama rm <model-name>
 5. In the **new** instance, restore that backup from the same panel.
 
 > [!TIP]
-> If the new instance fails to load settings, remove `/a0/usr/settings.json` and restart to regenerate default settings.
+> If the new instance fails to load settings, remove `/ctx/usr/settings.json` and restart to regenerate default settings.
 
 ---
 
@@ -522,31 +522,31 @@ For developers or users who need to run Ctx AI directly on their system, see the
 
 ## Advanced: Automated Configuration via Environment Variables
 
-Ctx AI settings can be automatically configured using environment variables with the `A0_SET_` prefix in your `.env` file. This enables automated deployments without manual configuration.
+Ctx AI settings can be automatically configured using environment variables with the `CTX_SET_` prefix in your `.env` file. This enables automated deployments without manual configuration.
 
 **Usage:**
 
 Add variables to your `.env` file in the format:
 
 ```env
-A0_SET_{setting_name}={value}
+CTX_SET_{setting_name}={value}
 ```
 
 **Examples:**
 
 ```env
 # Model configuration
-A0_SET_chat_model_provider=anthropic
-A0_SET_chat_model_name=claude-3-5-sonnet-20241022
-A0_SET_chat_model_ctx_length=200000
+CTX_SET_chat_model_provider=anthropic
+CTX_SET_chat_model_name=claude-3-5-sonnet-20241022
+CTX_SET_chat_model_ctx_length=200000
 
 # Memory settings
-A0_SET_memory_recall_enabled=true
-A0_SET_memory_recall_interval=5
+CTX_SET_memory_recall_enabled=true
+CTX_SET_memory_recall_interval=5
 
 # Agent configuration
-A0_SET_agent_profile=custom
-A0_SET_agent_memory_subdir=production
+CTX_SET_agent_profile=custom
+CTX_SET_agent_memory_subdir=production
 ```
 
 **Docker usage:**
@@ -555,8 +555,8 @@ When running Docker, you can pass these as environment variables:
 
 ```bash
 docker run -p 50080:80 \
-  -e A0_SET_chat_model_provider=anthropic \
-  -e A0_SET_chat_model_name=claude-3-5-sonnet-20241022 \
+  -e CTX_SET_chat_model_provider=anthropic \
+  -e CTX_SET_chat_model_name=claude-3-5-sonnet-20241022 \
   ctxos/ctxai
 ```
 
@@ -570,7 +570,7 @@ docker run -p 50080:80 \
 
 ### Manual Migration (Legacy or Non-Docker)
 
-If you are migrating from older, non-Docker setups, A0 handles the migration of legacy folders and files automatically at runtime. The right place to save your files and directories is `a0/usr`.
+If you are migrating from older, non-Docker setups, CTX handles the migration of legacy folders and files automatically at runtime. The right place to save your files and directories is `ctx/usr`.
 
 ## Conclusion
 

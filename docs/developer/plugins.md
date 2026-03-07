@@ -155,7 +155,7 @@ Supported actions:
 
 ## Publishing to the Plugin Index
 
-The **Plugin Index** is a community-maintained repository at https://github.com/ctxos/a0-plugins. Plugins listed there are discoverable by all Ctx AI users.
+The **Plugin Index** is a community-maintained repository at https://github.com/ctxos/ctx-plugins. Plugins listed there are discoverable by all Ctx AI users.
 
 ### Two Distinct plugin.yaml Files
 
@@ -173,7 +173,7 @@ per_agent_config: false
 always_enabled: false
 ```
 
-**Index manifest** (submitted to `a0-plugins` under `plugins/<your-plugin-name>/`, drives discoverability only):
+**Index manifest** (submitted to `ctx-plugins` under `plugins/<your-plugin-name>/`, drives discoverability only):
 ```yaml
 title: My Plugin
 description: What this plugin does.
@@ -204,7 +204,7 @@ your-plugin-repo/          ← GitHub repository root
 ### Submission Process
 
 1. Create a GitHub repository with the runtime `plugin.yaml` at the repo root.
-2. Fork `https://github.com/ctxos/a0-plugins`.
+2. Fork `https://github.com/ctxos/ctx-plugins`.
 3. Add `plugins/<your-plugin-name>/plugin.yaml` (index manifest) to your fork, and optionally a square thumbnail image (≤ 20 KB, named `thumbnail.png|jpg|webp`).
 4. Open a Pull Request. One PR must add exactly one new plugin folder.
 5. CI validates automatically. A maintainer reviews and merges.
@@ -214,7 +214,7 @@ Submission rules:
 - Folders starting with `_` are reserved for internal use
 - `title`: max 50 characters
 - `description`: max 500 characters
-- `tags`: optional, up to 5, see https://github.com/ctxos/a0-plugins/blob/main/TAGS.md
+- `tags`: optional, up to 5, see https://github.com/ctxos/ctx-plugins/blob/main/TAGS.md
 
 ### Plugin Marketplace (Coming Soon)
 
@@ -223,5 +223,5 @@ A built-in **Plugin Marketplace** (always-active plugin) will allow users to bro
 ## See Also
 
 - `docs/agents/AGENTS.plugins.md` for full architecture details
-- `skills/a0-create-plugin/SKILL.md` for plugin authoring workflow (agent-facing)
+- `skills/ctx-create-plugin/SKILL.md` for plugin authoring workflow (agent-facing)
 - `plugins/README.md` for core plugin directory overview

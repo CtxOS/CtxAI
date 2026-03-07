@@ -33,7 +33,7 @@ Located beneath the chat input box, Ctx AI provides a set of action buttons for 
 #### Knowledge and File Management
 * **Import Knowledge:** Import external files into the agent's knowledge base
   - Supports `.txt`, `.pdf`, `.csv`, `.html`, `.json`, and `.md` formats
-  - Files are stored in `/a0/knowledge/custom/main`
+  - Files are stored in `/ctx/knowledge/custom/main`
   - Success message confirms successful import
   - See [knowledge](../developer/architecture.md#knowledge) for more details
 
@@ -60,7 +60,7 @@ Located beneath the chat input box, Ctx AI provides a set of action buttons for 
 Access the chat history in JSON format
   - View the conversation as processed by the LLM
   - Useful for debugging and understanding agent behavior
-  - Files are stored under `/a0/usr/chats/` inside the container
+  - Files are stored under `/ctx/usr/chats/` inside the container
 
 ![History](../res/usage/ui-history1.png)
 
@@ -122,7 +122,7 @@ Ctx AI instances can communicate with each other using the A2A protocol. This en
 - **Distributed workflows** across multiple agents
 - **Project-specific collaboration** with isolated contexts
 
-To enable A2A connectivity, go to **Settings → MCP/A2A → A0 A2A Server** and toggle the server on. You'll receive a connection URL that other Ctx AI instances can use to communicate with your agent.
+To enable A2A connectivity, go to **Settings → MCP/A2A → CTX A2A Server** and toggle the server on. You'll receive a connection URL that other Ctx AI instances can use to communicate with your agent.
 
 See [A2A Setup](a2a-setup.md) for detailed configuration and use cases.
 
@@ -159,7 +159,7 @@ Projects are isolated workspaces that provide dedicated context, instructions, m
 
 Each project includes:
 
-- **Isolated workspace** under `/a0/usr/projects/<project_name>/`
+- **Isolated workspace** under `/ctx/usr/projects/<project_name>/`
 - **Custom instructions** automatically injected into system prompts
 - **Dedicated or shared memory** to control context isolation
 - **Project-scoped secrets and variables** for secure credential management
@@ -305,8 +305,8 @@ Once activated, the agent:
 ### Project Directory Structure
 
 ```
-/a0/usr/projects/<project_name>/
-├── .a0proj/                    # Project metadata (managed by A0)
+/ctx/usr/projects/<project_name>/
+├── .a0proj/                    # Project metadata (managed by CTX)
 │   ├── project.json            # Main configuration
 │   ├── variables.env           # Non-sensitive config
 │   ├── secrets.env             # Sensitive credentials
@@ -641,7 +641,7 @@ Generate unified weekly report."
 Explore related features:
 
 - [Projects](#projects) - Create isolated contexts for tasks
-- [Notifications](../developer/notifications.md) - Understand A0's notification system
+- [Notifications](../developer/notifications.md) - Understand CTX's notification system
 - [Memory Management](#memory-management) - Understand task memory isolation
 - [Secrets & Variables](#secrets--variables) - Secure credentials for tasks
 
@@ -654,10 +654,10 @@ Use the Settings → **Secrets** and **Variables** fields to store credentials a
 You can reference these values in prompts by name. For example, store `MY_GMAIL` as a secret and instruct the agent to use it when prompted.
 
 > [!IMPORTANT]
-> Secrets are stored in `/a0/usr/secrets.env`.
+> Secrets are stored in `/ctx/usr/secrets.env`.
 
 > [!NOTE]
-> Project-scoped secrets and variables (when using Projects) live under `/a0/usr/projects/<project_name>/.a0proj/` (`secrets.env`, `variables.env`).
+> Project-scoped secrets and variables (when using Projects) live under `/ctx/usr/projects/<project_name>/.a0proj/` (`secrets.env`, `variables.env`).
 
 ## Remote Access via Tunneling
 
@@ -812,7 +812,7 @@ Ctx AI provides a powerful file browser interface for managing your workspace:
   - Current path always visible for context
 
 > [!NOTE]
-> The file browser lets you navigate the Ctx AI filesystem. For file-based work, keep your working files in `/a0/usr` (or inside a Project workspace).
+> The file browser lets you navigate the Ctx AI filesystem. For file-based work, keep your working files in `/ctx/usr` (or inside a Project workspace).
 >
 - **File Operations**:
   - Create new files and directories
@@ -1000,7 +1000,7 @@ By default, Ctx AI backs up your most important data:
 * **Uploaded Files**: Documents and files you've worked with
 
 > [!NOTE]
-> Chat history is stored at `/a0/usr/chats/` inside the container.
+> Chat history is stored at `/ctx/usr/chats/` inside the container.
 
 #### Customizing Backup Content
 Before creating a backup, you can customize what to include:
@@ -1021,7 +1021,7 @@ Before creating a backup, you can customize what to include:
 
 > [!NOTE]
 > Backup creation may take a few minutes depending on the amount of data. You'll see progress updates during the process.
-> Secrets stored in `/a0/usr/secrets.env` are not always included in backup archives. Keep a manual copy if you rely on secrets.
+> Secrets stored in `/ctx/usr/secrets.env` are not always included in backup archives. Keep a manual copy if you rely on secrets.
 
 ### Restoring from Backup
 The restore process allows you to recover your Ctx AI setup from a previous backup:
@@ -1068,7 +1068,7 @@ Optionally clean up existing files before restoring:
 * **Test Restores**: Occasionally test restoring backups to ensure they work
 
 #### Security Considerations
-* **Secrets**: Backups do **not** reliably include `/a0/usr/secrets.env`. Copy it manually when migrating.
+* **Secrets**: Backups do **not** reliably include `/ctx/usr/secrets.env`. Copy it manually when migrating.
 * **Secure Storage**: Store backup files securely and don't share them
 * **Clean Systems**: When restoring on new systems, verify all configurations
 

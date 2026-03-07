@@ -117,7 +117,7 @@ Place *.js files in extensions/webui/<extension_point>/ and export a default asy
 
 ## 7. Plugin Index & Community Sharing
 
-The **Plugin Index** is a community-maintained repository at https://github.com/ctxos/a0-plugins that lists plugins available to the Ctx AI community. Plugins listed there can be discovered and installed by other users.
+The **Plugin Index** is a community-maintained repository at https://github.com/ctxos/ctx-plugins that lists plugins available to the Ctx AI community. Plugins listed there can be discovered and installed by other users.
 
 ### Two Distinct plugin.yaml Files
 
@@ -135,7 +135,7 @@ per_agent_config: false
 always_enabled: false
 ```
 
-**Index manifest** (submitted to the `a0-plugins` repo under `plugins/<your-plugin-name>/`, drives discoverability only):
+**Index manifest** (submitted to the `ctx-plugins` repo under `plugins/<your-plugin-name>/`, drives discoverability only):
 ```yaml
 title: My Plugin
 description: What this plugin does.
@@ -163,12 +163,12 @@ your-plugin-repo/          ← GitHub repository root
 └── webui/
 ```
 
-Users install it locally by cloning (or downloading) the repo contents into `/a0/usr/plugins/<plugin_name>/`.
+Users install it locally by cloning (or downloading) the repo contents into `/ctx/usr/plugins/<plugin_name>/`.
 
 ### Submitting to the Plugin Index
 
 1. Create a GitHub repository for your plugin with the runtime `plugin.yaml` at the repo root.
-2. Fork `https://github.com/ctxos/a0-plugins`.
+2. Fork `https://github.com/ctxos/ctx-plugins`.
 3. Create a folder `plugins/<your-plugin-name>/` containing only an index `plugin.yaml` (and optionally a square thumbnail image ≤ 20 KB).
 4. Open a Pull Request with exactly one new plugin folder.
 5. CI validates the submission automatically. A maintainer reviews and merges.
@@ -179,7 +179,7 @@ Index submission rules:
 - Folders starting with `_` are reserved for internal use
 - `github` must point to a public repo that contains `plugin.yaml` at its root
 - `title` max 50 characters, `description` max 500 characters
-- `tags`: optional, up to 5, use recommended tags from https://github.com/ctxos/a0-plugins/blob/main/TAGS.md
+- `tags`: optional, up to 5, use recommended tags from https://github.com/ctxos/ctx-plugins/blob/main/TAGS.md
 
 ### Plugin Marketplace (Coming Soon)
 

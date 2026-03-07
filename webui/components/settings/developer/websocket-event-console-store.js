@@ -8,7 +8,7 @@ const DIAGNOSTIC_EVENT = "ws_dev_console_event";
 const SUBSCRIBE_EVENT = "ws_event_console_subscribe";
 const UNSUBSCRIBE_EVENT = "ws_event_console_unsubscribe";
 const MAX_ENTRIES = 200;
-const CAPTURE_ENABLED_KEY = "a0.websocket_event_console.capture_enabled";
+const CAPTURE_ENABLED_KEY = "ctx.websocket_event_console.capture_enabled";
 
 const model = {
   entries: [],

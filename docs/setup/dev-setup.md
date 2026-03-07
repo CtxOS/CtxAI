@@ -107,12 +107,12 @@ After inserting my API key in settings, my Ctx AI instance works. I can send a s
 
 
 ## Step 5: Run another instance of Ctx AI in Docker
-- Some parts of A0 require standardized linux environment, additional web services and preinstalled binaries that would be unneccessarily complex to set up in a local environment.
-- To make development easier, we can use existing A0 instance in docker and forward some requests to be executed there using SSH and RFC (Remote Function Call).
+- Some parts of CTX require standardized linux environment, additional web services and preinstalled binaries that would be unneccessarily complex to set up in a local environment.
+- To make development easier, we can use existing CTX instance in docker and forward some requests to be executed there using SSH and RFC (Remote Function Call).
 
 1. Pull the docker image `ctxos/ctxai` from Docker Hub and run it with a web port (`80`) mapped and SSH port (`22`) mapped.
-If you want, you can also map the `/a0` folder to our local project folder as well, this way we can update our local instance and the docker instance at the same time.
-This is how it looks in my example: port `80` is mapped to `8880` on the host and `22` to `8822`, `/a0` folder mapped to `/Users/KhulnaSoft/Desktop/ctxai`:
+If you want, you can also map the `/ctx` folder to our local project folder as well, this way we can update our local instance and the docker instance at the same time.
+This is how it looks in my example: port `80` is mapped to `8880` on the host and `22` to `8822`, `/ctx` folder mapped to `/Users/KhulnaSoft/Desktop/ctxai`:
 
 ![docker run](res/dev/devinst-11.png)
 ![docker run](res/dev/devinst-12.png)
@@ -157,14 +157,14 @@ You're now ready to contribute to Ctx AI, create custom extensions, or modify th
 
 ## Configuration via Environment Variables
 
-For development and testing, you can override default settings using the `.env` file with `A0_SET_` prefixed variables:
+For development and testing, you can override default settings using the `.env` file with `CTX_SET_` prefixed variables:
 
 ```env
 # Add to your .env file
-A0_SET_chat_model_provider=ollama
-A0_SET_chat_model_name=llama3.2
-A0_SET_chat_model_api_base=http://localhost:11434
-A0_SET_memory_recall_interval=5
+CTX_SET_chat_model_provider=ollama
+CTX_SET_chat_model_name=llama3.2
+CTX_SET_chat_model_api_base=http://localhost:11434
+CTX_SET_memory_recall_interval=5
 ```
 
 These environment variables automatically override the hardcoded defaults in `get_default_settings()` without modifying code. Useful for testing different configurations or multi-environment setups.

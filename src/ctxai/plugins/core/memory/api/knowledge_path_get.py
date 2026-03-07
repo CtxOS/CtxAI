@@ -18,7 +18,7 @@ class GetKnowledgePath(ApiHandler):
         else:
             knowledge_folder = get_custom_knowledge_subdir_abs(context.ctx)
 
-        knowledge_folder = files.normalize_a0_path(knowledge_folder)
+        knowledge_folder = files.normalize_ctx_path(knowledge_folder)
 
         return {
             "ok": True,

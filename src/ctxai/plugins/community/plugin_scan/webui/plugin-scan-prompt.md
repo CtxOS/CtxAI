@@ -13,8 +13,8 @@
 
 Follow these steps **in order**:
 
-1. **Clone** the repo to `/tmp/plugin-scan-$(date +%s)` (outside `/a0`).
-2. **Load knowledge** — use the knowledge tool to load the skill `a0-create-plugin`.
+1. **Clone** the repo to `/tmp/plugin-scan-$(date +%s)` (outside `/ctx`).
+2. **Load knowledge** — use the knowledge tool to load the skill `ctx-create-plugin`.
 3. **Read plugin.yaml** — note title, description, version, and declared capabilities.
 4. **Map files** — list all files; flag anything that doesn't match the declared purpose.
 5. **Run security checks** — perform ONLY the checks listed below on ALL code files.

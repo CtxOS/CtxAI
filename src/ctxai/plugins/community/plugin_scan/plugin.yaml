@@ -1,5 +1,5 @@
 title: Plugin Scanner
-description: Security scanner for third-party A0 plugins.
+description: Security scanner for third-party CTX plugins.
 version: 1.0.0
 settings_sections: []
 per_project_config: false

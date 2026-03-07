@@ -88,7 +88,7 @@ def create_project(name: str, data: BasicProjectData):
 
 
 def clone_git_project(name: str, git_url: str, git_token: str, data: BasicProjectData):
-    """Clone a git repository as a new A0 project. Token is used only for cloning via http header."""
+    """Clone a git repository as a new CTX project. Token is used only for cloning via http header."""
     from ctxai.integrations.git import git
 
     abs_path = files.create_dir_safe(
@@ -375,7 +375,7 @@ def build_system_prompt_vars(name: str):
         "project_name": project_data.get("title", ""),
         "project_description": project_data.get("description", ""),
         "project_instructions": complete_instructions or "",
-        "project_path": files.normalize_a0_path(get_project_folder(name)),
+        "project_path": files.normalize_ctx_path(get_project_folder(name)),
         "project_git_url": project_data.get("git_url", ""),
     }
 

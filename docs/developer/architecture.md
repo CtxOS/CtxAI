@@ -73,7 +73,7 @@ This architecture ensures:
 | `run_ui.py` | Web UI launcher |
 
 > [!NOTE]
-> In the Docker runtime, the framework lives under `/a0` inside the container. Data persists as long as the container exists. For upgrades, prefer **Backup & Restore** instead of mapping the full `/a0` directory.
+> In the Docker runtime, the framework lives under `/ctx` inside the container. Data persists as long as the container exists. For upgrades, prefer **Backup & Restore** instead of mapping the full `/ctx` directory.
 
 ## Core Components
 Ctx AI's architecture revolves around the following key components:

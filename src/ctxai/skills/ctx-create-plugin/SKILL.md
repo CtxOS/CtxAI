@@ -1,18 +1,18 @@
 ---
-name: a0-create-plugin
+name: ctx-create-plugin
 description: Create, extend, or modify Ctx AI plugins. Follows strict full-stack conventions (usr/plugins, plugin.yaml, Store Gating, AgentContext, plugin settings). Use for UI hooks, API handlers, lifecycle extensions, or plugin settings UI.
 ---
 
 # Ctx AI Plugin Development
 
 > [!IMPORTANT]
-> Always create new plugins in `/a0/usr/plugins/<plugin_name>/`. The `/a0/plugins/` directory is reserved for core system plugins.
+> Always create new plugins in `/ctx/usr/plugins/<plugin_name>/`. The `/ctx/plugins/` directory is reserved for core system plugins.
 
 Primary references:
-- /a0/AGENTS.md (Full-stack architecture & AgentContext)
-- /a0/docs/agents/AGENTS.components.md (Component system deep dive)
-- /a0/docs/agents/AGENTS.modals.md (Modal system & CSS conventions)
-- /a0/docs/agents/AGENTS.plugins.md (Extension points, plugin.yaml, settings system, Plugin Index)
+- /ctx/AGENTS.md (Full-stack architecture & AgentContext)
+- /ctx/docs/agents/AGENTS.components.md (Component system deep dive)
+- /ctx/docs/agents/AGENTS.modals.md (Modal system & CSS conventions)
+- /ctx/docs/agents/AGENTS.plugins.md (Extension points, plugin.yaml, settings system, Plugin Index)
 
 ---
 
@@ -22,8 +22,8 @@ Before starting, ask the user one question:
 
 > "Should this plugin be **local only** (stays in your Ctx AI installation) or a **community plugin** (published to the Plugin Index so others can install it)?"
 
-- **Local plugin**: Create it in `/a0/usr/plugins/<plugin_name>/`. No repository needed. Skip to the manifest section below.
-- **Community plugin**: The plugin must live in its own GitHub repository (runtime manifest at the repo root), and then a separate index submission PR is made to https://github.com/ctxos/a0-plugins. Guide the user through both steps.
+- **Local plugin**: Create it in `/ctx/usr/plugins/<plugin_name>/`. No repository needed. Skip to the manifest section below.
+- **Community plugin**: The plugin must live in its own GitHub repository (runtime manifest at the repo root), and then a separate index submission PR is made to https://github.com/ctxos/ctx-plugins. Guide the user through both steps.
 
 ---
 
@@ -166,7 +166,7 @@ save_plugin_config(
 
 ## Directory Layout
 ```
-/a0/usr/plugins/<name>/
+/ctx/usr/plugins/<name>/
   plugin.yaml           # Required manifest
   initialize.py         # Optional one-time setup script
   default_config.yaml   # Optional default settings fallback
@@ -237,7 +237,7 @@ Help the user create this repository and push the plugin files to it.
 
 ### 2. Index manifest (different from runtime manifest)
 
-The Plugin Index (`https://github.com/ctxos/a0-plugins`) uses a **separate, simpler `plugin.yaml`** that only describes discoverability — it is NOT the same as the runtime manifest:
+The Plugin Index (`https://github.com/ctxos/ctx-plugins`) uses a **separate, simpler `plugin.yaml`** that only describes discoverability — it is NOT the same as the runtime manifest:
 
 ```yaml
 title: My Plugin
@@ -248,11 +248,11 @@ tags:
   - example
 ```
 
-Only four fields: `title`, `description`, `github` (required), and `tags` (optional, up to 5). See the recommended tag list at https://github.com/ctxos/a0-plugins/blob/main/TAGS.md.
+Only four fields: `title`, `description`, `github` (required), and `tags` (optional, up to 5). See the recommended tag list at https://github.com/ctxos/ctx-plugins/blob/main/TAGS.md.
 
 ### 3. Submission steps
 
-1. Fork `https://github.com/ctxos/a0-plugins`.
+1. Fork `https://github.com/ctxos/ctx-plugins`.
 2. Create the folder `plugins/<your-plugin-name>/` in the fork.
 3. Add the index `plugin.yaml` inside it (and optionally a square thumbnail ≤ 20 KB named `thumbnail.png`, `thumbnail.jpg`, or `thumbnail.webp`).
 4. Open a Pull Request. The PR must add exactly one new plugin folder.
@@ -269,6 +269,6 @@ Help the user prepare the fork, the index manifest, and draft the PR.
 
 ## Plugin Index & Marketplace
 
-The **Plugin Index** is the community hub at https://github.com/ctxos/a0-plugins.
+The **Plugin Index** is the community hub at https://github.com/ctxos/ctx-plugins.
 
 A **Plugin Marketplace** (a built-in always-active plugin) is planned and will allow users to browse, install, and update indexed plugins directly from the Ctx AI UI. When available, this skill will be updated to guide users through marketplace-based installation as well.

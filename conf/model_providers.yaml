@@ -17,7 +17,7 @@
 #                     This is useful for `api_base`, `extra_headers`, etc.
 
 chat:
-  a0_venice:
+  ctx_venice:
     name: Ctx AI API
     litellm_provider: openai
     kwargs:

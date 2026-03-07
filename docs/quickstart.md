@@ -38,7 +38,7 @@ The container will start in a few seconds. Find the mapped port in Docker Deskto
 
 Open your browser and navigate to `http://localhost:<PORT>`. The Web UI will show a warning banner about missing API key.
 
-![Ctx AI Web UI](res/setup/6-docker-a0-running-new.png)
+![Ctx AI Web UI](res/setup/6-docker-ctx-running-new.png)
 
 Click **Add your API key** to open Settings and configure:
 
@@ -89,9 +89,9 @@ Now that you've run a simple task, you can experiment with more complex requests
 * Execute shell commands
 * Develop skills
 * Explore web development tasks
-* Develop A0 itself
+* Develop CTX itself
 
-### [Open A0 Usage Guide](guides/usage.md)
+### [Open CTX Usage Guide](guides/usage.md)
 
 Provides more in-depth information on tools, projects, tasks, and backup/restore.
 

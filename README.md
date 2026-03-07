@@ -100,7 +100,7 @@ docker run -p 50001:80 ctxos/ctxai
 - The framework does not guide or limit the agent in any way. There are no hard-coded rails that agents have to follow.
 - Every prompt, every small message template sent to the agent in its communication loop can be found in the **prompts/** folder and changed.
 - Every default tool can be found in the **python/tools/** folder and changed or copied to create new predefined tools.
-- **Automated configuration** via `A0_SET_` environment variables for deployment automation and easy setup.
+- **Automated configuration** via `CTX_SET_` environment variables for deployment automation and easy setup.
 
 ![Prompts](/docs/res/profiles.png)
 
@@ -197,7 +197,7 @@ docker run -p 50001:80 ctxos/ctxai
 - User data migration to `/usr` directory for cleaner separation of user and system files
 - Subagents system with configurable agent profiles for different roles
 - Memory operations offloaded to deferred tasks for better performance
-- Environment variables can now configure settings via `A0_SET_*` prefix in `.env`
+- Environment variables can now configure settings via `CTX_SET_*` prefix in `.env`
 - Automatic migration with overwrite support for `.env`, scheduler, knowledge, and legacy directories
 - Projects support extended to MCP, A2A, and external API
 - Workdir outside project support for more flexible file organization
@@ -249,7 +249,7 @@ docker run -p 50001:80 ctxos/ctxai
 ### v0.9.4 - Connectivity, UI
 [Release video](https://www.youtube.com/watch?v=C2BAdDOduIc)
 - External API endpoints
-- Streamable HTTP MCP A0 server
+- Streamable HTTP MCP CTX server
 - A2A (Agent to Agent) protocol - server+client
 - New notifications system
 - New local terminal interface for stability

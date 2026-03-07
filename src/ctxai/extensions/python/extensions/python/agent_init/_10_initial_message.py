@@ -13,7 +13,7 @@ class InitialMessage(Extension):
         if not self.agent:
             return
 
-        # Only add initial message for main agent (A0), not subordinate agents
+        # Only add initial message for main agent (CTX), not subordinate agents
         if self.agent.number != 0:
             return
 

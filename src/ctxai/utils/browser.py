@@ -20,7 +20,7 @@
 
 #     load_timeout = 10000
 #     interact_timeout = 3000
-#     selector_name = "data-a0sel3ct0r"
+#     selector_name = "data-ctxsel3ct0r"
 
 #     def __init__(self, headless=True):
 #         self.browser: PlaywrightBrowser = None  # type: ignore

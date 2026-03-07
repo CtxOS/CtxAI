@@ -305,8 +305,8 @@ class LiteLLMChatWrapper(SimpleChatModel):
     ):
         model_value = f"{provider}/{model}"
         super().__init__(model_name=model_value, provider=provider, kwargs=kwargs)  # type: ignore
-        # Set A0 model config as instance attribute after parent init
-        self.a0_model_conf = model_config
+        # Set CTX model config as instance attribute after parent init
+        self.ctx_model_conf = model_config
 
     @property
     def _llm_type(self) -> str:
@@ -387,7 +387,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
         msgs = self._convert_messages(messages)
 
         # Apply rate limiting if configured
-        apply_rate_limiter_sync(self.a0_model_conf, str(msgs))
+        apply_rate_limiter_sync(self.ctx_model_conf, str(msgs))
 
         # Call the model
         resp = completion(
@@ -410,7 +410,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
         msgs = self._convert_messages(messages)
 
         # Apply rate limiting if configured
-        apply_rate_limiter_sync(self.a0_model_conf, str(msgs))
+        apply_rate_limiter_sync(self.ctx_model_conf, str(msgs))
 
         result = ChatGenerationResult()
 
@@ -439,7 +439,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
         msgs = self._convert_messages(messages)
 
         # Apply rate limiting if configured
-        await apply_rate_limiter(self.a0_model_conf, str(msgs))
+        await apply_rate_limiter(self.ctx_model_conf, str(msgs))
 
         result = ChatGenerationResult()
 
@@ -487,13 +487,13 @@ class LiteLLMChatWrapper(SimpleChatModel):
 
         # Apply rate limiting if configured
         limiter = await apply_rate_limiter(
-            self.a0_model_conf, str(msgs_conv), rate_limiter_callback
+            self.ctx_model_conf, str(msgs_conv), rate_limiter_callback
         )
 
-        # Prepare call kwargs and retry config (strip A0-only params before calling LiteLLM)
+        # Prepare call kwargs and retry config (strip CTX-only params before calling LiteLLM)
         call_kwargs: dict[str, Any] = {**self.kwargs, **kwargs}
-        max_retries: int = int(call_kwargs.pop("a0_retry_attempts", 2))
-        retry_delay_s: float = float(call_kwargs.pop("a0_retry_delay_seconds", 1.5))
+        max_retries: int = int(call_kwargs.pop("ctx_retry_attempts", 2))
+        retry_delay_s: float = float(call_kwargs.pop("ctx_retry_delay_seconds", 1.5))
         stream = (
             reasoning_callback is not None
             or response_callback is not None
@@ -630,7 +630,7 @@ class BrowserCompatibleChatWrapper(ChatOpenRouter):
         **kwargs: Any,
     ):
         # Apply rate limiting if configured
-        apply_rate_limiter_sync(self._wrapper.a0_model_conf, str(messages))
+        apply_rate_limiter_sync(self._wrapper.ctx_model_conf, str(messages))
 
         # Call the model
         try:
@@ -688,7 +688,7 @@ class BrowserCompatibleChatWrapper(ChatOpenRouter):
 class LiteLLMEmbeddingWrapper(Embeddings):
     model_name: str
     kwargs: dict = {}
-    a0_model_conf: ModelConfig | None = None
+    ctx_model_conf: ModelConfig | None = None
 
     def __init__(
         self,
@@ -699,11 +699,11 @@ class LiteLLMEmbeddingWrapper(Embeddings):
     ):
         self.model_name = f"{provider}/{model}" if provider != "openai" else model
         self.kwargs = kwargs
-        self.a0_model_conf = model_config
+        self.ctx_model_conf = model_config
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         # Apply rate limiting if configured
-        apply_rate_limiter_sync(self.a0_model_conf, " ".join(texts))
+        apply_rate_limiter_sync(self.ctx_model_conf, " ".join(texts))
 
         resp = embedding(model=self.model_name, input=texts, **self.kwargs)
         return [
@@ -713,7 +713,7 @@ class LiteLLMEmbeddingWrapper(Embeddings):
 
     def embed_query(self, text: str) -> list[float]:
         # Apply rate limiting if configured
-        apply_rate_limiter_sync(self.a0_model_conf, text)
+        apply_rate_limiter_sync(self.ctx_model_conf, text)
 
         resp = embedding(model=self.model_name, input=[text], **self.kwargs)
         item = resp.data[0]  # type: ignore
@@ -752,18 +752,18 @@ class LocalSentenceTransformerWrapper(Embeddings):
 
         self.model = SentenceTransformer(model, **st_kwargs)
         self.model_name = model
-        self.a0_model_conf = model_config
+        self.ctx_model_conf = model_config
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         # Apply rate limiting if configured
-        apply_rate_limiter_sync(self.a0_model_conf, " ".join(texts))
+        apply_rate_limiter_sync(self.ctx_model_conf, " ".join(texts))
 
         embeddings = self.model.encode(texts, convert_to_tensor=False)  # type: ignore
         return embeddings.tolist() if hasattr(embeddings, "tolist") else embeddings  # type: ignore
 
     def embed_query(self, text: str) -> list[float]:
         # Apply rate limiting if configured
-        apply_rate_limiter_sync(self.a0_model_conf, text)
+        apply_rate_limiter_sync(self.ctx_model_conf, text)
 
         embedding = self.model.encode([text], convert_to_tensor=False)  # type: ignore
         result = embedding[0].tolist() if hasattr(embedding[0], "tolist") else embedding[0]

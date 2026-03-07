@@ -532,7 +532,7 @@ class BackupService:
 
                 # Process each file in archive
                 for archive_path in archive_files:
-                    # Archive path is already the correct relative path (e.g., "a0/tmp/settings.json")
+                    # Archive path is already the correct relative path (e.g., "ctx/tmp/settings.json")
                     original_path = archive_path
 
                     # Translate path from backed up system to current system
@@ -542,7 +542,7 @@ class BackupService:
                     )
 
                     # For pattern matching, we need to use the translated path (current system)
-                    # so that patterns like "/home/rafael/a0/data/**" can match files correctly
+                    # so that patterns like "/home/rafael/ctx/data/**" can match files correctly
                     translated_path_for_matching = target_path.lstrip("/")
 
                     # Check if file matches restore patterns
@@ -715,7 +715,7 @@ class BackupService:
 
                 # Process each file in archive
                 for archive_path in archive_files:
-                    # Archive path is already the correct relative path (e.g., "a0/tmp/settings.json")
+                    # Archive path is already the correct relative path (e.g., "ctx/tmp/settings.json")
                     original_path = archive_path
 
                     # Translate path from backed up system to current system
@@ -725,7 +725,7 @@ class BackupService:
                     )
 
                     # For pattern matching, we need to use the translated path (current system)
-                    # so that patterns like "/home/rafael/a0/data/**" can match files correctly
+                    # so that patterns like "/home/rafael/ctx/data/**" can match files correctly
                     translated_path_for_matching = target_path.lstrip("/")
 
                     # Check if file matches restore patterns

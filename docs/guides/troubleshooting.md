@@ -3,7 +3,7 @@ This page addresses frequently asked questions (FAQ) and provides troubleshootin
 
 ## Frequently Asked Questions
 **1. How do I ask Ctx AI to work directly on my files or dirs?**
-- Place the files/dirs in `/a0/usr`. Ctx AI will be able to perform tasks on them.
+- Place the files/dirs in `/ctx/usr`. Ctx AI will be able to perform tasks on them.
 
 **2. When I input something in the chat, nothing happens. What's wrong?**
 - Check if you have set up API keys in the Settings page. If not, the application cannot call LLM providers.
@@ -15,7 +15,7 @@ This page addresses frequently asked questions (FAQ) and provides troubleshootin
 - No. ChatGPT Plus does not include API credits. You must provide an OpenAI API key in Settings.
 
 **5. Where is chat history stored?**
-- Chat history lives at `/a0/usr/chats/` inside the container.
+- Chat history lives at `/ctx/usr/chats/` inside the container.
 
 **6. How do I integrate open-source models with Ctx AI?**
 Refer to the [Choosing your LLMs](../setup/installation.md#installing-and-using-ollama-local-models) section for configuring local models (Ollama, LM Studio, etc.).
@@ -24,13 +24,13 @@ Refer to the [Choosing your LLMs](../setup/installation.md#installing-and-using-
 > Some LLM providers offer free usage tiers, for example Groq, Mistral, SambaNova, or CometAPI.
 
 **7. How can I make Ctx AI retain memory between sessions?**
-Use **Settings → Backup & Restore** and avoid mapping the entire `/a0` directory. See [How to update Ctx AI](../setup/installation.md#how-to-update-ctxai).
+Use **Settings → Backup & Restore** and avoid mapping the entire `/ctx` directory. See [How to update Ctx AI](../setup/installation.md#how-to-update-ctxai).
 
 **8. My browser agent fails or is unreliable. What now?**
 The built-in browser agent is currently unstable on some systems. Use Skills or MCP alternatives such as Browser OS, Chrome DevTools, or Vercel's Agent Browser. See [MCP Setup](mcp-setup.md).
 
 **9. My secrets disappeared after a backup restore.**
-Secrets are stored in `/a0/usr/secrets.env` and are not always included in backup archives. Copy them manually.
+Secrets are stored in `/ctx/usr/secrets.env` and are not always included in backup archives. Copy them manually.
 
 **10. Where can I find more documentation or tutorials?**
 - Join the Ctx AI [Skool](https://www.skool.com/ctxai) or [Discord](https://discord.gg/B8KZKNsPpj) community.
