@@ -89,9 +89,9 @@ Now that you've run a simple task, you can experiment with more complex requests
 * Execute shell commands
 * Develop skills
 * Explore web development tasks
-* Develop CTX itself
+* Develop A0 itself
 
-### [Open CTX Usage Guide](guides/usage.md)
+### [Open A0 Usage Guide](guides/usage.md)
 
 Provides more in-depth information on tools, projects, tasks, and backup/restore.
 

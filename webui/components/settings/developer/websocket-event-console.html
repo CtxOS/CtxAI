@@ -1,74 +1,55 @@
 <html>
+
 <head>
   <title>WebSocket Event Console</title>
   <script type="module">
     import { store as websocketEventConsoleStore } from "/components/settings/developer/websocket-event-console-store.js";
   </script>
 </head>
+
 <body>
   <div x-data>
     <template x-if="window.runtimeInfo?.isDevelopment && $store.websocketEventConsoleStore">
-      <div
-        class="ws-console"
-        x-create="$store.websocketEventConsoleStore.onOpen()"
-        x-destroy="$store.websocketEventConsoleStore.detach({ notify: false })"
-      >
+      <div class="ws-console" x-create="$store.websocketEventConsoleStore.onOpen()"
+        x-destroy="$store.websocketEventConsoleStore.detach({ notify: false })">
         <h2>WebSocket Event Console</h2>
         <p class="ws-description">
-          Capture inbound/outbound WebSocket envelopes, lifecycle broadcasts, and diagnostic metadata while capture is enabled.
+          Capture inbound/outbound WebSocket envelopes, lifecycle broadcasts, and diagnostic metadata while capture is
+          enabled.
           This modal is the display layer for the bounded in-memory buffer.
         </p>
 
         <div class="ws-controls">
-          <button
-            class="btn"
-            x-show="!$store.websocketEventConsoleStore.captureEnabled"
-            @click="$store.websocketEventConsoleStore.startCapture()"
-          >
+          <button class="btn" x-show="!$store.websocketEventConsoleStore.captureEnabled"
+            @click="$store.websocketEventConsoleStore.startCapture()">
             Start capture
           </button>
-          <button
-            class="btn"
-            x-show="$store.websocketEventConsoleStore.captureEnabled"
-            @click="$store.websocketEventConsoleStore.stopCapture()"
-          >
+          <button class="btn" x-show="$store.websocketEventConsoleStore.captureEnabled"
+            @click="$store.websocketEventConsoleStore.stopCapture()">
             Stop capture
           </button>
-          <button
-            class="btn"
-            :disabled="!$store.websocketEventConsoleStore.captureEnabled"
-            @click="$store.websocketEventConsoleStore.reconnect()"
-          >
+          <button class="btn" :disabled="!$store.websocketEventConsoleStore.captureEnabled"
+            @click="$store.websocketEventConsoleStore.reconnect()">
             Resubscribe
           </button>
           <button class="btn" @click="$store.websocketEventConsoleStore.clear()">Clear</button>
           <label class="ws-toggle">
-            <input
-              type="checkbox"
-              x-model="$store.websocketEventConsoleStore.showHandledOnly"
-            />
+            <input type="checkbox" x-model="$store.websocketEventConsoleStore.showHandledOnly" />
             Show inbound events with handlers only
           </label>
         </div>
 
         <div class="ws-status">
-          <span
-            class="badge"
+          <span class="badge"
             :class="($store.websocketEventConsoleStore.captureEnabled && $store.websocketEventConsoleStore.subscriptionActive) ? 'badge-success' : 'badge-warning'"
-            x-text="!$store.websocketEventConsoleStore.captureEnabled ? 'Capture OFF' : ($store.websocketEventConsoleStore.subscriptionActive ? 'Capture ON' : 'Capture ON (not subscribed)')"
-          ></span>
-          <span
-            class="ws-error"
-            x-show="$store.websocketEventConsoleStore.lastError"
-            x-text="$store.websocketEventConsoleStore.lastError"
-          ></span>
+            x-text="!$store.websocketEventConsoleStore.captureEnabled ? 'Capture OFF' : ($store.websocketEventConsoleStore.subscriptionActive ? 'Capture ON' : 'Capture ON (not subscribed)')"></span>
+          <span class="ws-error" x-show="$store.websocketEventConsoleStore.lastError"
+            x-text="$store.websocketEventConsoleStore.lastError"></span>
         </div>
 
         <div class="ws-entries">
-          <template
-            x-for="entry in $store.websocketEventConsoleStore.filteredEntries().slice().reverse()"
-            :key="entry.eventId"
-          >
+          <template x-for="entry in $store.websocketEventConsoleStore.filteredEntries().slice().reverse()"
+            :key="entry.eventId">
             <div class="ws-entry">
               <div class="ws-entry-header">
                 <span class="badge" :class="`badge-${entry.kind}`" x-text="entry.kind"></span>
@@ -88,8 +69,7 @@
                   <div>
                     <span class="ws-label">Handlers:</span>
                     <span
-                      x-text="entry.resultSummary?.handlerCount ?? entry.resultSummary?.handlers?.length ?? 0"
-                    ></span>
+                      x-text="entry.resultSummary?.handlerCount ?? entry.resultSummary?.handlers?.length ?? 0"></span>
                     <template x-if="entry.resultSummary?.ok || entry.resultSummary?.error">
                       <span class="ws-inline-summary">
                         <span>OK: <span x-text="entry.resultSummary.ok || 0"></span></span>
@@ -268,4 +248,5 @@
     }
   </style>
 </body>
+
 </html>

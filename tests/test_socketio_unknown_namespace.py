@@ -5,6 +5,9 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 import pytest
+from socketio.asgi import ASGIApp
+from socketio.async_client import AsyncClient
+from socketio.async_server import AsyncServer
 
 
 @contextlib.asynccontextmanager
@@ -52,7 +55,7 @@ async def test_unknown_namespace_connect_error_can_be_made_deterministic() -> No
     import socketio
     from socketio import packet
 
-    sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*", namespaces="*")
+    sio = AsyncServer(async_mode="asgi", cors_allowed_origins="*", namespaces="*")
 
     allowed_namespaces = {"/known", "/"}
 
@@ -78,10 +81,10 @@ async def test_unknown_namespace_connect_error_can_be_made_deterministic() -> No
 
     sio._handle_connect = _gatekeeper_handle_connect  # type: ignore[assignment]
 
-    app = socketio.ASGIApp(sio)
+    app = ASGIApp(sio)
 
     async with _run_asgi_app(app) as base_url:
-        client = socketio.AsyncClient()
+        client = AsyncClient()
         connect_error_fut: asyncio.Future[Any] = asyncio.get_running_loop().create_future()
 
         async def _on_connect_error(data: Any) -> None:

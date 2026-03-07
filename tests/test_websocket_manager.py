@@ -14,12 +14,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from datetime import UTC
 
-from backend.interfaces.websockets.websocket import (
-    ConnectionNotFoundError,
-    WebSocketHandler,
-    WebSocketResult,
-)
-from backend.interfaces.websockets.websocket_manager import (
+from ctxai.utils.websocket import ConnectionNotFoundError, WebSocketHandler, WebSocketResult
+from ctxai.utils.websocket_manager import (
     BUFFER_TTL,
     DIAGNOSTIC_EVENT,
     LIFECYCLE_CONNECT_EVENT,
@@ -96,6 +92,9 @@ async def test_broadcast_performance_smoke(monkeypatch):
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
 
+    # Disable development mode to avoid logging overhead during performance test
+    monkeypatch.setattr("ctxai.utils.websocket_manager.runtime.is_development", lambda: False)
+
     for idx in range(50):
         await manager.handle_connect(NAMESPACE, f"sid-{idx}")
 
@@ -148,10 +147,7 @@ async def test_route_event_no_handler_returns_standard_error():
     assert result["handlerId"].endswith("WebSocketManager")
     assert result["ok"] is False
     assert result["error"]["code"] == "NO_HANDLERS"
-    assert (
-        result["error"]["error"]
-        == f"No handler for namespace '{NAMESPACE}' event 'missing'"
-    )
+    assert result["error"]["error"] == f"No handler for namespace '{NAMESPACE}' event 'missing'"
 
 
 @pytest.mark.asyncio
@@ -184,9 +180,7 @@ async def test_route_event_all_aggregates_results():
     await manager.handle_connect(NAMESPACE, "sid-1")
     await manager.handle_connect(NAMESPACE, "sid-2")
 
-    aggregated = await manager.route_event_all(
-        NAMESPACE, "multi", {"value": 42}, timeout_ms=1000
-    )
+    aggregated = await manager.route_event_all(NAMESPACE, "multi", {"value": 42}, timeout_ms=1000)
 
     assert len(aggregated) == 2
     by_sid = {entry["sid"]: entry for entry in aggregated}
@@ -279,9 +273,7 @@ async def test_route_event_offloads_blocking_handlers():
     manager.register_handlers({NAMESPACE: [handler]})
     await manager.handle_connect(NAMESPACE, "sid-1")
 
-    route_task = asyncio.create_task(
-        manager.route_event(NAMESPACE, "block", {}, "sid-1")
-    )
+    route_task = asyncio.create_task(manager.route_event(NAMESPACE, "block", {}, "sid-1"))
     await asyncio.sleep(0)
 
     t0 = time.perf_counter()
@@ -340,9 +332,7 @@ async def test_emit_to_known_disconnected_sid_buffers():
     await manager.handle_connect(NAMESPACE, "sid-1")
     await manager.handle_disconnect(NAMESPACE, "sid-1")
 
-    await manager.emit_to(
-        NAMESPACE, "sid-1", "event", {"a": 1}, correlation_id="corr-1"
-    )
+    await manager.emit_to(NAMESPACE, "sid-1", "event", {"a": 1}, correlation_id="corr-1")
 
     assert (NAMESPACE, "sid-1") in manager.buffers
     buffered = list(manager.buffers[(NAMESPACE, "sid-1")])
@@ -360,9 +350,7 @@ async def test_buffer_overflow_drops_oldest(monkeypatch):
     await manager.handle_connect(NAMESPACE, "offline")
     await manager.handle_disconnect(NAMESPACE, "offline")
 
-    monkeypatch.setattr(
-        "backend.interfaces.websockets.websocket_manager.BUFFER_MAX_SIZE", 2
-    )
+    monkeypatch.setattr("ctxai.utils.websocket_manager.BUFFER_MAX_SIZE", 2)
 
     await manager.emit_to(NAMESPACE, "offline", "event", {"idx": 0})
     await manager.emit_to(NAMESPACE, "offline", "event", {"idx": 1})
@@ -393,7 +381,7 @@ async def test_expired_buffer_entries_are_discarded(monkeypatch):
     socketio.emit.reset_mock()
 
     monkeypatch.setattr(
-        "backend.interfaces.websockets.websocket_manager._utcnow",
+        "ctxai.utils.websocket_manager._utcnow",
         lambda: future,
     )
     await manager.handle_connect(NAMESPACE, "sid-expired")
@@ -487,7 +475,7 @@ async def test_timestamps_are_timezone_aware():
     assert info.connected_at.tzinfo is not None
     assert info.last_activity.tzinfo is not None
 
-    with patch("backend.interfaces.websockets.websocket_manager._utcnow") as mocked_now:
+    with patch("ctxai.utils.websocket_manager._utcnow") as mocked_now:
         mocked_now.return_value = info.last_activity
         await manager.route_event(NAMESPACE, "unknown", {}, "sid-utc")
         assert info.last_activity.tzinfo is not None
@@ -520,9 +508,7 @@ def test_register_handlers_warns_on_duplicates(monkeypatch):
     def capture_warning(message: str) -> None:
         warnings.append(message)
 
-    monkeypatch.setattr(
-        "backend.utils.print_style.PrintStyle.warning", staticmethod(capture_warning)
-    )
+    monkeypatch.setattr("ctxai.utils.print_style.PrintStyle.warning", staticmethod(capture_warning))
 
     DuplicateHandler._reset_instance_for_testing()
     AnotherDuplicateHandler._reset_instance_for_testing()
@@ -575,9 +561,7 @@ class ResultHandler(WebSocketHandler):
 
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         if event_type == "result_event":
-            return WebSocketResult.ok(
-                {"sid": sid}, correlation_id="explicit", duration_ms=1.234
-            )
+            return WebSocketResult.ok({"sid": sid}, correlation_id="explicit", duration_ms=1.234)
         return WebSocketResult.error(
             code="E_RESULT",
             message="boom",
@@ -732,9 +716,7 @@ async def test_route_event_all_respects_exclude_handlers():
     for entry in aggregated:
         assert entry["correlationId"]
         assert entry["results"]
-        assert all(
-            result["handlerId"] == alpha.identifier for result in entry["results"]
-        )
+        assert all(result["handlerId"] == alpha.identifier for result in entry["results"])
 
 
 @pytest.mark.asyncio
@@ -817,23 +799,13 @@ def test_debug_logging_respects_runtime_flag(monkeypatch):
     def capture(message: str) -> None:
         logs.append(message)
 
-    monkeypatch.setattr(
-        "backend.utils.print_style.PrintStyle.debug", staticmethod(capture)
-    )
-    monkeypatch.setattr(
-        "backend.interfaces.websockets.websocket_manager.runtime.is_development",
-        lambda: False,
-    )
-    monkeypatch.setenv("CTX_WS_DEBUG", "0")
+    monkeypatch.setattr("ctxai.utils.print_style.PrintStyle.debug", staticmethod(capture))
+    monkeypatch.setattr("ctxai.utils.websocket_manager.runtime.is_development", lambda: False)
 
     manager._debug("should-not-log")  # noqa: SLF001
     assert logs == []
 
-    monkeypatch.setattr(
-        "backend.interfaces.websockets.websocket_manager.runtime.is_development",
-        lambda: True,
-    )
-    monkeypatch.setenv("CTX_WS_DEBUG", "1")
+    monkeypatch.setattr("ctxai.utils.websocket_manager.runtime.is_development", lambda: True)
     manager._debug("should-log")  # noqa: SLF001
     assert logs == ["should-log"]
 

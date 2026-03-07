@@ -1,62 +1,77 @@
-# Python
+# --- Python ---
+__pycache__/
 *.py[cod]
+*$py.class
 *.so
-*.egg
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
 *.egg-info/
-*.whl
+.installed.cfg
+*.egg
+MANIFEST
+
+# --- Environments ---
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 .python-version
-pip-log.txt
-pip-delete-this-directory.txt
 
-# Virtual environments
-.venv/
-.conda/
+# --- uv ---
+.uv/
 
-# IDE / Editor
+# --- IDEs ---
 .vscode/
 .idea/
+*.swp
+*.swo
 .cursor/
 .windsurf/
 
-# Cache / Build
-__pycache__/
-.build/
-dist/
-.ruff_cache/
-.mypy_cache/
-.pytest_cache/
-.hypothesis/
-.coverage
-coverage.xml
-htmlcov/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# OS
+# --- OS ---
 .DS_Store
 Thumbs.db
 
-# Environment
-.env
-*.log
-*.bak
-*.tmp
-*.swp
-
-# Project specific
-memory/
-knowledge/custom/
-instruments/
+# --- Runtime Data ---
+data/
+!data/
+data/*
+!data/**/.gitkeep
 logs/
 tmp/
 usr/
+
+# --- CtxAI Specific ---
 agent_history.gif
 .agent/
 .claude/
+.gemini/
 
-# Root test files
-*.test.py
+# --- Legacy (Keep to ensure no accidental commits) ---
+/memory/
+/knowledge/custom/
+/instruments/
 
-# Keep .gitkeep
-!**/.gitkeep
+# --- Tests ---
+/*.test.py
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/

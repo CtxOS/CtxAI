@@ -10,9 +10,9 @@ Ctx AI uses a convention-over-configuration plugin model where runtime capabilit
 
 ### Internal Components
 
-1. Backend discovery (backend/utils/plugins.py): Resolves roots (usr/plugins/ first, then plugins/) and builds the effective set of plugins.
-2. Path resolution (backend/utils/subagents.py): Injects plugin paths into the agent's search space for prompts, tools, and configurations.
-3. Python extensions (backend/utils/extension.py): Executes lifecycle hooks from extensions/python/<point>/.
+1. Backend discovery (python/helpers/plugins.py): Resolves roots (usr/plugins/ first, then plugins/) and builds the effective set of plugins.
+2. Path resolution (python/helpers/subagents.py): Injects plugin paths into the agent's search space for prompts, tools, and configurations.
+3. Python extensions (python/helpers/extension.py): Executes lifecycle hooks from extensions/python/<point>/.
 4. WebUI extensions (webui/js/extensions.js): Injects HTML/JS contributions into core UI breakpoints (x-extension).
 
 ---
@@ -163,7 +163,7 @@ your-plugin-repo/          ← GitHub repository root
 └── webui/
 ```
 
-Users install it locally by cloning (or downloading) the repo contents into `/ctx/usr/plugins/<plugin_name>/`.
+Users install it locally by cloning (or downloading) the repo contents into `/a0/usr/plugins/<plugin_name>/`.
 
 ### Submitting to the Plugin Index
 

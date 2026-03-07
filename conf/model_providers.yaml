@@ -21,7 +21,7 @@ chat:
     name: Ctx AI API
     litellm_provider: openai
     kwargs:
-      api_base: https://llm.khulnasoft.com/v1
+      api_base: https://llm.ctxai.ai/v1
       venice_parameters:
         include_venice_system_prompt: false
   anthropic:
@@ -76,7 +76,7 @@ chat:
     litellm_provider: openrouter
     kwargs:
       extra_headers:
-        "HTTP-Referer": "https://ctxai.khulnasoft.com/"
+        "HTTP-Referer": "https://ctxai.ai/"
         "X-Title": "Ctx AI"
   sambanova:
     name: Sambanova
@@ -137,7 +137,7 @@ embedding:
     kwargs:
       api_base: https://openrouter.ai/api/v1
       extra_headers:
-        "HTTP-Referer": "https://ctxai.khulnasoft.com/"
+        "HTTP-Referer": "https://ctxai.ai/"
         "X-Title": "Ctx AI"
   other:
     name: Other OpenAI compatible

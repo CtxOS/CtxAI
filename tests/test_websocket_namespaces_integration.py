@@ -5,6 +5,9 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 import pytest
+from socketio.asgi import ASGIApp
+from socketio.async_client import AsyncClient
+from socketio.async_server import AsyncServer
 
 
 @contextlib.asynccontextmanager
@@ -54,9 +57,9 @@ async def test_unregistered_namespace_connection_fails_with_unknown_namespace_co
     import socketio
     from flask import Flask
 
-    from backend.interfaces.websockets.websocket import WebSocketHandler
-    from backend.interfaces.websockets.websocket_manager import WebSocketManager
-    from run_ui import configure_websocket_namespaces
+    from cli.ui import configure_websocket_namespaces
+    from ctxai.utils.websocket import WebSocketHandler
+    from ctxai.utils.websocket_manager import WebSocketManager
 
     class OpenHandler(WebSocketHandler):
         @classmethod
@@ -79,9 +82,7 @@ async def test_unregistered_namespace_connection_fails_with_unknown_namespace_co
     webapp = Flask("test_ws_namespaces_integration")
     webapp.secret_key = "test-secret"
 
-    sio = socketio.AsyncServer(
-        async_mode="asgi", cors_allowed_origins="*", namespaces="*"
-    )
+    sio = AsyncServer(async_mode="asgi", cors_allowed_origins="*", namespaces="*")
     lock = __import__("threading").RLock()
     manager = WebSocketManager(sio, lock)
 
@@ -92,13 +93,11 @@ async def test_unregistered_namespace_connection_fails_with_unknown_namespace_co
         handlers_by_namespace={"/open": [OpenHandler.get_instance(sio, lock)]},
     )
 
-    asgi_app = socketio.ASGIApp(sio)
+    asgi_app = ASGIApp(sio)
 
     async with _run_asgi_app(asgi_app) as base_url:
-        client = socketio.AsyncClient()
-        connect_error_fut: asyncio.Future[Any] = (
-            asyncio.get_running_loop().create_future()
-        )
+        client = AsyncClient()
+        connect_error_fut: asyncio.Future[Any] = asyncio.get_running_loop().create_future()
 
         async def _on_connect_error(data: Any) -> None:
             if not connect_error_fut.done():

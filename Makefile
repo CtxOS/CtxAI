@@ -1,107 +1,79 @@
-.PHONY: help install install-dev run test test-coverage clean lint format check docker-build docker-run docker-stop prepare maintenance update-reqs venv
+# Ctx AI Makefile
 
-PYTHON := python3
-PIP := $(PYTHON) -m pip
-SHELL := $(shell which bash)
-VENV := .venv
-VENV_PYTEST := $(VENV)/bin/pytest
-SYSTEM_PYTEST := $(shell which pytest 2>/dev/null)
+# Variables
+UV = uv
+PYTHON = $(UV) run python
+CTXAI = $(UV) run ctxai
+DOCKER_IMAGE = ctxai-local
+CACHE_DATE = $(shell date +%Y-%m-%d:%H:%M:%S)
 
-ifeq ($(wildcard $(VENV_PYTEST)),$(VENV_PYTEST))
-    PYTEST := $(VENV_PYTEST)
-else ifneq ($(SYSTEM_PYTEST),)
-    PYTEST := $(SYSTEM_PYTEST)
-else
-    PYTEST := pytest
-endif
+.PHONY: all install build run test docker deploy clean help
+
+all: help
 
 help:
-	@echo "Ctx AI - Makefile Commands"
-	@echo ""
-	@echo "=== Setup ==="
-	@echo "  make venv           Create virtual environment"
-	@echo "  make install         Install production dependencies"
-	@echo "  make install-dev    Install development dependencies"
-	@echo "  make setup-dev      Run development setup script"
-	@echo "  make prepare        Prepare environment (generate passwords, etc.)"
-	@echo ""
-	@echo "=== Development ==="
-	@echo "  make run            Start the WebUI server"
-	@echo "  make test           Run unit tests"
-	@echo "  make test-coverage Run tests with coverage report"
-	@echo ""
-	@echo "=== Code Quality ==="
-	@echo "  make lint           Run linting checks"
-	@echo "  make format         Format code"
-	@echo "  make check          Run all checks (lint + tests)"
-	@echo ""
-	@echo "=== Docker ==="
-	@echo "  make docker-build   Build Docker image"
-	@echo "  make docker-run     Run Docker container"
-	@echo "  make docker-stop    Stop Docker container"
-	@echo ""
-	@echo "=== Maintenance ==="
-	@echo "  make clean          Clean up cache files"
-	@echo "  make maintenance    Run maintenance tool"
-	@echo "  make update-reqs   Update requirements versions"
+	@echo "Ctx AI Management Commands:"
+	@echo "  install      Install the project in editable mode"
+	@echo "  run          Start the Web UI"
+	@echo "  agent-list   List available agents"
+	@echo "  doctor       Diagnose the environment"
+	@echo "  test         Run tests"
+	@echo "  coverage     Run tests with coverage"
+	@echo "  lint         Check code style"
+	@echo "  format       Format code"
+	@echo "  docker       Build the local development image"
+	@echo "  reset        Reset runtime state (logs/tmp)"
+	@echo "  clean        Remove caches and temporary files"
 
-install: venv
-	@echo "Installing production dependencies..."
-	./$(VENV)/bin/$(PIP) install -r requirements.txt
-	./$(VENV)/bin/$(PIP) install -r requirements2.txt
+install:
+	$(UV) sync
+	$(UV) run playwright install chromium
 
-install-dev: venv
-	@echo "Installing development dependencies..."
-	./$(VENV)/bin/$(PIP) install -r requirements.txt
-	./$(VENV)/bin/$(PIP) install -r requirements2.txt
-	./$(VENV)/bin/$(PIP) install -r requirements.dev.txt
+run:
+	$(CTXAI) ui start
 
-setup-dev:
-	@bash scripts/setup_dev.sh
+agent-list:
+	$(CTXAI) agent list
 
-run: venv
-	./$(VENV)/bin/$(PYTHON) run_ui.py
+doctor:
+	$(CTXAI) dev doctor
 
 test:
-	$(PYTEST) tests/ -v
+	./scripts/test.sh
 
-test-coverage:
-	$(PYTEST) tests/ -v --cov=backend --cov-report=html --cov-report=xml
+coverage:
+	./scripts/test-cov.sh
 
 lint:
-	@bash scripts/lint.sh check
+	./scripts/lint.sh
 
 format:
-	@bash scripts/lint.sh fix
+	./scripts/format.sh
 
-check: lint test
+docker:
+	docker build -f Dockerfile.local -t $(DOCKER_IMAGE) --build-arg CACHE_DATE=$(CACHE_DATE) .
+
+docker-base:
+	docker build -t ctxai-base:local -f docker/base/Dockerfile --build-arg CACHE_DATE=$(CACHE_DATE) docker/base
+
+deploy-base:
+	@echo "Deploying base image to DockerHub..."
+	docker buildx build -f docker/base/Dockerfile -t ctxos/ctxai-base:latest --platform linux/amd64,linux/arm64 --push --build-arg CACHE_DATE=$(CACHE_DATE) docker/base
+
+deploy:
+	@echo "Deploying latest version to DockerHub..."
+	docker buildx build -f docker/run/Dockerfile -t ctxos/ctxai:latest --platform linux/amd64,linux/arm64 --push --build-arg BRANCH=main --build-arg CACHE_DATE=$(CACHE_DATE) docker/run
+
+reset:
+	rm -rf data/tmp/*
+	rm -rf data/logs/*
+	@echo "Runtime state reset."
 
 clean:
-	@bash scripts/clean.sh
-
-docker-build:
-	@bash scripts/docker.sh build
-
-docker-run:
-	@bash scripts/docker.sh run
-
-docker-stop:
-	@bash scripts/docker.sh stop
-
-prepare: venv
-	./$(VENV)/bin/$(PYTHON) scripts/prepare.py
-
-maintenance: venv
-	./$(VENV)/bin/$(PYTHON) scripts/maintenance_tool.py
-
-update-reqs: venv
-	./$(VENV)/bin/$(PYTHON) scripts/update_reqs.py
-
-venv:
-	@if [ ! -d "$(VENV)" ]; then \
-		echo "Creating virtual environment..."; \
-		$(PYTHON) -m venv $(VENV); \
-		echo "Virtual environment created successfully!"; \
-	else \
-		echo "Virtual environment already exists."; \
-	fi
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	rm -rf .pytest_cache
+	rm -rf .coverage
+	rm -rf htmlcov
+	rm -rf .uv
+	rm -rf data/logs/*.html
+	@echo "Cleaned up temporary files and caches."

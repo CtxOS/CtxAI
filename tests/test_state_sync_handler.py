@@ -10,7 +10,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.interfaces.websockets.websocket_manager import WebSocketManager
+from ctxai.utils.websocket_manager import WebSocketManager
 
 NAMESPACE = "/state_sync"
 
@@ -27,8 +27,8 @@ async def _create_manager() -> WebSocketManager:
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
 
-    from backend.interfaces.websockets.state_sync_handler import StateSyncHandler
-    from backend.utils.state_monitor import _reset_state_monitor_for_testing
+    from ctxai.utils.state_monitor import _reset_state_monitor_for_testing
+    from python.websocket_handlers.state_sync_handler import StateSyncHandler
 
     _reset_state_monitor_for_testing()
     StateSyncHandler._reset_instance_for_testing()
@@ -38,14 +38,12 @@ async def _create_manager() -> WebSocketManager:
     return manager
 
 
-async def _create_manager_with_socketio() -> tuple[
-    WebSocketManager, FakeSocketIOServer
-]:
+async def _create_manager_with_socketio() -> tuple[WebSocketManager, FakeSocketIOServer]:
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
 
-    from backend.interfaces.websockets.state_sync_handler import StateSyncHandler
-    from backend.utils.state_monitor import _reset_state_monitor_for_testing
+    from ctxai.utils.state_monitor import _reset_state_monitor_for_testing
+    from python.websocket_handlers.state_sync_handler import StateSyncHandler
 
     _reset_state_monitor_for_testing()
     StateSyncHandler._reset_instance_for_testing()
@@ -84,10 +82,7 @@ async def test_state_request_success_returns_wire_level_shape_and_contract_paylo
     assert first["correlationId"] == "client-1"
     assert isinstance(first.get("data"), dict)
     assert set(first["data"].keys()) >= {"runtime_epoch", "seq_base"}
-    assert (
-        isinstance(first["data"]["runtime_epoch"], str)
-        and first["data"]["runtime_epoch"]
-    )
+    assert isinstance(first["data"]["runtime_epoch"], str) and first["data"]["runtime_epoch"]
     assert isinstance(first["data"]["seq_base"], int)
 
 
@@ -120,8 +115,8 @@ async def test_state_request_invalid_payload_returns_invalid_request_error():
 
 @pytest.mark.asyncio
 async def test_state_push_gating_and_initial_snapshot_delivery():
-    from backend.utils.state_monitor import get_state_monitor
-    from backend.utils.state_snapshot import validate_snapshot_schema_v1
+    from ctxai.utils.state_monitor import get_state_monitor
+    from ctxai.utils.state_snapshot import validate_snapshot_schema_v1
 
     manager, socketio = await _create_manager_with_socketio()
 

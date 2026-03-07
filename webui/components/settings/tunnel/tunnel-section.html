@@ -52,7 +52,8 @@
                                 <span class="step-number">1</span>
                                 <span class="step-text">Open the authentication page:</span>
                             </div>
-                            <a class="microsoft-login-link" :href="$store.tunnelStore.microsoftLoginUrl" target="_blank">
+                            <a class="microsoft-login-link" :href="$store.tunnelStore.microsoftLoginUrl"
+                                target="_blank">
                                 <span class="icon material-symbols-outlined">open_in_new</span>
                                 <span x-text="$store.tunnelStore.microsoftLoginUrl"></span>
                             </a>
@@ -63,8 +64,10 @@
                         </div>
                         <div class="microsoft-login-code-container">
                             <div class="microsoft-login-code" x-text="$store.tunnelStore.microsoftLoginCode"></div>
-                            <button class="btn btn-copy-code" @click="$store.tunnelStore.copyLoginCode()" :class="$store.tunnelStore.codeCopied ? 'copied' : ''">
-                                <span class="icon material-symbols-outlined" x-text="$store.tunnelStore.codeCopied ? 'check' : 'content_copy'"></span>
+                            <button class="btn btn-copy-code" @click="$store.tunnelStore.copyLoginCode()"
+                                :class="$store.tunnelStore.codeCopied ? 'copied' : ''">
+                                <span class="icon material-symbols-outlined"
+                                    x-text="$store.tunnelStore.codeCopied ? 'check' : 'content_copy'"></span>
                                 <span x-text="$store.tunnelStore.codeCopied ? 'Copied!' : 'Copy Code'"></span>
                             </button>
                         </div>
@@ -565,8 +568,13 @@
         }
 
         @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .spin-slow {

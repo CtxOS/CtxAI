@@ -10,7 +10,8 @@
         <p>These endpoints use API key authentication and support text messages and file attachments.</p>
 
         <!-- API Token Information -->
-        <div style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 16px 0;">
+        <div
+            style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 16px 0;">
             <h4 style="margin: 0 0 8px 0; color: var(--color-text-primary);">API Token Information</h4>
             <p style="margin: 0; color: var(--color-text-secondary); font-size: 14px;">
                 The API token is automatically generated from your username and password.
@@ -23,12 +24,14 @@
         <div class="api-section">
             <h2>POST /api_message</h2>
             <p style="margin: 0 0 16px 0; color: var(--color-text-secondary); font-size: 14px;">
-                Send messages to Ctx AI and receive responses. Supports text messages, file attachments, and conversation continuity.
+                Send messages to Ctx AI and receive responses. Supports text messages, file attachments, and
+                conversation continuity.
             </p>
 
             <!-- API Reference -->
             <h3 style="margin: 20px 0 12px 0; color: var(--color-text-primary);">API Reference</h3>
-            <div style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
+            <div
+                style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
                 <p style="margin: 0 0 8px 0; color: var(--color-text-secondary); font-size: 14px;">
                     <strong>Parameters:</strong><br>
                     • <code>context_id</code> (string, optional): Existing chat context ID<br>
@@ -38,7 +41,8 @@
                     • <code>project</code> (string, optional): Project name to activate (only on first message)
                 </p>
                 <p style="margin: 0; color: var(--color-text-secondary); font-size: 14px;">
-                    <strong>Headers:</strong> <code>X-API-KEY</code> (required), <code>Content-Type: application/json</code>
+                    <strong>Headers:</strong> <code>X-API-KEY</code> (required),
+                    <code>Content-Type: application/json</code>
                 </p>
             </div>
 
@@ -67,14 +71,16 @@
 
             <!-- API Reference -->
             <h3 style="margin: 20px 0 12px 0; color: var(--color-text-primary);">API Reference</h3>
-            <div style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
+            <div
+                style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
                 <p style="margin: 0 0 8px 0; color: var(--color-text-secondary); font-size: 14px;">
                     <strong>Parameters:</strong><br>
                     • <code>context_id</code> (string, required): Context ID to get logs from<br>
                     • <code>length</code> (integer, optional): Number of log items to return from newest (default: 100)
                 </p>
                 <p style="margin: 0; color: var(--color-text-secondary); font-size: 14px;">
-                    <strong>Headers:</strong> <code>X-API-KEY</code> (required), <code>Content-Type: application/json</code> (for POST)
+                    <strong>Headers:</strong> <code>X-API-KEY</code> (required),
+                    <code>Content-Type: application/json</code> (for POST)
                 </p>
             </div>
 
@@ -97,13 +103,15 @@
 
             <!-- API Reference -->
             <h3 style="margin: 20px 0 12px 0; color: var(--color-text-primary);">API Reference</h3>
-            <div style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
+            <div
+                style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
                 <p style="margin: 0 0 8px 0; color: var(--color-text-secondary); font-size: 14px;">
                     <strong>Parameters:</strong><br>
                     • <code>context_id</code> (string, required): Context ID of the chat to terminate
                 </p>
                 <p style="margin: 0; color: var(--color-text-secondary); font-size: 14px;">
-                    <strong>Headers:</strong> <code>X-API-KEY</code> (required), <code>Content-Type: application/json</code>
+                    <strong>Headers:</strong> <code>X-API-KEY</code> (required),
+                    <code>Content-Type: application/json</code>
                 </p>
             </div>
 
@@ -122,13 +130,15 @@
 
             <!-- API Reference -->
             <h3 style="margin: 20px 0 12px 0; color: var(--color-text-primary);">API Reference</h3>
-            <div style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
+            <div
+                style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
                 <p style="margin: 0 0 8px 0; color: var(--color-text-secondary); font-size: 14px;">
                     <strong>Parameters:</strong><br>
                     • <code>context_id</code> (string, required): Context ID of the chat to reset
                 </p>
                 <p style="margin: 0; color: var(--color-text-secondary); font-size: 14px;">
-                    <strong>Headers:</strong> <code>X-API-KEY</code> (required), <code>Content-Type: application/json</code>
+                    <strong>Headers:</strong> <code>X-API-KEY</code> (required),
+                    <code>Content-Type: application/json</code>
                 </p>
             </div>
 
@@ -142,18 +152,22 @@
         <div class="api-section">
             <h2>POST /api_files_get</h2>
             <p style="margin: 0 0 16px 0; color: var(--color-text-secondary); font-size: 14px;">
-                Retrieve file contents by paths, returning files as base64 encoded data. Useful for retrieving uploaded attachments.
+                Retrieve file contents by paths, returning files as base64 encoded data. Useful for retrieving uploaded
+                attachments.
             </p>
 
             <!-- API Reference -->
             <h3 style="margin: 20px 0 12px 0; color: var(--color-text-primary);">API Reference</h3>
-            <div style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
+            <div
+                style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
                 <p style="margin: 0 0 8px 0; color: var(--color-text-secondary); font-size: 14px;">
                     <strong>Parameters:</strong><br>
-                    • <code>paths</code> (array, required): Array of file paths to retrieve (e.g., ["/ctx/usr/uploads/file.txt"])
+                    • <code>paths</code> (array, required): Array of file paths to retrieve (e.g.,
+                    ["/a0/usr/uploads/file.txt"])
                 </p>
                 <p style="margin: 0; color: var(--color-text-secondary); font-size: 14px;">
-                    <strong>Headers:</strong> <code>X-API-KEY</code> (required), <code>Content-Type: application/json</code>
+                    <strong>Headers:</strong> <code>X-API-KEY</code> (required),
+                    <code>Content-Type: application/json</code>
                 </p>
             </div>
 
@@ -245,7 +259,7 @@ sendMessage().then(result => {
     }
 });`;
 
-                                // Continuation example
+                // Continuation example
                 const continuationExample = `// Continue conversation example
 async function continueConversation(contextId) {
     try {
@@ -288,7 +302,7 @@ async function fullConversationExample() {
 
 fullConversationExample();`;
 
-                                // Attachment example
+                // Attachment example
                 const attachmentExample = `// File attachment example
 async function sendWithAttachment() {
     try {
@@ -411,7 +425,7 @@ async function getLogsPOST(contextId, length = 50) {
 // Example usage - get latest 10 log entries
 getLogsPOST('ctx_abc123', 10);`;
 
-                                                // Terminate chat example
+                // Terminate chat example
                 const terminateExample = `// Basic terminate chat function
 async function terminateChat(contextId) {
     try {
@@ -576,8 +590,8 @@ async function getFiles(filePaths) {
 
 // Example 1: Get specific files
 const filePaths = [
-    "/ctx/usr/uploads/document.txt",
-    "/ctx/usr/uploads/data.json"
+    "/a0/usr/uploads/document.txt",
+    "/a0/usr/uploads/data.json"
 ];
 getFiles(filePaths);
 
@@ -604,7 +618,7 @@ async function attachmentWorkflow() {
         console.log('Message sent with attachment');
 
         // Step 2: Retrieve the uploaded file
-        const retrievedFiles = await getFiles(["/ctx/usr/uploads/test.txt"]);
+        const retrievedFiles = await getFiles(["/a0/usr/uploads/test.txt"]);
 
         if (retrievedFiles && retrievedFiles["test.txt"]) {
             const originalContent = atob(retrievedFiles["test.txt"]);

@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+# Change to the project root directory
+cd "$(dirname "$0")/.."
+
+echo "🎭 Playwright Utility..."
+
+if [ "$#" -eq 0 ]; then
+    echo "📦 Installing Playwright browsers (chromium)..."
+    uv run playwright install chromium
+else
+    echo "🚀 Running Playwright: $@"
+    uv run playwright "$@"
+fi

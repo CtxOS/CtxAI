@@ -13,7 +13,7 @@ import asyncio
 
 import pytest
 
-from backend.utils import settings
+from ctxai.utils import settings
 
 
 def get_test_urls():
@@ -32,7 +32,7 @@ def get_test_urls():
             "token_based": f"{base_url}/a2a/t-{token}/.well-known/agent.json",
             "bearer_auth": f"{base_url}/a2a/.well-known/agent.json",
             "api_key_header": f"{base_url}/a2a/.well-known/agent.json",
-            "api_key_query": f"{base_url}/a2a/.well-known/agent.json?api_key={token}"
+            "api_key_query": f"{base_url}/a2a/.well-known/agent.json?api_key={token}",
         }
 
         return {"token": token, "urls": urls}

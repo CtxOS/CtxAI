@@ -124,21 +124,21 @@ docker run hello-world
 
 ```bash
 # Choose your installation path
-CTX_NAME="ctx-instance"  # Change this to your instance name
-CTX_PATH="/opt/${CTX_NAME}"
+A0_NAME="a0-instance"  # Change this to your instance name
+A0_PATH="/opt/${A0_NAME}"
 
 # Create directories
-mkdir -p ${CTX_PATH}
-mkdir -p ${CTX_PATH}/work_dir
-mkdir -p ${CTX_PATH}/memory
-mkdir -p ${CTX_PATH}/logs
+mkdir -p ${A0_PATH}
+mkdir -p ${A0_PATH}/work_dir
+mkdir -p ${A0_PATH}/memory
+mkdir -p ${A0_PATH}/logs
 ```
 
 ### Step 2: Create Environment Configuration
 
 ```bash
 # Create .env file with authentication
-cat > ${CTX_PATH}/.env << 'EOF'
+cat > ${A0_PATH}/.env << 'EOF'
 # Ctx AI Configuration
 # Authentication (REQUIRED for web access)
 AUTH_LOGIN=your_username_here
@@ -165,28 +165,28 @@ EOF
 
 ```bash
 # Set variables
-CTX_NAME="ctx-instance"
-CTX_PATH="/opt/${CTX_NAME}"
-CTX_PORT="50080"
+A0_NAME="a0-instance"
+A0_PATH="/opt/${A0_NAME}"
+A0_PORT="50080"
 
 # Pull latest image
 docker pull ctxos/ctxai:latest
 
 # Run container
-docker run -d   --name ${CTX_NAME}   --restart unless-stopped   -p ${CTX_PORT}:80   -v ${CTX_PATH}/.env:/ctx/.env   -v ${CTX_PATH}/usr:/ctx/usr   ctxos/ctxai:latest
+docker run -d   --name ${A0_NAME}   --restart unless-stopped   -p ${A0_PORT}:80   -v ${A0_PATH}/.env:/a0/.env   -v ${A0_PATH}/usr:/a0/usr   ctxos/ctxai:latest
 ```
 
 ### Step 5: Verify Container
 
 ```bash
 # Check container is running
-docker ps | grep ${CTX_NAME}
+docker ps | grep ${A0_NAME}
 
 # Check logs
-docker logs ${CTX_NAME}
+docker logs ${A0_NAME}
 
 # Test local access
-curl -I http://127.0.0.1:${CTX_PORT}/
+curl -I http://127.0.0.1:${A0_PORT}/
 ```
 
 Expected response: `HTTP/1.1 302 FOUND` with `Location: /login` (if auth enabled)
@@ -383,18 +383,18 @@ mkdir -p /etc/ssl/a0
 chmod 700 /etc/ssl/a0
 
 # Copy your certificates
-cp certificate.crt /etc/ssl/ctx/
-cp private.key /etc/ssl/ctx/
-cp chain.crt /etc/ssl/ctx/  # if applicable
+cp certificate.crt /etc/ssl/a0/
+cp private.key /etc/ssl/a0/
+cp chain.crt /etc/ssl/a0/  # if applicable
 
-chmod 600 /etc/ssl/ctx/*
+chmod 600 /etc/ssl/a0/*
 ```
 
 ---
 
 ## Authentication Setup
 
-### Understanding CTX Authentication Variables
+### Understanding A0 Authentication Variables
 
 | Variable | Purpose | Example |
 |----------|---------|--------|
@@ -519,7 +519,7 @@ wscat -c wss://a0.example.com/ws
 **Fix:**
 ```bash
 # Verify .env inside container
-docker exec a0-instance cat /ctx/.env
+docker exec a0-instance cat /a0/.env
 
 # Ensure format is:
 # AUTH_LOGIN=username  (NOT AUTH_LOGIN=true)
@@ -620,7 +620,7 @@ journalctl -u docker --since "1 hour ago"
 docker restart a0-instance
 
 # Verify env is loaded
-docker exec a0-instance cat /ctx/.env
+docker exec a0-instance cat /a0/.env
 ```
 
 ---
@@ -638,7 +638,7 @@ docker stop a0-instance
 docker rm a0-instance
 
 # Recreate with same settings
-docker run -d   --name a0-instance   --restart unless-stopped   -p 50080:80   -v /opt/a0-instance/.env:/ctx/.env   -v /opt/a0-instance/usr:/ctx/usr   -v /opt/ctxai:latest
+docker run -d   --name a0-instance   --restart unless-stopped   -p 50080:80   -v /opt/a0-instance/.env:/a0/.env   -v /opt/a0-instance/usr:/a0/usr   -v /opt/ctxai:latest
 ```
 
 ### Backup Strategy
@@ -717,9 +717,9 @@ curl -I https://your-domain.com/login
 
 | Port | Purpose |
 |------|---------|
-| 50080 | First CTX instance |
-| 50081 | Second CTX instance |
-| 50082 | Third CTX instance |
+| 50080 | First A0 instance |
+| 50081 | Second A0 instance |
+| 50082 | Third A0 instance |
 | 80 | HTTP (redirect to HTTPS) |
 | 443 | HTTPS (main access) |
 
@@ -741,7 +741,7 @@ AUTH_PASSWORD=your_secure_password
 
 ## Appendix: Multi-Instance Setup
 
-For running multiple CTX instances on the same server:
+For running multiple A0 instances on the same server:
 
 ```bash
 # Instance 1: a0-primary on port 50080
@@ -768,4 +768,4 @@ Each instance needs:
 
 *This guide comes from successful Ctx AI deployments across DirectAdmin and standard Linux environments.*
 
-Contributed by @hurtdidit in the CTX Community.
+Contributed by @hurtdidit in the A0 Community.

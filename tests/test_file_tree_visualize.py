@@ -8,7 +8,7 @@ from collections.abc import Callable, Iterable
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 try:
     import pytest  # type: ignore
@@ -16,14 +16,16 @@ except ImportError:  # pragma: no cover
     pytest = None
 
 if pytest is not None:
-    pytestmark = pytest.mark.skip(reason="Visualization utility; excluded from automated test runs.")
+    pytestmark = pytest.mark.skip(
+        reason="Visualization utility; excluded from automated test runs."
+    )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from backend.utils.file_tree import (
+from ctxai.utils.file_tree import (
     OUTPUT_MODE_FLAT,
     OUTPUT_MODE_NESTED,
     OUTPUT_MODE_STRING,
@@ -34,7 +36,7 @@ from backend.utils.file_tree import (
     SORT_DESC,
     file_tree,
 )
-from backend.utils.files import create_dir, delete_dir, get_abs_path, write_file
+from ctxai.utils.files import create_dir, delete_dir, get_abs_path, write_file
 
 BASE_TEMP_ROOT = "tmp/tests/file_tree/visualize"
 
@@ -45,7 +47,7 @@ class Config:
     params: dict[str, Any]
 
 
-SetupHook = Optional[Callable[[str], None]]
+SetupHook = Callable[[str], None] | None
 
 
 @dataclass(slots=True)

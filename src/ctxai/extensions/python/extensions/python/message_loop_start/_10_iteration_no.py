@@ -1,0 +1,19 @@
+from ctxai.core.agent import Agent, LoopData
+from ctxai.utils.extension import Extension
+
+DATA_NAME_ITER_NO = "iteration_no"
+
+
+class IterationNo(Extension):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
+        loop_data = loop_data or LoopData()
+        if not self.agent:
+            return
+
+        # total iteration number
+        no = self.agent.get_data(DATA_NAME_ITER_NO) or 0
+        self.agent.set_data(DATA_NAME_ITER_NO, no + 1)
+
+
+def get_iter_no(agent: Agent) -> int:
+    return agent.get_data(DATA_NAME_ITER_NO) or 0

@@ -10,7 +10,7 @@ Quick guide for using the notification system in Ctx AI.
 Use `AgentNotification` helper methods anywhere in your Python code:
 
 ```python
-from backend.utils.notification import AgentNotification
+from helpers.notification import AgentNotification
 
 # Basic notifications
 AgentNotification.info("Operation completed")

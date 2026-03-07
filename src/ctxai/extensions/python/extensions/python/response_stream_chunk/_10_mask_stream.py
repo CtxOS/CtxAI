@@ -1,0 +1,42 @@
+from ctxai.utils.extension import Extension
+from ctxai.utils.secrets import get_secrets_manager
+
+
+class MaskResponseStreamChunk(Extension):
+    async def execute(self, **kwargs):
+        if not self.agent:
+            return
+
+        # Get stream data and agent from kwargs
+        stream_data = kwargs.get("stream_data")
+        agent = kwargs.get("agent")
+        if not agent or not stream_data:
+            return
+
+        try:
+            secrets_mgr = get_secrets_manager(self.agent.context)
+
+            # Initialize filter if not exists
+            filter_key = "_resp_stream_filter"
+            filter_instance = agent.get_data(filter_key)
+            if not filter_instance:
+                filter_instance = secrets_mgr.create_streaming_filter()
+                agent.set_data(filter_key, filter_instance)
+
+            # Process the chunk through the streaming filter
+            processed_chunk = filter_instance.process_chunk(stream_data["chunk"])
+
+            # Update the stream data with processed chunk
+            stream_data["chunk"] = processed_chunk
+
+            # Also mask the full text for consistency
+            stream_data["full"] = secrets_mgr.mask_values(stream_data["full"])
+
+            # Print the processed chunk (this is where printing should happen)
+            if processed_chunk:
+                from ctxai.utils.print_style import PrintStyle
+
+                PrintStyle().stream(processed_chunk)
+        except Exception:
+            # If masking fails, proceed without masking
+            pass

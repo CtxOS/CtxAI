@@ -9,9 +9,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.core.agent import AgentContext
-from backend.interfaces.api.routes.chat.poll import Poll
-from initialize import initialize_agent
+from ctxai.api.routers.system.poll import Poll
+from ctxai.core.agent import AgentContext
+from ctxai.core.initialize import initialize_agent
 
 
 @pytest.mark.asyncio
@@ -31,7 +31,7 @@ async def test_snapshot_builder_matches_poll_output_for_null_context():
         None,  # Poll.process does not access the flask Request object.
     )
 
-    from backend.utils import state_snapshot as snapshot
+    from ctxai.utils import state_snapshot as snapshot
 
     builder_payload = await snapshot.build_snapshot(
         context=None,
@@ -62,7 +62,7 @@ async def test_snapshot_builder_active_context_includes_incremental_logs():
         assert first["logs"]
         assert first["log_version"] == len(ctx.log.updates)
 
-        from backend.utils import state_snapshot as snapshot
+        from ctxai.utils import state_snapshot as snapshot
 
         second = await snapshot.build_snapshot(
             context=ctxid,

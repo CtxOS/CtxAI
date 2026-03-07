@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Connection to CTX A2A Server</title>
+    <title>Connection to A0 A2A Server</title>
 </head>
 
 <body>
@@ -12,7 +12,8 @@
         <!-- API Token Information -->
         <div x-data>
             <template x-if="$store.settings.settings">
-                <div style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 16px 0;">
+                <div
+                    style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 16px 0;">
                     <h4 style="margin: 0 0 8px 0; color: var(--color-text-primary);">API Token Information</h4>
                     <p style="margin: 0 0 8px 0; color: var(--color-text-secondary); font-size: 14px;">
                         The token used in the URL is automatically generated from your username and password.
@@ -20,8 +21,10 @@
                         credentials.
                     </p>
                     <div style="margin-top: 8px;">
-                        <label style="display: block; margin-bottom: 4px; color: var(--color-text-secondary); font-size: 12px; font-weight: 600;">Token:</label>
-                        <input type="text" readonly x-model="$store.settings.settings.mcp_server_token" style="width: 100%; padding: 6px 8px; background-color: var(--color-bg-primary); color: var(--color-text-primary); border: 1px solid var(--color-border); border-radius: 4px; font-family: monospace; font-size: 13px;" />
+                        <label
+                            style="display: block; margin-bottom: 4px; color: var(--color-text-secondary); font-size: 12px; font-weight: 600;">Token:</label>
+                        <input type="text" readonly x-model="$store.settings.settings.mcp_server_token"
+                            style="width: 100%; padding: 6px 8px; background-color: var(--color-bg-primary); color: var(--color-text-primary); border: 1px solid var(--color-border); border-radius: 4px; font-family: monospace; font-size: 13px;" />
                     </div>
                 </div>
             </template>
@@ -31,10 +34,12 @@
 
         <!-- Project selector -->
         <div style="margin: 16px 0;">
-            <label for="a2a-project-select" style="display: block; margin-bottom: 8px; color: var(--color-text-primary);">
+            <label for="a2a-project-select"
+                style="display: block; margin-bottom: 8px; color: var(--color-text-primary);">
                 Select Project (optional):
             </label>
-            <select id="a2a-project-select" style="width: 100%; padding: 8px; background-color: var(--color-bg-secondary); color: var(--color-text-primary); border: 1px solid var(--color-border); border-radius: 4px;">
+            <select id="a2a-project-select"
+                style="width: 100%; padding: 8px; background-color: var(--color-bg-secondary); color: var(--color-text-primary); border: 1px solid var(--color-border); border-radius: 4px;">
                 <option value="">No project</option>
             </select>
         </div>
@@ -45,7 +50,7 @@
             (async () => {
                 const API = await import("/js/api.js");
                 const url = window.location.origin;
-                
+
                 // Fetch token from settings API - try a2a_token first, fallback to mcp_server_token
                 let token = "";
                 try {

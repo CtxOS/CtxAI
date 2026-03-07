@@ -8,7 +8,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.interfaces.websockets.websocket import (
+from ctxai.utils.websocket import (
     SingletonInstantiationError,
     WebSocketHandler,
     WebSocketResult,
@@ -143,9 +143,9 @@ def test_get_instance_returns_singleton():
 
 @pytest.mark.asyncio
 async def test_state_sync_handler_registers_and_routes_state_request():
-    from backend.interfaces.websockets.state_sync_handler import StateSyncHandler
-    from backend.interfaces.websockets.websocket_manager import WebSocketManager
-    from backend.utils.state_monitor import _reset_state_monitor_for_testing
+    from ctxai.utils.state_monitor import _reset_state_monitor_for_testing
+    from ctxai.utils.websocket_manager import WebSocketManager
+    from python.websocket_handlers.state_sync_handler import StateSyncHandler
 
     _reset_state_monitor_for_testing()
     StateSyncHandler._reset_instance_for_testing()

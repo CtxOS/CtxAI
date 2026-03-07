@@ -5,6 +5,9 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 import pytest
+from socketio.asgi import ASGIApp
+from socketio.async_client import AsyncClient
+from socketio.async_server import AsyncServer
 
 
 @contextlib.asynccontextmanager
@@ -49,12 +52,11 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
     events by default, but request-style calls must not hang (NO_HANDLERS).
     """
 
-    import socketio
     from flask import Flask
 
-    from backend.interfaces.websockets.websocket import WebSocketHandler
-    from backend.interfaces.websockets.websocket_manager import WebSocketManager
-    from run_ui import configure_websocket_namespaces
+    from cli.ui import configure_websocket_namespaces
+    from ctxai.utils.websocket import WebSocketHandler
+    from ctxai.utils.websocket_manager import WebSocketManager
 
     app = Flask("test_ws_root_namespace")
     app.secret_key = "test-secret"
@@ -80,9 +82,7 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
 
     HelloHandler._reset_instance_for_testing()
 
-    sio = socketio.AsyncServer(
-        async_mode="asgi", cors_allowed_origins="*", namespaces="*"
-    )
+    sio = AsyncServer(async_mode="asgi", cors_allowed_origins="*", namespaces="*")
     lock = __import__("threading").RLock()
     manager = WebSocketManager(sio, lock)
 
@@ -95,10 +95,10 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
         },
     )
 
-    asgi_app = socketio.ASGIApp(sio)
+    asgi_app = ASGIApp(sio)
 
     async with _run_asgi_app(asgi_app) as base_url:
-        client = socketio.AsyncClient()
+        client = AsyncClient()
         await client.connect(
             base_url,
             namespaces=["/"],
@@ -106,9 +106,7 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
             wait_timeout=2,
         )
         try:
-            res_unknown = await client.call(
-                "unknown_event", {"x": 1}, namespace="/", timeout=2
-            )
+            res_unknown = await client.call("unknown_event", {"x": 1}, namespace="/", timeout=2)
             assert res_unknown["results"][0]["ok"] is False
             assert res_unknown["results"][0]["error"]["code"] == "NO_HANDLERS"
 
@@ -123,19 +121,16 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
 
 
 @pytest.mark.asyncio
-async def test_root_namespace_fire_and_forget_does_not_invoke_application_handlers() -> (
-    None
-):
+async def test_root_namespace_fire_and_forget_does_not_invoke_application_handlers() -> None:
     """
     Fire-and-forget emits on `/` must not invoke any application handler.
     """
 
-    import socketio
     from flask import Flask
 
-    from backend.interfaces.websockets.websocket import WebSocketHandler
-    from backend.interfaces.websockets.websocket_manager import WebSocketManager
-    from run_ui import configure_websocket_namespaces
+    from cli.ui import configure_websocket_namespaces
+    from ctxai.utils.websocket import WebSocketHandler
+    from ctxai.utils.websocket_manager import WebSocketManager
 
     app = Flask("test_ws_root_fire_and_forget")
     app.secret_key = "test-secret"
@@ -161,9 +156,7 @@ async def test_root_namespace_fire_and_forget_does_not_invoke_application_handle
 
     SideEffectHandler._reset_instance_for_testing()
 
-    sio = socketio.AsyncServer(
-        async_mode="asgi", cors_allowed_origins="*", namespaces="*"
-    )
+    sio = AsyncServer(async_mode="asgi", cors_allowed_origins="*", namespaces="*")
     lock = __import__("threading").RLock()
     manager = WebSocketManager(sio, lock)
 
@@ -176,10 +169,10 @@ async def test_root_namespace_fire_and_forget_does_not_invoke_application_handle
         },
     )
 
-    asgi_app = socketio.ASGIApp(sio)
+    asgi_app = ASGIApp(sio)
 
     async with _run_asgi_app(asgi_app) as base_url:
-        client = socketio.AsyncClient()
+        client = AsyncClient()
         await client.connect(
             base_url,
             namespaces=["/"],

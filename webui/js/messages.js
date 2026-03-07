@@ -122,7 +122,7 @@ export async function getMessageHandler(type) {
 
   async function getHandlerFromExtensions(type){
     const extData = { type: type, handler: undefined }
-    await callJsExtensions("getMessageHandler", extData);
+    await callJsExtensions("get_message_handler", extData);
     // return handler from extensions
     if(typeof extData.handler == "function") return extData.handler;
     //not set by extensions, return default
@@ -598,7 +598,7 @@ function drawStandaloneMessage({
   kvps = null,
   actionButtons = [],
 }) {
-  // end last process group on any standalone message
+  // end last process group on any standalone messge
   completeLastProcessGroup();
 
   const container = getOrCreateMessageContainer(
@@ -915,7 +915,7 @@ export function drawMessageResponse({
     });
   }
 
-  // response of Ctx AI, render as response to user
+  // response of agent 0, render as response to user
   // get last process group or create new container (if first message)
 
   const group = getLastProcessGroup();

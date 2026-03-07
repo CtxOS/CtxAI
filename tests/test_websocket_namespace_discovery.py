@@ -7,6 +7,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from socketio.asgi import ASGIApp
+from socketio.async_client import AsyncClient
+from socketio.async_server import AsyncServer
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -56,7 +59,7 @@ def _write_handler_module(path: Path, class_name: str, event_type: str) -> None:
                 "",
                 "from typing import Any",
                 "",
-                "from backend.interfaces.websockets.websocket import WebSocketHandler",
+                "from ctxai.utils.websocket import WebSocketHandler",
                 "",
                 f"class {class_name}(WebSocketHandler):",
                 "    @classmethod",
@@ -80,12 +83,8 @@ def _write_handler_module(path: Path, class_name: str, event_type: str) -> None:
     )
 
 
-def test_discovery_supports_folder_entries_and_ignores_deeper_nesting(
-    tmp_path: Path,
-) -> None:
-    from backend.interfaces.websockets.websocket_namespace_discovery import (
-        discover_websocket_namespaces,
-    )
+def test_discovery_supports_folder_entries_and_ignores_deeper_nesting(tmp_path: Path) -> None:
+    from ctxai.utils.websocket_namespace_discovery import discover_websocket_namespaces
 
     folder = tmp_path / "orders"
     folder.mkdir()
@@ -94,9 +93,7 @@ def test_discovery_supports_folder_entries_and_ignores_deeper_nesting(
     # Deeper nesting must be ignored (and must not be imported).
     nested = folder / "nested"
     nested.mkdir()
-    (nested / "boom.py").write_text(
-        "raise RuntimeError('should-not-import')\n", encoding="utf-8"
-    )
+    (nested / "boom.py").write_text("raise RuntimeError('should-not-import')\n", encoding="utf-8")
 
     discoveries = discover_websocket_namespaces(
         handlers_folder=str(tmp_path), include_root_default=False
@@ -109,9 +106,7 @@ def test_discovery_supports_folder_entries_and_ignores_deeper_nesting(
 
 
 def test_discovery_folder_suffix_handler_stripped(tmp_path: Path) -> None:
-    from backend.interfaces.websockets.websocket_namespace_discovery import (
-        discover_websocket_namespaces,
-    )
+    from ctxai.utils.websocket_namespace_discovery import discover_websocket_namespaces
 
     folder = tmp_path / "sales_handler"
     folder.mkdir()
@@ -130,11 +125,9 @@ def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(
     import socketio
     from flask import Flask
 
-    from backend.interfaces.websockets.websocket_manager import WebSocketManager
-    from backend.interfaces.websockets.websocket_namespace_discovery import (
-        discover_websocket_namespaces,
-    )
-    from run_ui import configure_websocket_namespaces
+    from cli.ui import configure_websocket_namespaces
+    from ctxai.utils.websocket_manager import WebSocketManager
+    from ctxai.utils.websocket_namespace_discovery import discover_websocket_namespaces
 
     empty = tmp_path / "empty"
     empty.mkdir()
@@ -145,9 +138,7 @@ def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(
     def _warn(message: str) -> None:
         warnings.append(message)
 
-    monkeypatch.setattr(
-        "backend.utils.print_style.PrintStyle.warning", staticmethod(_warn)
-    )
+    monkeypatch.setattr("ctxai.utils.print_style.PrintStyle.warning", staticmethod(_warn))
 
     discoveries = discover_websocket_namespaces(
         handlers_folder=str(tmp_path), include_root_default=False
@@ -158,9 +149,7 @@ def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(
     # Integration check: treat as unregistered -> UNKNOWN_NAMESPACE connect_error.
     app = Flask("test_empty_folder_unregistered")
     app.secret_key = "test-secret"
-    sio = socketio.AsyncServer(
-        async_mode="asgi", cors_allowed_origins="*", namespaces="*"
-    )
+    sio = AsyncServer(async_mode="asgi", cors_allowed_origins="*", namespaces="*")
     lock = __import__("threading").RLock()
     manager = WebSocketManager(sio, lock)
 
@@ -177,14 +166,12 @@ def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(
         handlers_by_namespace=handlers_by_namespace,
     )
 
-    asgi_app = socketio.ASGIApp(sio)
+    asgi_app = ASGIApp(sio)
 
     async def _run() -> None:
         async with _run_asgi_app(asgi_app) as base_url:
-            client = socketio.AsyncClient()
-            connect_error_fut: asyncio.Future[Any] = (
-                asyncio.get_running_loop().create_future()
-            )
+            client = AsyncClient()
+            connect_error_fut: asyncio.Future[Any] = asyncio.get_running_loop().create_future()
 
             async def _on_connect_error(data: Any) -> None:
                 if not connect_error_fut.done():
@@ -206,21 +193,13 @@ def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(
     asyncio.run(_run())
 
 
-def test_discovery_invalid_modules_fail_fast_with_descriptive_errors(
-    tmp_path: Path,
-) -> None:
-    from backend.interfaces.websockets.websocket_namespace_discovery import (
-        discover_websocket_namespaces,
-    )
+def test_discovery_invalid_modules_fail_fast_with_descriptive_errors(tmp_path: Path) -> None:
+    from ctxai.utils.websocket_namespace_discovery import discover_websocket_namespaces
 
     # 0 handlers in a *_handler.py module
-    (tmp_path / "bad_handler.py").write_text(
-        "class NotAHandler:\n    pass\n", encoding="utf-8"
-    )
+    (tmp_path / "bad_handler.py").write_text("class NotAHandler:\n    pass\n", encoding="utf-8")
     with pytest.raises(RuntimeError) as excinfo:
-        discover_websocket_namespaces(
-            handlers_folder=str(tmp_path), include_root_default=False
-        )
+        discover_websocket_namespaces(handlers_folder=str(tmp_path), include_root_default=False)
     assert "defines no WebSocketHandler subclasses" in str(excinfo.value)
 
     # 2+ handlers in a *_handler.py module
@@ -228,7 +207,7 @@ def test_discovery_invalid_modules_fail_fast_with_descriptive_errors(
     (tmp_path / "two_handler.py").write_text(
         "\n".join(
             [
-                "from backend.interfaces.websockets.websocket import WebSocketHandler",
+                "from ctxai.utils.websocket import WebSocketHandler",
                 "class A(WebSocketHandler):",
                 "    @classmethod",
                 "    def requires_auth(cls): return False",
@@ -251,9 +230,7 @@ def test_discovery_invalid_modules_fail_fast_with_descriptive_errors(
         encoding="utf-8",
     )
     with pytest.raises(RuntimeError) as excinfo2:
-        discover_websocket_namespaces(
-            handlers_folder=str(tmp_path), include_root_default=False
-        )
+        discover_websocket_namespaces(handlers_folder=str(tmp_path), include_root_default=False)
     message = str(excinfo2.value)
     assert "defines multiple WebSocketHandler subclasses" in message
     assert "A" in message and "B" in message

@@ -1,0 +1,27 @@
+title: "[Question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for asking a question! Please provide as much context as possible.
+  - type: textarea
+    id: question
+    attributes:
+      label: What is your question?
+      description: Provide a clear and concise description of what you're trying to understand or achieve.
+      placeholder: I am trying to...
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Share any background information, code snippets, or configuration that might be relevant.
+      placeholder: My current setup is...
+  - type: textarea
+    id: documentation
+    attributes:
+      label: Documentation
+      description: Have you checked the existing documentation? If so, what was missing or unclear?
+      placeholder: I looked at...

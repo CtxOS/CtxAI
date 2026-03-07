@@ -757,7 +757,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /*
- * CTX Chat UI
+ * A0 Chat UI
  *
  * Unified sidebar layout:
  * - Both Chats and Tasks lists are always visible in a vertical layout

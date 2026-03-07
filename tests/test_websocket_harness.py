@@ -9,10 +9,15 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.interfaces.websockets.dev_websocket_test_handler import (
+PYTHON_DIR = PROJECT_ROOT / "python"
+if str(PYTHON_DIR) not in sys.path:
+    sys.path.insert(0, str(PYTHON_DIR))
+
+from websocket_handlers.dev_websocket_test_handler import (
     DevWebsocketTestHandler,
 )
-from backend.interfaces.websockets.websocket_manager import WebSocketManager
+
+from ctxai.utils.websocket_manager import WebSocketManager
 
 NAMESPACE = "/dev_websocket_test"
 
@@ -25,9 +30,7 @@ class FakeSocketIOServer:
         self.disconnect = AsyncMock()
 
 
-async def _create_manager() -> tuple[
-    WebSocketManager, DevWebsocketTestHandler, FakeSocketIOServer
-]:
+async def _create_manager() -> tuple[WebSocketManager, DevWebsocketTestHandler, FakeSocketIOServer]:
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
     DevWebsocketTestHandler._reset_instance_for_testing()
@@ -50,9 +53,7 @@ async def test_harness_emit_broadcasts_to_active_connections():
 
     socketio.emit.assert_awaited()
     emit_calls = [(call.args, call.kwargs) for call in socketio.emit.await_args_list]
-    match = next(
-        (c for c in emit_calls if c[0] and c[0][0] == "ws_tester_broadcast"), None
-    )
+    match = next((c for c in emit_calls if c[0] and c[0][0] == "ws_tester_broadcast"), None)
     assert match is not None
     args, kwargs = match
     envelope = args[1]
@@ -92,7 +93,7 @@ async def test_harness_request_delayed_waits_for_sleep(monkeypatch):
         calls.append(delay)
 
     monkeypatch.setattr(
-        "backend.interfaces.websockets.dev_websocket_test_handler.asyncio.sleep",
+        "websocket_handlers.dev_websocket_test_handler.asyncio.sleep",
         _fake_sleep,
     )
 
@@ -119,9 +120,7 @@ async def test_harness_persistence_emit_targets_requesting_sid():
 
     socketio.emit.assert_awaited()
     emit_calls = [(call.args, call.kwargs) for call in socketio.emit.await_args_list]
-    match = next(
-        (c for c in emit_calls if c[0] and c[0][0] == "ws_tester_persistence"), None
-    )
+    match = next((c for c in emit_calls if c[0] and c[0][0] == "ws_tester_persistence"), None)
     assert match is not None
     args, kwargs = match
     payload = args[1]

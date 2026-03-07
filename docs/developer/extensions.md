@@ -30,7 +30,7 @@ Ctx AI provides several extension points where custom code can be injected:
 #### Extension Mechanism
 The extension mechanism in Ctx AI works through the `call_extensions` function in `agent.py`, which:
 
-1. Loads default extensions from `/backend/extensions/{extension_point}/`
+1. Loads default extensions from `/python/extensions/{extension_point}/`
 2. Loads agent-specific extensions from `/agents/{agent_profile}/extensions/{extension_point}/`
 3. Merges them, with agent-specific extensions overriding default ones based on filename
 4. Executes each extension in order
@@ -41,18 +41,18 @@ To create a custom extension:
 1. Create a Python class that inherits from the `Extension` base class
 2. Implement the `execute` method
 3. Place the file in the appropriate extension point directory:
-   - Default extensions: `/backend/extensions/{extension_point}/`
+   - Default extensions: `/python/extensions/{extension_point}/`
    - Agent-specific extensions: `/agents/{agent_profile}/extensions/{extension_point}/`
 
 **Example extension:**
 
 ```python
 # File: /agents/_example/extensions/agent_init/_10_example_extension.py
-from backend.utils.extension import Extension
+from helpers.extension import Extension
 
 class ExampleExtension(Extension):
     async def execute(self, **kwargs):
-        # rename the agent to SuperCtx
+        # rename the agent to SuperAgent0
         self.agent.agent_name = "SuperAgent" + str(self.agent.number)
 ```
 
@@ -60,7 +60,7 @@ class ExampleExtension(Extension):
 When an extension with the same filename exists in both the default location and an agent-specific location, the agent-specific version takes precedence. This allows for selective overriding of extensions while inheriting the rest of the default behavior.
 
 For example, if both these files exist:
-- `/backend/extensions/agent_init/example.py`
+- `/python/extensions/agent_init/example.py`
 - `/agents/my_agent/extensions/agent_init/example.py`
 
 The version in `/agents/my_agent/extensions/agent_init/example.py` will be used, completely replacing the default version.
@@ -70,7 +70,7 @@ Tools are modular components that provide specific functionality to agents. They
 
 #### Tool Structure
 Each tool is implemented as a Python class that inherits from the base `Tool` class. Tools are located in:
-- Default tools: `/backend/tools/`
+- Default tools: `/python/tools/`
 - Agent-specific tools: `/agents/{agent_profile}/tools/`
 
 #### Tool Override Logic
@@ -80,10 +80,10 @@ When a tool with the same name is requested, Ctx AI first checks for its existen
 
 ```python
 # File: /agents/_example/tools/response.py
-from backend.utils.tool import Tool, Response
+from helpers.tool import Tool, Response
 
 # example of a tool redefinition
-# the original response tool is in backend/tools/response.py
+# the original response tool is in python/tools/response.py
 # for the example agent this version will be used instead
 
 class ResponseTool(Tool):
@@ -103,7 +103,7 @@ When a tool is called, it goes through the following lifecycle:
 API endpoints expose Ctx AI functionality to external systems or the user interface. They are modular and can be extended or replaced.
 
 API endpoints are located in:
-- Default endpoints: `/backend/api/`
+- Default endpoints: `/python/api/`
 
 Each endpoint is a separate Python file that handles a specific API request.
 
@@ -111,7 +111,7 @@ Each endpoint is a separate Python file that handles a specific API request.
 Helper modules provide utility functions and shared logic used across the framework. They support the extensibility of other components by providing common functionality.
 
 Helpers are located in:
-- Default helpers: `/backend/utils/`
+- Default helpers: `/python/helpers/`
 
 ### Prompts
 Prompts define the instructions and context provided to the LLM. They are highly extensible and can be customized for different agents.
@@ -145,8 +145,8 @@ When a prompt file is processed, Ctx AI automatically looks for a corresponding 
 If you have a prompt file `agent.system.tools.md`, you can create `agent.system.tools.py` alongside it:
 
 ```python
-from backend.utils.files import VariablesPlugin
-from backend.utils import files
+from helpers.files import VariablesPlugin
+from helpers import files
 
 class Tools(VariablesPlugin):
     def get_variables(self, file: str, backup_dirs: list[str] | None = None) -> dict[str, Any]:
@@ -251,14 +251,14 @@ Projects are ideal for multi-client or multi-domain work because each project ca
 
 ### Project Location and Structure
 
-- Projects are located under `/ctx/usr/projects/`
+- Projects are located under `/a0/usr/projects/`
 - Each project has its own subdirectory, created by users via the UI
 - A project can be backed up or restored by copying or downloading its entire directory
 
 Each project directory contains a hidden `.a0proj` folder with project metadata and configuration:
 
 ```
-/ctx/usr/projects/{project_name}/
+/a0/usr/projects/{project_name}/
 └── .a0proj/
     ├── project.json          # project metadata and settings
     ├── instructions/         # additional prompt/instruction files

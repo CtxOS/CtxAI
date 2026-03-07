@@ -49,8 +49,8 @@ This guide will show you how to setup a local development environment for Ctx AI
 1. Notice the prompt in lower right corner of the screenshot above to install recommended extensions, this comes from the `.vscode/extensions.json` file. It contains Python language support, debugger and error helper, install them by confirming the popup or manually in Extensions tab of your IDE. These are the extensions mentioned:
 ```
 usernamehw.errorlens
-ms-backend.debugpy
-ms-backend.python
+ms-python.debugpy
+ms-python.python
 ```
 
 Now when you select one of the python files in the project, you should see proper Python syntax highlighting and error detection. It should immediately show some errors, because we did not yet install dependencies.
@@ -60,7 +60,7 @@ Now when you select one of the python files in the project, you should see prope
 ![VS Code Python environments](res/dev/devinst-3.png)
 ![VS Code Python environments](res/dev/devinst-4.png)
 
-- Your new environment should be automatically activated. If not, select it in the lower right corner. You might need to open a new terminal in VS Code to reflect the changes with `Terminal > New Terminal` or clicking the `+` button in the terminal tab. Your terminal prompt should now start with your environment name/path, in my case `(/Users/frdel/Desktop/ctxai/.conda)` This shows the environment is active in the terminal.
+- Your new environment should be automatically activated. If not, select it in the lower right corner. You might need to open a new terminal in VS Code to reflect the changes with `Terminal > New Terminal` or clicking the `+` button in the terminal tab. Your terminal prompt should now start with your environment name/path, in my case `(/Users/KhulnaSoft/Desktop/ctxai/.conda)` This shows the environment is active in the terminal.
 
 ![VS Code env terminal](res/dev/devinst-5.png)
 
@@ -97,7 +97,7 @@ After inserting my API key in settings, my Ctx AI instance works. I can send a s
 
 ## Debugging
 - You can try out the debugger already by placing a breakpoint somewhere in the python code.
-- Let's open `backend/api/message.py` for example and place a breakpoint at the beginning of the `communicate` function by clicking on the left of the row number. A red dot should appear showing a breakpoint is set.
+- Let's open `python/api/message.py` for example and place a breakpoint at the beginning of the `communicate` function by clicking on the left of the row number. A red dot should appear showing a breakpoint is set.
 
 ![Debugging](res/dev/devinst-9.png)
 
@@ -107,12 +107,12 @@ After inserting my API key in settings, my Ctx AI instance works. I can send a s
 
 
 ## Step 5: Run another instance of Ctx AI in Docker
-- Some parts of CTX require standardized linux environment, additional web services and preinstalled binaries that would be unnecessarily complex to set up in a local environment.
-- To make development easier, we can use existing CTX instance in docker and forward some requests to be executed there using SSH and RFC (Remote Function Call).
+- Some parts of A0 require standardized linux environment, additional web services and preinstalled binaries that would be unneccessarily complex to set up in a local environment.
+- To make development easier, we can use existing A0 instance in docker and forward some requests to be executed there using SSH and RFC (Remote Function Call).
 
 1. Pull the docker image `ctxos/ctxai` from Docker Hub and run it with a web port (`80`) mapped and SSH port (`22`) mapped.
 If you want, you can also map the `/a0` folder to our local project folder as well, this way we can update our local instance and the docker instance at the same time.
-This is how it looks in my example: port `80` is mapped to `8880` on the host and `22` to `8822`, `/a0` folder mapped to `/Users/frdel/Desktop/ctxai`:
+This is how it looks in my example: port `80` is mapped to `8880` on the host and `22` to `8822`, `/a0` folder mapped to `/Users/KhulnaSoft/Desktop/ctxai`:
 
 ![docker run](res/dev/devinst-11.png)
 ![docker run](res/dev/devinst-12.png)
@@ -157,20 +157,20 @@ You're now ready to contribute to Ctx AI, create custom extensions, or modify th
 
 ## Configuration via Environment Variables
 
-For development and testing, you can override default settings using the `.env` file with `CTX_SET_` prefixed variables:
+For development and testing, you can override default settings using the `.env` file with `A0_SET_` prefixed variables:
 
 ```env
 # Add to your .env file
-CTX_SET_chat_model_provider=ollama
-CTX_SET_chat_model_name=llama3.2
-CTX_SET_chat_model_api_base=http://localhost:11434
-CTX_SET_memory_recall_interval=5
+A0_SET_chat_model_provider=ollama
+A0_SET_chat_model_name=llama3.2
+A0_SET_chat_model_api_base=http://localhost:11434
+A0_SET_memory_recall_interval=5
 ```
 
 These environment variables automatically override the hardcoded defaults in `get_default_settings()` without modifying code. Useful for testing different configurations or multi-environment setups.
 
 ## Want to build your docker image?
-- You can use the `DockerfileLocal` to build your docker image.
-- Navigate to your project root in the terminal and run `docker build -f DockerfileLocal -t ctxai-local --build-arg CACHE_DATE=$(date +%Y-%m-%d:%H:%M:%S) .`
+- You can use the `Dockerfile.local` to build your docker image.
+- Navigate to your project root in the terminal and run `docker build -f Dockerfile.local -t ctxai-local --build-arg CACHE_DATE=$(date +%Y-%m-%d:%H:%M:%S) .`
 - The `CACHE_DATE` argument is optional, it is used to cache most of the build process and only rebuild the last steps when the files or dependencies change.
 - See `docker/run/build.txt` for more build command examples.

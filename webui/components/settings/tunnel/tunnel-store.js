@@ -42,7 +42,7 @@ const model = {
 
   processNotifications(notifications) {
     if (!notifications || !Array.isArray(notifications)) return;
-    
+
     for (const n of notifications) {
       switch (n.event) {
         case "downloading":
@@ -282,11 +282,11 @@ const model = {
       if (!hasAuth) {
         const proceed = confirm(
           "WARNING: No authentication is configured for your Ctx AI instance.\n\n" +
-            "Creating a public tunnel without authentication means anyone with the URL " +
-            "can access your Ctx AI instance.\n\n" +
-            "It is recommended to set up authentication in the Settings > Authentication section " +
-            "before creating a public tunnel.\n\n" +
-            "Do you want to proceed anyway?"
+          "Creating a public tunnel without authentication means anyone with the URL " +
+          "can access your Ctx AI instance.\n\n" +
+          "It is recommended to set up authentication in the Settings > Authentication section " +
+          "before creating a public tunnel.\n\n" +
+          "Do you want to proceed anyway?"
         );
 
         if (!proceed) {

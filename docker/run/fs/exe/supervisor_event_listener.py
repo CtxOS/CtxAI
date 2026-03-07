@@ -9,9 +9,13 @@ from supervisor.childutils import listener  # type: ignore
 
 
 def main(args):
-    logging.basicConfig(stream=sys.stderr, level=logging.DEBUG, format='%(asctime)s %(levelname)s %(filename)s: %(message)s')
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.DEBUG,
+        format="%(asctime)s %(levelname)s %(filename)s: %(message)s",
+    )
     logger = logging.getLogger("supervisord-watchdog")
-    debug_mode = True if 'DEBUG' in os.environ else False
+    debug_mode = True if "DEBUG" in os.environ else False
 
     while True:
         logger.info("Listening for events...")
@@ -43,5 +47,5 @@ def main(args):
             listener.ok(sys.stdout)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv[1:])

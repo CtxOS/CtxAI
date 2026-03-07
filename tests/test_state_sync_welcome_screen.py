@@ -10,7 +10,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.interfaces.websockets.websocket_manager import WebSocketManager
+from ctxai.utils.websocket_manager import WebSocketManager
 
 NAMESPACE = "/state_sync"
 
@@ -24,17 +24,15 @@ class FakeSocketIOServer:
 
 
 @pytest.mark.asyncio
-async def test_state_sync_handshake_and_initial_snapshot_work_with_no_selected_context() -> (
-    None
-):
+async def test_state_sync_handshake_and_initial_snapshot_work_with_no_selected_context() -> None:
     """
     Regression for Welcome screen: the UI has no selected context, so `state_request.context`
     is null. We must still handshake and receive an initial `state_push` quickly (no hang).
     """
 
-    from backend.interfaces.websockets.state_sync_handler import StateSyncHandler
-    from backend.utils.state_monitor import _reset_state_monitor_for_testing
-    from backend.utils.state_snapshot import validate_snapshot_schema_v1
+    from ctxai.utils.state_monitor import _reset_state_monitor_for_testing
+    from ctxai.utils.state_snapshot import validate_snapshot_schema_v1
+    from python.websocket_handlers.state_sync_handler import StateSyncHandler
 
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())

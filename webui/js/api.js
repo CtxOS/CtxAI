@@ -24,13 +24,32 @@ export async function callJsonApi(endpoint, data) {
 }
 
 /**
- * Fetch wrapper for CTX APIs that ensures token exchange
+ * Fetch wrapper for A0 APIs that ensures token exchange
  * Automatically adds CSRF token to request headers
  * @param {string} url - The URL to fetch
  * @param {Object} [request] - The fetch request options
  * @returns {Promise<Response>} The fetch response
  */
 export async function fetchApi(url, request) {
+  async function _getExtensions() {
+    try {
+      return await import("./extensions.js");
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * @param {string} apiUrl
+   * @returns {Promise<boolean>}
+   */
+  async function _shouldCallApiExtensions(apiUrl) {
+    const extensions = await _getExtensions();
+    if (!extensions) return false;
+    const excluded = extensions.API_EXTENSION_EXCLUDED_ENDPOINTS;
+    return !(excluded instanceof Set && excluded.has(apiUrl));
+  }
+
   async function _wrap(retry) {
     // get the CSRF token
     const token = await getCsrfToken();
@@ -46,21 +65,48 @@ export async function fetchApi(url, request) {
 
     // perform the fetch with the updated request
     const apiUrl = url.startsWith('/api/') || url.startsWith('api/') ? `/${url.replace(/^\/+/, '')}` : `/api/${url.replace(/^\/+/, '')}`;
-    const response = await fetch(apiUrl, finalRequest);
+
+    /** @type {{ url: string, apiUrl: string, request: any, response: Response | null, retry: boolean }} */
+    const ctx = {
+      url,
+      apiUrl,
+      request: finalRequest,
+      response: null,
+      retry,
+    };
+
+    if (await _shouldCallApiExtensions(apiUrl)) {
+      const extensions = await _getExtensions();
+      if (extensions) {
+        await extensions.callJsExtensions("api_call_before", ctx);
+      }
+    }
+
+    const response = ctx.response || await fetch(ctx.apiUrl, ctx.request);
+    ctx.response = response;
+
+    if (await _shouldCallApiExtensions(apiUrl)) {
+      const extensions = await _getExtensions();
+      if (extensions) {
+        await extensions.callJsExtensions("api_call_after", ctx);
+      }
+    }
+
+    const finalResponse = ctx.response;
 
     // check if there was an CSRF error
-    if (response.status === 403 && retry) {
+    if (finalResponse.status === 403 && retry) {
       // retry the request with new token
       csrfToken = null;
       return await _wrap(false);
-    } else if (response.redirected && response.url.endsWith("/login")) {
+    } else if (finalResponse.redirected && finalResponse.url.endsWith("/login")) {
       // redirect to login
-      window.location.href = response.url;
+      window.location.href = finalResponse.url;
       return;
     }
 
     // return the response
-    return response;
+    return finalResponse;
   }
 
   // perform the request
@@ -80,10 +126,10 @@ const CSRF_SLOW_WARN_MS = 1500;
 export function getRuntimeId() {
   if (runtimeIdCache) return runtimeIdCache;
   const injected =
-    window.runtimeInfo &&
-    typeof window.runtimeInfo.id === "string" &&
-    window.runtimeInfo.id.length > 0
-      ? window.runtimeInfo.id
+    globalThis.runtimeInfo &&
+    typeof globalThis.runtimeInfo.id === "string" &&
+    globalThis.runtimeInfo.id.length > 0
+      ? globalThis.runtimeInfo.id
       : null;
   return injected;
 }
@@ -121,6 +167,7 @@ export async function getCsrfToken() {
         });
       }
 
+      /** @type {RequestInit} */
       const fetchOptions = { credentials: "same-origin" };
       if (controller) {
         fetchOptions.signal = controller.signal;
@@ -131,7 +178,7 @@ export async function getCsrfToken() {
         ? await Promise.race([fetchPromise, timeoutPromise])
         : await fetchPromise;
     } catch (error) {
-      if (error && error.name === "AbortError") {
+      if (error && error["name"] === "AbortError") {
         throw new Error("CSRF token request timed out");
       }
       throw error;
@@ -158,10 +205,10 @@ export async function getCsrfToken() {
         runtimeIdCache = runtimeId;
       }
       const injectedRuntimeId =
-        window.runtimeInfo &&
-        typeof window.runtimeInfo.id === "string" &&
-        window.runtimeInfo.id.length > 0
-          ? window.runtimeInfo.id
+        globalThis.runtimeInfo &&
+        typeof globalThis.runtimeInfo.id === "string" &&
+        globalThis.runtimeInfo.id.length > 0
+          ? globalThis.runtimeInfo.id
           : null;
       const cookieRuntimeId = runtimeId || injectedRuntimeId;
       if (cookieRuntimeId) {
@@ -170,7 +217,7 @@ export async function getCsrfToken() {
         console.warn("CSRF runtime id missing; skipping cookie name binding.");
       }
       const elapsedMs = Date.now() - startedAt;
-      if (elapsedMs > CSRF_SLOW_WARN_MS && window.runtimeInfo?.isDevelopment) {
+      if (elapsedMs > CSRF_SLOW_WARN_MS && globalThis.runtimeInfo?.isDevelopment) {
         console.warn(`CSRF token request took ${elapsedMs}ms`);
       }
       return csrfToken;

@@ -3,7 +3,7 @@ Ctx AI is built on a flexible and modular architecture designed for extensibilit
 
 ## System Architecture
 
-The user or Ctx AI is at the top of the hierarchy, delegating tasks to subordinate agents, which can further delegate to other agents. Each agent can utilize tools and access the shared assets (prompts, memory, knowledge, extensions and skills) to perform its tasks.
+The user or CtxAI is at the top of the hierarchy, delegating tasks to subordinate agents, which can further delegate to other agents. Each agent can utilize tools and access the shared assets (prompts, memory, knowledge, extensions and skills) to perform its tasks.
 
 ## Runtime Architecture
 Ctx AI's runtime architecture is built around Docker containers:
@@ -45,10 +45,10 @@ This architecture ensures:
 | `/memory` | Persistent agent memory storage |
 | `/prompts` | Default system and tool prompt templates |
 | `/python` | Core Python codebase |
-| `/backend/api` | API endpoints and interfaces |
-| `/backend/extensions` | Modular extensions |
-| `/backend/utils` | Utility functions |
-| `/backend/tools` | Tool implementations |
+| `/python/api` | API endpoints and interfaces |
+| `/python/extensions` | Modular extensions |
+| `/python/helpers` | Utility functions |
+| `/python/tools` | Tool implementations |
 | `/tmp` | Temporary runtime data |
 | `/usr/chats` | Saved chat history (JSON) |
 | `/usr/secrets.env` | Secrets store (not always included in backups) |
@@ -95,13 +95,13 @@ Communication flows between agents through messages, which are structured accord
 #### Interaction Flow
 A typical interaction flow within Ctx AI might look like this:
 
-1. The user provides an instruction to Ctx AI
-2. Ctx AI initializes VectorDB and access memory
-3. Ctx AI analyzes the instruction and formulates a plan using `thoughts` argument, possibly involving the use of tools or the creation of sub-agents
-4. If necessary, Ctx AI delegates sub-tasks to subordinate agents
+1. The user provides an instruction to CtxAI
+2. CtxAI initializes VectorDB and access memory
+3. CtxAI analyzes the instruction and formulates a plan using `thoughts` argument, possibly involving the use of tools or the creation of sub-agents
+4. If necessary, CtxAI delegates sub-tasks to subordinate agents
 5. Agents use tools to perform actions, both providing arguments and responses or queries
 6. Agents communicate results and feedback back up the hierarchy
-7. Ctx AI provides the final response to the user
+7. CtxAI provides the final response to the user
 
 ### 2. Tools
 Tools are functionalities that agents can leverage. These can include anything from web search and code execution to interacting with APIs or controlling external software. Ctx AI provides a mechanism for defining and integrating both built-in and custom tools.
@@ -140,7 +140,7 @@ Users can create custom tools to extend Ctx AI's capabilities. Custom tools can 
 
 1. Create `agent.system.tool.$TOOL_NAME.md` in `agents/<agent_profile>/prompts/`
 2. Add the reference in `agent.system.tools.md` within the same prompt scope
-3. If needed, implement tool class in `backend/tools` using `Tool` base class
+3. If needed, implement tool class in `python/tools` using `Tool` base class
 4. Follow existing patterns for consistency
 
 > [!NOTE]
@@ -319,7 +319,7 @@ Skills are surfaced via description/tag matching. You can also use the `skills_t
 Extensions are a powerful feature of Ctx AI, designed to keep the main codebase clean and organized while allowing for greater flexibility and modularity.
 
 #### Structure
-Extensions can be found in `backend/extensions` directory:
+Extensions can be found in `python/extensions` directory:
 - **Folder Organization**: Extensions are stored in designated subfolders corresponding to different aspects of the agent's message loop
 - **Execution Order**: Files are executed in alphabetical order for predictable behavior
 - **Naming Convention**: Files start with numbers to control execution order
@@ -331,7 +331,7 @@ Extensions can be found in `backend/extensions` directory:
 - **System Integration**: Manage interaction with external systems
 
 #### Adding Extensions
-1. Create Python file in appropriate `backend/extensions` subfolder
+1. Create Python file in appropriate `python/extensions` subfolder
 2. Follow naming convention for execution order (start with number)
 3. Implement functionality following existing patterns
 4. Ensure compatibility with main system

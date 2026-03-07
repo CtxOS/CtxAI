@@ -7,11 +7,13 @@ import asyncio
 
 import pytest
 
-from backend.utils.dotenv import get_dotenv_value, load_dotenv
-from backend.utils.email_client import read_messages
+from ctxai.integrations.email.email_client import read_messages
+from ctxai.utils.dotenv import get_dotenv_value, load_dotenv
 
 
-@pytest.mark.skip(reason="This test is disabled as it has eternal dependencies and tests nothing automatically, please move it to a script or a manual test")
+@pytest.mark.skip(
+    reason="This test is disabled as it has eternal dependencies and tests nothing automatically, please move it to a script or a manual test"
+)
 @pytest.mark.asyncio
 async def test():
     load_dotenv()

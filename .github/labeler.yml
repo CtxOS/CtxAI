@@ -1,0 +1,38 @@
+# GitHub Labeler Configuration
+# https://github.com/actions/labeler
+
+area:cli:
+  - changed-files:
+      - any-glob-to-any-file: "cli/**/*"
+
+area:core:
+  - changed-files:
+      - any-glob-to-any-file: "src/ctxai/core/**/*"
+
+area:webui:
+  - changed-files:
+      - any-glob-to-any-file: "webui/**/*"
+
+area:scripts:
+  - changed-files:
+      - any-glob-to-any-file: "scripts/**/*"
+
+area:docker:
+  - changed-files:
+      - any-glob-to-any-file: ["docker/**/*", "Dockerfile*", ".dockerignore"]
+
+area:docs:
+  - changed-files:
+      - any-glob-to-any-file: ["docs/**/*", "*.md"]
+
+area:tests:
+  - changed-files:
+      - any-glob-to-any-file: "tests/**/*"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ".github/workflows/**/*"
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file: ["pyproject.toml", "uv.lock", "requirements*.txt"]

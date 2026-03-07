@@ -51,7 +51,7 @@ pip install -r requirements2.txt
 
 When running in Docker, Ctx AI uses two distinct Python runtimes to isolate the framework from the code being executed:
 
-### 1. Framework Runtime (/opt/venv-ctx)
+### 1. Framework Runtime (/opt/venv-a0)
 - Version: Python 3.12.4
 - Purpose: Runs the Ctx AI backend, API, and core logic.
 - Packages: Contains all dependencies from requirements.txt.
@@ -93,9 +93,9 @@ When running in Docker, Ctx AI uses two distinct Python runtimes to isolate the 
 
 Key Files:
 - agent.py: Defines AgentContext and the main Agent class.
-- backend/utils/plugins.py: Plugin discovery and configuration logic.
+- python/helpers/plugins.py: Plugin discovery and configuration logic.
 - webui/js/AlpineStore.js: Store factory for reactive frontend state.
-- backend/utils/api.py: Base class for all API endpoints.
+- python/helpers/api.py: Base class for all API endpoints.
 - docs/agents/AGENTS.components.md: Deep dive into the frontend component architecture.
 - docs/agents/AGENTS.modals.md: Guide to the stacked modal system.
 - docs/agents/AGENTS.plugins.md: Comprehensive guide to the full-stack plugin system.
@@ -105,11 +105,11 @@ Key Files:
 ## Development Patterns & Conventions
 
 ### Backend (Python)
-- Context Access: Use from agent import AgentContext, AgentContextType (not backend.utils.context).
-- Communication: Use mq from backend.utils.messages to log proactive UI messages:
+- Context Access: Use from agent import AgentContext, AgentContextType (not helpers.context).
+- Communication: Use mq from helpers.messages to log proactive UI messages:
   mq.log_user_message(context.id, "Message", source="Plugin")
-- API Handlers: Derive from ApiHandler in backend/utils/api.py.
-- Extensions: Use the extension framework in backend/utils/extension.py for lifecycle hooks.
+- API Handlers: Derive from ApiHandler in python/helpers/api.py.
+- Extensions: Use the extension framework in python/helpers/extension.py for lifecycle hooks.
 - Error Handling: Use RepairableException for errors the LLM might be able to fix.
 
 ### Frontend (Alpine.js)
@@ -164,7 +164,7 @@ Key Files:
 
 ### API Handler (Good)
 ```python
-from backend.utils.api import ApiHandler, Request, Response
+from helpers.api import ApiHandler, Request, Response
 
 class MyHandler(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
@@ -186,7 +186,7 @@ export const store = createStore("myStore", {
 
 ### Tool Definition (Good)
 ```python
-from backend.utils.tool import Tool, ToolResult
+from helpers.tool import Tool, ToolResult
 
 class MyTool(Tool):
     async def execute(self, arg1: str):
