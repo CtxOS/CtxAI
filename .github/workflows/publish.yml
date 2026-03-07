@@ -44,7 +44,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Base Image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: docker/base
           file: docker/base/Dockerfile
@@ -57,7 +57,7 @@ jobs:
             CACHE_DATE=${{ github.event.head_commit.timestamp }}
 
       - name: Build and push Main Image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: docker/run/Dockerfile
