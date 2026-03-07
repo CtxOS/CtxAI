@@ -247,7 +247,7 @@ def get_agents_roots() -> list[str]:
 
     plugin_agents = plugins.get_enabled_plugin_paths(None, "agents")
     project_agents = files.find_existing_paths_by_pattern(
-        f"{files.DATA_DIR}/projects/*/.a0proj/agents"
+        f"{files.DATA_DIR}/projects/*/.ctxproj/agents"
     )
     paths = [
         files.get_abs_path(DEFAULT_AGENTS_DIR),
@@ -353,7 +353,7 @@ def get_paths(
                 paths.append(files.get_abs_path(project_agent_dir, *subpaths))
 
         if project_name:
-            # project/.a0proj/...
+            # project/.ctxproj/...
             path = projects.get_project_meta(project_name, *subpaths)
             if (not must_exist_completely) or files.exists(path):
                 paths.append(path)

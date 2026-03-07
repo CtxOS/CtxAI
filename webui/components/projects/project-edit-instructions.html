@@ -37,7 +37,7 @@
                     <label class="projects-form-label">Instruction files</label>
                     <div class="projects-input-with-button-wrapper">
                         <span class="projects-form-description">Additional instruction files in <strong><span
-                                    x-text="$store.projects.getSelectedAbsPath('.a0proj','instructions')"></span></strong>. Only text files are currently supported (txt, md, yaml, no PDFs or images).</span>
+                                    x-text="$store.projects.getSelectedAbsPath('.ctxproj','instructions')"></span></strong>. Only text files are currently supported (txt, md, yaml, no PDFs or images).</span>
                         <span class="projects-form-description">Currently there are <strong><span
                                     x-text="$store.projects.selectedProject.instruction_files_count || 0"></span></strong> instruction files.</span>
                         <button class="button icon-button" x-on:click="$store.projects.browseInstructionFiles()">

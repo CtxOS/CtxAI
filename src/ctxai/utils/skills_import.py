@@ -12,7 +12,7 @@ from ctxai.utils.skills import discover_skill_md_files
 
 ConflictPolicy = Literal["skip", "overwrite", "rename"]
 
-# Project skills folder name (inside .a0proj)
+# Project skills folder name (inside .ctxproj)
 PROJECT_SKILLS_DIR = "skills"
 
 

@@ -80,7 +80,7 @@ After cloning completes, you'll see:
 - Last commit information
 
 > [!NOTE]
-> If the cloned repository already contains a `.a0proj/` folder with `project.json`, Ctx AI will merge the existing configuration with your specified title and color preferences.
+> If the cloned repository already contains a `.ctxproj/` folder with `project.json`, Ctx AI will merge the existing configuration with your specified title and color preferences.
 
 ## Project Configuration
 
@@ -166,7 +166,7 @@ with precision and business acumen.
 
 ### Additional Instruction Files
 
-Besides the main instructions field, you can add multiple instruction files in the `.a0proj/instructions/` directory. These are automatically loaded and concatenated with the main instructions.
+Besides the main instructions field, you can add multiple instruction files in the `.ctxproj/instructions/` directory. These are automatically loaded and concatenated with the main instructions.
 
 This is useful for:
 - Organizing complex instructions into logical sections
@@ -203,7 +203,7 @@ Projects support two memory modes:
 Projects support scoped configuration values:
 
 #### Variables (Non-sensitive)
-Stored in `.a0proj/variables.env`:
+Stored in `.ctxproj/variables.env`:
 ```bash
 API_BASE_URL=https://api.example.com
 DEFAULT_TIMEOUT=30
@@ -212,7 +212,7 @@ LOG_LEVEL=info
 ```
 
 #### Secrets (Sensitive)
-Stored in `.a0proj/secrets.env`:
+Stored in `.ctxproj/secrets.env`:
 ```bash
 API_KEY=sk-abc123xyz...
 DATABASE_PASSWORD=super_secret_pwd
@@ -228,13 +228,13 @@ SMTP_PASSWORD=email_pwd_here
 
 ### Subagent Configuration
 
-Projects can enable or disable specific subagents (like the Browser Agent). This is configured via the UI and stored in `.a0proj/agents.json`.
+Projects can enable or disable specific subagents (like the Browser Agent). This is configured via the UI and stored in `.ctxproj/agents.json`.
 
 ### Knowledge Files
 
 Import project-specific knowledge documents:
 1. Use the **Import Knowledge** button in the project interface
-2. Files are stored in `.a0proj/knowledge/` organized by memory area
+2. Files are stored in `.ctxproj/knowledge/` organized by memory area
 3. The agent can reference this knowledge when the project is active
 
 ### File Structure Injection
@@ -251,7 +251,7 @@ Projects can automatically inject their directory structure into the agent's con
 
 The default gitignore for projects excludes:
 ```
-.a0proj/
+.ctxproj/
 venv/
 __pycache__/
 node_modules/
@@ -309,7 +309,7 @@ Understanding the project directory structure helps you work effectively:
 
 ```
 /ctx/usr/projects/<project_name>/
-├── .a0proj/                    # Project metadata (hidden)
+├── .ctxproj/                    # Project metadata (hidden)
 │   ├── project.json            # Main configuration
 │   ├── variables.env           # Non-sensitive variables
 │   ├── secrets.env             # Sensitive credentials
@@ -329,7 +329,7 @@ Understanding the project directory structure helps you work effectively:
 ```
 
 > [!TIP]
-> The `.a0proj/` folder is automatically excluded from file structure injection (via gitignore patterns) to keep the agent's context clean.
+> The `.ctxproj/` folder is automatically excluded from file structure injection (via gitignore patterns) to keep the agent's context clean.
 
 ## Advanced Use Cases
 
@@ -412,7 +412,7 @@ See [Tasks & Scheduling](usage.md#tasks--scheduling) for more details.
 - Clear memory when archiving completed projects
 
 ### Security
-- Never commit `.a0proj/secrets.env` to version control
+- Never commit `.ctxproj/secrets.env` to version control
 - Use project-scoped secrets instead of global secrets for sensitive work
 - Consider separate projects for different security levels
 - Backup secrets manually - they may not be included in automatic backups

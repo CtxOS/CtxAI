@@ -127,7 +127,7 @@ def clone_repo(url: str, dest: str, token: str | None = None):
 
 
 # Files to ignore when checking dirty status (CTX project metadata)
-CTX_IGNORE_PATTERNS = {".a0proj", ".a0proj/"}
+CTX_IGNORE_PATTERNS = {".ctxproj", ".ctxproj/"}
 
 
 def get_repo_status(repo_path: str) -> dict:
@@ -157,7 +157,7 @@ def get_repo_status(repo_path: str) -> dict:
 
         # Check dirty status, excluding CTX metadata
         def is_ctx_file(path: str) -> bool:
-            return path.startswith(".a0proj") or path == ".a0proj"
+            return path.startswith(".ctxproj") or path == ".ctxproj"
 
         # Filter out CTX files from diff and untracked
         changed_files = [d.a_path for d in repo.index.diff(None)] + [

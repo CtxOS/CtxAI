@@ -255,11 +255,11 @@ Projects are ideal for multi-client or multi-domain work because each project ca
 - Each project has its own subdirectory, created by users via the UI
 - A project can be backed up or restored by copying or downloading its entire directory
 
-Each project directory contains a hidden `.a0proj` folder with project metadata and configuration:
+Each project directory contains a hidden `.ctxproj` folder with project metadata and configuration:
 
 ```
 /ctx/usr/projects/{project_name}/
-└── .a0proj/
+└── .ctxproj/
     ├── project.json          # project metadata and settings
     ├── instructions/         # additional prompt/instruction files
     ├── knowledge/            # files to be imported into memory
@@ -273,17 +273,17 @@ Each project directory contains a hidden `.a0proj` folder with project metadata 
 When a project is activated for a chat:
 
 - The agent is instructed to work **inside the project directory**
-- Project prompts (instructions) from `.a0proj/instructions/` are **automatically injected** into the context window (all text files are imported)
+- Project prompts (instructions) from `.ctxproj/instructions/` are **automatically injected** into the context window (all text files are imported)
 - Memory can be configured as **project-specific**, meaning:
   - It does not mix with global memory
-  - The memory file is stored under `.a0proj/memory/`
+  - The memory file is stored under `.ctxproj/memory/`
 - Files created or modified by the agent are located within the project directory
 
-The `.a0proj/knowledge/` folder contains files that are imported into the project’s memory, enabling project-focused knowledge bases.
+The `.ctxproj/knowledge/` folder contains files that are imported into the project’s memory, enabling project-focused knowledge bases.
 
 ### Secrets and Variables
 
-Each project manages its own configuration values via environment files in `.a0proj/`:
+Each project manages its own configuration values via environment files in `.ctxproj/`:
 
 - `secrets.env` – **sensitive variables**, such as API keys or passwords
 - `variables.env` – **non-sensitive variables**, such as configuration flags or identifiers

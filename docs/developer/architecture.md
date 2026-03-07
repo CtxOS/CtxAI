@@ -52,7 +52,7 @@ This architecture ensures:
 | `/tmp` | Temporary runtime data |
 | `/usr/chats` | Saved chat history (JSON) |
 | `/usr/secrets.env` | Secrets store (not always included in backups) |
-| `/usr/projects` | Project workspaces and `.a0proj` metadata |
+| `/usr/projects` | Project workspaces and `.ctxproj` metadata |
 | `/webui` | Web interface components |
 | `/webui/css` | Stylesheets |
 | `/webui/js` | JavaScript modules |

@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from ctxai.core.agent import AgentContext
 
 PROJECTS_PARENT_DIR = f"{files.DATA_DIR}/{files.PROJECTS_DIR}"
-PROJECT_META_DIR = ".a0proj"
+PROJECT_META_DIR = ".ctxproj"
 PROJECT_INSTRUCTIONS_DIR = "instructions"
 PROJECT_KNOWLEDGE_DIR = "knowledge"
 PROJECT_HEADER_FILE = "project.json"
@@ -101,7 +101,7 @@ def clone_git_project(name: str, git_url: str, git_token: str, data: BasicProjec
         git.clone_repo(git_url, abs_path, token=git_token)
         clean_url = git.strip_auth_from_url(git_url)
 
-        # Check if cloned repo already has .a0proj
+        # Check if cloned repo already has .ctxproj
         meta_path = os.path.join(abs_path, PROJECT_META_DIR, PROJECT_HEADER_FILE)
         if os.path.exists(meta_path):
             # Merge: keep cloned content, override only user-specified fields

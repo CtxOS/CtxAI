@@ -89,8 +89,8 @@ Place *.js files in extensions/webui/<extension_point>/ and export a default asy
 3. Settings are scoped per-project and per-agent automatically.
 
 ### Resolution Priority (Highest First)
-1. project/.a0proj/agents/<profile>/plugins/<name>/config.json
-2. project/.a0proj/plugins/<name>/config.json
+1. project/.ctxproj/agents/<profile>/plugins/<name>/config.json
+2. project/.ctxproj/plugins/<name>/config.json
 3. usr/agents/<profile>/plugins/<name>/config.json
 4. usr/plugins/<name>/config.json
 5. plugins/<name>/default_config.yaml (fallback defaults)

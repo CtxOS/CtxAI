@@ -101,8 +101,8 @@ Return `0` on success, non-zero on failure. Print progress for user feedback. Us
 
 Plugin settings are resolved by scope. Higher priority overrides lower priority:
 
-1. `project/.a0proj/agents/<profile>/plugins/<name>/config.json`
-2. `project/.a0proj/plugins/<name>/config.json`
+1. `project/.ctxproj/agents/<profile>/plugins/<name>/config.json`
+2. `project/.ctxproj/plugins/<name>/config.json`
 3. `usr/agents/<profile>/plugins/<name>/config.json`
 4. `usr/plugins/<name>/config.json`
 5. `plugins/<name>/default_config.yaml` (fallback defaults)

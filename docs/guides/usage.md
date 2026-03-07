@@ -199,7 +199,7 @@ The system clones the `main` branch by default. You can ask the agent to checkou
 ![Git Project Status](../res/usage/projects/projects-git-projects-tree.png)
 
 > [!NOTE]
-> If the cloned repository already contains a `.a0proj/` configuration folder, Ctx AI merges the existing configuration with your specified preferences.
+> If the cloned repository already contains a `.ctxproj/` configuration folder, Ctx AI merges the existing configuration with your specified preferences.
 
 ### Project Configuration
 
@@ -252,13 +252,13 @@ Choose how project memory is managed:
 
 Projects support scoped configuration:
 
-- **Variables** (non-sensitive): Stored in `.a0proj/variables.env`
+- **Variables** (non-sensitive): Stored in `.ctxproj/variables.env`
   ```bash
   API_BASE_URL=https://api.example.com
   OUTPUT_FORMAT=json
   ```
 
-- **Secrets** (sensitive): Stored in `.a0proj/secrets.env`
+- **Secrets** (sensitive): Stored in `.ctxproj/secrets.env`
   ```bash
   API_KEY=sk-abc123xyz...
   DATABASE_PASSWORD=super_secret_pwd
@@ -277,7 +277,7 @@ Projects can automatically inject their directory structure into the agent's con
 - **Max files/folders**: Limits for context size
 - **Gitignore patterns**: Filter out build artifacts, dependencies, etc.
 
-The default ignores: `.a0proj/`, `venv/`, `__pycache__/`, `node_modules/`, `.git/`
+The default ignores: `.ctxproj/`, `venv/`, `__pycache__/`, `node_modules/`, `.git/`
 
 This feature helps the agent understand your codebase structure without manual explanation.
 
@@ -306,7 +306,7 @@ Once activated, the agent:
 
 ```
 /ctx/usr/projects/<project_name>/
-├── .a0proj/                    # Project metadata (managed by CTX)
+├── .ctxproj/                    # Project metadata (managed by CTX)
 │   ├── project.json            # Main configuration
 │   ├── variables.env           # Non-sensitive config
 │   ├── secrets.env             # Sensitive credentials
@@ -657,7 +657,7 @@ You can reference these values in prompts by name. For example, store `MY_GMAIL`
 > Secrets are stored in `/ctx/usr/secrets.env`.
 
 > [!NOTE]
-> Project-scoped secrets and variables (when using Projects) live under `/ctx/usr/projects/<project_name>/.a0proj/` (`secrets.env`, `variables.env`).
+> Project-scoped secrets and variables (when using Projects) live under `/ctx/usr/projects/<project_name>/.ctxproj/` (`secrets.env`, `variables.env`).
 
 ## Remote Access via Tunneling
 

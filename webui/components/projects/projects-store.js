@@ -69,7 +69,7 @@ const model = {
   getSelectedProjectSkillsPath() {
     const projectName = this.selectedProject?.name;
     if (!projectName) return "";
-    return `usr/projects/${projectName}/.a0proj/skills/`;
+    return `usr/projects/${projectName}/.ctxproj/skills/`;
   },
 
   async openSelectedProjectSkillsImport() {
@@ -432,7 +432,7 @@ const model = {
   },
 
   async browseInstructionFiles() {
-    await this.browseSelected(".a0proj", "instructions");
+    await this.browseSelected(".ctxproj", "instructions");
     try {
       const newData = await this._createEditProjectData(
         this.selectedProject.name
@@ -445,7 +445,7 @@ const model = {
   },
 
   async browseKnowledgeFiles() {
-    await this.browseSelected(".a0proj", "knowledge");
+    await this.browseSelected(".ctxproj", "knowledge");
     // refresh and reindex project
     try {
       // progress notification
