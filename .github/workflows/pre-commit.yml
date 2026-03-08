@@ -24,9 +24,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install pre-commit
 
-      - name: Auto-fix pre-commit
+      - name: Run Ruff with auto-fix
         run: |
-          pre-commit run --all-files
+          pip install ruff
+          # Apply safe and unsafe fixes
+          ruff check src --fix --unsafe-fixes
           git add .
           git commit -m "Apply pre-commit fixes" || echo "No changes to commit"
           git push
