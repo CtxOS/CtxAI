@@ -21,7 +21,11 @@
 /instruments/
 
 # Handle data directory
-
+data/**/*
+!data/**/.gitkeep
+!data/usr/
+!data/tmp/
+!data/logs/
 
 # Handle knowledge directory
 
