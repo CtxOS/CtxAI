@@ -35,14 +35,18 @@ RUN uv sync --no-dev || true
 # Default arguments
 ARG USERNAME=vscode
 RUN if [ "$USERNAME" != "root" ]; then \
-    useradd -m -s /bin/bash $USERNAME && \
+    if id "$USERNAME" >/dev/null 2>&1; then \
+        echo "User $USERNAME already exists"; \
+    else \
+        useradd -m -s /bin/bash $USERNAME; \
+    fi && \
     chown -R $USERNAME /workspaces; \
     fi
 
 USER $USERNAME
 
 # Set default VS Code settings
-COPY --chown=vscode:vscode .vscode /home/$USERNAME/.vscode
+COPY --chown=$USERNAME:$USERNAME .vscode /home/$USERNAME/.vscode
 
 # Post-create command reference (run by Codespaces)
 # This is handled by devcontainer.json postCreateCommand

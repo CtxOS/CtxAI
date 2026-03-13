@@ -1,7 +1,6 @@
 from ctxai.helpers.api import ApiHandler, Input, Output, Request
 
 
-
 class GetCtxWindow(ApiHandler):
     async def process(self, input: Input, request: Request) -> Output:
         ctxid = input.get("context", [])

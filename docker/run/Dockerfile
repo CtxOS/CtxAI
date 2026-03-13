@@ -1,7 +1,4 @@
-# Use the pre-built base image for A0
-# FROM ctxai-base:local
-# FROM ctxos/ctxai-base:testing
-FROM ctxos/ctxai-base:latest
+FROM ghcr.io/neopilotai/ctxai/base:latest
 
 # Check if the argument is provided, else throw an error
 ARG BRANCH

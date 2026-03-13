@@ -2,6 +2,7 @@ import os
 import webcolors
 import html
 import sys
+import atexit
 from datetime import datetime
 from collections.abc import Mapping
 from . import files
@@ -231,6 +232,4 @@ class PrintStyle:
 
 
 # Ensure HTML file is closed properly when the program exits
-import atexit
-
 atexit.register(PrintStyle._close_html_log)

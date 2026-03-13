@@ -6,7 +6,6 @@ import aiohttp
 from ctxai.helpers import crypto
 
 
-
 # Remote Function Call library
 # Call function via http request
 # Secured by pre-shared key

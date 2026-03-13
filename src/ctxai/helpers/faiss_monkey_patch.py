@@ -13,6 +13,7 @@
 # faiss_monkey_patch.py  – import this before faiss -----------------
 import sys
 import types
+import warnings
 import numpy as np
 from types import SimpleNamespace
 
@@ -34,8 +35,6 @@ sys.modules["numpy.distutils.cpuinfo"] = cpuinfo
 # crucial: expose it as an *attribute* of the already-imported numpy package
 np.distutils = dist  # type: ignore
 # -------------------------------------------------------------------
-
-import warnings
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", DeprecationWarning)

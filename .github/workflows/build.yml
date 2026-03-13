@@ -41,8 +41,10 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: docker/run
           file: docker/run/Dockerfile
+          build-args: |
+            BRANCH=${{ github.head_ref || github.ref_name }}
           push: false
           tags: ctxai:latest
           cache-from: type=gha

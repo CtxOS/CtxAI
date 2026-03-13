@@ -7,12 +7,11 @@ from urllib.parse import urlparse
 import uuid
 from enum import Enum
 from os.path import exists
-from typing import Any, Callable, Dict, Literal, Optional, Type, TypeVar, Union, cast, ClassVar
+from typing import Any, Callable, Dict, Literal, Optional, Type, TypeVar, Union, cast, ClassVar, Annotated
 
 import nest_asyncio
 
-nest_asyncio.apply()
-
+import pytz
 from crontab import CronTab
 from pydantic import BaseModel, Field, PrivateAttr
 
@@ -24,8 +23,8 @@ from ctxai.helpers.defer import DeferredTask
 from ctxai.helpers.files import get_abs_path, make_dirs, read_file, write_file
 from ctxai.helpers.localization import Localization
 from ctxai.helpers import projects, guids
-import pytz
-from typing import Annotated
+
+nest_asyncio.apply()
 
 SCHEDULER_FOLDER = "usr/scheduler"
 

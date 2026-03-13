@@ -2,8 +2,8 @@
   "name": "Ctx AI",
   "build": {
     "dockerfile": "Dockerfile",
-    "context": "../..",
-    "cacheFrom": "ghcr.io/ctxos/ctxai/devcontainer:latest"
+    "context": "..",
+    "cacheFrom": "ghcr.io/neopilotai/ctxai/devcontainer:latest"
   },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
@@ -53,8 +53,7 @@
       }
     }
   },
-  "postCreateCommand": "uv sync && uv pip install ruff",
-  "updateContentCommand": "uv sync",
+  "postCreateCommand": ".devcontainer/scripts/post-create.sh",
   "remoteUser": "vscode",
   "portsAttributes": {
     "50001": {

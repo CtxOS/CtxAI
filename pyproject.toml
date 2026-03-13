@@ -99,6 +99,8 @@ dev = [
     "pytest-asyncio>=1.2.0",
     "pytest-mock>=3.15.1",
     "pyinstrument==5.1.2",
+    "ruff==0.9.9",
+    "mypy==1.15.0",
 ]
 
 [tool.uv]
@@ -130,6 +132,9 @@ pythonpath = ["src"]
 [tool.ruff]
 line-length = 120
 target-version = "py312"
+
+[tool.ruff.lint]
+ignore = ["E402", "F841"]
 
 [tool.pre-commit]
 default_stages = ["pre-commit"]
