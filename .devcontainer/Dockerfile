@@ -27,7 +27,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /workspaces/ctxai
 
 # Copy dependency files first for better caching
-COPY pyproject.toml uv.lock* ./
+COPY ../pyproject.toml ../uv.lock* ./
 
 # Install dependencies (cached layer)
 RUN uv sync --no-dev || true

@@ -2,7 +2,7 @@
   "name": "Ctx AI",
   "build": {
     "dockerfile": "Dockerfile",
-    "context": ".."
+    "context": "."
   },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
