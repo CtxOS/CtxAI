@@ -1,8 +1,13 @@
 {
   "name": "Ctx AI",
-  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "../..",
+    "cacheFrom": "ghcr.io/ctxos/ctxai/devcontainer:latest"
+  },
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   "customizations": {
     "vscode": {
@@ -21,6 +26,8 @@
         "python.linting.ruffEnabled": true,
         "python.formatting.provider": "ruff",
         "python.analysis.typeCheckingMode": "basic",
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.indexing": true,
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.codeActionsOnSave": {
@@ -28,17 +35,46 @@
           "source.organizeImports": "explicit"
         },
         "ruff.lint.args": ["--config=pyproject.toml"],
-        "ruff.format.args": ["--config=pyproject.toml"]
+        "ruff.format.args": ["--config=pyproject.toml"],
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/*.pyc": true,
+          "**/.pytest_cache": true,
+          "**/.ruff_cache": true,
+          "**/.mypy_cache": true
+        },
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/.venv": true,
+          "**/venv": true,
+          "**/__pycache__": true,
+          "**/*.pyc": true
+        }
       }
     }
   },
-  "postCreateCommand": "uv sync",
-  "remoteUser": "vscode",
+  "postCreateCommand": "uv sync && uv pip install ruff",
   "updateContentCommand": "uv sync",
+  "remoteUser": "vscode",
   "portsAttributes": {
     "50001": {
       "label": "Ctx AI Web UI",
       "onAutoForward": "notify"
     }
-  }
+  },
+  "options": {
+    "memory": "8g",
+    "cpus": 4
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "containerEnv": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUNBUFFERED": "1",
+    "UV_LINK_MODE": "copy",
+    "UV_CACHE_DIR": "/usr/local/share/uv-cache",
+    "UV_TOOL_CACHE_DIR": "/usr/local/share/uv-tool-cache"
+  },
+  "initializeCommand": "echo 'Initializing Ctx AI dev environment...'",
+  "onCreateCommand": "echo 'Creating Ctx AI development environment...'"
 }
