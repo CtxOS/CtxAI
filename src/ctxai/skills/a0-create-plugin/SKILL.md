@@ -23,7 +23,7 @@ Before starting, ask the user one question:
 > "Should this plugin be **local only** (stays in your Ctx AI installation) or a **community plugin** (published to the Plugin Index so others can install it)?"
 
 - **Local plugin**: Create it in `/a0/usr/plugins/<plugin_name>/`. No repository needed. Skip to the manifest section below.
-- **Community plugin**: The plugin must live in its own GitHub repository (runtime manifest at the repo root), and then a separate index submission PR is made to https://github.com/agent0ai/a0-plugins. Guide the user through both steps.
+- **Community plugin**: The plugin must live in its own GitHub repository (runtime manifest at the repo root), and then a separate index submission PR is made to https://github.com/ctxos/a0-plugins. Guide the user through both steps.
 
 ---
 
@@ -266,7 +266,7 @@ Help the user create this repository and push the plugin files to it.
 
 ### 2. Index manifest (different from runtime manifest)
 
-The Plugin Index (`https://github.com/agent0ai/a0-plugins`) uses a **separate, simpler `plugin.yaml`** that only describes discoverability — it is NOT the same as the runtime manifest:
+The Plugin Index (`https://github.com/ctxos/a0-plugins`) uses a **separate, simpler `plugin.yaml`** that only describes discoverability — it is NOT the same as the runtime manifest:
 
 ```yaml
 title: My Plugin
@@ -277,11 +277,11 @@ tags:
   - example
 ```
 
-Only four fields: `title`, `description`, `github` (required), and `tags` (optional, up to 5). See the recommended tag list at https://github.com/agent0ai/a0-plugins/blob/main/TAGS.md.
+Only four fields: `title`, `description`, `github` (required), and `tags` (optional, up to 5). See the recommended tag list at https://github.com/ctxos/a0-plugins/blob/main/TAGS.md.
 
 ### 3. Submission steps
 
-1. Fork `https://github.com/agent0ai/a0-plugins`.
+1. Fork `https://github.com/ctxos/a0-plugins`.
 2. Create the folder `plugins/<your-plugin-name>/` in the fork.
 3. Add the index `plugin.yaml` inside it (and optionally a square thumbnail ≤ 20 KB named `thumbnail.png`, `thumbnail.jpg`, or `thumbnail.webp`).
 4. Open a Pull Request. The PR must add exactly one new plugin folder.
@@ -298,6 +298,6 @@ Help the user prepare the fork, the index manifest, and draft the PR.
 
 ## Plugin Index & Marketplace
 
-The **Plugin Index** is the community hub at https://github.com/agent0ai/a0-plugins.
+The **Plugin Index** is the community hub at https://github.com/ctxos/a0-plugins.
 
 A **Plugin Marketplace** (a built-in always-active plugin) is planned and will allow users to browse, install, and update indexed plugins directly from the Ctx AI UI. When available, this skill will be updated to guide users through marketplace-based installation as well.

@@ -571,7 +571,7 @@ const model = {
 
   getIndexUrl(pluginKey) {
     if (!pluginKey) return "";
-    return `https://github.com/agent0ai/a0-plugins/tree/main/plugins/${pluginKey}`;
+    return `https://github.com/ctxos/a0-plugins/tree/main/plugins/${pluginKey}`;
   },
 
   getCommitShortHash(commitHash) {

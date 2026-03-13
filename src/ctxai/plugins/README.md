@@ -58,12 +58,12 @@ In Docker, `hooks.py` normally affects `/opt/venv-a0`; the agent execution runti
 
 ## Plugin Index & Community Sharing
 
-The **Plugin Index** at https://github.com/agent0ai/a0-plugins is the community-maintained registry of plugins available to all Ctx AI users.
+The **Plugin Index** at https://github.com/ctxos/a0-plugins is the community-maintained registry of plugins available to all Ctx AI users.
 
 To share a plugin with the community:
 
 1. Create a standalone GitHub repository with the plugin contents at the repo root and the runtime `plugin.yaml` there.
-2. Fork `https://github.com/agent0ai/a0-plugins` and add a folder `plugins/<your-plugin-name>/` containing a separate index `plugin.yaml`:
+2. Fork `https://github.com/ctxos/a0-plugins` and add a folder `plugins/<your-plugin-name>/` containing a separate index `plugin.yaml`:
 
 ```yaml
 title: My Plugin

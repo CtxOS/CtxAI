@@ -183,7 +183,7 @@ Supported actions:
 
 ## Publishing to the Plugin Index
 
-The **Plugin Index** is a community-maintained repository at https://github.com/agent0ai/a0-plugins. Plugins listed there are discoverable by all Ctx AI users.
+The **Plugin Index** is a community-maintained repository at https://github.com/ctxos/a0-plugins. Plugins listed there are discoverable by all Ctx AI users.
 
 ### Two Distinct plugin.yaml Files
 
@@ -232,7 +232,7 @@ your-plugin-repo/          ← GitHub repository root
 ### Submission Process
 
 1. Create a GitHub repository with the runtime `plugin.yaml` at the repo root.
-2. Fork `https://github.com/agent0ai/a0-plugins`.
+2. Fork `https://github.com/ctxos/a0-plugins`.
 3. Add `plugins/<your-plugin-name>/plugin.yaml` (index manifest) to your fork, and optionally a square thumbnail image (≤ 20 KB, named `thumbnail.png|jpg|webp`).
 4. Open a Pull Request. One PR must add exactly one new plugin folder.
 5. CI validates automatically. A maintainer reviews and merges.
@@ -242,7 +242,7 @@ Submission rules:
 - Folders starting with `_` are reserved for internal use
 - `title`: max 50 characters
 - `description`: max 500 characters
-- `tags`: optional, up to 5, see https://github.com/agent0ai/a0-plugins/blob/main/TAGS.md
+- `tags`: optional, up to 5, see https://github.com/ctxos/a0-plugins/blob/main/TAGS.md
 
 ### Plugin Marketplace (Coming Soon)
 

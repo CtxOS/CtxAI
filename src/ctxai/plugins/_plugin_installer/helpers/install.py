@@ -266,7 +266,7 @@ def get_marketplace_index() -> dict[str, Any]:
 
 def fetch_plugin_index() -> dict:
     """Download the plugin index from GitHub releases."""
-    index_url = "https://github.com/agent0ai/a0-plugins/releases/download/generated-index/index.json"
+    index_url = "https://github.com/ctxos/a0-plugins/releases/download/generated-index/index.json"
     req = urllib.request.Request(index_url, headers={"User-Agent": "AgentZero"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.loads(resp.read().decode())
