@@ -2,8 +2,7 @@
   "name": "Ctx AI",
   "build": {
     "dockerfile": "Dockerfile",
-    "context": "..",
-    "cacheFrom": "ghcr.io/neopilotai/ctxai/devcontainer:latest"
+    "context": ".."
   },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
