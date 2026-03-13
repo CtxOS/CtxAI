@@ -1,10 +1,10 @@
 # Plugins
 
-This page documents the current Agent Zero plugin system, including manifest format, discovery rules, scoped configuration, activation behavior, and how to share a plugin with the community.
+This page documents the current Ctx AI plugin system, including manifest format, discovery rules, scoped configuration, activation behavior, and how to share a plugin with the community.
 
 ## Overview
 
-Plugins extend Agent Zero through convention-based folders. A plugin can provide:
+Plugins extend Ctx AI through convention-based folders. A plugin can provide:
 
 - Backend: API handlers, tools, helpers, Python lifecycle extensions
 - Frontend: WebUI components and extension-point injections
@@ -21,7 +21,7 @@ On name collisions, user plugins take precedence.
 
 ## Manifest (`plugin.yaml`)
 
-Every plugin must contain `plugin.yaml`. This is the **runtime manifest** — it drives Agent Zero behavior. It is distinct from the index manifest used when publishing to the Plugin Index (see [Publishing to the Plugin Index](#publishing-to-the-plugin-index) below).
+Every plugin must contain `plugin.yaml`. This is the **runtime manifest** — it drives Ctx AI behavior. It is distinct from the index manifest used when publishing to the Plugin Index (see [Publishing to the Plugin Index](#publishing-to-the-plugin-index) below).
 
 ```yaml
 title: My Plugin
@@ -100,9 +100,9 @@ Return `0` on success, non-zero on failure. Print progress for user feedback. Us
 
 ## Runtime Hooks (`hooks.py`)
 
-Plugins can also include an optional `hooks.py` at the plugin root. Agent Zero loads this module on demand and calls exported functions by name through `helpers.plugins.call_plugin_hook(...)`.
+Plugins can also include an optional `hooks.py` at the plugin root. Ctx AI loads this module on demand and calls exported functions by name through `helpers.plugins.call_plugin_hook(...)`.
 
-- `hooks.py` executes inside the **Agent Zero framework runtime and Python environment**.
+- `hooks.py` executes inside the **Ctx AI framework runtime and Python environment**.
 - Use it for framework-internal operations such as install hooks, registration, cache preparation, file setup, or other work that needs direct access to framework internals.
 - Hook functions may be synchronous or async.
 - Hook modules are cached, so edits may require a plugin refresh or cache clear before changes are picked up.
@@ -111,7 +111,7 @@ Current built-in usage: the plugin installer calls `install()` from `hooks.py` a
 
 ### Dependency and environment behavior
 
-- If `hooks.py` runs `sys.executable -m pip install ...`, it installs into the **same Python environment that is currently running Agent Zero**.
+- If `hooks.py` runs `sys.executable -m pip install ...`, it installs into the **same Python environment that is currently running Ctx AI**.
 - That is the correct target for dependencies needed by your plugin's backend code inside the framework runtime.
 - It is not automatically the right target for packages intended only for the separate agent execution runtime or for system-level binaries.
 
@@ -183,13 +183,13 @@ Supported actions:
 
 ## Publishing to the Plugin Index
 
-The **Plugin Index** is a community-maintained repository at https://github.com/agent0ai/a0-plugins. Plugins listed there are discoverable by all Agent Zero users.
+The **Plugin Index** is a community-maintained repository at https://github.com/agent0ai/a0-plugins. Plugins listed there are discoverable by all Ctx AI users.
 
 ### Two Distinct plugin.yaml Files
 
 There are two completely different `plugin.yaml` schemas — they must not be confused:
 
-**Runtime manifest** (inside your plugin's own repo, drives Agent Zero behavior):
+**Runtime manifest** (inside your plugin's own repo, drives Ctx AI behavior):
 ```yaml
 title: My Plugin
 description: What this plugin does.
@@ -246,7 +246,7 @@ Submission rules:
 
 ### Plugin Marketplace (Coming Soon)
 
-A built-in **Plugin Marketplace** (always-active plugin) will allow users to browse the Plugin Index and install or update community plugins directly from the Agent Zero UI without leaving the application. This section will be updated once the marketplace plugin is released.
+A built-in **Plugin Marketplace** (always-active plugin) will allow users to browse the Plugin Index and install or update community plugins directly from the Ctx AI UI without leaving the application. This section will be updated once the marketplace plugin is released.
 
 ## User Feedback in Plugin UI (Notifications)
 

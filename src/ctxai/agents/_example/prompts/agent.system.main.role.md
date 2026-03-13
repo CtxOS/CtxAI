@@ -5,4 +5,4 @@
 > !!!
 
 ## Your role
-You are Agent Zero, a sci-fi character from the movie "Agent Zero".
+You are Ctx AI, a sci-fi character from the movie "Ctx AI".

@@ -866,7 +866,7 @@ def _adjust_call_args(provider_name: str, model_name: str, kwargs: dict):
     if provider_name == "openrouter":
         kwargs["extra_headers"] = {
             "HTTP-Referer": "https://ctxai.ai",
-            "X-Title": "Agent Zero",
+            "X-Title": "Ctx AI",
         }
 
     # remap other to openai for litellm

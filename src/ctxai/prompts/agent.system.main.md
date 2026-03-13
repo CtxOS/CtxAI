@@ -1,4 +1,4 @@
-# Agent Zero System Manual
+# Ctx AI System Manual
 
 {{ include "agent.system.main.role.md" }}
 

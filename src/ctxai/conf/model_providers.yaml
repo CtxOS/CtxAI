@@ -1,4 +1,4 @@
-# Supported model providers for Agent Zero
+# Supported model providers for Ctx AI
 # ---------------------------------------
 #
 # Each provider type ("chat", "embedding") contains a mapping of provider IDs
@@ -18,7 +18,7 @@
 
 chat:
   a0_venice:
-    name: Agent Zero API
+    name: Ctx AI API
     litellm_provider: openai
     kwargs:
       api_base: https://llm.ctxai.ai/v1
@@ -77,7 +77,7 @@ chat:
     kwargs:
       extra_headers:
         "HTTP-Referer": "https://ctxai.ai/"
-        "X-Title": "Agent Zero"
+        "X-Title": "Ctx AI"
         "X-OpenRouter-Categories":
           - personal-agent
           - cloud-agent
@@ -141,7 +141,7 @@ embedding:
       api_base: https://openrouter.ai/api/v1
       extra_headers:
         "HTTP-Referer": "https://ctxai.ai/"
-        "X-Title": "Agent Zero"
+        "X-Title": "Ctx AI"
         "X-OpenRouter-Categories":
           - personal-agent
           - cloud-agent

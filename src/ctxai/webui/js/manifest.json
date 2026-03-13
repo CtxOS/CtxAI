@@ -1,6 +1,6 @@
 {
-  "name": "Agent Zero",
-  "short_name": "Agent Zero",
+  "name": "Ctx AI",
+  "short_name": "Ctx AI",
   "description": "Autonomous AI agent",
   "start_url": "/",
   "display": "standalone",
