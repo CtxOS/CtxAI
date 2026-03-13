@@ -1,5 +1,5 @@
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared import errors, git
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers import errors, git
 
 class HealthCheck(ApiHandler):
 

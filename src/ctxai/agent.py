@@ -5,9 +5,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Awaitable, Coroutine, Dict, Literal
 from enum import Enum
-from ctxai import models
+import ctxai.models as models
 
-from ctxai.shared import (
+from ctxai.helpers import (
     extract_tools,
     files,
     errors,
@@ -17,28 +17,21 @@ from ctxai.shared import (
     dirty_json,
     subagents,
 )
-from ctxai.shared import extension
-from ctxai.shared.print_style import PrintStyle
-from ctxai.core.engine.runtime_state import get_job_queue
-from ctxai.core.engine.job_queue import RedisJobQueue
-from ctxai.shared.tool import ToolExecutionError
-
-from ctxai.core.engine.memory import MemoryManager
-from ctxai.core.engine.llm_gateway import LLMGateway
-from ctxai.core.engine.supervisor import AgentSupervisor
+from ctxai.helpers import extension
+from ctxai.helpers.print_style import PrintStyle
 
 from langchain_core.prompts import (
     ChatPromptTemplate,
 )
 from langchain_core.messages import SystemMessage, BaseMessage
 
-import ctxai.shared.log as Log
-from ctxai.shared.dirty_json import DirtyJson
-from ctxai.shared.defer import DeferredTask
+import ctxai.helpers.log as Log
+from ctxai.helpers.dirty_json import DirtyJson
+from ctxai.helpers.defer import DeferredTask
 from typing import Callable
-from ctxai.shared.localization import Localization
-from ctxai.shared import extension
-from ctxai.shared.errors import RepairableException, InterventionException, HandledException
+from ctxai.helpers.localization import Localization
+from ctxai.helpers import extension
+from ctxai.helpers.errors import RepairableException, InterventionException, HandledException
 
 class AgentContextType(Enum):
     USER = "user"
@@ -69,16 +62,19 @@ class AgentContext:
         data: dict | None = None,
         output_data: dict | None = None,
         set_current: bool = False,
-        user_id: str | None = None,
-        workspace_id: str = "default",
     ):
-        # initialize tenant info
-        self.user_id = user_id or context_helper.get_context_data("user_id")
-        self.workspace_id = workspace_id or context_helper.get_context_data("workspace_id", "default")
-
         # initialize context
-        self.id = id or MemoryManager.generate_id()
-        self.no = MemoryManager.register(self, set_current=set_current)
+        self.id = id or AgentContext.generate_id()
+        existing = None
+        with AgentContext._contexts_lock:
+            existing = AgentContext._contexts.get(self.id, None)
+            if existing:
+                AgentContext._contexts.pop(self.id, None)
+            AgentContext._contexts[self.id] = self
+        if existing and existing.task:
+            existing.task.kill()
+        if set_current:
+            AgentContext.set_current(self.id)
 
         # initialize state
         self.name = name
@@ -100,27 +96,29 @@ class AgentContext:
         self.agent0 = agent0 or Agent(0, self.config, self)
 
     @staticmethod
-    def get(id: str, user_id: Optional[str] = None, workspace_id: Optional[str] = None):
-        return MemoryManager.get(id, user_id=user_id, workspace_id=workspace_id)
+    def get(id: str):
+        with AgentContext._contexts_lock:
+            return AgentContext._contexts.get(id, None)
 
     @staticmethod
-    def use(id: str, user_id: Optional[str] = None, workspace_id: Optional[str] = None):
-        context = MemoryManager.get(id, user_id=user_id, workspace_id=workspace_id)
+    def use(id: str):
+        context = AgentContext.get(id)
         if context:
-            MemoryManager.set_current(id)
-            if context.user_id: context_helper.set_context_data("user_id", context.user_id)
-            context_helper.set_context_data("workspace_id", context.workspace_id)
+            AgentContext.set_current(id)
         else:
-            MemoryManager.set_current("")
+            AgentContext.set_current("")
         return context
 
     @staticmethod
     def current():
-        return MemoryManager.current()
+        ctxid = context_helper.get_context_data("agent_context_id", "")
+        if not ctxid:
+            return None
+        return AgentContext.get(ctxid)
 
     @staticmethod
     def set_current(ctxid: str):
-        MemoryManager.set_current(ctxid)
+        context_helper.set_context_data("agent_context_id", ctxid)
 
     @staticmethod
     def first():
@@ -136,20 +134,31 @@ class AgentContext:
 
     @staticmethod
     def generate_id():
-        return MemoryManager.generate_id()
+        def generate_short_id():
+            return "".join(random.choices(string.ascii_letters + string.digits, k=8))
+
+        while True:
+            short_id = generate_short_id()
+            with AgentContext._contexts_lock:
+                if short_id not in AgentContext._contexts:
+                    return short_id
 
     @classmethod
     def get_notification_manager(cls):
         if cls._notification_manager is None:
-            from ctxai.shared.notification import NotificationManager  # type: ignore
+            from ctxai.helpers.notification import NotificationManager  # type: ignore
 
             cls._notification_manager = NotificationManager()
         return cls._notification_manager
 
     @staticmethod
     @extension.extensible
-    def remove(id: str, user_id: Optional[str] = None, workspace_id: Optional[str] = None):
-        return MemoryManager.remove(id, user_id=user_id, workspace_id=workspace_id)
+    def remove(id: str):
+        with AgentContext._contexts_lock:
+            context = AgentContext._contexts.pop(id, None)
+        if context and context.task:
+            context.task.kill()
+        return context
 
     def get_data(self, key: str, recursive: bool = True):
         # recursive is not used now, prepared for context hierarchy
@@ -158,18 +167,6 @@ class AgentContext:
     def set_data(self, key: str, value: Any, recursive: bool = True):
         # recursive is not used now, prepared for context hierarchy
         self.data[key] = value
-
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        # Exclude non-picklable fields
-        state['task'] = None
-        state['streaming_agent'] = None
-        return state
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-        # Re-initialize non-picklable fields
-        self._contexts_lock = threading.RLock()
 
     def get_output_data(self, key: str, recursive: bool = True):
         # recursive is not used now, prepared for context hierarchy
@@ -201,8 +198,6 @@ class AgentContext:
             ),
             "type": self.type.value,
             "running": self.is_running(),
-            "user_id": self.user_id,
-            "workspace_id": self.workspace_id,
             **self.output_data,
         }
 
@@ -268,15 +263,7 @@ class AgentContext:
                     Agent.DATA_NAME_SUPERIOR, None
                 )
         else:
-            queue = get_job_queue()
-            if isinstance(queue, RedisJobQueue):
-                # Push to distributed queue
-                queue.push("AgentContext.communicate", self.id, msg)
-                self.paused = False
-                # Return a placeholder task or None
-                return None
-            else:
-                self.task = self.run_task(self._process_chain, current_agent, msg)
+            self.task = self.run_task(self._process_chain, current_agent, msg)
 
         return self.task
 
@@ -284,7 +271,11 @@ class AgentContext:
     def run_task(
         self, func: Callable[..., Coroutine[Any, Any, Any]], *args: Any, **kwargs: Any
     ):
-        self.task = AgentSupervisor.run_task(self.task, self.__class__.__name__, func, *args, **kwargs)
+        if not self.task:
+            self.task = DeferredTask(
+                thread_name=self.__class__.__name__,
+            )
+        self.task.start_task(func, *args, **kwargs)
         return self.task
 
     # this wrapper ensures that superior agents are called back if the chat was loaded from file and original callstack is gone
@@ -383,14 +374,6 @@ class Agent:
         self.data: dict[str, Any] = {}  # free data object all the tools can use
 
         extension.call_extensions_sync("agent_init", self)
-
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        # History is picklable, but let's make sure context is handled correctly
-        return state
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
 
     @extension.extensible
     async def monologue(self):
@@ -772,14 +755,39 @@ class Agent:
         callback: Callable[[str], Awaitable[None]] | None = None,
         background: bool = False,
     ):
-        return await LLMGateway.call_utility_model(
-            agent=self,
-            config_model=self.config.utility_model,
-            system=system,
-            message=message,
-            callback=callback,
-            background=background
+        model = self.get_utility_model()
+
+        # call extensions
+        call_data = {
+            "model": model,
+            "system": system,
+            "message": message,
+            "callback": callback,
+            "background": background,
+        }
+        await extension.call_extensions_async(
+            "util_model_call_before", self, call_data=call_data
         )
+
+        # propagate stream to callback if set
+        async def stream_callback(chunk: str, total: str):
+            if call_data["callback"]:
+                await call_data["callback"](chunk)
+
+        response, _reasoning = await call_data["model"].unified_call(
+            system_message=call_data["system"],
+            user_message=call_data["message"],
+            response_callback=stream_callback if call_data["callback"] else None,
+            rate_limiter_callback=(
+                self.rate_limiter_callback if not call_data["background"] else None
+            ),
+        )
+
+        await extension.call_extensions_async(
+            "util_model_call_after", self, call_data=call_data, response=response
+        )
+
+        return response
 
     @extension.extensible
     async def call_chat_model(
@@ -790,15 +798,23 @@ class Agent:
         background: bool = False,
         explicit_caching: bool = True,
     ):
-        return await LLMGateway.call_chat_model(
-            agent=self,
-            config_model=self.config.chat_model,
+        response = ""
+
+        # model class
+        model = self.get_chat_model()
+
+        # call model
+        response, reasoning = await model.unified_call(
             messages=messages,
-            response_callback=response_callback,
             reasoning_callback=reasoning_callback,
-            background=background,
-            explicit_caching=explicit_caching
+            response_callback=response_callback,
+            rate_limiter_callback=(
+                self.rate_limiter_callback if not background else None
+            ),
+            explicit_caching=explicit_caching,
         )
+
+        return response, reasoning
 
     @extension.extensible
     async def rate_limiter_callback(
@@ -838,6 +854,9 @@ class Agent:
         # search for tool usage requests in agent message
         tool_request = extract_tools.json_parse_dirty(msg)
 
+        # basic validation + extensions
+        await self.validate_tool_request(tool_request)
+
         if tool_request is not None:
             raw_tool_name = tool_request.get("tool_name", tool_request.get("tool",""))  # Get the raw tool name
             tool_args = tool_request.get("tool_args", tool_request.get("args", {}))
@@ -853,7 +872,7 @@ class Agent:
 
             # Try getting tool from MCP first
             try:
-                import ctxai.shared.mcp_handler as mcp_helper
+                import ctxai.helpers.mcp_handler as mcp_helper
 
                 mcp_tool_candidate = mcp_helper.MCPConfig.get_instance().get_tool(
                     self, tool_name
@@ -912,13 +931,6 @@ class Agent:
 
                     if response.break_loop:
                         return response.message
-                except ToolExecutionError as e:
-                    error_msg = str(e)
-                    self.hist_add_tool_result(tool_name, error_msg)
-                    PrintStyle(font_color="red", background_color="white", padding=True, bold=True).print(f"Security Error: {error_msg}")
-                    self.context.log.log(type="error", content=error_msg)
-                except Exception as e:
-                    await self.handle_exception("tool_execution", e)
                 finally:
                     self.loop_data.current_tool = None
             else:
@@ -938,6 +950,17 @@ class Agent:
                 type="warning",
                 content=f"{self.agent_name}: Message misformat, no valid tool request found.",
             )
+
+    @extension.extensible
+    async def validate_tool_request(self, tool_request: Any):
+        if not isinstance(tool_request, dict):
+            raise ValueError("Tool request must be a dictionary")
+        if not tool_request.get("tool_name") or not isinstance(tool_request.get("tool_name"), str):
+            raise ValueError("Tool request must have a tool_name (type string) field")
+        if not tool_request.get("tool_args") or not isinstance(tool_request.get("tool_args"), dict):
+            raise ValueError("Tool request must have a tool_args (type dictionary) field")
+
+
 
     async def handle_reasoning_stream(self, stream: str):
         await self.handle_intervention()
@@ -976,8 +999,8 @@ class Agent:
         loop_data: LoopData | None,
         **kwargs,
     ):
-        from tools.unknown import Unknown
-        from ctxai.shared.tool import Tool
+        from ctxai.tools.unknown import Unknown
+        from ctxai.helpers.tool import Tool
 
         classes = []
 

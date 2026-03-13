@@ -1,8 +1,8 @@
 import base64
 from werkzeug.datastructures import FileStorage
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared.file_browser import FileBrowser
-from ctxai.shared import files, runtime
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers.file_browser import FileBrowser
+from ctxai.helpers import files, runtime
 from ctxai.api import get_work_dir_files
 import os
 

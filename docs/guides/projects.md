@@ -1,14 +1,14 @@
 # Working with Projects
 
-Projects are one of Ctx AI's most powerful features for organizing your work. They create isolated workspaces with dedicated context, instructions, memory, and secrets - preventing context bleed between unrelated tasks or clients.
+Projects are one of Agent Zero's most powerful features for organizing your work. They create isolated workspaces with dedicated context, instructions, memory, and secrets - preventing context bleed between unrelated tasks or clients.
 
 This tutorial will guide you through creating, configuring, and using projects effectively.
 
 ## What Are Projects?
 
-A project in Ctx AI is an isolated workspace that includes:
+A project in Agent Zero is an isolated workspace that includes:
 
-- **Dedicated folder structure** under `/ctxai/usr/projects/<project_name>/`
+- **Dedicated folder structure** under `/a0/usr/projects/<project_name>/`
 - **Custom instructions** automatically injected into the agent's system prompt
 - **Isolated or shared memory** to prevent context pollution
 - **Project-specific secrets and variables** for secure credential management
@@ -55,18 +55,18 @@ The wizard includes:
 
 ### Creating a Git-Based Project
 
-Ctx AI's **Git Projects** feature allows you to clone repositories directly into your project workspace:
+Agent Zero's **Git Projects** feature allows you to clone repositories directly into your project workspace:
 
 1. In the creation form, enter a Git repository URL in the **Git Repository** field
    - Supports both public and private repositories
    - For private repositories, you can provide an authentication token
 2. Click **"Create and continue"**
-3. Ctx AI will clone the repository
+3. Agent Zero will clone the repository
 
 ![Git Clone Progress](../res/usage/projects/projects-gitprojects-clone.png)
 
 The cloning process:
-- Downloads the repository to `/ctxai/usr/projects/<project_name>/`
+- Downloads the repository to `/a0/usr/projects/<project_name>/`
 - By default, clones the `main` branch
 - Supports authentication via token (stored securely, never in URLs)
 - You can ask the agent to checkout different branches later
@@ -80,7 +80,7 @@ After cloning completes, you'll see:
 - Last commit information
 
 > [!NOTE]
-> If the cloned repository already contains a `.ctxaiproj/` folder with `project.json`, Ctx AI will merge the existing configuration with your specified title and color preferences.
+> If the cloned repository already contains a `.a0proj/` folder with `project.json`, Agent Zero will merge the existing configuration with your specified title and color preferences.
 
 ## Project Configuration
 
@@ -166,7 +166,7 @@ with precision and business acumen.
 
 ### Additional Instruction Files
 
-Besides the main instructions field, you can add multiple instruction files in the `.ctxaiproj/instructions/` directory. These are automatically loaded and concatenated with the main instructions.
+Besides the main instructions field, you can add multiple instruction files in the `.a0proj/instructions/` directory. These are automatically loaded and concatenated with the main instructions.
 
 This is useful for:
 - Organizing complex instructions into logical sections
@@ -203,7 +203,7 @@ Projects support two memory modes:
 Projects support scoped configuration values:
 
 #### Variables (Non-sensitive)
-Stored in `.ctxaiproj/variables.env`:
+Stored in `.a0proj/variables.env`:
 ```bash
 API_BASE_URL=https://api.example.com
 DEFAULT_TIMEOUT=30
@@ -212,7 +212,7 @@ LOG_LEVEL=info
 ```
 
 #### Secrets (Sensitive)
-Stored in `.ctxaiproj/secrets.env`:
+Stored in `.a0proj/secrets.env`:
 ```bash
 API_KEY=sk-abc123xyz...
 DATABASE_PASSWORD=super_secret_pwd
@@ -228,13 +228,13 @@ SMTP_PASSWORD=email_pwd_here
 
 ### Subagent Configuration
 
-Projects can enable or disable specific subagents (like the Browser Agent). This is configured via the UI and stored in `.ctxaiproj/agents.json`.
+Projects can enable or disable specific subagents (like the Browser Agent). This is configured via the UI and stored in `.a0proj/agents.json`.
 
 ### Knowledge Files
 
 Import project-specific knowledge documents:
 1. Use the **Import Knowledge** button in the project interface
-2. Files are stored in `.ctxaiproj/knowledge/` organized by memory area
+2. Files are stored in `.a0proj/knowledge/` organized by memory area
 3. The agent can reference this knowledge when the project is active
 
 ### File Structure Injection
@@ -251,7 +251,7 @@ Projects can automatically inject their directory structure into the agent's con
 
 The default gitignore for projects excludes:
 ```
-.ctxaiproj/
+.a0proj/
 venv/
 __pycache__/
 node_modules/
@@ -279,15 +279,6 @@ To use a project, you need to activate it for your current chat:
 
 > [!NOTE]
 > Each chat can have its own active project. You can have multiple chats open with different projects active simultaneously.
-
-#### 2. Project Metadata (`.ctxaiproj/`)
-Each project has a hidden metadata directory `.ctxaiproj/` at its root. This directory contains:
-- `project.json`: Core project metadata (title, description, icon, etc.)
-- `instructions/`: Directory for project-specific system instruction files
-- `knowledge/`: Directory for project-specific knowledge files processed by plugins
-- `skills/`: Directory for project-specific skill files
-- `variables.env` / `secrets.env`: Environment variables and secrets for the project.
-- `agents.json`: Custom agent profile overrides for the project.
 
 ### First Interaction After Activation
 
@@ -317,8 +308,8 @@ The agent will understand the context based on the project's instructions and wo
 Understanding the project directory structure helps you work effectively:
 
 ```
-/ctxai/usr/projects/<project_name>/
-├── .ctxaiproj/                    # Project metadata (hidden)
+/a0/usr/projects/<project_name>/
+├── .a0proj/                    # Project metadata (hidden)
 │   ├── project.json            # Main configuration
 │   ├── variables.env           # Non-sensitive variables
 │   ├── secrets.env             # Sensitive credentials
@@ -338,7 +329,7 @@ Understanding the project directory structure helps you work effectively:
 ```
 
 > [!TIP]
-> The `.ctxaiproj/` folder is automatically excluded from file structure injection (via gitignore patterns) to keep the agent's context clean.
+> The `.a0proj/` folder is automatically excluded from file structure injection (via gitignore patterns) to keep the agent's context clean.
 
 ## Advanced Use Cases
 
@@ -390,7 +381,7 @@ Each with domain-specific:
 
 ## Combining Projects with Tasks
 
-Projects work exceptionally well with Ctx AI's **Tasks & Scheduling** feature:
+Projects work exceptionally well with Agent Zero's **Tasks & Scheduling** feature:
 
 1. Create a project for a specific domain (e.g., "Daily Email Reports")
 2. Configure project instructions for the recurring task
@@ -421,7 +412,7 @@ See [Tasks & Scheduling](usage.md#tasks--scheduling) for more details.
 - Clear memory when archiving completed projects
 
 ### Security
-- Never commit `.ctxaiproj/secrets.env` to version control
+- Never commit `.a0proj/secrets.env` to version control
 - Use project-scoped secrets instead of global secrets for sensitive work
 - Consider separate projects for different security levels
 - Backup secrets manually - they may not be included in automatic backups

@@ -1,6 +1,6 @@
-# Ctx AI Installation Guide
+# Agent Zero Installation Guide
 
-> **Purpose:** Step-by-step guide for deploying Ctx AI instances on VPS/dedicated servers  
+> **Purpose:** Step-by-step guide for deploying Agent Zero instances on VPS/dedicated servers  
 > **Author:** Auto-generated from deployment experience  
 > **Last Updated:** December 21 2025  
 > **Compatibility:** Docker-capable Linux servers (AlmaLinux, CentOS, Rocky, Ubuntu, Debian)
@@ -11,7 +11,7 @@
 
 1. [Prerequisites](#prerequisites)
 2. [Docker Installation](#docker-installation)
-3. [Ctx AI Container Deployment](#ctxai-container-deployment)
+3. [Agent Zero Container Deployment](#ctxai-container-deployment)
 4. [Apache Reverse Proxy Configuration](#apache-reverse-proxy-configuration)
 5. [SSL/TLS Configuration](#ssltls-configuration)
 6. [Authentication Setup](#authentication-setup)
@@ -118,7 +118,7 @@ docker run hello-world
 
 ---
 
-## Ctx AI Container Deployment
+## Agent Zero Container Deployment
 
 ### Step 1: Create Directory Structure
 
@@ -139,13 +139,13 @@ mkdir -p ${A0_PATH}/logs
 ```bash
 # Create .env file with authentication
 cat > ${A0_PATH}/.env << 'EOF'
-# Ctx AI Configuration
+# Agent Zero Configuration
 # Authentication (REQUIRED for web access)
 AUTH_LOGIN=your_username_here
 AUTH_PASSWORD=your_secure_password_here
 
 # Optional: Additional configuration
-# See Ctx AI documentation for all options
+# See Agent Zero documentation for all options
 EOF
 ```
 
@@ -173,7 +173,7 @@ A0_PORT="50080"
 docker pull ctxos/ctxai:latest
 
 # Run container
-docker run -d   --name ${A0_NAME}   --restart unless-stopped   -p ${A0_PORT}:80   -v ${A0_PATH}/.env:/ctxai/.env   -v ${A0_PATH}/usr:/ctxai/usr   ctxos/ctxai:latest
+docker run -d   --name ${A0_NAME}   --restart unless-stopped   -p ${A0_PORT}:80   -v ${A0_PATH}/.env:/a0/.env   -v ${A0_PATH}/usr:/a0/usr   ctxos/ctxai:latest
 ```
 
 ### Step 5: Verify Container
@@ -211,7 +211,7 @@ httpd -M | grep -E "proxy|rewrite|ssl"
 Create `/etc/apache2/sites-available/a0-instance.conf`:
 
 ```apache
-# Ctx AI Reverse Proxy Configuration
+# Agent Zero Reverse Proxy Configuration
 # Instance: a0-instance
 # Domain: a0.example.com
 
@@ -269,7 +269,7 @@ systemctl reload apache2
 Edit `/etc/httpd/conf/extra/httpd-includes.conf`:
 
 ```apache
-# Ctx AI Proxy Configuration
+# Agent Zero Proxy Configuration
 # Instance: a0-instance
 # Domain: a0.example.com
 # Note: Use specific IP, not wildcards, for DirectAdmin compatibility
@@ -495,7 +495,7 @@ curl -I https://a0.example.com/
 
 # 7. Test login page loads
 curl -s https://a0.example.com/login | grep -i "<title>"
-# Expected: <title>Login - Ctx AI</title>
+# Expected: <title>Login - Agent Zero</title>
 ```
 
 ### WebSocket Verification
@@ -519,7 +519,7 @@ wscat -c wss://a0.example.com/ws
 **Fix:**
 ```bash
 # Verify .env inside container
-docker exec a0-instance cat /ctxai/.env
+docker exec a0-instance cat /a0/.env
 
 # Ensure format is:
 # AUTH_LOGIN=username  (NOT AUTH_LOGIN=true)
@@ -620,14 +620,14 @@ journalctl -u docker --since "1 hour ago"
 docker restart a0-instance
 
 # Verify env is loaded
-docker exec a0-instance cat /ctxai/.env
+docker exec a0-instance cat /a0/.env
 ```
 
 ---
 
 ## Maintenance & Updates
 
-### Updating Ctx AI
+### Updating Agent Zero
 
 ```bash
 # Pull latest image
@@ -638,7 +638,7 @@ docker stop a0-instance
 docker rm a0-instance
 
 # Recreate with same settings
-docker run -d   --name a0-instance   --restart unless-stopped   -p 50080:80   -v /opt/a0-instance/.env:/ctxai/.env   -v /opt/a0-instance/usr:/ctxai/usr   -v /opt/ctxai:latest
+docker run -d   --name a0-instance   --restart unless-stopped   -p 50080:80   -v /opt/a0-instance/.env:/a0/.env   -v /opt/a0-instance/usr:/a0/usr   -v /opt/ctxai:latest
 ```
 
 ### Backup Strategy
@@ -726,7 +726,7 @@ curl -I https://your-domain.com/login
 ### .env Template
 
 ```bash
-# Ctx AI Configuration Template
+# Agent Zero Configuration Template
 # Copy and customize for each instance
 
 # Authentication (REQUIRED for production)
@@ -734,7 +734,7 @@ AUTH_LOGIN=your_username
 AUTH_PASSWORD=your_secure_password
 
 # Optional: Additional settings
-# Refer to Ctx AI documentation for all options
+# Refer to Agent Zero documentation for all options
 ```
 
 ---
@@ -766,6 +766,6 @@ Each instance needs:
 
 ---
 
-*This guide comes from successful Ctx AI deployments across DirectAdmin and standard Linux environments.*
+*This guide comes from successful Agent Zero deployments across DirectAdmin and standard Linux environments.*
 
 Contributed by @hurtdidit in the A0 Community.

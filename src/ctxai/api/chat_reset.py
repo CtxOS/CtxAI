@@ -1,8 +1,8 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request, Response
+from ctxai.helpers.api import ApiHandler, Input, Output, Request, Response
 
 
-from ctxai.shared import persist_chat
-from ctxai.shared.task_scheduler import TaskScheduler
+from ctxai.helpers import persist_chat
+from ctxai.helpers.task_scheduler import TaskScheduler
 
 
 class Reset(ApiHandler):
@@ -19,7 +19,7 @@ class Reset(ApiHandler):
         persist_chat.remove_msg_files(ctxid)
 
         # Reset updates context metadata (log guid/version) and must refresh other tabs' lists.
-        from ctxai.shared.state_monitor_integration import mark_dirty_all
+        from ctxai.helpers.state_monitor_integration import mark_dirty_all
         mark_dirty_all(reason="api.chat_reset.Reset")
 
         return {

@@ -1,5 +1,5 @@
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared import cache
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers import cache
 
 
 class CacheReset(ApiHandler):

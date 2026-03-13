@@ -1,5 +1,5 @@
-# Development manual for Ctx AI
-This guide will show you how to setup a local development environment for Ctx AI in a VS Code compatible IDE, including proper debugger.
+# Development manual for Agent Zero
+This guide will show you how to setup a local development environment for Agent Zero in a VS Code compatible IDE, including proper debugger.
 
 
 [![Tutorial video](./res/devguide_vid.png)](https://www.youtube.com/watch?v=KE39P4qBjDk)
@@ -10,7 +10,7 @@ This guide will show you how to setup a local development environment for Ctx AI
 > This guide is for developers and contributors. It assumes you have a basic understanding of how to use Git/GitHub, Docker, IDEs and Python.
 
 > [!NOTE]
-> - Ctx AI runs in a Docker container, this simplifies installation and ensures unified environment and behavior across systems.
+> - Agent Zero runs in a Docker container, this simplifies installation and ensures unified environment and behavior across systems.
 > - Developing and debugging in a container would be complicated though, therefore we use a hybrid approach where the python framework runs on your machine (in VS Code for example) and only connects to a Dockerized instance when it needs to execute code or use other pre-installed functionality like the built-in search engine.
 
 
@@ -30,7 +30,7 @@ This guide will show you how to setup a local development environment for Ctx AI
 - For Python you can choose your environment manager - base Python venv, Conda, uv...
 
 ## Step 1: Clone or download the repository
-- Ctx AI is available on GitHub [github.com/ctxos/ctxai](https://github.com/ctxos/ctxai).
+- Agent Zero is available on GitHub [github.com/ctxos/ctxai](https://github.com/ctxos/ctxai).
 - You can download the files using a browser and extract or run `git clone https://github.com/ctxos/ctxai` in your desired directory.
 
 > [!NOTE]
@@ -38,7 +38,7 @@ This guide will show you how to setup a local development environment for Ctx AI
 
 ## Step 2: Open project folder in your IDE
 - I will be using plain and clean VS Code for this example to make sure I don't skip any setup part, you can use any of it's variants like Cursor, Windsurf etc.
-- Ctx AI comes with `.vscode` folder that contains basic setup, recommended extensions, and debugger profiles. These will help us a lot.
+- Agent Zero comes with `.vscode` folder that contains basic setup, recommended extensions, and debugger profiles. These will help us a lot.
 
 1. Open your IDE and open the project folder using `File > Open Folder` and select your folder, in my case `~/Desktop/ctxai`.
 2. You will probably be prompted to trust the directory, confirm that.
@@ -56,7 +56,7 @@ ms-python.python
 Now when you select one of the python files in the project, you should see proper Python syntax highlighting and error detection. It should immediately show some errors, because we did not yet install dependencies.
 ![VS Code Python](res/dev/devinst-2.png)
 
-2. Prepare the python environment to run Ctx AI in. (⚠️ This step assumes you have some Python runtime installed.) By clicking the python version in lower right corner (3.13.1 in my example), you should get a list of available environments. You can click the `+ Create Virtual Environment` button. You might be prompted to select the environment manager if you have multiple installed. I have venv and Conda, I will select Conda here. I'm also prompted for desired python version, I will select 3.12, that is known to work well.
+2. Prepare the python environment to run Agent Zero in. (⚠️ This step assumes you have some Python runtime installed.) By clicking the python version in lower right corner (3.13.1 in my example), you should get a list of available environments. You can click the `+ Create Virtual Environment` button. You might be prompted to select the environment manager if you have multiple installed. I have venv and Conda, I will select Conda here. I'm also prompted for desired python version, I will select 3.12, that is known to work well.
 ![VS Code Python environments](res/dev/devinst-3.png)
 ![VS Code Python environments](res/dev/devinst-4.png)
 
@@ -64,16 +64,17 @@ Now when you select one of the python files in the project, you should see prope
 
 ![VS Code env terminal](res/dev/devinst-5.png)
 
-3. Install dependencies. Run this command in the terminal:
+3. Install dependencies. Run these two commands in the terminal:
 ```bash
-uv sync --extra dev
+pip install -r requirements.txt
+playwright install chromium
 ```
-This installs all Python packages including dev/test tools. Browser binaries for playwright are installed automatically.
+These will install all the python packages and browser binaries for playwright (browser agent).
 Errors in the code editor caused by missing packages should now be gone. If not, try reloading the window.
 
 
-## Step 4: Run Ctx AI in the IDE
-Great work! Now you should be able to run Ctx AI from your IDE including real-time debugging.
+## Step 4: Run Agent Zero in the IDE
+Great work! Now you should be able to run Agent Zero from your IDE including real-time debugging.
 It will not be able to do code execution and few other features requiring the Docker container just yet, but most of the framework will already work.
 
 1. The project is pre-configured for debugging. Go to Debugging tab, select "run_ui.py" and click the green play button (or press F5 by default). The configuration can be found at `.vscode/launch.json`.
@@ -88,7 +89,7 @@ It may take a while the first time. You should see output like the screenshot be
 ![First run](res/dev/devinst-7.png)
 
 
-After inserting my API key in settings, my Ctx AI instance works. I can send a simple message and get a response.
+After inserting my API key in settings, my Agent Zero instance works. I can send a simple message and get a response.
 ⚠️ Some tools like code execution will not work yet as they need to be connected to a Dockerized instance.
 
 ![First message](res/dev/devinst-8.png)
@@ -105,13 +106,13 @@ After inserting my API key in settings, my Ctx AI instance works. I can send a s
 ![Debugging](res/dev/devinst-10.png)
 
 
-## Step 5: Run another instance of Ctx AI in Docker
+## Step 5: Run another instance of Agent Zero in Docker
 - Some parts of A0 require standardized linux environment, additional web services and preinstalled binaries that would be unneccessarily complex to set up in a local environment.
 - To make development easier, we can use existing A0 instance in docker and forward some requests to be executed there using SSH and RFC (Remote Function Call).
 
 1. Pull the docker image `ctxos/ctxai` from Docker Hub and run it with a web port (`80`) mapped and SSH port (`22`) mapped.
-If you want, you can also map the `/ctxai` folder to our local project folder as well, this way we can update our local instance and the docker instance at the same time.
-This is how it looks in my example: port `80` is mapped to `8880` on the host and `22` to `8822`, `/ctxai` folder mapped to `/Users/frdel/Desktop/ctxai`:
+If you want, you can also map the `/a0` folder to our local project folder as well, this way we can update our local instance and the docker instance at the same time.
+This is how it looks in my example: port `80` is mapped to `8880` on the host and `22` to `8822`, `/a0` folder mapped to `/Users/frdel/Desktop/ctxai`:
 
 ![docker run](res/dev/devinst-11.png)
 ![docker run](res/dev/devinst-12.png)
@@ -134,19 +135,19 @@ My VS Code instance:
 ![VS Code instance](res/dev/devinst-13.png)
 
 ## RFC Notes (Host IDE + Docker Execution)
-Ctx AI runs code inside the container by default. If you are running the framework locally in your IDE but want tools (like code execution) to run in Docker, configure RFC in **Settings -> Development** and point it to a running Ctx AI container. This routes execution through SSH/RFC to the container while keeping the UI and agent loop on your host.
+Agent Zero runs code inside the container by default. If you are running the framework locally in your IDE but want tools (like code execution) to run in Docker, configure RFC in **Settings -> Development** and point it to a running Agent Zero container. This routes execution through SSH/RFC to the container while keeping the UI and agent loop on your host.
 
 
 # Congratulations!
 
-You have successfully set up a complete Ctx AI development environment! You now have:
+You have successfully set up a complete Agent Zero development environment! You now have:
 
 - A local development instance running in your IDE with full debugging capabilities
 - A dockerized instance for code execution and system operations
 - RFC and SSH communication between both instances
-- The ability to develop, debug, and test Ctx AI features seamlessly
+- The ability to develop, debug, and test Agent Zero features seamlessly
 
-You're now ready to contribute to Ctx AI, create custom extensions, or modify the framework to suit your needs. Happy coding!
+You're now ready to contribute to Agent Zero, create custom extensions, or modify the framework to suit your needs. Happy coding!
 
 
 ## Next steps
@@ -156,14 +157,14 @@ You're now ready to contribute to Ctx AI, create custom extensions, or modify th
 
 ## Configuration via Environment Variables
 
-For development and testing, you can override default settings using the `.env` file with `CTXAI_SET_` prefixed variables:
+For development and testing, you can override default settings using the `.env` file with `A0_SET_` prefixed variables:
 
 ```env
 # Add to your .env file
-CTXAI_SET_chat_model_provider=ollama
-CTXAI_SET_chat_model_name=llama3.2
-CTXAI_SET_chat_model_api_base=http://localhost:11434
-CTXAI_SET_memory_recall_interval=5
+A0_SET_chat_model_provider=ollama
+A0_SET_chat_model_name=llama3.2
+A0_SET_chat_model_api_base=http://localhost:11434
+A0_SET_memory_recall_interval=5
 ```
 
 These environment variables automatically override the hardcoded defaults in `get_default_settings()` without modifying code. Useful for testing different configurations or multi-environment setups.

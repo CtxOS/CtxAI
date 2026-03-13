@@ -1,17 +1,28 @@
 {
-    "compilerOptions": {
-      "checkJs": true,
-      "allowJs": true,
-      "strict": true,
-      "noImplicitAny": false,
-      "module": "esnext",
-      "target": "es2022",
-      "baseUrl": ".",
-      "paths": {
-        "*": ["webui/*"],
-        "/plugins/*": ["plugins/*"],
-        "/usr/plugins/*": ["usr/plugins/*"]
-      }
-    },
-    "include": ["webui/**/*.js", "extensions/**/*.js", "plugins/**/*.js", "usr/plugins/**/*.js"]
-  }
+  "compilerOptions": {
+    "checkJs": true,
+    "allowJs": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "module": "esnext",
+    "target": "es2022",
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "src/ctxai/webui/*"
+      ],
+      "/plugins/*": [
+        "src/ctxai/plugins/*"
+      ],
+      "/usr/plugins/*": [
+        "src/ctxai/usr/plugins/*"
+      ]
+    }
+  },
+  "include": [
+    "src/ctxai/webui/**/*.js",
+    "src/ctxai/extensions/**/*.js",
+    "src/ctxai/plugins/**/*.js",
+    "src/ctxai/usr/plugins/**/*.js"
+  ]
+}

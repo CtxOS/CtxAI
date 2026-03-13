@@ -1,5 +1,5 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request
-from ctxai.shared import subagents
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
+from ctxai.helpers import subagents
 
 
 class Agents(ApiHandler):

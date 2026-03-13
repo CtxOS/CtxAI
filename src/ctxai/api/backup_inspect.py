@@ -1,5 +1,5 @@
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared.backup import BackupService
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers.backup import BackupService
 from werkzeug.datastructures import FileStorage
 
 
@@ -32,7 +32,7 @@ class BackupInspect(ApiHandler):
                 "include_patterns": metadata.get("include_patterns", []),
                 "exclude_patterns": metadata.get("exclude_patterns", []),
                 "default_patterns": metadata.get("backup_config", {}).get("default_patterns", ""),
-                "ctxai_version": metadata.get("ctxai_version", "unknown"),
+                "agent_zero_version": metadata.get("agent_zero_version", "unknown"),
                 "timestamp": metadata.get("timestamp", ""),
                 "backup_name": metadata.get("backup_name", ""),
                 "total_files": metadata.get("total_files", len(metadata.get("files", []))),

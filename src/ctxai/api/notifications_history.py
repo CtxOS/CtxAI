@@ -1,4 +1,4 @@
-from ctxai.shared.api import ApiHandler
+from ctxai.helpers.api import ApiHandler
 from flask import Request, Response
 from ctxai.agent import AgentContext
 

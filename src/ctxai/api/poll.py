@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
-from ctxai.shared.state_snapshot import build_snapshot
+from ctxai.helpers.state_snapshot import build_snapshot
 
 
 class Poll(ApiHandler):

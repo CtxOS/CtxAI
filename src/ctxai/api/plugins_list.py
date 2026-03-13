@@ -1,5 +1,5 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request
-from ctxai.shared import plugins
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
+from ctxai.helpers import plugins
 
 class PluginsList(ApiHandler):
     async def process(self, input: Input, request: Request) -> Output:

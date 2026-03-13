@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared import files
-from ctxai.shared.security_utils import safe_filename
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers import files
+from ctxai.helpers.security import safe_filename
 
 
 class UploadFile(ApiHandler):
@@ -18,7 +18,7 @@ class UploadFile(ApiHandler):
                 filename = safe_filename(file.filename)
                 if not filename:
                     continue
-                file.save(files.get_abs_path(files.USER_DIR, "uploads", filename))
+                file.save(files.get_abs_path("usr/uploads", filename))
                 saved_filenames.append(filename)
 
         return {"filenames": saved_filenames}  # Return saved filenames

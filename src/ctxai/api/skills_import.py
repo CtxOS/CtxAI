@@ -5,9 +5,9 @@ import time
 import uuid
 from pathlib import Path
 
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared import files
-from ctxai.shared.skills_import import import_skills
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers import files
+from ctxai.helpers.skills_import import import_skills
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
@@ -40,7 +40,7 @@ class SkillsImport(ApiHandler):
         agent_profile = (request.form.get("agent_profile", "") or "").strip() or None
 
         # Save upload to a temp file so we can pass a filesystem path to the importer
-        tmp_dir = Path(files.get_abs_path(files.TMP_DIR, "uploads"))
+        tmp_dir = Path(files.get_abs_path("tmp", "uploads"))
         tmp_dir.mkdir(parents=True, exist_ok=True)
         base = secure_filename(skills_file.filename)  # type: ignore[arg-type]
         if not base.lower().endswith(".zip"):

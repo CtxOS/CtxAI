@@ -51,8 +51,8 @@ source /etc/profile.d/pyenv.sh
 echo "====================PYENV 3.12 VENV===================="
 pyenv install 3.12.4
 
-/opt/pyenv/versions/3.12.4/bin/python -m venv /opt/venv-ctxai
-source /opt/venv-ctxai/bin/activate
+/opt/pyenv/versions/3.12.4/bin/python -m venv /opt/venv-a0
+source /opt/venv-a0/bin/activate
 
 # upgrade pip and install static packages
 pip install --no-cache-dir --upgrade pip

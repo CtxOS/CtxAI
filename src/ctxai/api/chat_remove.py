@@ -1,7 +1,7 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request, Response
+from ctxai.helpers.api import ApiHandler, Input, Output, Request, Response
 from ctxai.agent import AgentContext
-from ctxai.shared import persist_chat
-from ctxai.shared.task_scheduler import TaskScheduler
+from ctxai.helpers import persist_chat
+from ctxai.helpers.task_scheduler import TaskScheduler
 
 
 class RemoveChat(ApiHandler):
@@ -26,7 +26,7 @@ class RemoveChat(ApiHandler):
             await scheduler.remove_task_by_uuid(task.uuid)
 
         # Context removal affects global chat/task lists in all tabs.
-        from ctxai.shared.state_monitor_integration import mark_dirty_all
+        from ctxai.helpers.state_monitor_integration import mark_dirty_all
         mark_dirty_all(reason="api.chat_remove.RemoveChat")
 
         return {

@@ -1,9 +1,9 @@
 import mimetypes
 import os
 
-from ctxai.shared.api import ApiHandler, Input, Output, Request
-from ctxai.shared.file_browser import FileBrowser
-from ctxai.shared import runtime, files
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
+from ctxai.helpers.file_browser import FileBrowser
+from ctxai.helpers import runtime, files
 
 MAX_EDIT_FILE_SIZE = 1024 * 1024
 BINARY_SAMPLE_SIZE = 10 * 1024

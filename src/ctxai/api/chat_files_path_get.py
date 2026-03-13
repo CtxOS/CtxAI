@@ -1,5 +1,5 @@
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared import files, projects, settings
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers import files, projects, settings
 
 
 class GetChatFilesPath(ApiHandler):
@@ -11,7 +11,7 @@ class GetChatFilesPath(ApiHandler):
 
         project_name = projects.get_context_project_name(context)
         if project_name:
-            folder = files.normalize_ctxai_path(projects.get_project_folder(project_name))
+            folder = files.normalize_a0_path(projects.get_project_folder(project_name))
         else:
             folder = settings.get_settings()["workdir_path"]
 

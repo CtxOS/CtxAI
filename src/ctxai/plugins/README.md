@@ -1,6 +1,6 @@
-# Ctx AI - Core Plugins
+# Agent Zero - Core Plugins
 
-This directory contains the system-level plugins bundled with Ctx AI.
+This directory contains the system-level plugins bundled with Agent Zero.
 
 ## Directory Structure
 
@@ -14,7 +14,7 @@ For detailed guides on how to create, extend, or configure plugins, refer to:
 - [`docs/agents/AGENTS.plugins.md`](../docs/agents/AGENTS.plugins.md): Full-stack plugin architecture, manifest format, extension points, and Plugin Index submission.
 - [`docs/developer/plugins.md`](../docs/developer/plugins.md): Human-facing developer guide covering the full plugin lifecycle.
 - [`AGENTS.md`](../AGENTS.md): Main framework guide and backend context.
-- [`skills/ctxai-create-plugin/SKILL.md`](../skills/ctxai-create-plugin/SKILL.md): Agent-facing authoring workflow (local and community plugins).
+- [`skills/a0-create-plugin/SKILL.md`](../skills/a0-create-plugin/SKILL.md): Agent-facing authoring workflow (local and community plugins).
 
 ## What a Plugin Can Provide
 
@@ -45,14 +45,25 @@ always_enabled: false
 
 Plugins can include an optional `initialize.py` at the plugin root for one-time setup such as installing dependencies or downloading models. Users trigger it via the **Init** button in the Plugin List UI. The script should return `0` on success and print progress messages for user feedback.
 
+## Runtime Hooks (`hooks.py`)
+
+Plugins can also include an optional `hooks.py` at the plugin root. The framework loads it on demand and can call exported hook functions by name through `helpers.plugins.call_plugin_hook(...)`.
+
+- `hooks.py` runs inside the **Agent Zero framework runtime and Python environment**.
+- Use it for framework-internal work such as install hooks, cache preparation, registration, or filesystem setup.
+- If it runs `sys.executable -m pip install ...`, packages are installed into the same Python environment that runs Agent Zero.
+- If you need to install into the separate agent runtime or into the system environment, explicitly target that environment from a subprocess by selecting the correct interpreter, virtualenv, or package manager.
+
+In Docker, `hooks.py` normally affects `/opt/venv-a0`; the agent execution runtime is `/opt/venv`.
+
 ## Plugin Index & Community Sharing
 
-The **Plugin Index** at https://github.com/ctxos/a0-plugins is the community-maintained registry of plugins available to all Ctx AI users.
+The **Plugin Index** at https://github.com/agent0ai/a0-plugins is the community-maintained registry of plugins available to all Agent Zero users.
 
 To share a plugin with the community:
 
 1. Create a standalone GitHub repository with the plugin contents at the repo root and the runtime `plugin.yaml` there.
-2. Fork `https://github.com/ctxos/a0-plugins` and add a folder `plugins/<your-plugin-name>/` containing a separate index `plugin.yaml`:
+2. Fork `https://github.com/agent0ai/a0-plugins` and add a folder `plugins/<your-plugin-name>/` containing a separate index `plugin.yaml`:
 
 ```yaml
 title: My Plugin
@@ -68,4 +79,4 @@ Note: The index `plugin.yaml` is a **different schema** from the runtime manifes
 
 ## Plugin Marketplace (Coming Soon)
 
-A built-in **Plugin Marketplace** (always-active plugin) is planned and will allow users to browse the Plugin Index and install community plugins directly from the Ctx AI UI.
+A built-in **Plugin Marketplace** (always-active plugin) is planned and will allow users to browse the Plugin Index and install community plugins directly from the Agent Zero UI.

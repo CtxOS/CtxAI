@@ -1,5 +1,5 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request, Response
-from ctxai.shared import runtime, skills, projects, files
+from ctxai.helpers.api import ApiHandler, Input, Output, Request, Response
+from ctxai.helpers import runtime, skills, projects, files
 
 
 class Skills(ApiHandler):
@@ -31,7 +31,7 @@ class Skills(ApiHandler):
         if project_name := (input.get("project_name") or "").strip() or None:
             project_folder = projects.get_project_folder(project_name)
             if runtime.is_development():
-                project_folder = files.normalize_ctxai_path(project_folder)
+                project_folder = files.normalize_a0_path(project_folder)
             skill_list = [
                 s for s in skill_list if files.is_in_dir(str(s.path), project_folder)
             ]

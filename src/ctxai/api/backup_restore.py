@@ -1,7 +1,7 @@
-from ctxai.shared.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 from werkzeug.datastructures import FileStorage
-from ctxai.shared.backup import BackupService
-from ctxai.shared.persist_chat import load_tmp_chats
+from ctxai.helpers.backup import BackupService
+from ctxai.helpers.persist_chat import load_tmp_chats
 import json
 
 

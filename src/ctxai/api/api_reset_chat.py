@@ -1,7 +1,7 @@
 from ctxai.agent import AgentContext
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared.print_style import PrintStyle
-from ctxai.shared import persist_chat
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers import persist_chat
 import json
 
 

@@ -1,7 +1,7 @@
 import base64
 import os
-from ctxai.shared.api import ApiHandler, Request, Response, send_file
-from ctxai.shared import files, runtime
+from ctxai.helpers.api import ApiHandler, Request, Response, send_file
+from ctxai.helpers import files, runtime
 import io
 from mimetypes import guess_type
 

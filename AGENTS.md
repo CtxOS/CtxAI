@@ -1,4 +1,4 @@
-# Ctx AI - AGENTS.md
+# Agent Zero - AGENTS.md
 
 [Generated using reconnaissance on 2026-02-22]
 
@@ -27,7 +27,7 @@ Frontend Deep Dives: [Component System](docs/agents/AGENTS.components.md) | [Mod
 
 ## Project Overview
 
-Ctx AI is a dynamic, organic agentic framework designed to grow and learn. It uses the operating system as a tool, featuring a multi-agent cooperation model where every agent can create subordinates to break down tasks.
+Agent Zero is a dynamic, organic agentic framework designed to grow and learn. It uses the operating system as a tool, featuring a multi-agent cooperation model where every agent can create subordinates to break down tasks.
 
 Type: Full-Stack Agentic Framework (Python Backend + Alpine.js Frontend)
 Status: Active Development
@@ -41,8 +41,6 @@ Primary Language(s): Python, JavaScript (ES Modules)
 Do not combine these commands; run them individually:
 ```bash
 uv sync
-# Or with dev/test tools:
-uv sync --extra dev
 ```
 - Start WebUI: uv run python run_ui.py
 
@@ -50,11 +48,11 @@ uv sync --extra dev
 
 ## Docker Environment
 
-When running in Docker, Ctx AI uses two distinct Python runtimes to isolate the framework from the code being executed:
+When running in Docker, Agent Zero uses two distinct Python runtimes to isolate the framework from the code being executed:
 
-### 1. Framework Runtime (/opt/venv-ctxai)
+### 1. Framework Runtime (/opt/venv-a0)
 - Version: Python 3.12.4
-- Purpose: Runs the Ctx AI backend, API, and core logic.
+- Purpose: Runs the Agent Zero backend, API, and core logic.
 - Packages: Contains all dependencies from requirements.txt.
 
 ### 2. Execution Runtime (/opt/venv)
@@ -68,16 +66,16 @@ When running in Docker, Ctx AI uses two distinct Python runtimes to isolate the 
 
 ```
 /
-├── src/
-│   └── ctxai/
-│       ├── agent.py              # Core Agent and AgentContext definitions
-│       ├── initialize.py         # Framework initialization logic
-│       ├── models.py             # LLM provider configurations
-│       ├── api/                  # API Handlers (ApiHandler subclasses)
-│       ├── core/                 # Core system logic
-│       ├── shared/               # Shared utilities
-│       └── tools/                # Agent tools (Tool subclasses)
+├── agent.py              # Core Agent and AgentContext definitions
+├── initialize.py         # Framework initialization logic
+├── models.py             # LLM provider configurations
 ├── run_ui.py             # WebUI server entry point
+├── python/
+│   ├── api/              # API Handlers (ApiHandler subclasses)
+│   ├── extensions/       # Backend lifecycle extensions
+│   ├── helpers/          # Shared Python utilities (plugins, files, etc.)
+│   ├── tools/            # Agent tools (Tool subclasses)
+│   └── websocket_handlers/# WebSocket event handlers
 ├── webui/
 │   ├── components/       # Alpine.js components
 │   ├── js/               # Core frontend logic (modals, stores, etc.)
@@ -86,16 +84,17 @@ When running in Docker, Ctx AI uses two distinct Python runtimes to isolate the 
 │   ├── plugins/          # Custom user plugins
 │   ├── settings.json     # User-specific configuration
 │   └── workdir/          # Default agent workspace
+├── plugins/              # Core system plugins
 ├── agents/               # Agent profiles (prompts and config)
 ├── prompts/              # System and message prompt templates
 └── tests/                # Pytest suite
 ```
 
 Key Files:
-- src/ctxai/agent.py: Defines AgentContext and the main Agent class.
-- src/ctxai/shared/plugins.py: Plugin discovery and configuration logic.
+- agent.py: Defines AgentContext and the main Agent class.
+- python/helpers/plugins.py: Plugin discovery and configuration logic.
 - webui/js/AlpineStore.js: Store factory for reactive frontend state.
-- src/ctxai/shared/api.py: Base class for all API endpoints.
+- python/helpers/api.py: Base class for all API endpoints.
 - docs/agents/AGENTS.components.md: Deep dive into the frontend component architecture.
 - docs/agents/AGENTS.modals.md: Guide to the stacked modal system.
 - docs/agents/AGENTS.plugins.md: Comprehensive guide to the full-stack plugin system.
@@ -105,11 +104,11 @@ Key Files:
 ## Development Patterns & Conventions
 
 ### Backend (Python)
-- Context Access: Use from ctxai.agent import AgentContext, AgentContextType.
-- Communication: Use mq from ctxai.shared.messages to log proactive UI messages:
+- Context Access: Use from ctxai.agent import AgentContext, AgentContextType (not helpers.context).
+- Communication: Use mq from ctxai.helpers.messages to log proactive UI messages:
   mq.log_user_message(context.id, "Message", source="Plugin")
-- API Handlers: Derive from ApiHandler in ctxai.shared.api.
-- Extensions: Use the extension framework in ctxai.shared.extension for lifecycle hooks.
+- API Handlers: Derive from ApiHandler in python/helpers/api.py.
+- Extensions: Use the extension framework in python/helpers/extension.py for lifecycle hooks.
 - Error Handling: Use RepairableException for errors the LLM might be able to fix.
 
 ### Frontend (Alpine.js)
@@ -128,6 +127,9 @@ Key Files:
 - Location: Always develop new plugins in usr/plugins/.
 - Manifest: Every plugin requires a plugin.yaml with name, description, version, and optionally settings_sections, per_project_config, per_agent_config, and always_enabled.
 - Discovery: Conventions based on folder names (api/, tools/, webui/, extensions/).
+- Runtime hooks: Plugins may also expose hooks in hooks.py, callable by the framework through helpers.plugins.call_plugin_hook(...).
+- Hook runtime: hooks.py executes inside the Agent Zero framework Python environment, so sys.executable -m pip installs dependencies into that same framework runtime.
+- Environment targeting: If a plugin needs packages or binaries for the separate agent execution runtime or system environment, it must explicitly switch environments in a subprocess by targeting the correct interpreter, virtualenv, or package manager.
 - Settings: Use get_plugin_config(plugin_name, agent=agent) to retrieve settings. Plugins can expose a UI for settings via webui/config.html. Plugin settings modals instantiate a local context from $store.pluginSettingsPrototype; bind plugin fields to config.* and use context.* for modal-level state and actions. For plugins wrapping core settings, set context.saveMode = 'core' in x-init.
 - Activation: Global and scoped activation rules are stored as .toggle-1 (ON) and .toggle-0 (OFF). Scoped rules are handled via the plugin "Switch" modal.
 
@@ -164,7 +166,7 @@ Key Files:
 
 ### API Handler (Good)
 ```python
-from ctxai.shared.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 class MyHandler(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
@@ -186,7 +188,7 @@ export const store = createStore("myStore", {
 
 ### Tool Definition (Good)
 ```python
-from ctxai.core.tools.tool import Tool, ToolResult
+from ctxai.helpers.tool import Tool, ToolResult
 
 class MyTool(Tool):
     async def execute(self, arg1: str):
@@ -199,12 +201,12 @@ class MyTool(Tool):
 ## Troubleshooting
 
 ### Dependency Conflicts
-If `uv sync` fails, try running in a clean virtual environment:
+If pip install fails, try running in a clean virtual environment:
 ```bash
-uv venv
-uv sync
-# Or with dev extras:
-uv sync --extra dev
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -r requirements2.txt
 ```
 
 ### WebSocket Connection Failures
@@ -214,4 +216,4 @@ uv sync --extra dev
 ---
 
 *Last updated: 2026-02-22*
-*Maintained by: Ctx AI Core Team*
+*Maintained by: Agent Zero Core Team*

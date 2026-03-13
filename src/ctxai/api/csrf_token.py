@@ -1,6 +1,6 @@
 import secrets
 from urllib.parse import urlparse
-from ctxai.shared.api import (
+from ctxai.helpers.api import (
     ApiHandler,
     Input,
     Output,
@@ -8,7 +8,7 @@ from ctxai.shared.api import (
     Response,
     session,
 )
-from ctxai.shared import runtime, dotenv, login
+from ctxai.helpers import runtime, dotenv, login
 import fnmatch
 
 ALLOWED_ORIGINS_KEY = "ALLOWED_ORIGINS"
@@ -104,7 +104,7 @@ class GetCsrfToken(ApiHandler):
 
         # always allow tunnel url if running
         try:
-            from api.tunnel_proxy import process as tunnel_api_process
+            from ctxai.api.tunnel_proxy import process as tunnel_api_process
 
             tunnel = await tunnel_api_process({"action": "get"})
             if tunnel and isinstance(tunnel, dict) and tunnel["success"]:

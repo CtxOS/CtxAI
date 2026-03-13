@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request, Response
+from ctxai.helpers.api import ApiHandler, Input, Output, Request, Response
 
-from ctxai.shared import tokens
+from ctxai.helpers import tokens
 
 
 class GetCtxWindow(ApiHandler):

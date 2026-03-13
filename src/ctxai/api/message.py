@@ -1,10 +1,10 @@
 from ctxai.agent import AgentContext, UserMessage
-from ctxai.shared.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
-from ctxai.shared import files, extension, message_queue as mq
+from ctxai.helpers import files, extension, message_queue as mq
 import os
-from ctxai.shared.security import safe_filename
-from ctxai.shared.defer import DeferredTask
+from ctxai.helpers.security import safe_filename
+from ctxai.helpers.defer import DeferredTask
 
 
 class Message(ApiHandler):
@@ -28,8 +28,8 @@ class Message(ApiHandler):
             attachments = request.files.getlist("attachments")
             attachment_paths = []
 
-            upload_folder_int = "/ctxai/data/usr/uploads"
-            upload_folder_ext = files.get_abs_path(files.USER_DIR, "uploads") # for development environment
+            upload_folder_int = "/a0/usr/uploads"
+            upload_folder_ext = files.get_abs_path("usr/uploads") # for development environment
 
             if attachments:
                 os.makedirs(upload_folder_ext, exist_ok=True)

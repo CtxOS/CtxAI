@@ -1,5 +1,5 @@
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared.backup import BackupService
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers.backup import BackupService
 
 
 class BackupGetDefaults(ApiHandler):

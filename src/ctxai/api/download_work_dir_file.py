@@ -4,8 +4,8 @@ import mimetypes
 import os
 
 from flask import Response
-from ctxai.shared.api import ApiHandler, Input, Output, Request
-from ctxai.shared import files, runtime
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
+from ctxai.helpers import files, runtime
 from ctxai.api import file_info
 from urllib.parse import quote
 

@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
-from ctxai.shared import runtime, settings, whisper
+from ctxai.helpers import runtime, settings, whisper
 
 class Transcribe(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:

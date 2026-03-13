@@ -1,7 +1,7 @@
 from ctxai.agent import AgentConfig
-from ctxai import models
-from ctxai.shared import runtime, settings, defer, extension
-from ctxai.shared.print_style import PrintStyle
+import ctxai.models as models
+from ctxai.helpers import runtime, settings, defer, extension
+from ctxai.helpers.print_style import PrintStyle
 
 
 @extension.extensible
@@ -93,9 +93,9 @@ def initialize_agent(override_settings: dict | None = None):
     # defer.DeferredTask(thread_name="mcp-initializer").start_task(initialize_mcp_async, config.mcp_servers)
     # initialize_mcp(config.mcp_servers)
 
-    # import ctxai.shared.mcp_handler as mcp_helper
+    # import ctxai.helpers.mcp_handler as mcp_helper
     # import ctxai.agent as agent_helper
-    # import ctxai.shared.print_style as print_style_helper
+    # import ctxai.helpers.print_style as print_style_helper
     # if not mcp_helper.MCPConfig.get_instance().is_initialized():
     #     try:
     #         mcp_helper.MCPConfig.update(config.mcp_servers)
@@ -111,52 +111,12 @@ def initialize_agent(override_settings: dict | None = None):
     #             .print(f"Failed to update MCP settings: {e}")
     #         )
 
-    # initialize persistence
-    from ctxai.core.engine.memory import MemoryManager
-    from ctxai.core.engine.persistence import InMemoryProvider, RedisProvider
-    
-    p_type = current_settings.get("persistence_provider", "in-memory")
-    if p_type == "redis":
-        try:
-            provider = RedisProvider(
-                host=current_settings.get("persistence_redis_host", "localhost"),
-                port=current_settings.get("persistence_redis_port", 6379)
-            )
-            MemoryManager.set_provider(provider)
-        except Exception as e:
-            PrintStyle(background_color="red", font_color="black").print(f"Failed to initialize Redis provider: {e}. Falling back to in-memory.")
-            MemoryManager.set_provider(InMemoryProvider())
-    else:
-        MemoryManager.set_provider(InMemoryProvider())
-
-    # initialize job queue
-    from ctxai.core.engine.job_queue import LocalJobQueue, RedisJobQueue
-    from ctxai.core.engine.runtime_state import set_job_queue
-    
-    j_type = current_settings.get("job_queue_provider", "local")
-    if j_type == "redis":
-        try:
-            queue = RedisJobQueue(
-                host=current_settings.get("job_queue_redis_host", "localhost"),
-                port=current_settings.get("job_queue_redis_port", 6379)
-            )
-            set_job_queue(queue)
-        except Exception as e:
-            PrintStyle(background_color="red", font_color="black").print(f"Failed to initialize Redis job queue: {e}. Falling back to local.")
-            set_job_queue(LocalJobQueue())
-    else:
-        set_job_queue(LocalJobQueue())
-
     # return config object
     return config
 
-def get_job_queue():
-    from ctxai.core.engine.runtime_state import get_job_queue as _get_queue
-    return _get_queue()
-
 @extension.extensible
 def initialize_chats():
-    from ctxai.shared import persist_chat
+    from ctxai.helpers import persist_chat
     async def initialize_chats_async():
         persist_chat.load_tmp_chats()
     return defer.DeferredTask().start_task(initialize_chats_async)
@@ -165,34 +125,23 @@ def initialize_chats():
 def initialize_mcp():
     set = settings.get_settings()
     async def initialize_mcp_async():
-        from ctxai.shared.mcp_handler import initialize_mcp as _initialize_mcp
+        from ctxai.helpers.mcp_handler import initialize_mcp as _initialize_mcp
         return _initialize_mcp(set["mcp_servers"])
     return defer.DeferredTask().start_task(initialize_mcp_async)
 
 @extension.extensible
 def initialize_job_loop():
-    from ctxai.shared.job_loop import run_loop
+    from ctxai.helpers.job_loop import run_loop
     return defer.DeferredTask("JobLoop").start_task(run_loop)
 
 @extension.extensible
 def initialize_preload():
-    import ctxai.preload as preload
+    from ctxai import preload
     return defer.DeferredTask().start_task(preload.preload)
 
 @extension.extensible
-def initialize_plugins():
-    """Discover enabled plugins and execute their initialize.py setup hooks."""
-    async def _run_plugin_inits():
-        from ctxai.core.system.plugin_lifecycle import PluginLifecycleRunner
-        runner = PluginLifecycleRunner()
-        await runner.run_all_initializers()
-
-    return defer.DeferredTask("PluginLifecycle").start_task(_run_plugin_inits)
-
-
-@extension.extensible
 def initialize_migration():
-    from ctxai.shared import migration, dotenv
+    from ctxai.helpers import migration, dotenv
     # run migration
     migration.startup_migration()
     # reload .env as it might have been moved

@@ -1,8 +1,8 @@
 # api/synthesize.py
 
-from ctxai.shared.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
-from ctxai.shared import runtime, settings, kokoro_tts
+from ctxai.helpers import runtime, settings, kokoro_tts
 
 class Synthesize(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:

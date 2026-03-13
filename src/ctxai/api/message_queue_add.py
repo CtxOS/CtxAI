@@ -1,7 +1,7 @@
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared import message_queue as mq
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers import message_queue as mq
 from ctxai.agent import AgentContext
-from ctxai.shared.state_monitor_integration import mark_dirty_for_context
+from ctxai.helpers.state_monitor_integration import mark_dirty_for_context
 
 
 class MessageQueueAdd(ApiHandler):

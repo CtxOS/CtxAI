@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request
-from ctxai.shared.file_browser import FileBrowser
-from ctxai.shared import runtime
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
+from ctxai.helpers.file_browser import FileBrowser
+from ctxai.helpers import runtime
 from ctxai.api import get_work_dir_files
 
 

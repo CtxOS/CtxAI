@@ -1,7 +1,7 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request, Response
+from ctxai.helpers.api import ApiHandler, Input, Output, Request, Response
 
 
-from ctxai.shared import settings, projects, guids
+from ctxai.helpers import settings, projects, guids
 from ctxai.agent import AgentContext
 
 
@@ -26,7 +26,7 @@ class CreateChat(ApiHandler):
                 new_context.set_output_data(projects.CONTEXT_DATA_KEY_PROJECT, current_data_2)
 
         # New context should appear in other tabs' chat lists via state_push.
-        from ctxai.shared.state_monitor_integration import mark_dirty_all
+        from ctxai.helpers.state_monitor_integration import mark_dirty_all
         mark_dirty_all(reason="api.chat_create.CreateChat")
 
         return {

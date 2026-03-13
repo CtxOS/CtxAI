@@ -1,31 +1,31 @@
 # Advanced MCP Configuration
 
-This guide provides comprehensive technical details for configuring and utilizing external tool providers through the Model Context Protocol (MCP) with Ctx AI. This allows Ctx AI to leverage tools hosted by separate local or remote MCP-compliant servers.
+This guide provides comprehensive technical details for configuring and utilizing external tool providers through the Model Context Protocol (MCP) with Agent Zero. This allows Agent Zero to leverage tools hosted by separate local or remote MCP-compliant servers.
 
 > [!NOTE]
 > For a quick start guide on adding MCP servers through the UI, see [MCP Setup](../guides/mcp-setup.md).
 
 > [!NOTE]
-> This guide covers Ctx AI as an MCP **client**. To expose Ctx AI as an MCP **server**, see [Connectivity → MCP Server](connectivity.md#mcp-server-connectivity).
+> This guide covers Agent Zero as an MCP **client**. To expose Agent Zero as an MCP **server**, see [Connectivity → MCP Server](connectivity.md#mcp-server-connectivity).
 
 ## MCP Server Types
 
-Ctx AI supports three main types of MCP servers:
+Agent Zero supports three main types of MCP servers:
 
-1.  **Local Stdio Servers**: Local executables that Ctx AI communicates with via standard input/output (stdio).
+1.  **Local Stdio Servers**: Local executables that Agent Zero communicates with via standard input/output (stdio).
 2.  **Remote SSE Servers**: Network-accessible servers that use Server-Sent Events (SSE), usually over HTTP/S.
 3.  **Remote Streaming HTTP Servers**: Servers using the streamable HTTP transport protocol for MCP communication.
 
-## How Ctx AI Consumes MCP Tools
+## How Agent Zero Consumes MCP Tools
 
-Ctx AI discovers and integrates MCP tools dynamically through the following process:
+Agent Zero discovers and integrates MCP tools dynamically through the following process:
 
-1.  **Configuration**: MCP servers are defined in the Ctx AI configuration, primarily through the Settings UI.
-2.  **Saving Settings**: When saved via the UI, Ctx AI updates `usr/settings.json`, specifically the `"mcp_servers"` key.
-3.  **Server Startup**: Ctx AI initializes configured MCP servers (stdio) or connects to them (remote). For `npx`/`uvx` based servers, the first run downloads packages.
-4.  **Tool Discovery**: Upon initialization, Ctx AI connects to each enabled MCP server and queries for available tools, descriptions, and parameters.
+1.  **Configuration**: MCP servers are defined in the Agent Zero configuration, primarily through the Settings UI.
+2.  **Saving Settings**: When saved via the UI, Agent Zero updates `usr/settings.json`, specifically the `"mcp_servers"` key.
+3.  **Server Startup**: Agent Zero initializes configured MCP servers (stdio) or connects to them (remote). For `npx`/`uvx` based servers, the first run downloads packages.
+4.  **Tool Discovery**: Upon initialization, Agent Zero connects to each enabled MCP server and queries for available tools, descriptions, and parameters.
 5.  **Dynamic Prompting**: Tool information is injected into the agent's system prompt. The `{{tools}}` placeholder in templates (e.g., `prompts/agent.system.mcp_tools.md`) is replaced with the formatted tool list.
-6.  **Tool Invocation**: When the LLM requests an MCP tool, Ctx AI's `process_tools` method (`mcp_handler.py`) routes the request to the appropriate MCP server.
+6.  **Tool Invocation**: When the LLM requests an MCP tool, Agent Zero's `process_tools` method (`mcp_handler.py`) routes the request to the appropriate MCP server.
 
 ## Configuration File Structure
 
@@ -172,7 +172,7 @@ Type can be: `"http-stream"`, `"streaming-http"`, `"streamable-http"`, or `"http
 
 ## Docker Networking Considerations
 
-### Ctx AI in Docker, MCP Server on Host
+### Agent Zero in Docker, MCP Server on Host
 
 **macOS/Windows:**
 ```json
@@ -202,7 +202,7 @@ MCP tools are prefixed with the normalized server name:
 
 - Server name: `"sequential-thinking"`
 - Tool name from server: `"run_chain"`
-- Final tool name in Ctx AI: `sequential_thinking.run_chain`
+- Final tool name in Agent Zero: `sequential_thinking.run_chain`
 
 ### Agent Interaction
 
@@ -297,7 +297,7 @@ Adjust for network conditions:
 ### Server Pooling
 
 For high-frequency tool usage:
-- Ctx AI maintains persistent connections to remote servers
+- Agent Zero maintains persistent connections to remote servers
 - Stdio servers are kept alive between tool calls
 - Reduces overhead for repeated operations
 
@@ -357,7 +357,7 @@ Combine multiple MCP servers for complex workflows:
 2. Database MCP for storage
 3. Workflow MCP for orchestration
 
-Ctx AI can chain these tools automatically based on task requirements.
+Agent Zero can chain these tools automatically based on task requirements.
 
 ### Fallback Configuration
 
@@ -393,12 +393,12 @@ For developing custom MCP servers:
 - Follow MCP protocol specifications
 - Implement stdio or HTTP transport
 - Provide clear tool descriptions
-- Test with Ctx AI before production
+- Test with Agent Zero before production
 
 See [MCP Protocol Documentation](https://modelcontextprotocol.io) for implementation details.
 
 ## Related Documentation
 
 - [MCP Setup](../guides/mcp-setup.md) - Quick start guide
-- [Connectivity: MCP Server](connectivity.md#mcp-server-connectivity) - Exposing Ctx AI as MCP server
+- [Connectivity: MCP Server](connectivity.md#mcp-server-connectivity) - Exposing Agent Zero as MCP server
 - [Advanced: Extensions](extensions.md) - Custom tools and extensions

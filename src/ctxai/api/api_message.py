@@ -2,12 +2,12 @@ import base64
 import os
 from datetime import datetime, timedelta
 from ctxai.agent import AgentContext, UserMessage, AgentContextType
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared import files, projects
-from ctxai.shared.print_style import PrintStyle
-from ctxai.shared.projects import activate_project
-from ctxai.shared.security_utils import safe_filename
-from ctxai.initialize import initialize_agent
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers import files, projects
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.projects import activate_project
+from ctxai.helpers.security import safe_filename
+from ctxai import initialize
 import threading
 
 
@@ -48,8 +48,8 @@ class ApiMessage(ApiHandler):
         # Handle attachments (base64 encoded)
         attachment_paths = []
         if attachments:
-            upload_folder_ext = files.get_abs_path(files.USER_DIR, "uploads")
-            upload_folder_int = files.normalize_ctxai_path(upload_folder_ext)
+            upload_folder_int = "/a0/usr/uploads"
+            upload_folder_ext = files.get_abs_path("usr/uploads")
             os.makedirs(upload_folder_ext, exist_ok=True)
 
             for attachment in attachments:
@@ -90,7 +90,7 @@ class ApiMessage(ApiHandler):
             if project_name and existing_project and existing_project != project_name:
                 return Response('{"error": "Project can only be set on first message"}', status=400, mimetype="application/json")
         else:
-            config = initialize_agent(override_settings=override_settings)
+            config = initialize.initialize_agent(override_settings=override_settings)
             context = AgentContext(config=config, type=AgentContextType.USER)
             AgentContext.use(context.id)
             context_id = context.id

@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request, Response
-from ctxai.shared import projects
-from ctxai.shared.notification import NotificationManager, NotificationType, NotificationPriority
+from ctxai.helpers.api import ApiHandler, Input, Output, Request, Response
+from ctxai.helpers import projects
+from ctxai.helpers.notification import NotificationManager, NotificationType, NotificationPriority
 
 
 class Projects(ApiHandler):

@@ -1,0 +1,50 @@
+<html><body style='background-color:black;font-family: Arial, Helvetica, sans-serif;'><pre>
+<br><span style="color: rgb(255, 165, 0); ">Warning: [StateSyncHandler] INVALID_REQUEST sid=sid-1 reason=log_from details={&#x27;log_from&#x27;: -1}</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=/state_sync sid=sid-1</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=/state_sync sid=sid-1</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: Harness emit broadcasted message=&#x27;emit-check&#x27;</span><br>
+<br><span style="color: rgb(128, 128, 128); ">Debug: Harness request responded with echo 42</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: Harness delayed request finished after 1500 ms</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: Harness persistence event phase=&#x27;after&#x27; -&gt; sid-primary</span><br>
+<br><span style="color: rgb(128, 128, 128); ">Debug: Harness requestAll invoked by sid-primary marker=&#x27;aggregate&#x27;</span><br>
+<br><span style="color: rgb(128, 128, 128); ">Debug: Harness request responded with echo None</span><br>
+<br><span style="color: rgb(128, 128, 128); ">Debug: Harness request responded with echo None</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=/test sid=abc</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: No handlers registered for event &#x27;missing&#x27;</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: requestAll timeout for sid sid-1 correlation=d0d687ebea6c4b2fb588d4a4d43a41e7</span><br>
+<br><span style="color: rgb(255, 0, 0); ">Error: Error in handler test_websocket_manager.FailingHandler for &#x27;boom&#x27; (correlation 1ae4b871c39a48b9811844e9c16bd672): kaboom</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=/test sid=sid-1</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=/test sid=offline</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: Dropping buffered event &#x27;event&#x27; for namespace=/test sid=offline (overflow)</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=/test sid=sid-expired</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=/test sid=sid-1</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: Flushed 1 buffered event(s) to namespace=/test sid=sid-1</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: No handlers registered for event &#x27;unknown&#x27;</span><br>
+<br><span style="color: rgb(255, 0, 0); ">Error: Error in handler test_websocket_manager.ErrorHandler for &#x27;boom&#x27; (correlation a9cb4c2b621741918e488b6543f94633): BOOM</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: Duplicate handler registration for namespace &#x27;/test&#x27; event &#x27;filter_event&#x27;</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: Duplicate handler registration for namespace &#x27;/test&#x27; event &#x27;filter_event&#x27;</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=/test sid=sid-life</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: No handlers registered for event &#x27;unhandled_event&#x27;</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=client disconnect sid=OqVzhZL8Hg60SNnFAAAB</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: WebSocket authentication failed for /secure mvsKGbJua1namizqAAAD: session not valid</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=client disconnect sid=yxDjUtQBtw-7-aEZAAAF</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: WebSocket authentication failed for /secure FTrQVUdWs_tcWaLDAAAB: session not valid</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: WebSocket CSRF validation failed for /secure dflHIutiZ8k9303nAAAB: csrf cookie mismatch</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: WebSocket CSRF validation failed for /csrf_only ks4It5F2zHtaLnFUAAAB: csrf_token not initialized</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=client disconnect sid=tD8X0-vqyqgYtvx5AAAD</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=/a sid=shared-sid</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=client disconnect sid=kb_pgiDmaGTkIBHuAAAB</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=client disconnect sid=224sX14iJPm2cXinAAAC</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=/state_sync sid=sid-state-2</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: Duplicate handler registration for namespace &#x27;/state_sync&#x27; event &#x27;multi&#x27;</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: No handlers registered for event &#x27;missing_event&#x27;</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: No handlers registered for event &#x27;unknown_event&#x27;</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: No handlers registered for event &#x27;multi&#x27;</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: requestAll timeout for sid sid-a correlation=69b173fe9b1345d2abf6f7eee9c9c974</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: requestAll timeout for sid sid-b correlation=69b173fe9b1345d2abf6f7eee9c9c974</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: No handlers registered for event &#x27;unknown_event&#x27;</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: No handlers registered for event &#x27;hello_request&#x27;</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=client disconnect sid=xJh7wjWU4ywBydqpAAAB</span><br>
+<br><span style="color: rgb(255, 165, 0); ">Warning: No handlers registered for event &#x27;hello_request&#x27;</span><br>
+<br><span style="color: rgb(0, 0, 255); ">Info: WebSocket disconnected: namespace=client disconnect sid=62655loMEu02Sn9EAAAB</span><br>
+</pre></body></html>

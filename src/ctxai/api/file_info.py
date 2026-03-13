@@ -1,6 +1,6 @@
 import os
-from ctxai.shared.api import ApiHandler, Input, Output, Request, Response
-from ctxai.shared import files, runtime
+from ctxai.helpers.api import ApiHandler, Input, Output, Request, Response
+from ctxai.helpers import files, runtime
 from typing import TypedDict
 
 class FileInfoApi(ApiHandler):

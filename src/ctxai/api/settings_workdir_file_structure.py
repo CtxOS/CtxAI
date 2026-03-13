@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
-from ctxai.shared import file_tree, files
+from ctxai.helpers import file_tree, files
 
 
 class SettingsWorkdirFileStructure(ApiHandler):

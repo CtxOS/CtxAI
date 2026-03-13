@@ -1,18 +1,18 @@
-![Ctx AI Logo](res/header.png)
-# Ctx AI Documentation
+![Agent Zero Logo](res/header.png)
+# Agent Zero Documentation
 
-Welcome to the Ctx AI documentation hub. Whether you're getting started or diving deep into the framework, you'll find comprehensive guides below.
+Welcome to the Agent Zero documentation hub. Whether you're getting started or diving deep into the framework, you'll find comprehensive guides below.
 
 ## Quick Start
 
-- **[Quickstart Guide](quickstart.md):** Get up and running in 5 minutes with Ctx AI.
+- **[Quickstart Guide](quickstart.md):** Get up and running in 5 minutes with Agent Zero.
 - **[Installation Guide](setup/installation.md):** Detailed setup instructions for all platforms (or [update your installation](setup/installation.md#how-to-update-ctxai)).
-- **[VPS Deployment](setup/vps-deployment.md):** Deploy Ctx AI on a remote server.
+- **[VPS Deployment](setup/vps-deployment.md):** Deploy Agent Zero on a remote server.
 - **[Development Setup](setup/dev-setup.md):** Set up a local development environment.
 
 ## User Guides
 
-- **[Usage Guide](guides/usage.md):** Comprehensive guide to Ctx AI's features and capabilities.
+- **[Usage Guide](guides/usage.md):** Comprehensive guide to Agent Zero's features and capabilities.
 - **[Projects Tutorial](guides/projects.md):** Learn to create isolated workspaces with dedicated context and memory.
 - **[API Integration](guides/api-integration.md):** Add external APIs without writing code.
 - **[MCP Setup](guides/mcp-setup.md):** Configure Model Context Protocol servers.
@@ -21,20 +21,20 @@ Welcome to the Ctx AI documentation hub. Whether you're getting started or divin
 
 ## Developer Documentation
 
-- **[Architecture Overview](developer/architecture.md):** Understand Ctx AI's internal structure and components.
+- **[Architecture Overview](developer/architecture.md):** Understand Agent Zero's internal structure and components.
 - **[Plugins](developer/plugins.md):** Build plugins with `plugin.yaml`, scoped settings, and activation toggles.
 - **[Extensions](developer/extensions.md):** Create custom extensions to extend functionality.
-- **[Connectivity](developer/connectivity.md):** Connect to Ctx AI from external applications.
+- **[Connectivity](developer/connectivity.md):** Connect to Agent Zero from external applications.
 - **[WebSockets](developer/websockets.md):** Real-time communication infrastructure.
 - **[MCP Configuration](developer/mcp-configuration.md):** Advanced MCP server configuration.
 - **[Notifications](developer/notifications.md):** Notification system architecture and setup.
 - **[Contributing Skills](developer/contributing-skills.md):** Create and share agent skills.
-- **[Contributing Guide](guides/contribution.md):** Contribute to the Ctx AI project.
+- **[Contributing Guide](guides/contribution.md):** Contribute to the Agent Zero project.
 
 ## Community & Support
 
 - **Join the Community:** Connect with other users on [Discord](https://discord.gg/B8KZKNsPpj) to discuss ideas, ask questions, and collaborate.
-- **Share Your Work:** Show off your Ctx AI creations and workflows in the [Show and Tell](https://github.com/ctxos/ctxai/discussions/categories/show-and-tell) area.
+- **Share Your Work:** Show off your Agent Zero creations and workflows in the [Show and Tell](https://github.com/ctxos/ctxai/discussions/categories/show-and-tell) area.
 - **Report Issues:** Use the [GitHub issue tracker](https://github.com/ctxos/ctxai/issues) to report bugs or suggest features.
 - **Follow Updates:** Subscribe to the [YouTube channel](https://www.youtube.com/@AgentZeroFW) for tutorials and release videos.
 
@@ -49,12 +49,12 @@ Welcome to the Ctx AI documentation hub. Whether you're getting started or divin
       - [Windows Installation](setup/installation.md#-windows-installation)
       - [macOS Installation](setup/installation.md#-macos-installation)
       - [Linux Installation](setup/installation.md#-linux-installation)
-    - [Step 2: Run Ctx AI](setup/installation.md#step-2-run-ctxai)
+    - [Step 2: Run Agent Zero](setup/installation.md#step-2-run-ctxai)
       - [Pull Docker Image](setup/installation.md#21-pull-the-ctxai-docker-image)
       - [Map Folders for Persistence](setup/installation.md#22-optional-map-folders-for-persistence)
       - [Run the Container](setup/installation.md#23-run-the-container)
       - [Access the Web UI](setup/installation.md#24-access-the-web-ui)
-    - [Step 3: Configure Ctx AI](setup/installation.md#step-3-configure-ctxai)
+    - [Step 3: Configure Agent Zero](setup/installation.md#step-3-configure-ctxai)
       - [Settings Configuration](setup/installation.md#settings-configuration)
       - [Agent Configuration](setup/installation.md#agent-configuration)
       - [Chat Model Settings](setup/installation.md#chat-model-settings)
@@ -63,7 +63,7 @@ Welcome to the Ctx AI documentation hub. Whether you're getting started or divin
     - [Choosing Your LLMs](setup/installation.md#choosing-your-llms)
     - [Installing Ollama (Local Models)](setup/installation.md#installing-and-using-ollama-local-models)
     - [Using on Mobile Devices](setup/installation.md#using-ctxai-on-your-mobile-device)
-    - [How to Update Ctx AI](setup/installation.md#how-to-update-ctxai)
+    - [How to Update Agent Zero](setup/installation.md#how-to-update-ctxai)
   - [VPS Deployment](setup/vps-deployment.md)
   - [Development Setup](setup/dev-setup.md)
 
@@ -117,6 +117,6 @@ Welcome to the Ctx AI documentation hub. Whether you're getting started or divin
 
 ---
 
-### Your journey with Ctx AI starts now!
+### Your journey with Agent Zero starts now!
 
 Ready to dive in? Start with the [Quickstart Guide](quickstart.md) for the fastest path to your first chat, or follow the [Installation Guide](setup/installation.md) for a detailed setup walkthrough.

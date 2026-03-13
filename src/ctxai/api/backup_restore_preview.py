@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 from werkzeug.datastructures import FileStorage
-from ctxai.shared.backup import BackupService
+from ctxai.helpers.backup import BackupService
 import json
 
 

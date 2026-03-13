@@ -20,14 +20,26 @@
 /knowledge/custom/
 /instruments/
 
-# Handle data directory
-data/**/*
-!data/**/.gitkeep
-!data/usr/
-!data/tmp/
-!data/logs/
+# Handle logs directory
+logs/**
+!logs/**/
 
-# Handle knowledge directory
+# Handle tmp and usr directory
+tmp/**
+!tmp/**/
+
+# hack to keep .gitkeep but ignore nested repos
+# Ignore everything under usr
+usr/**
+# Ignore nested repos
+/usr/**/.git
+# Allow git to traverse directories
+!usr/**/
+# Re-ignore everything again
+usr/**/*
+# But allow .gitkeep files
+!usr/**/.gitkeep
+
 
 # Global rule to include .gitkeep files anywhere
 !**/.gitkeep

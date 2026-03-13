@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared import dotenv, runtime
-from ctxai.shared.tunnel_manager import TunnelManager
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers import dotenv, runtime
+from ctxai.helpers.tunnel_manager import TunnelManager
 import requests
 
 
@@ -34,5 +34,5 @@ async def process(input: dict) -> dict | Response:
             return {"error": str(e)}
     else:
         # forward to API handler directly
-        from api.tunnel import process as local_process
+        from ctxai.api.tunnel import process as local_process
         return await local_process(input)

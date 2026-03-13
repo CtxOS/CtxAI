@@ -1,6 +1,6 @@
-# Contributing Skills to Ctx AI
+# Contributing Skills to Agent Zero
 
-Welcome to the Ctx AI Skills ecosystem! This guide will help you create, test, and share skills with the community.
+Welcome to the Agent Zero Skills ecosystem! This guide will help you create, test, and share skills with the community.
 
 ---
 
@@ -20,7 +20,7 @@ A **Skill** is a contextual expertise module that provides the AI agent with spe
 ### Cross-Platform Compatibility
 
 The SKILL.md standard is compatible with:
-- **Ctx AI** (this project)
+- **Agent Zero** (this project)
 - **Claude Code** (Anthropic)
 - **Cursor** (AI IDE)
 - **OpenAI Codex CLI**
@@ -227,7 +227,7 @@ This skill includes helper scripts:
 # Validate the skill
 python -m helpers.skills_cli validate my-awesome-skill
 
-# Test in Ctx AI
+# Test in Agent Zero
 # Start the agent and ask it to perform the task your skill handles
 ```
 
@@ -285,7 +285,7 @@ One skill = one expertise area. If your skill is getting too long, split it:
    ```
 
 2. **Test Semantic Recall:**
-   Start Ctx AI and ask questions that should trigger your skill.
+   Start Agent Zero and ask questions that should trigger your skill.
 
 3. **Verify Instructions:**
    Follow your own instructions manually to ensure they work.
@@ -294,7 +294,7 @@ One skill = one expertise area. If your skill is getting too long, split it:
 
 ## Sharing Skills
 
-### Contributing to Ctx AI
+### Contributing to Agent Zero
 
 1. **Fork the Repository:**
    ```bash

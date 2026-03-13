@@ -1,11 +1,11 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request
-from ctxai.shared.task_scheduler import (
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
+from ctxai.helpers.task_scheduler import (
     TaskScheduler, ScheduledTask, AdHocTask, PlannedTask, TaskSchedule,
     serialize_task, parse_task_schedule, parse_task_plan, TaskType
 )
-from ctxai.shared.projects import load_basic_project_data
-from ctxai.shared.localization import Localization
-from ctxai.shared.print_style import PrintStyle
+from ctxai.helpers.projects import load_basic_project_data
+from ctxai.helpers.localization import Localization
+from ctxai.helpers.print_style import PrintStyle
 import random
 
 

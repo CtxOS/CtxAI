@@ -1,9 +1,9 @@
-from ctxai.shared.api import ApiHandler, Input, Output, Request, Response
-from ctxai.shared import subagents
+from ctxai.helpers.api import ApiHandler, Input, Output, Request, Response
+from ctxai.helpers import subagents
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ctxai.shared import projects
+    from ctxai.helpers import projects
 
 class Subagents(ApiHandler):
     async def process(self, input: Input, request: Request) -> Output:

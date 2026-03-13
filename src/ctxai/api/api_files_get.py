@@ -1,8 +1,8 @@
 import base64
 import os
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared import files
-from ctxai.shared.print_style import PrintStyle
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers import files
+from ctxai.helpers.print_style import PrintStyle
 import json
 
 
@@ -47,14 +47,14 @@ class ApiFilesGet(ApiHandler):
             for path in paths:
                 try:
                     # Convert internal paths to external paths
-                    if path.startswith("/ctxai/data/tmp/uploads/"):
-                        # Legacy internal path - convert to external
-                        filename = path.replace("/ctxai/data/tmp/uploads/", "")
-                        external_path = files.get_abs_path(files.USER_DIR, "uploads", filename)
+                    if path.startswith("/a0/tmp/uploads/"):
+                        # Internal path - convert to external
+                        filename = path.replace("/a0/tmp/uploads/", "")
+                        external_path = files.get_abs_path("usr/uploads", filename)
                         filename = os.path.basename(external_path)
-                    elif path.startswith("/ctxai/"):
-                        # Other internal Ctx AI paths
-                        relative_path = path.replace("/ctxai/", "")
+                    elif path.startswith("/a0/"):
+                        # Other internal Agent Zero paths
+                        relative_path = path.replace("/a0/", "")
                         external_path = files.get_abs_path(relative_path)
                         filename = os.path.basename(external_path)
                     else:

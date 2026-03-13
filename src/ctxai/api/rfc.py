@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
-from ctxai.shared import runtime
+from ctxai.helpers import runtime
 
 class RFC(ApiHandler):
 

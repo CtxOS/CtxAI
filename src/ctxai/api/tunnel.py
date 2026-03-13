@@ -1,6 +1,6 @@
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared import runtime
-from ctxai.shared.tunnel_manager import TunnelManager
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers import runtime
+from ctxai.helpers.tunnel_manager import TunnelManager
 
 class Tunnel(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:

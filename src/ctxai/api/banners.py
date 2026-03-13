@@ -1,5 +1,5 @@
-from ctxai.shared.api import ApiHandler, Request, Response
-from ctxai.shared.extension import call_extensions_async
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers.extension import call_extensions_async
 
 
 class GetBanners(ApiHandler):

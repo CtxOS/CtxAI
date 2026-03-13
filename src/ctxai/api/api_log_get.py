@@ -1,5 +1,5 @@
 from ctxai.agent import AgentContext
-from ctxai.shared.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class ApiLogGet(ApiHandler):
