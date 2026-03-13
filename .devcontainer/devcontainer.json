@@ -2,7 +2,7 @@
   "name": "Ctx AI",
   "build": {
     "dockerfile": "Dockerfile",
-    "context": "../..",
+    "context": "..",
     "cacheFrom": "ghcr.io/ctxos/ctxai/devcontainer:latest"
   },
   "features": {
