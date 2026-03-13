@@ -61,10 +61,10 @@ async def test_connect_security_is_computed_per_namespace_and_enforced(monkeypat
     from flask import Flask
     import socketio
 
-    from ctxai.shared.websocket import WebSocketHandler
-    from ctxai.shared.websocket_manager import WebSocketManager
-    from ctxai.shared import runtime
-    from run_ui import configure_websocket_namespaces
+    from ctxai.helpers.websocket import WebSocketHandler
+    from ctxai.helpers.websocket_manager import WebSocketManager
+    from ctxai.helpers import runtime
+    from ctxai.run_ui import configure_websocket_namespaces
 
     class OpenHandler(WebSocketHandler):
         @classmethod
@@ -93,7 +93,7 @@ async def test_connect_security_is_computed_per_namespace_and_enforced(monkeypat
     OpenHandler._reset_instance_for_testing()
     SecureHandler._reset_instance_for_testing()
 
-    monkeypatch.setattr("a0.shared.login.get_credentials_hash", lambda: "hash")
+    monkeypatch.setattr("ctxai.helpers.login.get_credentials_hash", lambda: "hash")
 
     webapp = Flask("test_websocket_namespace_security")
     webapp.secret_key = "test-secret"
@@ -181,9 +181,9 @@ async def test_unknown_namespace_rejected_with_deterministic_connect_error_paylo
     from flask import Flask
     import socketio
 
-    from ctxai.shared.websocket import WebSocketHandler
-    from ctxai.shared.websocket_manager import WebSocketManager
-    from run_ui import configure_websocket_namespaces
+    from ctxai.helpers.websocket import WebSocketHandler
+    from ctxai.helpers.websocket_manager import WebSocketManager
+    from ctxai.run_ui import configure_websocket_namespaces
 
     class OpenHandler(WebSocketHandler):
         @classmethod
@@ -248,10 +248,10 @@ async def test_secure_namespace_rejects_missing_auth_even_with_valid_csrf(monkey
     from flask import Flask
     import socketio
 
-    from ctxai.shared.websocket import WebSocketHandler
-    from ctxai.shared.websocket_manager import WebSocketManager
-    from ctxai.shared import runtime
-    from run_ui import configure_websocket_namespaces
+    from ctxai.helpers.websocket import WebSocketHandler
+    from ctxai.helpers.websocket_manager import WebSocketManager
+    from ctxai.helpers import runtime
+    from ctxai.run_ui import configure_websocket_namespaces
 
     class SecureHandler(WebSocketHandler):
         @classmethod
@@ -263,7 +263,7 @@ async def test_secure_namespace_rejects_missing_auth_even_with_valid_csrf(monkey
 
     SecureHandler._reset_instance_for_testing()
 
-    monkeypatch.setattr("a0.shared.login.get_credentials_hash", lambda: "hash")
+    monkeypatch.setattr("ctxai.helpers.login.get_credentials_hash", lambda: "hash")
 
     webapp = Flask("test_ws_secure_missing_auth")
     webapp.secret_key = "test-secret"
@@ -314,10 +314,10 @@ async def test_secure_namespace_rejects_invalid_csrf_cookie(monkeypatch) -> None
     from flask import Flask
     import socketio
 
-    from ctxai.shared.websocket import WebSocketHandler
-    from ctxai.shared.websocket_manager import WebSocketManager
-    from ctxai.shared import runtime
-    from run_ui import configure_websocket_namespaces
+    from ctxai.helpers.websocket import WebSocketHandler
+    from ctxai.helpers.websocket_manager import WebSocketManager
+    from ctxai.helpers import runtime
+    from ctxai.run_ui import configure_websocket_namespaces
 
     class SecureHandler(WebSocketHandler):
         @classmethod
@@ -329,7 +329,7 @@ async def test_secure_namespace_rejects_invalid_csrf_cookie(monkeypatch) -> None
 
     SecureHandler._reset_instance_for_testing()
 
-    monkeypatch.setattr("a0.shared.login.get_credentials_hash", lambda: "hash")
+    monkeypatch.setattr("ctxai.helpers.login.get_credentials_hash", lambda: "hash")
 
     webapp = Flask("test_ws_secure_invalid_csrf")
     webapp.secret_key = "test-secret"
@@ -381,10 +381,10 @@ async def test_csrf_required_without_auth_is_enforced(monkeypatch) -> None:
     from flask import Flask
     import socketio
 
-    from ctxai.shared.websocket import WebSocketHandler
-    from ctxai.shared.websocket_manager import WebSocketManager
-    from ctxai.shared import runtime
-    from run_ui import configure_websocket_namespaces
+    from ctxai.helpers.websocket import WebSocketHandler
+    from ctxai.helpers.websocket_manager import WebSocketManager
+    from ctxai.helpers import runtime
+    from ctxai.run_ui import configure_websocket_namespaces
 
     class CsrfOnlyHandler(WebSocketHandler):
         @classmethod
@@ -404,7 +404,7 @@ async def test_csrf_required_without_auth_is_enforced(monkeypatch) -> None:
 
     CsrfOnlyHandler._reset_instance_for_testing()
 
-    monkeypatch.setattr("a0.shared.login.get_credentials_hash", lambda: None)
+    monkeypatch.setattr("ctxai.helpers.login.get_credentials_hash", lambda: None)
 
     webapp = Flask("test_ws_csrf_only")
     webapp.secret_key = "test-secret"

@@ -11,9 +11,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 @pytest.mark.asyncio
 async def test_state_monitor_per_sid_isolation_independent_snapshots_seq_and_cursors(monkeypatch):
-    import ctxai.shared.state_monitor as state_monitor_module
-    from ctxai.shared.state_monitor import StateMonitor
-    from ctxai.shared.state_snapshot import StateRequestV1
+    import ctxai.helpers.state_monitor as state_monitor_module
+    from ctxai.helpers.state_monitor import StateMonitor
+    from ctxai.helpers.state_snapshot import StateRequestV1
 
     snapshot_calls: list[dict[str, object]] = []
     emitted: list[dict[str, object]] = []
@@ -129,8 +129,8 @@ async def test_state_monitor_per_sid_isolation_independent_snapshots_seq_and_cur
 
 @pytest.mark.asyncio
 async def test_state_monitor_mark_dirty_for_context_scopes_to_active_context():
-    from ctxai.shared.state_monitor import StateMonitor
-    from ctxai.shared.state_snapshot import StateRequestV1
+    from ctxai.helpers.state_monitor import StateMonitor
+    from ctxai.helpers.state_snapshot import StateRequestV1
 
     monitor = StateMonitor(debounce_seconds=60.0)
     namespace = "/state_sync"

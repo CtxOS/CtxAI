@@ -42,10 +42,7 @@ async def _run_asgi_app(app: Any) -> AsyncIterator[str]:
     finally:
         server.should_exit = True
         try:
-            done, pending = await asyncio.wait([task], timeout=5)
-            if task not in done:
-                task.cancel()
-                await asyncio.wait([task], timeout=1)
+            await asyncio.wait_for(task, timeout=5)
         finally:
             sock.close()
 
@@ -58,7 +55,7 @@ def _write_handler_module(path: Path, class_name: str, event_type: str) -> None:
                 "",
                 "from typing import Any",
                 "",
-                "from ctxai.shared.websocket import WebSocketHandler",
+                "from ctxai.helpers.websocket import WebSocketHandler",
                 "",
                 f"class {class_name}(WebSocketHandler):",
                 "    @classmethod",
@@ -83,7 +80,7 @@ def _write_handler_module(path: Path, class_name: str, event_type: str) -> None:
 
 
 def test_discovery_supports_folder_entries_and_ignores_deeper_nesting(tmp_path: Path) -> None:
-    from ctxai.shared.websocket_namespace_discovery import discover_websocket_namespaces
+    from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
 
     folder = tmp_path / "orders"
     folder.mkdir()
@@ -103,7 +100,7 @@ def test_discovery_supports_folder_entries_and_ignores_deeper_nesting(tmp_path: 
 
 
 def test_discovery_folder_suffix_handler_stripped(tmp_path: Path) -> None:
-    from ctxai.shared.websocket_namespace_discovery import discover_websocket_namespaces
+    from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
 
     folder = tmp_path / "sales_handler"
     folder.mkdir()
@@ -114,14 +111,13 @@ def test_discovery_folder_suffix_handler_stripped(tmp_path: Path) -> None:
     assert "/sales" in namespaces
 
 
-@pytest.mark.asyncio
-async def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tmp_path: Path, monkeypatch) -> None:
+def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tmp_path: Path, monkeypatch) -> None:
     from flask import Flask
     import socketio
 
-    from ctxai.shared.websocket_manager import WebSocketManager
-    from ctxai.shared.websocket_namespace_discovery import discover_websocket_namespaces
-    from run_ui import configure_websocket_namespaces
+    from ctxai.helpers.websocket_manager import WebSocketManager
+    from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
+    from ctxai.run_ui import configure_websocket_namespaces
 
     empty = tmp_path / "empty"
     empty.mkdir()
@@ -132,7 +128,7 @@ async def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tm
     def _warn(message: str) -> None:
         warnings.append(message)
 
-    monkeypatch.setattr("a0.shared.print_style.PrintStyle.warning", staticmethod(_warn))
+    monkeypatch.setattr("ctxai.helpers.print_style.PrintStyle.warning", staticmethod(_warn))
 
     discoveries = discover_websocket_namespaces(handlers_folder=str(tmp_path), include_root_default=False)
     assert "/empty" not in {d.namespace for d in discoveries}
@@ -147,9 +143,7 @@ async def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tm
 
     handlers_by_namespace: dict[str, list[Any]] = {}
     for discovery in discoveries:
-        handlers_by_namespace[discovery.namespace] = [
-            cls.get_instance(sio, lock) for cls in discovery.handler_classes
-        ]
+        handlers_by_namespace[discovery.namespace] = [cls.get_instance(sio, lock) for cls in discovery.handler_classes]
 
     configure_websocket_namespaces(
         webapp=app,
@@ -159,38 +153,37 @@ async def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tm
     )
 
     asgi_app = socketio.ASGIApp(sio)
-    async with _run_asgi_app(asgi_app) as base_url:
-        client = socketio.AsyncClient()
-        connect_error_fut: asyncio.Future[Any] = asyncio.get_running_loop().create_future()
 
-        async def _on_connect_error(data: Any) -> None:
-            if not connect_error_fut.done():
-                connect_error_fut.set_result(data)
+    async def _run() -> None:
+        async with _run_asgi_app(asgi_app) as base_url:
+            client = socketio.AsyncClient()
+            connect_error_fut: asyncio.Future[Any] = asyncio.get_running_loop().create_future()
 
-        client.on("connect_error", _on_connect_error, namespace="/empty")
-        try:
-            with pytest.raises(socketio.exceptions.ConnectionError):
-                await client.connect(base_url, namespaces=["/empty"])
-            done, pending = await asyncio.wait([connect_error_fut], timeout=2)
-            if connect_error_fut not in done:
-                raise asyncio.TimeoutError()
-            err = await connect_error_fut
-            assert err["message"] == "UNKNOWN_NAMESPACE"
-            assert err["data"]["namespace"] == "/empty"
-        finally:
+            async def _on_connect_error(data: Any) -> None:
+                if not connect_error_fut.done():
+                    connect_error_fut.set_result(data)
+
+            client.on("connect_error", _on_connect_error, namespace="/empty")
             try:
-                await client.disconnect()
-            except Exception:
-                pass
+                with pytest.raises(socketio.exceptions.ConnectionError):
+                    await client.connect(base_url, namespaces=["/empty"])
+                err = await asyncio.wait_for(connect_error_fut, timeout=2)
+                assert err["message"] == "UNKNOWN_NAMESPACE"
+                assert err["data"]["namespace"] == "/empty"
+            finally:
+                try:
+                    await client.disconnect()
+                except Exception:
+                    pass
+
+    asyncio.run(_run())
 
 
 def test_discovery_invalid_modules_fail_fast_with_descriptive_errors(tmp_path: Path) -> None:
-    from ctxai.shared.websocket_namespace_discovery import discover_websocket_namespaces
+    from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
 
     # 0 handlers in a *_handler.py module
-    (tmp_path / "bad_handler.py").write_text(
-        "class NotAHandler:\n    pass\n", encoding="utf-8"
-    )
+    (tmp_path / "bad_handler.py").write_text("class NotAHandler:\n    pass\n", encoding="utf-8")
     with pytest.raises(RuntimeError) as excinfo:
         discover_websocket_namespaces(handlers_folder=str(tmp_path), include_root_default=False)
     assert "defines no WebSocketHandler subclasses" in str(excinfo.value)
@@ -200,7 +193,7 @@ def test_discovery_invalid_modules_fail_fast_with_descriptive_errors(tmp_path: P
     (tmp_path / "two_handler.py").write_text(
         "\n".join(
             [
-                "from ctxai.shared.websocket import WebSocketHandler",
+                "from ctxai.helpers.websocket import WebSocketHandler",
                 "class A(WebSocketHandler):",
                 "    @classmethod",
                 "    def requires_auth(cls): return False",

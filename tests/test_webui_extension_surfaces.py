@@ -10,7 +10,7 @@ from typing import Iterator
 import pytest
 from flask import Flask
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[1] / "src" / "ctxai"
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -67,36 +67,18 @@ def _assert_surface_anchor_in_template(surface: str, template_rel_path: str) -> 
 
 @contextmanager
 def _temporary_probe_plugin(surface: str) -> Iterator[tuple[str, str]]:
-    plugins_root = PROJECT_ROOT / "src" / "a0" / "plugins"
+    plugins_root = PROJECT_ROOT / "plugins"
     with tempfile.TemporaryDirectory(
         prefix="tmp_surface_probe_",
         dir=plugins_root,
     ) as temp_plugin_dir:
         plugin_id = Path(temp_plugin_dir).name
-        probe_file = (
-            Path(temp_plugin_dir)
-            / "extensions"
-            / "webui"
-            / surface
-            / "surface-probe.html"
-        )
+        probe_file = Path(temp_plugin_dir) / "extensions" / "webui" / surface / "surface-probe.html"
         probe_file.parent.mkdir(parents=True, exist_ok=True)
         probe_file.write_text(
-            (
-                "<div x-data "
-                f'data-surface-probe="{surface}" '
-                f'data-plugin-id="{plugin_id}"></div>'
-            ),
+            (f'<div x-data data-surface-probe="{surface}" data-plugin-id="{plugin_id}"></div>'),
             encoding="utf-8",
         )
-
-        # New requirement: plugins must have a plugin.yaml to be discovered
-        plugin_yaml = Path(temp_plugin_dir) / "plugin.yaml"
-        plugin_yaml.write_text(
-            f"name: {plugin_id}\ntitle: Probe Plugin\nversion: 1.0.0\nalways_enabled: true\n",
-            encoding="utf-8",
-        )
-
         yield plugin_id, probe_file.name
 
 
@@ -119,9 +101,7 @@ async def test_webui_surface_extension_point_end_to_end(
         )
         assert isinstance(payload, dict)
         extensions = payload.get("extensions", [])
-        expected_suffix = (
-            f"{plugin_id}/extensions/webui/{surface}/{probe_file_name}"
-        )
+        expected_suffix = f"{plugin_id}/extensions/webui/{surface}/{probe_file_name}"
 
         assert any(
             extension.get("plugin_id") == plugin_id

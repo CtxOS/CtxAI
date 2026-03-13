@@ -9,8 +9,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from ctxai.core.communication.websocket_manager import WebSocketManager
-from ctxai.api.ws.dev_websocket_test_handler import (
+from ctxai.helpers.websocket_manager import WebSocketManager
+from ctxai.python.websocket_handlers.dev_websocket_test_handler import (
     DevWebsocketTestHandler,
 )
 
@@ -88,7 +88,7 @@ async def test_harness_request_delayed_waits_for_sleep(monkeypatch):
         calls.append(delay)
 
     monkeypatch.setattr(
-        "a0.api.ws.dev_websocket_test_handler.asyncio.sleep",
+        "ctxai.python.websocket_handlers.dev_websocket_test_handler.asyncio.sleep",
         _fake_sleep,
     )
 

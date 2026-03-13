@@ -59,7 +59,7 @@ async def test_poll_snapshot_matches_contract_schema_key_set_null_context():
 
 @pytest.mark.asyncio
 async def test_snapshot_builder_produces_contract_schema_key_set_and_defaults():
-    from ctxai.shared import state_snapshot as snapshot
+    from ctxai.helpers import state_snapshot as snapshot
 
     payload = await snapshot.build_snapshot(
         context=None,
@@ -87,7 +87,7 @@ async def test_snapshot_builder_produces_contract_schema_key_set_and_defaults():
 
 
 def test_snapshot_schema_rejects_unexpected_top_level_keys():
-    from ctxai.shared import state_snapshot as snapshot
+    from ctxai.helpers import state_snapshot as snapshot
 
     payload = {
         "deselect_chat": False,

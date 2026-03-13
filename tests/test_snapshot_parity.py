@@ -31,7 +31,7 @@ async def test_snapshot_builder_matches_poll_output_for_null_context():
         None,  # Poll.process does not access the flask Request object.
     )
 
-    from ctxai.shared import state_snapshot as snapshot
+    from ctxai.helpers import state_snapshot as snapshot
 
     builder_payload = await snapshot.build_snapshot(
         context=None,
@@ -62,7 +62,7 @@ async def test_snapshot_builder_active_context_includes_incremental_logs():
         assert first["logs"]
         assert first["log_version"] == len(ctx.log.updates)
 
-        from ctxai.shared import state_snapshot as snapshot
+        from ctxai.helpers import state_snapshot as snapshot
 
         second = await snapshot.build_snapshot(
             context=ctxid,

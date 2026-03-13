@@ -31,7 +31,7 @@ def _get_named_exports(source: str) -> set[str]:
 
 
 def test_websocket_js_exports_minimal_namespaced_api_surface() -> None:
-    source = (PROJECT_ROOT / "webui" / "js" / "websocket.js").read_text(encoding="utf-8")
+    source = (PROJECT_ROOT / "src" / "ctxai" / "webui" / "js" / "websocket.js").read_text(encoding="utf-8")
     exports = _get_named_exports(source)
 
     assert "createNamespacedClient" in exports

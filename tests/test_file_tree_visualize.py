@@ -1,5 +1,4 @@
 from __future__ import annotations
-from ctxai.shared import files
 
 import argparse
 import os
@@ -24,7 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from ctxai.shared.file_tree import (
+from ctxai.helpers.file_tree import (
     OUTPUT_MODE_FLAT,
     OUTPUT_MODE_NESTED,
     OUTPUT_MODE_STRING,
@@ -35,7 +34,7 @@ from ctxai.shared.file_tree import (
     SORT_DESC,
     file_tree,
 )
-from ctxai.shared.files import create_dir, delete_dir, get_abs_path, write_file
+from ctxai.helpers.files import create_dir, delete_dir, get_abs_path, write_file
 
 
 BASE_TEMP_ROOT = "tmp/tests/file_tree/visualize"
@@ -121,7 +120,7 @@ def scenario_directory(name: str) -> Iterable[str]:
 
 
 def _set_entry_times(relative_path: str, timestamp: float) -> None:
-    abs_path = files.get_abs_path(relative_path)
+    abs_path = get_abs_path(relative_path)
     os.utime(abs_path, (timestamp, timestamp))
     time.sleep(0.01)
 
@@ -250,7 +249,7 @@ def build_scenarios() -> List[Scenario]:
             "file_third.txt",
         ]
         for index, entry in enumerate(entries, start=1):
-            abs_path = files.get_abs_path(os.path.join(base_rel, entry))
+            abs_path = get_abs_path(os.path.join(base_rel, entry))
             timestamp = 200_000_0000 + index
             os.utime(abs_path, (timestamp, timestamp))
 

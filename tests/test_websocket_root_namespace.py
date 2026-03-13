@@ -51,9 +51,9 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
     from flask import Flask
     import socketio
 
-    from ctxai.shared.websocket import WebSocketHandler
-    from ctxai.shared.websocket_manager import WebSocketManager
-    from run_ui import configure_websocket_namespaces
+    from ctxai.helpers.websocket import WebSocketHandler
+    from ctxai.helpers.websocket_manager import WebSocketManager
+    from ctxai.run_ui import configure_websocket_namespaces
 
     app = Flask("test_ws_root_namespace")
     app.secret_key = "test-secret"
@@ -124,9 +124,9 @@ async def test_root_namespace_fire_and_forget_does_not_invoke_application_handle
     from flask import Flask
     import socketio
 
-    from ctxai.shared.websocket import WebSocketHandler
-    from ctxai.shared.websocket_manager import WebSocketManager
-    from run_ui import configure_websocket_namespaces
+    from ctxai.helpers.websocket import WebSocketHandler
+    from ctxai.helpers.websocket_manager import WebSocketManager
+    from ctxai.run_ui import configure_websocket_namespaces
 
     app = Flask("test_ws_root_fire_and_forget")
     app.secret_key = "test-secret"

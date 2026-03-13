@@ -10,31 +10,17 @@ from unittest.mock import AsyncMock
 import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-from ctxai.shared import compat
-compat.apply_asyncio_patch()
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-from ctxai.shared.state_monitor import StateMonitor
-from ctxai.shared.websocket_manager import WebSocketManager
+from ctxai.helpers.state_monitor import StateMonitor
+from ctxai.helpers.websocket_manager import WebSocketManager
 
 
 class FakeSocketIOServer:
     def __init__(self) -> None:
         self.emit = AsyncMock()
         self.disconnect = AsyncMock()
-
-
-async def _wait_for(fut: Any, timeout: float) -> Any:
-    if isinstance(fut, asyncio.Task):
-        task = fut
-    else:
-        task = asyncio.create_task(fut)
-    done, pending = await asyncio.wait([task], timeout=timeout)
-    if pending:
-        task.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
-            await task
-        raise asyncio.TimeoutError()
-    return list(done)[0].result()
 
 
 @contextlib.asynccontextmanager
@@ -67,7 +53,7 @@ async def _run_asgi_app(app: Any) -> AsyncIterator[str]:
     finally:
         server.should_exit = True
         try:
-            await _wait_for(task, timeout=5)
+            await asyncio.wait_for(task, timeout=5)
         finally:
             sock.close()
 
@@ -112,7 +98,6 @@ def test_state_monitor_tracks_two_identities_for_same_sid_across_namespaces() ->
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(sys.version_info >= (3, 14), reason="Stubborn RuntimeError: Timeout context manager should be used inside a task on Python 3.14")
 async def test_namespace_isolation_state_sync_vs_dev_websocket_test() -> None:
     """
     CONTRACT.INVARIANT.NS.ISOLATION: no cross-namespace delivery for application events.
@@ -123,9 +108,9 @@ async def test_namespace_isolation_state_sync_vs_dev_websocket_test() -> None:
     from flask import Flask
     import socketio
 
-    from ctxai.shared.websocket import WebSocketHandler
-    from ctxai.shared.websocket_manager import WebSocketManager
-    from run_ui import configure_websocket_namespaces
+    from ctxai.helpers.websocket import WebSocketHandler
+    from ctxai.helpers.websocket_manager import WebSocketManager
+    from ctxai.run_ui import configure_websocket_namespaces
 
     class StateHandler(WebSocketHandler):
         @classmethod
@@ -208,20 +193,20 @@ async def test_namespace_isolation_state_sync_vs_dev_websocket_test() -> None:
         client.on("ws_tester_broadcast", _on_tester_broadcast_dev, namespace="/dev_websocket_test")
         client.on("ws_tester_broadcast", _on_tester_broadcast_state, namespace="/state_sync")
 
-        await asyncio.create_task(client.connect(
+        await client.connect(
             base_url,
             namespaces=["/state_sync", "/dev_websocket_test"],
             headers={"Origin": base_url},
             wait_timeout=2,
-        ))
+        )
         try:
-            await asyncio.create_task(client.call("state_request", {"context": None}, namespace="/state_sync", timeout=2))
-            await _wait_for(state_push_state.wait(), timeout=2)
+            await client.call("state_request", {"context": None}, namespace="/state_sync", timeout=2)
+            await asyncio.wait_for(state_push_state.wait(), timeout=2)
             await asyncio.sleep(0.05)
             assert state_push_dev.is_set() is False
 
             await client.emit("ws_tester_emit", {"message": "hi"}, namespace="/dev_websocket_test")
-            await _wait_for(tester_broadcast_dev.wait(), timeout=2)
+            await asyncio.wait_for(tester_broadcast_dev.wait(), timeout=2)
             await asyncio.sleep(0.05)
             assert tester_broadcast_state.is_set() is False
         finally:
@@ -235,8 +220,8 @@ async def test_diagnostics_include_source_namespace_and_deliver_on_dev_namespace
     but must include `sourceNamespace` identifying the origin namespace.
     """
 
-    from ctxai.shared.websocket import WebSocketHandler
-    from ctxai.shared.websocket_manager import DIAGNOSTIC_EVENT, WebSocketManager
+    from ctxai.helpers.websocket import WebSocketHandler
+    from ctxai.helpers.websocket_manager import DIAGNOSTIC_EVENT, WebSocketManager
 
     class DummyHandler(WebSocketHandler):
         @classmethod
@@ -282,10 +267,10 @@ def test_namespace_discovery_maps_core_handlers_to_expected_namespaces() -> None
     (no cross-registration).
     """
 
-    from ctxai.shared.websocket_namespace_discovery import discover_websocket_namespaces
+    from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
 
     discoveries = discover_websocket_namespaces(
-        handlers_folder="src/ctxai/api/ws",
+        handlers_folder="python/websocket_handlers",
         include_root_default=True,
     )
     by_namespace = {entry.namespace: entry for entry in discoveries}
@@ -301,7 +286,7 @@ def test_namespace_discovery_maps_core_handlers_to_expected_namespaces() -> None
 
 
 def test_run_ui_builds_namespace_handler_map_without_cross_registration() -> None:
-    from run_ui import _build_websocket_handlers_by_namespace
+    from ctxai.run_ui import _build_websocket_handlers_by_namespace
 
     handlers_by_namespace = _build_websocket_handlers_by_namespace(object(), threading.RLock())
 
@@ -324,7 +309,7 @@ async def test_route_event_dispatches_only_within_connected_namespace_and_result
     CONTRACT.NS.ROUTING: inbound routing is restricted to handlers in the connected namespace.
     """
 
-    from ctxai.shared.websocket import WebSocketHandler
+    from ctxai.helpers.websocket import WebSocketHandler
 
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
@@ -380,7 +365,7 @@ async def test_lifecycle_broadcasts_deliver_only_within_the_namespace() -> None:
     CONTRACT.NS.DELIVERY: lifecycle broadcasts are namespace-scoped.
     """
 
-    from ctxai.shared.websocket_manager import (
+    from ctxai.helpers.websocket_manager import (
         LIFECYCLE_CONNECT_EVENT,
         LIFECYCLE_DISCONNECT_EVENT,
     )
@@ -437,7 +422,7 @@ async def test_request_semantics_no_handlers_and_timeouts_are_namespace_scoped_a
     CONTRACT.REQUEST.RESULTS + CONTRACT.REQUEST.RESULTS.ORDERING + CONTRACT.NS.ROUTING.
     """
 
-    from ctxai.shared.websocket import WebSocketHandler
+    from ctxai.helpers.websocket import WebSocketHandler
 
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())

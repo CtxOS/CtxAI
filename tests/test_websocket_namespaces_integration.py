@@ -51,9 +51,9 @@ async def test_unregistered_namespace_connection_fails_with_unknown_namespace_co
     from flask import Flask
     import socketio
 
-    from ctxai.shared.websocket import WebSocketHandler
-    from ctxai.shared.websocket_manager import WebSocketManager
-    from run_ui import configure_websocket_namespaces
+    from ctxai.helpers.websocket import WebSocketHandler
+    from ctxai.helpers.websocket_manager import WebSocketManager
+    from ctxai.run_ui import configure_websocket_namespaces
 
     class OpenHandler(WebSocketHandler):
         @classmethod
