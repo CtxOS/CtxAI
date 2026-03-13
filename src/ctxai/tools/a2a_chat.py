@@ -44,9 +44,7 @@ class A2AChatTool(Tool):
                 assistant_text = ""
                 if history:
                     last_parts = history[-1].get("parts", [])
-                    assistant_text = "\n".join(
-                        p.get("text", "") for p in last_parts if p.get("kind") == "text"
-                    )
+                    assistant_text = "\n".join(p.get("text", "") for p in last_parts if p.get("kind") == "text")
                 return Response(message=assistant_text or "(no response)", break_loop=False)
         except Exception as e:
             PrintStyle.error(f"A2A chat error: {e}")

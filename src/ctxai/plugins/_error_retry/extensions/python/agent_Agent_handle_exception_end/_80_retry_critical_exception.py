@@ -1,13 +1,13 @@
 import asyncio
-from datetime import datetime, timezone
 from ctxai.helpers.extension import Extension
-from ctxai.agent import LoopData
-from ctxai.helpers.localization import Localization
 from ctxai.helpers.errors import RepairableException, HandledException
 from ctxai.helpers import errors
 from ctxai.helpers.print_style import PrintStyle
 
-from ctxai.plugins._error_retry.extensions.python.agent_Agent_monologue_start._10_reset_critical_exception_counter import DATA_NAME_COUNTER
+from ctxai.plugins._error_retry.extensions.python.agent_Agent_monologue_start._10_reset_critical_exception_counter import (
+    DATA_NAME_COUNTER,
+)
+
 
 class RetryCriticalException(Extension):
     async def execute(self, data: dict = {}, **kwargs):
@@ -36,17 +36,11 @@ class RetryCriticalException(Extension):
             heading="Critical error occurred, retrying...",
             content=error_message,
         )
-        PrintStyle(font_color="orange", padding=True).print(
-            "Critical error occurred, retrying..."
-        )
+        PrintStyle(font_color="orange", padding=True).print("Critical error occurred, retrying...")
         await asyncio.sleep(delay)
         await self.agent.handle_intervention()
-        agent_facing_error = self.agent.read_prompt(
-            "fw.msg_critical_error.md", error_message=error_message
-        )
+        agent_facing_error = self.agent.read_prompt("fw.msg_critical_error.md", error_message=error_message)
         self.agent.hist_add_warning(message=agent_facing_error)
         PrintStyle(font_color="orange", padding=True).print(agent_facing_error)
 
         data["exception"] = None
-
-        

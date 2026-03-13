@@ -23,9 +23,7 @@ def run():
 
     # Get configuration from environment
     tunnel_api_port = runtime.get_tunnel_api_port()
-    host = (
-        runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "localhost"
-    )
+    host = runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "localhost"
     server = None
     lock = threading.Lock()
     tunnel = Tunnel(app, lock)
@@ -43,7 +41,7 @@ def run():
             request_handler=NoRequestLoggingWSGIRequestHandler,
             threaded=True,
         )
-        
+
         process.set_server(server)
         # server.log_startup()
         server.serve_forever()

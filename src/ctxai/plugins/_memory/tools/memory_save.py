@@ -2,9 +2,7 @@ from ctxai.helpers.tool import Tool, Response
 from ctxai.plugins._memory.helpers.memory import Memory
 
 
-
 class MemorySave(Tool):
-
     async def execute(self, text="", area="", **kwargs):
 
         if not area:

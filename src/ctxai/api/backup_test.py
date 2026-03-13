@@ -23,26 +23,25 @@ class BackupTest(ApiHandler):
             patterns_string = input.get("patterns", "")
             if patterns_string and not include_patterns:
                 # Parse patterns string into arrays
-                lines = [line.strip() for line in patterns_string.split('\n') if line.strip() and not line.strip().startswith('#')]
+                lines = [
+                    line.strip()
+                    for line in patterns_string.split("\n")
+                    if line.strip() and not line.strip().startswith("#")
+                ]
                 for line in lines:
-                    if line.startswith('!'):
+                    if line.startswith("!"):
                         exclude_patterns.append(line[1:])
                     else:
                         include_patterns.append(line)
 
             if not include_patterns:
-                return {
-                    "success": True,
-                    "files": [],
-                    "total_count": 0,
-                    "truncated": False
-                }
+                return {"success": True, "files": [], "total_count": 0, "truncated": False}
 
             # Create metadata object for testing
             metadata = {
                 "include_patterns": include_patterns,
                 "exclude_patterns": exclude_patterns,
-                "include_hidden": include_hidden
+                "include_hidden": include_hidden,
             }
 
             backup_service = BackupService()
@@ -52,11 +51,8 @@ class BackupTest(ApiHandler):
                 "success": True,
                 "files": matched_files,
                 "total_count": len(matched_files),
-                "truncated": len(matched_files) >= max_files
+                "truncated": len(matched_files) >= max_files,
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}

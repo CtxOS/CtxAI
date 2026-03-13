@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import os
 import shutil
-import tempfile
 import time
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Literal, Optional, Tuple
+from typing import List, Literal, Optional, Tuple
 
 from ctxai.helpers import files
 from ctxai.helpers.skills import discover_skill_md_files
@@ -173,6 +171,7 @@ def _resolve_conflict(dest: Path, policy: ConflictPolicy) -> Tuple[Path, bool]:
 def get_project_skills_folder(project_name: str) -> Path:
     """Get the skills folder path for a project."""
     from ctxai.helpers.projects import get_project_meta
+
     return Path(get_project_meta(project_name, PROJECT_SKILLS_DIR))
 
 
@@ -182,6 +181,7 @@ def get_agent_profile_skills_folder(profile_name: str) -> Path:
 
 def get_project_agent_profile_skills_folder(project_name: str, profile_name: str) -> Path:
     from ctxai.helpers.projects import get_project_meta
+
     return Path(get_project_meta(project_name, "agents", profile_name, "skills"))
 
 
@@ -261,4 +261,3 @@ def import_skills(
         destination_root=dest_root,
         namespace=ns,
     )
-

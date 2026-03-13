@@ -19,7 +19,7 @@ def strip_auth_from_url(url: str) -> str:
     clean_netloc = parsed.hostname
     if parsed.port:
         clean_netloc += f":{parsed.port}"
-    return urlunparse((parsed.scheme, clean_netloc, parsed.path, '', '', ''))
+    return urlunparse((parsed.scheme, clean_netloc, parsed.path, "", "", ""))
 
 
 def extract_author_repo(url: str) -> tuple[str, str]:
@@ -97,7 +97,7 @@ class GitRepoReleaseInfo:
 
 
 def _format_git_timestamp(timestamp: int) -> str:
-    return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def get_remote_releases(author: str, repo: str) -> GitRemoteReleasesResult:
@@ -118,10 +118,10 @@ def get_remote_releases(author: str, repo: str) -> GitRemoteReleasesResult:
         remote_url = f"https://github.com/{author}/{repo}.git"
 
         env = os.environ.copy()
-        env['GIT_TERMINAL_PROMPT'] = '0'
+        env["GIT_TERMINAL_PROMPT"] = "0"
 
         try:
-            output = Git().ls_remote('--tags', '--refs', '--', remote_url, with_extended_output=False, env=env)
+            output = Git().ls_remote("--tags", "--refs", "--", remote_url, with_extended_output=False, env=env)
         except Exception as e:
             return GitRemoteReleasesResult(
                 is_remote=True,
@@ -144,17 +144,19 @@ def get_remote_releases(author: str, repo: str) -> GitRemoteReleasesResult:
                 continue
 
             commit_hash, ref_name = parts
-            prefix = 'refs/tags/'
+            prefix = "refs/tags/"
             if not ref_name.startswith(prefix):
                 continue
 
-            tag_name = ref_name[len(prefix):]
-            releases.append(GitRemoteReleaseInfo(
-                tag=tag_name,
-                commit_hash=commit_hash,
-                short_commit_hash=commit_hash[:7],
-                released_at="",
-            ))
+            tag_name = ref_name[len(prefix) :]
+            releases.append(
+                GitRemoteReleaseInfo(
+                    tag=tag_name,
+                    commit_hash=commit_hash,
+                    short_commit_hash=commit_hash[:7],
+                    released_at="",
+                )
+            )
 
         releases.sort(key=lambda release: release.tag, reverse=True)
 
@@ -221,7 +223,7 @@ def get_remote_commits_since_local(repo_path: str) -> GitRemoteCommitsInfo:
         remote_name = tracking_branch.remote_name
         remote = repo.remotes[remote_name]
         env = os.environ.copy()
-        env['GIT_TERMINAL_PROMPT'] = '0'
+        env["GIT_TERMINAL_PROMPT"] = "0"
         with repo.git.custom_environment(**env):
             remote.fetch(repo.active_branch.name)
 
@@ -291,7 +293,7 @@ def get_repo_release_info(repo_path: str) -> GitRepoReleaseInfo:
         release_time = ""
         try:
             tag = repo.git.describe(tags=True)
-            tag_split = tag.split('-')
+            tag_split = tag.split("-")
             if len(tag_split) >= 3:
                 short_tag = "-".join(tag_split[:-1])
             else:
@@ -362,6 +364,7 @@ def get_git_info():
         "version": state.release.version if state.release else "",
     }
 
+
 def get_version():
     try:
         git_info = get_git_info()
@@ -387,8 +390,7 @@ def is_official_agent_zero_repo() -> bool:
             "frdel/ctxai",
         ]
         return any(
-            remote_url.endswith(f"github.com/{repo_name}")
-            or remote_url.endswith(f"github.com:{repo_name}")
+            remote_url.endswith(f"github.com/{repo_name}") or remote_url.endswith(f"github.com:{repo_name}")
             for repo_name in allowed_repos
         )
     except Exception:
@@ -397,25 +399,25 @@ def is_official_agent_zero_repo() -> bool:
 
 def clone_repo(url: str, dest: str, token: str | None = None):
     """Clone a git repository. Uses http.extraHeader for token auth (never stored in URL/config)."""
-    cmd = ['git']
-    
+    cmd = ["git"]
+
     if token:
         # GitHub Git HTTP requires Basic Auth, not Bearer
         auth_string = f"x-access-token:{token}"
         auth_base64 = base64.b64encode(auth_string.encode()).decode()
-        cmd.extend(['-c', f'http.extraHeader=Authorization: Basic {auth_base64}'])
-    
-    cmd.extend(['clone', '--progress', '--', url, dest])
-    
+        cmd.extend(["-c", f"http.extraHeader=Authorization: Basic {auth_base64}"])
+
+    cmd.extend(["clone", "--progress", "--", url, dest])
+
     env = os.environ.copy()
-    env['GIT_TERMINAL_PROMPT'] = '0'
-    
+    env["GIT_TERMINAL_PROMPT"] = "0"
+
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
-    
+
     if result.returncode != 0:
-        error_msg = result.stderr.strip() or result.stdout.strip() or 'Unknown error'
+        error_msg = result.stderr.strip() or result.stdout.strip() or "Unknown error"
         raise Exception(f"Git clone failed: {error_msg}")
-    
+
     return Repo(dest)
 
 
@@ -433,7 +435,7 @@ def update_repo(repo_path: str) -> Repo:
         raise ValueError("Current branch has no tracking remote branch.")
 
     env = os.environ.copy()
-    env['GIT_TERMINAL_PROMPT'] = '0'
+    env["GIT_TERMINAL_PROMPT"] = "0"
 
     with repo.git.custom_environment(**env):
         repo.remotes[tracking_branch.remote_name].pull(branch)
@@ -451,7 +453,7 @@ def get_repo_status(repo_path: str) -> dict:
         repo = Repo(repo_path)
         if repo.bare:
             return {"is_git_repo": False, "error": "Repository is bare"}
-        
+
         # Remote URL (always strip auth info for security)
         remote_url = ""
         try:
@@ -459,27 +461,29 @@ def get_repo_status(repo_path: str) -> dict:
                 remote_url = strip_auth_from_url(repo.remotes.origin.url)
         except Exception:
             pass
-        
+
         # Current branch
         try:
-            current_branch = repo.active_branch.name if not repo.head.is_detached else f"HEAD@{repo.head.commit.hexsha[:7]}"
+            current_branch = (
+                repo.active_branch.name if not repo.head.is_detached else f"HEAD@{repo.head.commit.hexsha[:7]}"
+            )
         except Exception:
             current_branch = "unknown"
-        
+
         # Check dirty status, excluding A0 metadata
         def is_a0_file(path: str) -> bool:
             return path.startswith(".a0proj") or path == ".a0proj"
-        
+
         # Filter out A0 files from diff and untracked
         changed_files = [d.a_path for d in repo.index.diff(None)] + [d.a_path for d in repo.index.diff("HEAD")]
         untracked = repo.untracked_files
-        
+
         real_changes = [f for f in changed_files if not is_a0_file(f)]
         real_untracked = [f for f in untracked if not is_a0_file(f)]
-        
+
         is_dirty = len(real_changes) > 0 or len(real_untracked) > 0
         untracked_count = len(real_untracked)
-        
+
         last_commit = None
         try:
             commit = repo.head.commit
@@ -487,18 +491,18 @@ def get_repo_status(repo_path: str) -> dict:
                 "hash": commit.hexsha[:7],
                 "message": str(commit.message).split("\n")[0][:80],
                 "author": str(commit.author),
-                "date": datetime.fromtimestamp(commit.committed_date).strftime('%Y-%m-%d %H:%M')
+                "date": datetime.fromtimestamp(commit.committed_date).strftime("%Y-%m-%d %H:%M"),
             }
         except Exception:
             pass
-        
+
         return {
             "is_git_repo": True,
             "remote_url": remote_url,
             "current_branch": current_branch,
             "is_dirty": is_dirty,
             "untracked_count": untracked_count,
-            "last_commit": last_commit
+            "last_commit": last_commit,
         }
     except Exception as e:
         return {"is_git_repo": False, "error": str(e)}

@@ -3,7 +3,6 @@ from ctxai.helpers.secrets import get_secrets_manager
 
 
 class UnmaskToolSecrets(Extension):
-
     async def execute(self, **kwargs):
         if not self.agent:
             return

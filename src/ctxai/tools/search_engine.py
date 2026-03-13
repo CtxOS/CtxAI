@@ -1,8 +1,4 @@
-import os
-import asyncio
-from ctxai.helpers import dotenv, perplexity_search, duckduckgo_search
 from ctxai.helpers.tool import Tool, Response
-from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.errors import handle_error
 from ctxai.helpers.searxng import search as searxng
 
@@ -12,15 +8,11 @@ SEARCH_ENGINE_RESULTS = 10
 class SearchEngine(Tool):
     async def execute(self, query="", **kwargs):
 
-
         searxng_result = await self.searxng_search(query)
 
-        await self.agent.handle_intervention(
-            searxng_result
-        )  # wait for intervention and handle it, if paused
+        await self.agent.handle_intervention(searxng_result)  # wait for intervention and handle it, if paused
 
         return Response(message=searxng_result, break_loop=False)
-
 
     async def searxng_search(self, question):
         results = await searxng(question)

@@ -4,7 +4,7 @@ from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import os
-from typing import Any, Callable, Iterable, Literal, Optional, Sequence
+from typing import Any, Iterable, Literal, Optional, Sequence
 
 from pathspec import PathSpec
 
@@ -124,7 +124,9 @@ def file_tree(
     limit_reached = False
     visibility_cache: dict[str, bool] = {}
 
-    def make_entry(entry: os.DirEntry, parent: _TreeEntry, level: int, item_type: Literal["file", "folder"]) -> _TreeEntry:
+    def make_entry(
+        entry: os.DirEntry, parent: _TreeEntry, level: int, item_type: Literal["file", "folder"]
+    ) -> _TreeEntry:
         stat = entry.stat(follow_symlinks=False)
         rel_path = os.path.relpath(entry.path, abs_root)
         rel_posix = _normalize_relative_path(rel_path)
@@ -180,10 +182,7 @@ def file_tree(
                     break
                 trimmed_children.append(child)
                 nodes_in_order.append(child)
-                is_global_summary = (
-                    child.item_type == "comment"
-                    and child.rel_path.endswith("#summary:limit")
-                )
+                is_global_summary = child.item_type == "comment" and child.rel_path.endswith("#summary:limit")
                 if not is_global_summary:
                     rendered_count += 1
             if limit_reached and hidden_children_local:
@@ -245,7 +244,7 @@ def file_tree(
         return root_item
 
     if output_mode == OUTPUT_MODE_STRING:
-        display_name = output_root #relative_path.strip() or root_name
+        display_name = output_root  # relative_path.strip() or root_name
         root_line = f"{display_name.rstrip(os.sep)}/"
         lines = [root_line]
         for node in iter_visible():
@@ -493,11 +492,7 @@ def _resolve_ignore_patterns(ignore: str | None, root_abs_path: str) -> Optional
     else:
         content = ignore
 
-    lines = [
-        line.strip()
-        for line in content.splitlines()
-        if line.strip() and not line.strip().startswith("#")
-    ]
+    lines = [line.strip() for line in content.splitlines() if line.strip() and not line.strip().startswith("#")]
 
     if not lines:
         return None

@@ -1,7 +1,5 @@
 import re
 import threading
-import time
-import os
 from io import StringIO
 from dataclasses import dataclass
 from typing import Dict, Optional, List, Literal, Set, Callable, Tuple, TYPE_CHECKING
@@ -31,9 +29,7 @@ class EnvLine:
     type: Literal["pair", "comment", "blank", "other"]
     key: Optional[str] = None
     value: Optional[str] = None
-    inline_comment: Optional[str] = (
-        None  # preserves trailing inline comment including leading spaces and '#'
-    )
+    inline_comment: Optional[str] = None  # preserves trailing inline comment including leading spaces and '#'
 
 
 class StreamingSecretsFilter:
@@ -48,9 +44,7 @@ class StreamingSecretsFilter:
     def __init__(self, key_to_value: Dict[str, str], min_trigger: int = 3):
         self.min_trigger = max(1, int(min_trigger))
         # Map value -> key for placeholder construction
-        self.value_to_key: Dict[str, str] = {
-            v: k for k, v in key_to_value.items() if isinstance(v, str) and v
-        }
+        self.value_to_key: Dict[str, str] = {v: k for k, v in key_to_value.items() if isinstance(v, str) and v}
         # Only keep non-empty values
         self.secret_values: List[str] = [v for v in self.value_to_key.keys() if v]
         # Precompute all prefixes for quick suffix matching
@@ -169,9 +163,7 @@ class SecretsManager:
     def _write_secrets_raw(self, content: str):
         """Write raw secrets file content to local filesystem."""
         if len(self._files) != 1:
-            raise RuntimeError(
-                "Saving secrets content is only supported for a single secrets file"
-            )
+            raise RuntimeError("Saving secrets content is only supported for a single secrets file")
         files.write_file(self._files[0], content)
 
     def load_secrets(self) -> Dict[str, str]:
@@ -181,9 +173,7 @@ class SecretsManager:
                 return self._secrets_cache
 
             combined_raw = self.read_secrets_raw()
-            merged_secrets = (
-                self.parse_env_content(combined_raw) if combined_raw else {}
-            )
+            merged_secrets = self.parse_env_content(combined_raw) if combined_raw else {}
 
             # Only track the first file's raw text for single-file setups
             if len(self._files) != 1:
@@ -195,9 +185,7 @@ class SecretsManager:
     def save_secrets(self, secrets_content: str):
         """Save secrets content to file and update cache"""
         if len(self._files) != 1:
-            raise RuntimeError(
-                "Saving secrets is disabled when multiple files are configured"
-            )
+            raise RuntimeError("Saving secrets is disabled when multiple files are configured")
         with self._lock:
             self._write_secrets_raw(secrets_content)
         self._invalidate_all_caches()
@@ -209,9 +197,7 @@ class SecretsManager:
         - New keys with non-masked values are appended at the end.
         """
         if len(self._files) != 1:
-            raise RuntimeError(
-                "Merging secrets is disabled when multiple files are configured"
-            )
+            raise RuntimeError("Merging secrets is disabled when multiple files are configured")
         with self._lock:
             # Prefer in-memory snapshot to avoid disk reads during save
             primary_path = self._files[0]
@@ -289,16 +275,12 @@ class SecretsManager:
         result = text
 
         # Sort by length (longest first) to avoid partial replacements
-        for key, _value in sorted(
-            secrets.items(), key=lambda x: len(x[1]), reverse=True
-        ):
+        for key, _value in sorted(secrets.items(), key=lambda x: len(x[1]), reverse=True):
             result = result.replace(alias_for_key(key), new_format.format(key=key))
 
         return result
 
-    def mask_values(
-        self, text: str, min_length: int = 4, placeholder: str = "§§secret({key})"
-    ) -> str:
+    def mask_values(self, text: str, min_length: int = 4, placeholder: str = "§§secret({key})") -> str:
         """Replace actual secret values with placeholders in text"""
         if not text:
             return text
@@ -307,9 +289,7 @@ class SecretsManager:
         result = text
 
         # Sort by length (longest first) to avoid partial replacements
-        for key, value in sorted(
-            secrets.items(), key=lambda x: len(x[1]), reverse=True
-        ):
+        for key, value in sorted(secrets.items(), key=lambda x: len(x[1]), reverse=True):
             if value and len(value.strip()) >= min_length:
                 result = result.replace(value, alias_for_key(key, placeholder))
 
@@ -437,11 +417,7 @@ class SecretsManager:
                 left = left_raw.upper()
                 val = ln.value if ln.value is not None else ""
                 comment = ln.inline_comment or ""
-                formatted_key = (
-                    key_formatter(left)
-                    if key_formatter
-                    else f"{key_delimiter}{left}{key_delimiter}"
-                )
+                formatted_key = key_formatter(left) if key_formatter else f"{key_delimiter}{left}{key_delimiter}"
                 val_part = f'="{val}"' if with_values else ""
                 comment_part = f" {comment}" if with_comments and comment else ""
                 out.append(f"{formatted_key}{val_part}{comment_part}")
@@ -468,9 +444,7 @@ class SecretsManager:
         submitted_lines = self.parse_env_lines(submitted_text)
 
         existing_pairs: Dict[str, EnvLine] = {
-            ln.key: ln
-            for ln in existing_lines
-            if ln.type == "pair" and ln.key is not None
+            ln.key: ln for ln in existing_lines if ln.type == "pair" and ln.key is not None
         }
 
         merged: List[EnvLine] = []
@@ -515,6 +489,7 @@ def get_secrets_manager(context: "AgentContext|None" = None) -> SecretsManager:
     # use AgentContext from contextvars if no context provided
     if not context:
         from ctxai.agent import AgentContext
+
         context = AgentContext.current()
 
     # merged with project secrets if active
@@ -524,6 +499,7 @@ def get_secrets_manager(context: "AgentContext|None" = None) -> SecretsManager:
             secret_files.append(files.get_abs_path(projects.get_project_meta(project), "secrets.env"))
 
     return SecretsManager.get_instance(*secret_files)
+
 
 @extensible
 def get_project_secrets_manager(project_name: str, merge_with_global: bool = False) -> SecretsManager:
@@ -539,6 +515,7 @@ def get_project_secrets_manager(project_name: str, merge_with_global: bool = Fal
     secret_files.append(files.get_abs_path(projects.get_project_meta(project_name), "secrets.env"))
 
     return SecretsManager.get_instance(*secret_files)
+
 
 @extensible
 def get_default_secrets_manager() -> SecretsManager:

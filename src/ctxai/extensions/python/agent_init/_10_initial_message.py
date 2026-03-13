@@ -4,7 +4,6 @@ from ctxai.helpers.extension import Extension
 
 
 class InitialMessage(Extension):
-
     def execute(self, **kwargs):
         """
         Add an initial greeting message when first user message is processed.

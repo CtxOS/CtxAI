@@ -1,14 +1,10 @@
 from ctxai.helpers.files import VariablesPlugin
 from ctxai.helpers import settings
-from ctxai.helpers import projects
-from ctxai.helpers import runtime
-from ctxai.helpers import files
 from typing import Any
 
+
 class WorkdirPath(VariablesPlugin):
-    def get_variables(
-        self, file: str, backup_dirs: list[str] | None = None, **kwargs
-    ) -> dict[str, Any]:
+    def get_variables(self, file: str, backup_dirs: list[str] | None = None, **kwargs) -> dict[str, Any]:
 
         # agent = kwargs.get("_agent")
         # if agent and getattr(agent, "context", None):
@@ -21,4 +17,3 @@ class WorkdirPath(VariablesPlugin):
 
         set = settings.get_settings()
         return {"workdir_path": set["workdir_path"]}
-        

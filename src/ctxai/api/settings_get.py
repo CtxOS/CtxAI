@@ -2,6 +2,7 @@ from ctxai.helpers.api import ApiHandler, Request, Response
 
 from ctxai.helpers import settings
 
+
 class GetSettings(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
         backend = settings.get_settings()

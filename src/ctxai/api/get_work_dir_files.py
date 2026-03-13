@@ -1,9 +1,9 @@
 from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers.file_browser import FileBrowser
-from ctxai.helpers import runtime, files
+from ctxai.helpers import runtime
+
 
 class GetWorkDirFiles(ApiHandler):
-
     @classmethod
     def get_methods(cls):
         return ["GET"]

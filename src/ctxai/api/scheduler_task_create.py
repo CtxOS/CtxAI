@@ -1,7 +1,14 @@
 from ctxai.helpers.api import ApiHandler, Input, Output, Request
 from ctxai.helpers.task_scheduler import (
-    TaskScheduler, ScheduledTask, AdHocTask, PlannedTask, TaskSchedule,
-    serialize_task, parse_task_schedule, parse_task_plan, TaskType
+    TaskScheduler,
+    ScheduledTask,
+    AdHocTask,
+    PlannedTask,
+    TaskSchedule,
+    serialize_task,
+    parse_task_schedule,
+    parse_task_plan,
+    TaskType,
 )
 from ctxai.helpers.projects import load_basic_project_data
 from ctxai.helpers.localization import Localization
@@ -54,7 +61,9 @@ class SchedulerTaskCreate(ApiHandler):
         token: str = input.get("token", "")
 
         # Debug log the token value
-        printer.print(f"Token received from frontend: '{token}' (type: {type(token)}, length: {len(token) if token else 0})")
+        printer.print(
+            f"Token received from frontend: '{token}' (type: {type(token)}, length: {len(token) if token else 0})"
+        )
 
         # Generate a random token if empty or not provided
         if not token:
@@ -74,13 +83,13 @@ class SchedulerTaskCreate(ApiHandler):
             # Handle different schedule formats (string or object)
             if isinstance(schedule, str):
                 # Parse the string schedule
-                parts = schedule.split(' ')
+                parts = schedule.split(" ")
                 task_schedule = TaskSchedule(
                     minute=parts[0] if len(parts) > 0 else "*",
                     hour=parts[1] if len(parts) > 1 else "*",
                     day=parts[2] if len(parts) > 2 else "*",
                     month=parts[3] if len(parts) > 3 else "*",
-                    weekday=parts[4] if len(parts) > 4 else "*"
+                    weekday=parts[4] if len(parts) > 4 else "*",
                 )
             elif isinstance(schedule, dict):
                 # Use our standardized parsing function
@@ -154,10 +163,7 @@ class SchedulerTaskCreate(ApiHandler):
         task_dict = serialize_task(task)
 
         # Debug log the serialized task
-        if task_dict and task_dict.get('type') == 'adhoc':
+        if task_dict and task_dict.get("type") == "adhoc":
             printer.print(f"Serialized adhoc task, token in response: '{task_dict.get('token')}'")
 
-        return {
-            "ok": True,
-            "task": task_dict
-        }
+        return {"ok": True, "task": task_dict}

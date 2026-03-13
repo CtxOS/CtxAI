@@ -36,7 +36,7 @@ class ApiMessage(ApiHandler):
         lifetime_hours = input.get("lifetime_hours", 24)  # Default 24 hours
         project_name = input.get("project_name", None)
         agent_profile = input.get("agent_profile", None)
-        
+
         # Set an agent if profile provided
         override_settings = {}
         if agent_profile:
@@ -82,13 +82,18 @@ class ApiMessage(ApiHandler):
 
             # Validation: if agent profile is provided, it must match the exising
             if agent_profile and context.agent0.config.profile != agent_profile:
-                return Response('{"error": "Cannot override agent profile on existing context"}', status=400, mimetype="application/json")
-            
+                return Response(
+                    '{"error": "Cannot override agent profile on existing context"}',
+                    status=400,
+                    mimetype="application/json",
+                )
 
             # Validation: if project is provided but context already has different project
             existing_project = context.get_data(projects.CONTEXT_DATA_KEY_PROJECT)
             if project_name and existing_project and existing_project != project_name:
-                return Response('{"error": "Project can only be set on first message"}', status=400, mimetype="application/json")
+                return Response(
+                    '{"error": "Project can only be set on first message"}', status=400, mimetype="application/json"
+                )
         else:
             config = initialize.initialize_agent(override_settings=override_settings)
             context = AgentContext(config=config, type=AgentContextType.USER)
@@ -101,7 +106,9 @@ class ApiMessage(ApiHandler):
                 except Exception as e:
                     # Handle project or context errors more gracefully
                     error_msg = str(e)
-                    PrintStyle.error(f"Failed to activate project '{project_name}' for context '{context_id}': {error_msg}")
+                    PrintStyle.error(
+                        f"Failed to activate project '{project_name}' for context '{context_id}': {error_msg}"
+                    )
                     return Response(
                         f'{{"error": "Failed to activate project \\"{project_name}\\""}}',
                         status=500,
@@ -113,7 +120,9 @@ class ApiMessage(ApiHandler):
                 try:
                     projects.activate_project(context_id, project_name)
                 except Exception as e:
-                    return Response(f'{{"error": "Failed to activate project: {str(e)}"}}', status=400, mimetype="application/json")
+                    return Response(
+                        f'{{"error": "Failed to activate project: {str(e)}"}}', status=400, mimetype="application/json"
+                    )
 
         # Update chat lifetime
         with self._cleanup_lock:
@@ -124,9 +133,9 @@ class ApiMessage(ApiHandler):
             # Log the message
             attachment_filenames = [os.path.basename(path) for path in attachment_paths] if attachment_paths else []
 
-            PrintStyle(
-                background_color="#6C3483", font_color="white", bold=True, padding=True
-            ).print("External API message:")
+            PrintStyle(background_color="#6C3483", font_color="white", bold=True, padding=True).print(
+                "External API message:"
+            )
             PrintStyle(font_color="white", padding=False).print(f"> {message}")
             if attachment_filenames:
                 PrintStyle(font_color="white", padding=False).print("Attachments:")
@@ -148,10 +157,7 @@ class ApiMessage(ApiHandler):
             # Clean up expired chats
             self._cleanup_expired_chats()
 
-            return {
-                "context_id": context_id,
-                "response": result
-            }
+            return {"context_id": context_id, "response": result}
 
         except Exception as e:
             PrintStyle.error(f"External API error: {e}")
@@ -162,10 +168,7 @@ class ApiMessage(ApiHandler):
         """Clean up expired chats"""
         with cls._cleanup_lock:
             now = datetime.now()
-            expired_contexts = [
-                context_id for context_id, expiry in cls._chat_lifetimes.items()
-                if now > expiry
-            ]
+            expired_contexts = [context_id for context_id, expiry in cls._chat_lifetimes.items() if now > expiry]
 
             for context_id in expired_contexts:
                 try:

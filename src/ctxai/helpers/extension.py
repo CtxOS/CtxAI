@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, Awaitable, Type, cast
+from typing import Awaitable, Type
 from ctxai.helpers import extract_tools, files
 from ctxai.helpers import cache, subagents
 from typing import TYPE_CHECKING
@@ -164,7 +164,6 @@ def extensible(func):
 
 
 class Extension:
-
     def __init__(self, agent: "Agent|None", **kwargs):
         self.agent: "Agent|None" = agent
         self.kwargs = kwargs
@@ -174,9 +173,7 @@ class Extension:
         pass
 
 
-async def call_extensions_async(
-    extension_point: str, agent: "Agent|None" = None, **kwargs
-):
+async def call_extensions_async(extension_point: str, agent: "Agent|None" = None, **kwargs):
     # fetch classes for this extension point and agent
     classes = _get_extension_classes(extension_point, agent=agent, **kwargs)
 
@@ -195,14 +192,10 @@ def call_extensions_sync(extension_point: str, agent: "Agent|None" = None, **kwa
     for cls in classes:
         result = cls(agent=agent).execute(**kwargs)
         if isinstance(result, Awaitable):
-            raise ValueError(
-                f"Extension {cls.__name__} returned awaitable in sync mode"
-            )
+            raise ValueError(f"Extension {cls.__name__} returned awaitable in sync mode")
 
 
-def get_webui_extensions(
-    agent: "Agent | None", extension_point: str, filters: list[str] | None = None
-):
+def get_webui_extensions(agent: "Agent | None", extension_point: str, filters: list[str] | None = None):
     entries: list[str] = []
     effective_filters = filters or ["*"]
 
@@ -227,9 +220,7 @@ def get_webui_extensions(
     return entries
 
 
-def _get_extension_classes(
-    extension_point: str, agent: "Agent|None" = None, **kwargs
-) -> list[Type[Extension]]:
+def _get_extension_classes(extension_point: str, agent: "Agent|None" = None, **kwargs) -> list[Type[Extension]]:
     # search for extension folders in all agent's paths
     paths = subagents.get_paths(agent, "extensions/python", extension_point)
 
@@ -241,9 +232,7 @@ def _get_extension_classes(
         file = _get_file_from_module(cls.__module__)
         if file not in unique:
             unique[file] = cls
-    classes = sorted(
-        unique.values(), key=lambda cls: _get_file_from_module(cls.__module__)
-    )
+    classes = sorted(unique.values(), key=lambda cls: _get_file_from_module(cls.__module__))
     return classes
 
 

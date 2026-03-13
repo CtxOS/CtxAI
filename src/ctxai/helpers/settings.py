@@ -2,7 +2,6 @@ import base64
 import hashlib
 import json
 import os
-import re
 import subprocess
 from typing import Any, Literal, TypedDict, cast, TypeVar
 
@@ -12,11 +11,11 @@ from . import files, dotenv
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.providers import get_providers, FieldOption as ProvidersFO
 from ctxai.helpers.secrets import get_default_secrets_manager
-from ctxai.helpers import dirty_json
 from ctxai.helpers.notification import NotificationManager, NotificationType, NotificationPriority
 
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 def get_default_value(name: str, value: T) -> T:
     """
@@ -37,7 +36,7 @@ def get_default_value(name: str, value: T) -> T:
     # Normalize type to match value param type
     try:
         if isinstance(value, bool):
-            return env_value.strip().lower() in ('true', '1', 'yes', 'on')  # type: ignore
+            return env_value.strip().lower() in ("true", "1", "yes", "on")  # type: ignore
         elif isinstance(value, dict):
             return json.loads(env_value.strip())  # type: ignore
         elif isinstance(value, str):
@@ -49,6 +48,7 @@ def get_default_value(name: str, value: T) -> T:
             f"Warning: Invalid value for A0_SET_{name}='{env_value}': {e}. Using default: {value}"
         )
         return value
+
 
 class Settings(TypedDict):
     version: str
@@ -150,6 +150,7 @@ class FieldOption(TypedDict):
     value: str
     label: str
 
+
 class SettingsField(TypedDict, total=False):
     id: str
     title: str
@@ -181,8 +182,10 @@ class SettingsSection(TypedDict, total=False):
     fields: list[SettingsField]
     tab: str  # Indicates which tab this section belongs to
 
+
 class ModelProvider(ProvidersFO):
     pass
+
 
 class SettingsOutputAdditional(TypedDict):
     chat_providers: list[ModelProvider]
@@ -208,6 +211,7 @@ _runtime_settings_snapshot: Settings | None = None
 
 OptionT = TypeVar("OptionT", bound=FieldOption)
 
+
 def _ensure_option_present(options: list[OptionT] | None, current_value: str | None) -> list[OptionT]:
     """
     Ensure the currently selected value exists in a dropdown options list.
@@ -222,18 +226,23 @@ def _ensure_option_present(options: list[OptionT] | None, current_value: str | N
     opts.insert(0, cast(OptionT, {"value": current_value, "label": current_value}))
     return opts
 
+
 def convert_out(settings: Settings) -> SettingsOutput:
     out = SettingsOutput(
-        settings = settings.copy(),
-        additional = SettingsOutputAdditional(
+        settings=settings.copy(),
+        additional=SettingsOutputAdditional(
             chat_providers=get_providers("chat"),
             embedding_providers=get_providers("embedding"),
             is_dockerized=runtime.is_dockerized(),
-            agent_subdirs=[{"value": item["key"], "label": item["label"]}
+            agent_subdirs=[
+                {"value": item["key"], "label": item["label"]}
                 for item in subagents.get_all_agents_list()
-                if item["key"] != "_example"],
-            knowledge_subdirs=[{"value": subdir, "label": subdir}
-                for subdir in files.get_subdirectories("knowledge", exclude="default")],
+                if item["key"] != "_example"
+            ],
+            knowledge_subdirs=[
+                {"value": subdir, "label": subdir}
+                for subdir in files.get_subdirectories("knowledge", exclude="default")
+            ],
             stt_models=[
                 {"value": "tiny", "label": "Tiny (39M, English)"},
                 {"value": "base", "label": "Base (74M, English)"},
@@ -261,12 +270,22 @@ def convert_out(settings: Settings) -> SettingsOutput:
         ),
     }
 
-    additional["chat_providers"] = _ensure_option_present(additional.get("chat_providers"), current.get("chat_model_provider"))
-    additional["chat_providers"] = _ensure_option_present(additional.get("chat_providers"), current.get("util_model_provider"))
-    additional["chat_providers"] = _ensure_option_present(additional.get("chat_providers"), current.get("browser_model_provider"))
-    additional["embedding_providers"] = _ensure_option_present(additional.get("embedding_providers"), current.get("embed_model_provider"))
+    additional["chat_providers"] = _ensure_option_present(
+        additional.get("chat_providers"), current.get("chat_model_provider")
+    )
+    additional["chat_providers"] = _ensure_option_present(
+        additional.get("chat_providers"), current.get("util_model_provider")
+    )
+    additional["chat_providers"] = _ensure_option_present(
+        additional.get("chat_providers"), current.get("browser_model_provider")
+    )
+    additional["embedding_providers"] = _ensure_option_present(
+        additional.get("embedding_providers"), current.get("embed_model_provider")
+    )
     additional["agent_subdirs"] = _ensure_option_present(additional.get("agent_subdirs"), current.get("agent_profile"))
-    additional["knowledge_subdirs"] = _ensure_option_present(additional.get("knowledge_subdirs"), current.get("agent_knowledge_subdir"))
+    additional["knowledge_subdirs"] = _ensure_option_present(
+        additional.get("knowledge_subdirs"), current.get("agent_knowledge_subdir")
+    )
     additional["stt_models"] = _ensure_option_present(additional.get("stt_models"), current.get("stt_model_size"))
 
     # masked api keys
@@ -278,17 +297,11 @@ def convert_out(settings: Settings) -> SettingsOutput:
 
     # load auth from dotenv
     out["settings"]["auth_login"] = dotenv.get_dotenv_value(dotenv.KEY_AUTH_LOGIN) or ""
-    out["settings"]["auth_password"] = (
-        PASSWORD_PLACEHOLDER if dotenv.get_dotenv_value(dotenv.KEY_AUTH_PASSWORD) else ""
-    )
-    out["settings"]["rfc_password"] = (
-        PASSWORD_PLACEHOLDER if dotenv.get_dotenv_value(dotenv.KEY_RFC_PASSWORD) else ""
-    )
-    out["settings"]["root_password"] = (
-        PASSWORD_PLACEHOLDER if dotenv.get_dotenv_value(dotenv.KEY_ROOT_PASSWORD) else ""
-    )
+    out["settings"]["auth_password"] = PASSWORD_PLACEHOLDER if dotenv.get_dotenv_value(dotenv.KEY_AUTH_PASSWORD) else ""
+    out["settings"]["rfc_password"] = PASSWORD_PLACEHOLDER if dotenv.get_dotenv_value(dotenv.KEY_RFC_PASSWORD) else ""
+    out["settings"]["root_password"] = PASSWORD_PLACEHOLDER if dotenv.get_dotenv_value(dotenv.KEY_ROOT_PASSWORD) else ""
 
-    #secrets
+    # secrets
     secrets_manager = get_default_secrets_manager()
     try:
         out["settings"]["secrets"] = secrets_manager.get_masked_secrets()
@@ -304,9 +317,10 @@ def convert_out(settings: Settings) -> SettingsOutput:
     # normalize certain fields
     for key, value in list(out["settings"].items()):
         # convert kwargs dicts to .env format
-        if (key.endswith("_kwargs") or key=="browser_http_headers") and isinstance(value, dict):
+        if (key.endswith("_kwargs") or key == "browser_http_headers") and isinstance(value, dict):
             out["settings"][key] = _dict_to_env(value)
     return out
+
 
 def _get_api_key_field(settings: Settings, provider: str, title: str) -> SettingsField:
     key = settings["api_keys"].get(provider, models.get_api_key(provider))
@@ -416,7 +430,6 @@ def _adjust_to_version(settings: Settings, default: Settings):
             settings["agent_profile"] = "agent0"
 
 
-
 def _load_sensitive_settings(settings: Settings):
     # load api keys from .env
     providers = get_providers("chat") + get_providers("embedding")
@@ -486,7 +499,6 @@ def _write_sensitive_settings(settings: Settings):
     secrets_manager = get_default_secrets_manager()
     submitted_content = settings["secrets"]
     secrets_manager.save_secrets_with_merge(submitted_content)
-
 
 
 def get_default_settings() -> Settings:
@@ -595,61 +607,50 @@ def _apply_settings(previous: Settings | None):
         ):
             from ctxai.helpers.extension import call_extensions_async
 
-            defer.DeferredTask().start_task(
-                call_extensions_async, "embedding_model_changed"
-            )
+            defer.DeferredTask().start_task(call_extensions_async, "embedding_model_changed")
 
         # update mcp settings if necessary
         if not previous or _settings["mcp_servers"] != previous["mcp_servers"]:
             from ctxai.helpers.mcp_handler import MCPConfig
 
             async def update_mcp_settings(mcp_servers: str):
-                PrintStyle(
-                    background_color="black", font_color="white", padding=True
-                ).print("Updating MCP config...")
+                PrintStyle(background_color="black", font_color="white", padding=True).print("Updating MCP config...")
                 NotificationManager.send_notification(
                     type=NotificationType.INFO,
                     priority=NotificationPriority.NORMAL,
                     message="Updating MCP settings...",
                     display_time=999,
-                    group="settings-mcp"
+                    group="settings-mcp",
                 )
 
                 mcp_config = MCPConfig.get_instance()
                 try:
                     MCPConfig.update(mcp_servers)
                 except Exception as e:
-                    
                     NotificationManager.send_notification(
                         type=NotificationType.ERROR,
                         priority=NotificationPriority.HIGH,
                         message="Failed to update MCP settings",
-                        detail=str(e),                        
+                        detail=str(e),
                     )
                     (
-                        PrintStyle(
-                            background_color="red", font_color="black", padding=True
-                        ).print("Failed to update MCP settings")
+                        PrintStyle(background_color="red", font_color="black", padding=True).print(
+                            "Failed to update MCP settings"
+                        )
                     )
-                    (
-                        PrintStyle(
-                            background_color="black", font_color="red", padding=True
-                        ).print(f"{e}")
-                    )
+                    (PrintStyle(background_color="black", font_color="red", padding=True).print(f"{e}"))
 
-                PrintStyle(
-                    background_color="#6734C3", font_color="white", padding=True
-                ).print("Parsed MCP config:")
+                PrintStyle(background_color="#6734C3", font_color="white", padding=True).print("Parsed MCP config:")
                 (
-                    PrintStyle(
-                        background_color="#334455", font_color="white", padding=False
-                    ).print(mcp_config.model_dump_json())
+                    PrintStyle(background_color="#334455", font_color="white", padding=False).print(
+                        mcp_config.model_dump_json()
+                    )
                 )
                 NotificationManager.send_notification(
                     type=NotificationType.INFO,
                     priority=NotificationPriority.NORMAL,
                     message="Finished updating MCP settings.",
-                    group="settings-mcp"
+                    group="settings-mcp",
                 )
 
             task2 = defer.DeferredTask().start_task(
@@ -688,16 +689,16 @@ def _env_to_dict(data: str):
     result = {}
     for line in data.splitlines():
         line = line.strip()
-        if not line or line.startswith('#'):
+        if not line or line.startswith("#"):
             continue
-        
-        if '=' not in line:
+
+        if "=" not in line:
             continue
-            
-        key, value = line.split('=', 1)
+
+        key, value = line.split("=", 1)
         key = key.strip()
         value = value.strip()
-        
+
         # If quoted, treat as string
         if value.startswith('"') and value.endswith('"'):
             result[key] = value[1:-1].replace('\\"', '"')  # Unescape quotes
@@ -709,7 +710,7 @@ def _env_to_dict(data: str):
                 result[key] = json.loads(value)
             except (json.JSONDecodeError, ValueError):
                 result[key] = value
-    
+
     return result
 
 
@@ -722,11 +723,11 @@ def _dict_to_env(data_dict):
             lines.append(f'{key}="{escaped_value}"')
         elif isinstance(value, (dict, list, bool)) or value is None:
             # Serialize as unquoted JSON
-            lines.append(f'{key}={json.dumps(value, separators=(",", ":"))}')
+            lines.append(f"{key}={json.dumps(value, separators=(',', ':'))}")
         else:
             # Numbers and other types as unquoted strings
-            lines.append(f'{key}={value}')
-    
+            lines.append(f"{key}={value}")
+
     return "\n".join(lines)
 
 

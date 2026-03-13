@@ -1,10 +1,8 @@
 from ctxai.helpers.extension import Extension
-from ctxai.agent import Agent, LoopData
 from ctxai.helpers.secrets import get_secrets_manager
 
 
 class MaskResponseStreamChunk(Extension):
-
     async def execute(self, **kwargs):
         if not self.agent:
             return
@@ -37,7 +35,8 @@ class MaskResponseStreamChunk(Extension):
             # Print the processed chunk (this is where printing should happen)
             if processed_chunk:
                 from ctxai.helpers.print_style import PrintStyle
+
                 PrintStyle().stream(processed_chunk)
-        except Exception as e:
+        except Exception:
             # If masking fails, proceed without masking
             pass

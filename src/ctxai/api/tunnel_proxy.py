@@ -1,6 +1,5 @@
 from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers import dotenv, runtime
-from ctxai.helpers.tunnel_manager import TunnelManager
 import requests
 
 
@@ -8,13 +7,10 @@ class TunnelProxy(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
         return await process(input)
 
+
 async def process(input: dict) -> dict | Response:
     # Get configuration from environment
-    tunnel_api_port = (
-        runtime.get_arg("tunnel_api_port")
-        or int(dotenv.get_dotenv_value("TUNNEL_API_PORT", 0))
-        or 55520
-    )
+    tunnel_api_port = runtime.get_arg("tunnel_api_port") or int(dotenv.get_dotenv_value("TUNNEL_API_PORT", 0)) or 55520
 
     # first verify the service is running:
     service_ok = False
@@ -22,7 +18,7 @@ async def process(input: dict) -> dict | Response:
         response = requests.post(f"http://localhost:{tunnel_api_port}/", json={"action": "health"})
         if response.status_code == 200:
             service_ok = True
-    except Exception as e:
+    except Exception:
         service_ok = False
 
     # forward this request to the tunnel service if OK
@@ -35,4 +31,5 @@ async def process(input: dict) -> dict | Response:
     else:
         # forward to API handler directly
         from ctxai.api.tunnel import process as local_process
+
         return await local_process(input)

@@ -1,6 +1,4 @@
 from ctxai.helpers.api import ApiHandler, Request, Response
-from ctxai.helpers import files
-from models import ModelConfig, ModelType
 from langchain_core.documents import Document
 from ctxai.agent import AgentContext
 
@@ -8,7 +6,6 @@ from ctxai.plugins._memory.helpers.memory import Memory, get_existing_memory_sub
 
 
 class MemoryDashboard(ApiHandler):
-
     async def process(self, input: dict, request: Request) -> dict | Response:
         try:
             action = input.get("action", "search")
@@ -97,7 +94,7 @@ class MemoryDashboard(ApiHandler):
             else:
                 return {
                     "success": False,
-                    "error": f"Failed to delete any memories.",
+                    "error": "Failed to delete any memories.",
                 }
 
         except Exception as e:
@@ -188,9 +185,7 @@ class MemoryDashboard(ApiHandler):
 
             # Get summary statistics
             total_memories = len(formatted_memories)
-            knowledge_count = sum(
-                1 for m in formatted_memories if m["knowledge_source"]
-            )
+            knowledge_count = sum(1 for m in formatted_memories if m["knowledge_source"])
             conversation_count = total_memories - knowledge_count
 
             # Get total count of all memories in database (unfiltered)

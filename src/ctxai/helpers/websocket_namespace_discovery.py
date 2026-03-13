@@ -115,9 +115,7 @@ def discover_websocket_namespaces(
                 module = _import_module(child_path)
                 discovered = _get_handler_classes(module)
                 if not discovered:
-                    raise RuntimeError(
-                        f"WebSocket handler module {child_path} defines no WebSocketHandler subclasses"
-                    )
+                    raise RuntimeError(f"WebSocket handler module {child_path} defines no WebSocketHandler subclasses")
                 if len(discovered) > 1:
                     raise RuntimeError(
                         f"WebSocket handler module {child_path} defines multiple WebSocketHandler subclasses: "
@@ -162,9 +160,7 @@ def discover_websocket_namespaces(
         module = _import_module(module_path)
         handler_classes = _get_handler_classes(module)
         if not handler_classes:
-            raise RuntimeError(
-                f"WebSocket handler module {module_path} defines no WebSocketHandler subclasses"
-            )
+            raise RuntimeError(f"WebSocket handler module {module_path} defines no WebSocketHandler subclasses")
         if len(handler_classes) > 1:
             raise RuntimeError(
                 f"WebSocket handler module {module_path} defines multiple WebSocketHandler subclasses: "

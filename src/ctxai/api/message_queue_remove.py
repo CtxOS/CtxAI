@@ -3,6 +3,7 @@ from ctxai.helpers import message_queue as mq
 from ctxai.agent import AgentContext
 from ctxai.helpers.state_monitor_integration import mark_dirty_for_context
 
+
 class MessageQueueRemove(ApiHandler):
     """Remove message(s) from queue."""
 

@@ -18,6 +18,7 @@ _BINARY_PEEK = 8192
 # Binary detection
 # ------------------------------------------------------------------
 
+
 def is_binary(path: str) -> bool:
     """Detect binary file by checking for null bytes."""
     try:
@@ -31,6 +32,7 @@ def is_binary(path: str) -> bool:
 # ------------------------------------------------------------------
 # File metadata
 # ------------------------------------------------------------------
+
 
 class FileInfo(TypedDict):
     exists: bool
@@ -65,6 +67,7 @@ def file_info(path: str) -> FileInfo:
 # Read
 # ------------------------------------------------------------------
 
+
 class ReadResult(TypedDict):
     content: str
     total_lines: int
@@ -91,13 +94,17 @@ def read_file(
 
     if not os.path.isfile(path):
         return ReadResult(
-            content="", total_lines=0, warnings="",
+            content="",
+            total_lines=0,
+            warnings="",
             error="file not found",
         )
 
     if is_binary(path):
         return ReadResult(
-            content="", total_lines=0, warnings="",
+            content="",
+            total_lines=0,
+            warnings="",
             error="file appears binary, use terminal instead",
         )
 
@@ -106,7 +113,9 @@ def read_file(
             all_lines = f.readlines()
     except OSError as exc:
         return ReadResult(
-            content="", total_lines=0, warnings="",
+            content="",
+            total_lines=0,
+            warnings="",
             error=str(exc),
         )
 
@@ -149,14 +158,11 @@ def read_file(
 
     if cropped_lines:
         nums = " ".join(str(n) for n in cropped_lines)
-        warn_parts.append(
-            f"long lines {nums} cropped - use terminal for precise manipulation"
-        )
+        warn_parts.append(f"long lines {nums} cropped - use terminal for precise manipulation")
     if trimmed_by_total:
         actual_end = line_from + len(output_lines)
         warn_parts.append(
-            f"output trimmed at line {actual_end} due to token limit"
-            " - use line_from/line_to for remaining"
+            f"output trimmed at line {actual_end} due to token limit - use line_from/line_to for remaining"
         )
 
     warn_str = ""
@@ -175,6 +181,7 @@ def read_file(
 # Write
 # ------------------------------------------------------------------
 
+
 class WriteResult(TypedDict):
     total_lines: int
     error: str
@@ -192,15 +199,14 @@ def write_file(path: str, content: str | None) -> WriteResult:
     except OSError as exc:
         return WriteResult(total_lines=0, error=str(exc))
 
-    total = content.count("\n") + (
-        1 if content and not content.endswith("\n") else 0
-    )
+    total = content.count("\n") + (1 if content and not content.endswith("\n") else 0)
     return WriteResult(total_lines=total, error="")
 
 
 # ------------------------------------------------------------------
 # Patch
 # ------------------------------------------------------------------
+
 
 class PatchResult(TypedDict):
     total_lines: int
@@ -236,12 +242,14 @@ def validate_edits(edits: list | None) -> tuple[list[dict], str]:
         is_insert = to < 0 or to < frm
         if is_insert:
             to = frm - 1  # normalise: marks zero-width range
-        parsed.append({
-            "from": frm,
-            "to": to,
-            "content": e.get("content", ""),
-            "insert": is_insert,
-        })
+        parsed.append(
+            {
+                "from": frm,
+                "to": to,
+                "content": e.get("content", ""),
+                "insert": is_insert,
+            }
+        )
 
     parsed.sort(key=lambda x: (x["from"], 0 if x["insert"] else 1))
     for i in range(1, len(parsed)):
@@ -253,9 +261,7 @@ def validate_edits(edits: list | None) -> tuple[list[dict], str]:
         # prev is a replace/delete: its range is [from..to] inclusive
         if cur["from"] <= prev["to"]:
             return [], (
-                f"overlapping edits: edit at {prev['from']}"
-                f" (to {prev['to']}) and {cur['from']}"
-                f" (to {cur['to']})"
+                f"overlapping edits: edit at {prev['from']} (to {prev['to']}) and {cur['from']} (to {cur['to']})"
             )
 
     return parsed, ""
@@ -287,11 +293,7 @@ def apply_patch(path: str, edits: list[dict]) -> int:
 
             for raw_line in src:
                 # Process all inserts targeting this line first
-                while (
-                    edit_idx < len(edits)
-                    and edits[edit_idx]["insert"]
-                    and edits[edit_idx]["from"] == line_no
-                ):
+                while edit_idx < len(edits) and edits[edit_idx]["insert"] and edits[edit_idx]["from"] == line_no:
                     edit = edits[edit_idx]
                     if edit["content"]:
                         dst.write(edit["content"])
@@ -305,9 +307,7 @@ def apply_patch(path: str, edits: list[dict]) -> int:
                         # Write replacement content once at range start
                         if line_no == edit["from"] and edit["content"]:
                             dst.write(edit["content"])
-                            total_written += _count_content_lines(
-                                edit["content"]
-                            )
+                            total_written += _count_content_lines(edit["content"])
                         # Skip original line; advance edit at range end
                         if line_no == edit["to"]:
                             edit_idx += 1
@@ -356,7 +356,6 @@ def patch_file(path: str, edits: list | None) -> PatchResult:
 # Internal
 # ------------------------------------------------------------------
 
+
 def _count_content_lines(content: str) -> int:
-    return content.count("\n") + (
-        1 if content and not content.endswith("\n") else 0
-    )
+    return content.count("\n") + (1 if content and not content.endswith("\n") else 0)

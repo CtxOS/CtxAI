@@ -5,7 +5,6 @@ from ctxai.helpers import dirty_json, errors, log, plugins
 
 # Direct import - this extension lives inside the memory plugin
 from ctxai.plugins._memory.helpers.memory import Memory
-from ctxai.plugins._memory.tools.memory_load import DEFAULT_THRESHOLD as DEFAULT_MEMORY_THRESHOLD
 
 
 DATA_NAME_TASK = "_recall_memories_task"
@@ -14,7 +13,6 @@ SEARCH_TIMEOUT = 30
 
 
 class RecallMemories(Extension):
-
     # INTERVAL = 3
     # HISTORY = 10000
     # MEMORIES_MAX_SEARCH = 12
@@ -37,7 +35,6 @@ class RecallMemories(Extension):
 
         # every X iterations (or the first one) recall memories
         if loop_data.iteration % set["memory_recall_interval"] == 0:
-
             # show util message right away
             log_item = self.agent.context.log.log(
                 type="util",
@@ -68,7 +65,6 @@ class RecallMemories(Extension):
         if "solutions" in extras:
             del extras["solutions"]
 
-
         set = plugins.get_plugin_config("_memory", self.agent)
         if not set:
             return None
@@ -82,13 +78,9 @@ class RecallMemories(Extension):
         #     log_item.stream(query=content)
 
         # call util llm to summarize conversation
-        user_instruction = (
-            loop_data.user_message.output_text() if loop_data.user_message else "None"
-        )
-        history = self.agent.history.output_text()[-set["memory_recall_history_len"]:]
-        message = self.agent.read_prompt(
-            "memory.memories_query.msg.md", history=history, message=user_instruction
-        )
+        user_instruction = loop_data.user_message.output_text() if loop_data.user_message else "None"
+        history = self.agent.history.output_text()[-set["memory_recall_history_len"] :]
+        message = self.agent.read_prompt("memory.memories_query.msg.md", history=history, message=user_instruction)
 
         # if query preparation by AI is enabled
         if set["memory_recall_query_prep"]:
@@ -100,12 +92,10 @@ class RecallMemories(Extension):
                     # callback=log_callback,
                 )
                 query = query.strip()
-                log_item.update(query=query) # no need for streaming here
+                log_item.update(query=query)  # no need for streaming here
             except Exception as e:
                 err = errors.format_error(e)
-                self.agent.context.log.log(
-                    type="warning", heading="Recall memories extension error:", content=err
-                )
+                self.agent.context.log.log(type="warning", heading="Recall memories extension error:", content=err)
                 query = ""
 
             # no query, no search
@@ -114,7 +104,7 @@ class RecallMemories(Extension):
                     heading="Failed to generate memory query",
                 )
                 return
-        
+
         # otherwise use the message and history as query
         else:
             query = user_instruction + "\n\n" + history
@@ -194,11 +184,8 @@ class RecallMemories(Extension):
 
             except Exception as e:
                 err = errors.format_error(e)
-                self.agent.context.log.log(
-                    type="warning", heading="Failed to filter relevant memories", content=err
-                )
+                self.agent.context.log.log(type="warning", heading="Failed to filter relevant memories", content=err)
                 filter_inds = []
-
 
         # limit the number of memories and solutions
         memories = memories[: set["memory_recall_memories_max_result"]]
@@ -220,10 +207,6 @@ class RecallMemories(Extension):
 
         # place to prompt
         if memories_txt:
-            extras["memories"] = self.agent.parse_prompt(
-                "agent.system.memories.md", memories=memories_txt
-            )
+            extras["memories"] = self.agent.parse_prompt("agent.system.memories.md", memories=memories_txt)
         if solutions_txt:
-            extras["solutions"] = self.agent.parse_prompt(
-                "agent.system.solutions.md", solutions=solutions_txt
-            )
+            extras["solutions"] = self.agent.parse_prompt("agent.system.solutions.md", solutions=solutions_txt)

@@ -3,6 +3,7 @@ from ctxai.helpers import message_queue as mq
 from ctxai.agent import AgentContext
 from ctxai.helpers.state_monitor_integration import mark_dirty_for_context
 
+
 class MessageQueueSend(ApiHandler):
     """Send queued message(s) immediately."""
 

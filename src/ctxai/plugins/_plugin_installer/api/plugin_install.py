@@ -10,6 +10,7 @@ from ctxai.plugins._plugin_installer.helpers.install import (
     update_from_git,
 )
 
+
 class PluginInstall(ApiHandler):
     """Plugin installation API. Handles ZIP upload, Git clone, and index fetch."""
 

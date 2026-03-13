@@ -1,10 +1,9 @@
 from ctxai import initialize
-from ctxai.helpers import dirty_json, files, subagents, projects
+from ctxai.helpers import dirty_json, files, subagents
 from ctxai.helpers.extension import Extension
 
 
 class LoadProfileSettings(Extension):
-    
     def execute(self, **kwargs) -> None:
 
         if not self.agent or not self.agent.config.profile:
@@ -20,9 +19,7 @@ class LoadProfileSettings(Extension):
                     if isinstance(override_settings, dict):
                         settings_override.update(override_settings)
                     else:
-                        raise Exception(
-                            f"Subordinate settings in {settings_path} must be a JSON object."
-                        )
+                        raise Exception(f"Subordinate settings in {settings_path} must be a JSON object.")
                 except Exception as e:
                     self.agent.context.log.log(
                         type="error",
@@ -51,4 +48,3 @@ class LoadProfileSettings(Extension):
             #         f"{self.agent.number} with profile '{self.agent.config.profile}'."
             #     ),
             # )
-

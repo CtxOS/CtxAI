@@ -11,14 +11,12 @@ Usage:
 """
 
 import argparse
-import os
 import sys
 import yaml
 import re
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from dataclasses import dataclass, field
-from datetime import datetime
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -29,6 +27,7 @@ from ctxai.helpers import files
 @dataclass
 class Skill:
     """Represents a skill loaded from SKILL.md"""
+
     name: str
     description: str
     path: Path
@@ -171,9 +170,9 @@ def create_skill(name: str, description: str = "", author: str = "") -> Path:
     # Create SKILL.md from template
     skill_content = f'''---
 name: "{name}"
-description: "{description or 'Description of what this skill does and when to use it'}"
+description: "{description or "Description of what this skill does and when to use it"}"
 version: "1.0.0"
-author: "{author or 'Your Name'}"
+author: "{author or "Your Name"}"
 tags: ["custom"]
 trigger_patterns:
   - "{name}"
@@ -263,7 +262,7 @@ Examples:
   %(prog)s show brainstorming       Show skill details
   %(prog)s validate my-skill        Validate a skill
   %(prog)s search python            Search for skills
-        """
+        """,
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -303,7 +302,7 @@ Examples:
         try:
             skill_dir = create_skill(args.name, args.description, args.author)
             print(f"\n✅ Created skill at: {skill_dir}")
-            print(f"\nNext steps:")
+            print("\nNext steps:")
             print(f"  1. Edit {skill_dir / 'SKILL.md'} to add your instructions")
             print(f"  2. Add any helper scripts to {skill_dir / 'scripts'}/")
             print(f"  3. Run: python -m helpers.skills_cli validate {args.name}")
@@ -322,9 +321,9 @@ Examples:
             print(f"Path:        {skill.path}")
             print(f"Tags:        {', '.join(skill.tags) if skill.tags else 'None'}")
             print(f"Triggers:    {', '.join(skill.trigger_patterns) if skill.trigger_patterns else 'None'}")
-            print(f"\nDescription:")
+            print("\nDescription:")
             print(f"  {skill.description}")
-            print(f"\nContent Preview (first 500 chars):")
+            print("\nContent Preview (first 500 chars):")
             print("-" * 60)
             print(skill.content[:500])
             if len(skill.content) > 500:

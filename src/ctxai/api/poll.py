@@ -4,7 +4,6 @@ from ctxai.helpers.state_snapshot import build_snapshot
 
 
 class Poll(ApiHandler):
-
     async def process(self, input: dict, request: Request) -> dict | Response:
         return await build_snapshot(
             context=input.get("context"),

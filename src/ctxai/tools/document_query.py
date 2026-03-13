@@ -5,7 +5,6 @@ from ctxai.helpers.document_query import DocumentQueryHelper
 
 
 class DocumentQueryTool(Tool):
-
     async def execute(self, **kwargs):
         document_uri = kwargs.get("document")
         document_uris = []
@@ -26,19 +25,16 @@ class DocumentQueryTool(Tool):
             else []
         )
         try:
-
             progress = []
 
             # logging callback
             def progress_callback(msg):
                 progress.append(msg)
                 self.log.update(progress="\n".join(progress))
-            
+
             helper = DocumentQueryHelper(self.agent, progress_callback)
             if not queries:
-                contents = await asyncio.gather(
-                    *[helper.document_get_content(uri) for uri in document_uris]
-                )
+                contents = await asyncio.gather(*[helper.document_get_content(uri) for uri in document_uris])
                 content = "\n\n---\n\n".join(contents)
             else:
                 _, content = await helper.document_qa(document_uris, queries)

@@ -7,13 +7,7 @@ from ctxai.helpers import projects, skills
 
 
 class SystemPrompt(Extension):
-
-    async def execute(
-        self,
-        system_prompt: list[str] = [],
-        loop_data: LoopData = LoopData(),
-        **kwargs: Any
-    ):
+    async def execute(self, system_prompt: list[str] = [], loop_data: LoopData = LoopData(), **kwargs: Any):
         if not self.agent:
             return
 
@@ -35,7 +29,7 @@ class SystemPrompt(Extension):
             system_prompt.append(secrets_prompt)
         if project_prompt:
             system_prompt.append(project_prompt)
-       
+
 
 def get_main_prompt(agent: Agent):
     return agent.read_prompt("agent.system.main.md")
@@ -70,7 +64,7 @@ def get_secrets_prompt(agent: Agent):
         secrets = secrets_manager.get_secrets_for_prompt()
         vars = get_settings()["variables"]
         return agent.read_prompt("agent.system.secrets.md", secrets=secrets, vars=vars)
-    except Exception as e:
+    except Exception:
         # If secrets module is not available or has issues, return empty string
         return ""
 
@@ -80,12 +74,11 @@ def get_project_prompt(agent: Agent):
     project_name = agent.context.get_data(projects.CONTEXT_DATA_KEY_PROJECT)
     if project_name:
         project_vars = projects.build_system_prompt_vars(project_name)
-        result += "\n\n" + agent.read_prompt(
-            "agent.system.projects.active.md", **project_vars
-        )
+        result += "\n\n" + agent.read_prompt("agent.system.projects.active.md", **project_vars)
     else:
         result += "\n\n" + agent.read_prompt("agent.system.projects.inactive.md")
     return result
+
 
 def get_skills_prompt(agent: Agent):
     available = skills.list_skills(agent=agent)

@@ -1,10 +1,8 @@
-from datetime import datetime, timezone
 from ctxai.helpers.extension import Extension
-from ctxai.agent import LoopData
-from ctxai.helpers.localization import Localization
 from ctxai.helpers.errors import RepairableException
 from ctxai.helpers import errors, extension
 from ctxai.helpers.print_style import PrintStyle
+
 
 class HandleRepairableException(Extension):
     async def execute(self, data: dict = {}, **kwargs):
@@ -21,5 +19,3 @@ class HandleRepairableException(Extension):
             PrintStyle(font_color="red", padding=True).print(msg["message"])
             self.agent.context.log.log(type="warning", content=msg["message"])
             data["exception"] = None
-
-        

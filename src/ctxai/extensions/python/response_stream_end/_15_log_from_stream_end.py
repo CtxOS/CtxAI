@@ -1,15 +1,8 @@
-from ctxai.helpers import persist_chat, tokens
 from ctxai.helpers.extension import Extension
 from ctxai.agent import LoopData
-import asyncio
-from ctxai.helpers.log import LogItem
-from ctxai.helpers import log
-import math
-from ctxai.extensions.python.before_main_llm_call._10_log_for_stream import build_heading, build_default_heading
 
 
 class LogFromStream(Extension):
-
     async def execute(
         self,
         loop_data: LoopData = LoopData(),

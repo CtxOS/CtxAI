@@ -39,9 +39,7 @@ class DevWebsocketTestHandler(WebSocketHandler):
                     code="SUBSCRIBE_FAILED",
                     message="Unable to subscribe to diagnostics",
                 )
-            return self.result_ok(
-                {"status": "subscribed", "timestamp": data.get("requestedAt")}
-            )
+            return self.result_ok({"status": "subscribed", "timestamp": data.get("requestedAt")})
 
         if event_type == "ws_event_console_unsubscribe":
             self.manager.unregister_diagnostic_watcher(self.namespace, sid)
@@ -74,9 +72,7 @@ class DevWebsocketTestHandler(WebSocketHandler):
         if event_type == "ws_tester_request_delayed":
             delay_ms = int(data.get("delay_ms", 0))
             await asyncio.sleep(delay_ms / 1000)
-            PrintStyle.warning(
-                "Harness delayed request finished after %s ms", delay_ms
-            )
+            PrintStyle.warning("Harness delayed request finished after %s ms", delay_ms)
             return self.result_ok(
                 {
                     "status": "delayed",
@@ -98,9 +94,7 @@ class DevWebsocketTestHandler(WebSocketHandler):
 
         if event_type == "ws_tester_request_all":
             marker = data.get("marker")
-            PrintStyle.debug(
-                "Harness requestAll invoked by %s marker='%s'", sid, marker
-            )
+            PrintStyle.debug("Harness requestAll invoked by %s marker='%s'", sid, marker)
             exclude_handlers = data.get("excludeHandlers")
             aggregated = await self.request_all(
                 "ws_tester_request",

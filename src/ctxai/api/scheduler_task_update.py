@@ -1,7 +1,13 @@
 from ctxai.helpers.api import ApiHandler, Input, Output, Request
 from ctxai.helpers.task_scheduler import (
-    TaskScheduler, ScheduledTask, AdHocTask, PlannedTask, TaskState,
-    serialize_task, parse_task_schedule, parse_task_plan
+    TaskScheduler,
+    ScheduledTask,
+    AdHocTask,
+    PlannedTask,
+    TaskState,
+    serialize_task,
+    parse_task_schedule,
+    parse_task_plan,
 )
 from ctxai.helpers.localization import Localization
 
@@ -59,7 +65,7 @@ class SchedulerTaskUpdate(ApiHandler):
                 task_schedule = parse_task_schedule(schedule_data)
 
                 # Set the timezone from the request if not already in schedule_data
-                if not schedule_data.get('timezone', None) and timezone:
+                if not schedule_data.get("timezone", None) and timezone:
                     task_schedule.timezone = timezone
 
                 update_params["schedule"] = task_schedule
@@ -87,7 +93,4 @@ class SchedulerTaskUpdate(ApiHandler):
         # Return the updated task using our standardized serialization function
         task_dict = serialize_task(updated_task)
 
-        return {
-            "ok": True,
-            "task": task_dict
-        }
+        return {"ok": True, "task": task_dict}

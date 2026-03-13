@@ -7,10 +7,12 @@ ModelType = Literal["chat", "embedding"]
 PROVIDER_MANAGER_CACHE_AREA = "model_providers(plugins)"
 PROVIDER_MANAGER_CACHE_KEY = "manager"
 
+
 # Type alias for UI option items
 class FieldOption(TypedDict):
     value: str
     label: str
+
 
 class ProviderManager:
     _raw: Optional[Dict[str, List[Dict[str, str]]]] = None  # full provider data
@@ -53,7 +55,7 @@ class ProviderManager:
                 for pid, cfg in providers.items():
                     entries[pid] = cfg or {}
             elif isinstance(providers, list):
-                for p in (providers or []):
+                for p in providers or []:
                     pid = (p.get("id") or p.get("value") or "").lower()
                     if pid:
                         entries[pid] = {k: v for k, v in p.items() if k not in ("id", "value")}
@@ -68,6 +70,7 @@ class ProviderManager:
 
         # Merge plugin provider configs (enabled plugins only)
         from ctxai.helpers.plugins import get_enabled_plugin_paths
+
         plugin_yamls = get_enabled_plugin_paths(None, "conf", "model_providers.yaml")
         for plugin_yaml_path in plugin_yamls:
             plugin_data = self._normalise_yaml(self._load_yaml(plugin_yaml_path))
@@ -85,10 +88,12 @@ class ProviderManager:
             for pid, cfg in providers.items():
                 entry = {"id": pid, **cfg}
                 items.append(entry)
-            items.sort(key=lambda p: (
-                p.get("id") == "other",  # False (0) first, True (1) last
-                (p.get("name") or p.get("id") or "").lower(),
-            ))
+            items.sort(
+                key=lambda p: (
+                    p.get("id") == "other",  # False (0) first, True (1) last
+                    (p.get("name") or p.get("id") or "").lower(),
+                )
+            )
             normalised[p_type] = items
 
         # Save raw

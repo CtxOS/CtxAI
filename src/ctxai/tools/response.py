@@ -2,7 +2,6 @@ from ctxai.helpers.tool import Tool, Response
 
 
 class ResponseTool(Tool):
-
     async def execute(self, **kwargs):
         return Response(message=self.args["text"] if "text" in self.args else self.args["message"], break_loop=True)
 
@@ -16,4 +15,4 @@ class ResponseTool(Tool):
 
         if self.loop_data and "log_item_response" in self.loop_data.params_temporary:
             log = self.loop_data.params_temporary["log_item_response"]
-            log.update(finished=True) # mark the message as finished
+            log.update(finished=True)  # mark the message as finished

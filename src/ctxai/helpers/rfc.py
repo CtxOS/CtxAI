@@ -5,7 +5,6 @@ from typing import Any, TypedDict
 import aiohttp
 from ctxai.helpers import crypto
 
-from ctxai.helpers import dotenv
 
 
 # Remote Function Call library
@@ -25,18 +24,14 @@ class RFCCall(TypedDict):
     hash: str
 
 
-async def call_rfc(
-    url: str, password: str, module: str, function_name: str, args: list, kwargs: dict
-):
+async def call_rfc(url: str, password: str, module: str, function_name: str, args: list, kwargs: dict):
     input = RFCInput(
         module=module,
         function_name=function_name,
         args=args,
         kwargs=kwargs,
     )
-    call = RFCCall(
-        rfc_input=json.dumps(input), hash=crypto.hash_data(json.dumps(input), password)
-    )
+    call = RFCCall(rfc_input=json.dumps(input), hash=crypto.hash_data(json.dumps(input), password))
     result = await _send_json_data(url, call)
     return result
 
@@ -46,9 +41,7 @@ async def handle_rfc(rfc_call: RFCCall, password: str):
         raise Exception("Invalid RFC hash")
 
     input: RFCInput = json.loads(rfc_call["rfc_input"])
-    return await _call_function(
-        input["module"], input["function_name"], *input["args"], **input["kwargs"]
-    )
+    return await _call_function(input["module"], input["function_name"], *input["args"], **input["kwargs"])
 
 
 async def _call_function(module: str, function_name: str, *args, **kwargs):

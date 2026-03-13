@@ -294,12 +294,10 @@ def test_run_ui_builds_namespace_handler_map_without_cross_registration() -> Non
     assert "/dev_websocket_test" in handlers_by_namespace
 
     assert all(
-        handler.__class__.__name__ != "DevWebsocketTestHandler"
-        for handler in handlers_by_namespace["/state_sync"]
+        handler.__class__.__name__ != "DevWebsocketTestHandler" for handler in handlers_by_namespace["/state_sync"]
     )
     assert all(
-        handler.__class__.__name__ != "StateSyncHandler"
-        for handler in handlers_by_namespace["/dev_websocket_test"]
+        handler.__class__.__name__ != "StateSyncHandler" for handler in handlers_by_namespace["/dev_websocket_test"]
     )
 
 
@@ -380,9 +378,7 @@ async def test_lifecycle_broadcasts_deliver_only_within_the_namespace() -> None:
     await manager.handle_connect(ns_state, "sid-state-1")
     await asyncio.sleep(0)
     state_connect_calls = [
-        call
-        for call in socketio.emit.await_args_list
-        if call.args and call.args[0] == LIFECYCLE_CONNECT_EVENT
+        call for call in socketio.emit.await_args_list if call.args and call.args[0] == LIFECYCLE_CONNECT_EVENT
     ]
     assert state_connect_calls
     assert all(call.kwargs.get("namespace") == ns_state for call in state_connect_calls)
@@ -391,9 +387,7 @@ async def test_lifecycle_broadcasts_deliver_only_within_the_namespace() -> None:
     await manager.handle_connect(ns_dev, "sid-dev-1")
     await asyncio.sleep(0)
     dev_connect_calls = [
-        call
-        for call in socketio.emit.await_args_list
-        if call.args and call.args[0] == LIFECYCLE_CONNECT_EVENT
+        call for call in socketio.emit.await_args_list if call.args and call.args[0] == LIFECYCLE_CONNECT_EVENT
     ]
     assert dev_connect_calls
     assert all(call.kwargs.get("namespace") == ns_dev for call in dev_connect_calls)
@@ -407,9 +401,7 @@ async def test_lifecycle_broadcasts_deliver_only_within_the_namespace() -> None:
     await manager.handle_disconnect(ns_state, "sid-state-2")
     await asyncio.sleep(0)
     state_disconnect_calls = [
-        call
-        for call in socketio.emit.await_args_list
-        if call.args and call.args[0] == LIFECYCLE_DISCONNECT_EVENT
+        call for call in socketio.emit.await_args_list if call.args and call.args[0] == LIFECYCLE_DISCONNECT_EVENT
     ]
     assert state_disconnect_calls
     assert all(call.kwargs.get("namespace") == ns_state for call in state_disconnect_calls)

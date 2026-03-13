@@ -69,7 +69,6 @@ def parse_result(text: str) -> tuple[str, str]:
 
 
 class InfectionChecker:
-
     def __init__(self, config: dict, iteration: int):
         self.mode: str = config.get("mode", "thoughts")
         self.model_choice: str = config.get("model", "utility")
@@ -117,9 +116,8 @@ class InfectionChecker:
             raise
         except Exception as e:
             from ctxai.helpers.print_style import PrintStyle
-            PrintStyle(font_color="red", padding=True).print(
-                f"Infection check error (non-fatal): {e}"
-            )
+
+            PrintStyle(font_color="red", padding=True).print(f"Infection check error (non-fatal): {e}")
 
     async def _gate_inner(self, agent: "Agent", tool_name: str, tool_args: dict | None):
         if agent.get_data(DATA_KEY_PASSED):
@@ -226,10 +224,7 @@ class InfectionChecker:
             filtered.append(entry)
 
         hist_text = history_helpers.output_text(filtered, ai_label="assistant", human_label="user")
-        user_msg = (
-            f"## Recent Conversation History\n{hist_text}\n\n"
-            f"## Current Agent Output to Analyze\n{log_text}"
-        )
+        user_msg = f"## Recent Conversation History\n{hist_text}\n\n## Current Agent Output to Analyze\n{log_text}"
         self._check_msgs = [
             SystemMessage(content=self.prompt),
             HumanMessage(content=user_msg),
@@ -251,9 +246,7 @@ class InfectionChecker:
         action, detail = parse_result(response)
         return action, detail, response
 
-    async def _clarify_loop(
-        self, agent: "Agent", clarify_text: str, log_item: "LogItem"
-    ) -> tuple[str, str, str]:
+    async def _clarify_loop(self, agent: "Agent", clarify_text: str, log_item: "LogItem") -> tuple[str, str, str]:
         cot_parts: list[str] = []
 
         # Throttled log display — avoids per-token stream() and O(n²) masking.
@@ -297,12 +290,7 @@ class InfectionChecker:
 
             # Feed agent's response back to the check model
             self._check_msgs.append(
-                HumanMessage(
-                    content=(
-                        f"The agent responded:\n\n{agent_resp}\n\n"
-                        "Re-evaluate and provide your verdict."
-                    )
-                )
+                HumanMessage(content=(f"The agent responded:\n\n{agent_resp}\n\nRe-evaluate and provide your verdict."))
             )
 
             async def _check_cb(chunk: str, full: str):
@@ -337,9 +325,7 @@ class InfectionChecker:
             msgs = agent.history.current.messages
             if msgs and msgs[-1].ai:
                 msgs.pop()
-            agent.history.add_message(
-                ai=True, content="[BLOCKED] Response terminated by security policy."
-            )
+            agent.history.add_message(ai=True, content="[BLOCKED] Response terminated by security policy.")
         except Exception:
             pass
 
@@ -363,9 +349,7 @@ class InfectionChecker:
         # so schedule queue resumption before raising.
         self._schedule_queue_resume(agent)
 
-        raise HandledException(
-            Exception("Infection check terminated: " + (detail or "threat detected"))
-        )
+        raise HandledException(Exception("Infection check terminated: " + (detail or "threat detected")))
 
     @staticmethod
     def _schedule_queue_resume(agent: "Agent"):

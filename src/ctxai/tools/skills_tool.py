@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import List
 
 from ctxai.helpers.tool import Tool, Response
-from ctxai.helpers import projects, files, file_tree
-from ctxai.helpers import skills as skills_helper, runtime
+from ctxai.helpers import skills as skills_helper
 
 
 DATA_NAME_LOADED_SKILLS = "loaded_skills"
@@ -25,11 +23,7 @@ class SkillsTool(Tool):
     """
 
     async def execute(self, **kwargs) -> Response:
-        method = (
-            (kwargs.get("method") or self.args.get("method") or self.method or "")
-            .strip()
-            .lower()
-        )
+        method = (kwargs.get("method") or self.args.get("method") or self.method or "").strip().lower()
 
         try:
             if method == "list":
@@ -51,9 +45,7 @@ class SkillsTool(Tool):
                 message="Error: missing/invalid 'method'. Supported: list, load.",
                 break_loop=False,
             )
-        except (
-            Exception
-        ) as e:  # keep tool robust; return error instead of crashing loop
+        except Exception as e:  # keep tool robust; return error instead of crashing loop
             return Response(message=f"Error in skills_tool: {e}", break_loop=False)
 
     def _list(self) -> str:
@@ -129,10 +121,10 @@ class SkillsTool(Tool):
         if skill.name in loaded:
             loaded.remove(skill.name)
         loaded.append(skill.name)
-        self.agent.data[DATA_NAME_LOADED_SKILLS] = loaded[-max_loaded_skills():]
+        self.agent.data[DATA_NAME_LOADED_SKILLS] = loaded[-max_loaded_skills() :]
 
         return f"Loaded skill '{skill.name}' into EXTRAS."
 
 
 def max_loaded_skills() -> int:
-    return 5 # TODO move to settings
+    return 5  # TODO move to settings

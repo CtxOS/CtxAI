@@ -3,7 +3,6 @@ from ctxai.agent import LoopData
 
 
 class CodeExecutionPrompt(Extension):
-
     async def execute(
         self,
         system_prompt: list[str] = [],
@@ -12,6 +11,6 @@ class CodeExecutionPrompt(Extension):
     ):
         if not self.agent:
             return
-            
+
         system_prompt.append(self.agent.read_prompt("agent.system.tool.code_exe.md"))
         system_prompt.append(self.agent.read_prompt("agent.system.tool.input.md"))

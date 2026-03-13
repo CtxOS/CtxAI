@@ -6,7 +6,7 @@ import threading
 from functools import wraps
 from pathlib import Path
 from typing import Union, TypedDict, Dict, Any
-from flask import Request, Response, jsonify, Flask, session, request, send_file, redirect, url_for
+from flask import Request, Response, Flask, session, request, redirect, url_for
 from werkzeug.wrappers.response import Response as BaseResponse
 from ctxai.agent import AgentContext
 from ctxai import initialize
@@ -17,7 +17,7 @@ from ctxai.helpers import files, cache
 ThreadLockType = Union[threading.Lock, threading.RLock]
 
 CACHE_AREA = "api_handlers(api)(plugins)(extensions)"
-cache.toggle_area(CACHE_AREA, False) # cache off for now
+cache.toggle_area(CACHE_AREA, False)  # cache off for now
 
 Input = dict
 Output = Union[Dict[str, Any], Response, TypedDict]  # type: ignore
@@ -69,7 +69,6 @@ class ApiHandler:
                 # input_data = {"data": request.get_data(as_text=True)}
                 input_data = {}
 
-
             # process via handler
             output = await self.process(input_data, request)
 
@@ -78,9 +77,7 @@ class ApiHandler:
                 return output
             else:
                 response_json = json.dumps(output)
-                return Response(
-                    response=response_json, status=200, mimetype="application/json"
-                )
+                return Response(response=response_json, status=200, mimetype="application/json")
 
             # return exceptions with 500
         except Exception as e:
@@ -106,15 +103,11 @@ class ApiHandler:
                 return context
             else:
                 raise Exception(f"Context {ctxid} not found")
-            
-
 
 
 def is_loopback_address(address: str) -> bool:
     loopback_checker = {
-        socket.AF_INET: lambda x: (
-            struct.unpack("!I", socket.inet_aton(x))[0] >> (32 - 8)
-        ) == 127,
+        socket.AF_INET: lambda x: (struct.unpack("!I", socket.inet_aton(x))[0] >> (32 - 8)) == 127,
         socket.AF_INET6: lambda x: x == "::1",
     }
     address_type = "hostname"
@@ -148,6 +141,7 @@ def requires_api_key(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
         from ctxai.helpers.settings import get_settings
+
         valid_api_key = get_settings()["mcp_server_token"]
 
         if api_key := request.headers.get("X-API-KEY"):
@@ -178,6 +172,7 @@ def requires_auth(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
         from ctxai.helpers import login
+
         user_pass_hash = login.get_credentials_hash()
         if not user_pass_hash:
             return await f(*args, **kwargs)
@@ -192,6 +187,7 @@ def csrf_protect(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
         from ctxai.helpers import runtime
+
         token = session.get("csrf_token")
         header = request.headers.get("X-CSRF-Token")
         cookie = request.cookies.get("csrf_token_" + runtime.get_runtime_id())
@@ -268,4 +264,3 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
         _dispatch,
         methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     )
-

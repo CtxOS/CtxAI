@@ -18,23 +18,17 @@ class RenameWorkDirFile(ApiHandler):
                 parent_path = input.get("parentPath", current_path)
                 if not parent_path:
                     return {"error": "Parent path is required"}
-                res = await runtime.call_development_function(
-                    create_folder, parent_path, new_name
-                )
+                res = await runtime.call_development_function(create_folder, parent_path, new_name)
             else:
                 file_path = input.get("path", "")
                 if not file_path:
                     return {"error": "Path is required"}
                 if not file_path.startswith("/"):
                     file_path = f"/{file_path}"
-                res = await runtime.call_development_function(
-                    rename_item, file_path, new_name
-                )
+                res = await runtime.call_development_function(rename_item, file_path, new_name)
 
             if res:
-                result = await runtime.call_development_function(
-                    get_work_dir_files.get_files, current_path
-                )
+                result = await runtime.call_development_function(get_work_dir_files.get_files, current_path)
                 return {"data": result}
 
             error_msg = "Failed to create folder" if action == "create-folder" else "Rename failed"

@@ -1,17 +1,13 @@
-import json
 from typing import Any, TYPE_CHECKING
 from ctxai.helpers.files import VariablesPlugin
-from ctxai.helpers import files, projects, subagents
-from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers import projects, subagents
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
 
 
 class CallSubordinate(VariablesPlugin):
-    def get_variables(
-        self, file: str, backup_dirs: list[str] | None = None, **kwargs
-    ) -> dict[str, Any]:
+    def get_variables(self, file: str, backup_dirs: list[str] | None = None, **kwargs) -> dict[str, Any]:
 
         # current agent instance
         agent: Agent | None = kwargs.get("_agent", None)
@@ -31,4 +27,3 @@ class CallSubordinate(VariablesPlugin):
             return {"agent_profiles": profiles}
         else:
             return {"agent_profiles": None}
-        

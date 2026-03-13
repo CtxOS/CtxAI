@@ -7,7 +7,6 @@ from ctxai.helpers.print_style import PrintStyle
 PrintStyle.standard("Preparing environment...")
 
 try:
-
     runtime.initialize()
 
     # generate random root password if not set (for SSH)

@@ -1,5 +1,4 @@
 from ctxai.helpers.extension import Extension
-from ctxai.helpers.secrets import SecretsManager
 
 
 class MaskResponseStreamEnd(Extension):
@@ -19,10 +18,11 @@ class MaskResponseStreamEnd(Extension):
                 # Print any remaining masked content
                 if tail:
                     from ctxai.helpers.print_style import PrintStyle
+
                     PrintStyle().stream(tail)
 
                 # Clean up the filter
                 agent.set_data(filter_key, None)
-        except Exception as e:
+        except Exception:
             # If masking fails, proceed without masking
             pass

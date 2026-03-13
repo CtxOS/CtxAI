@@ -31,6 +31,7 @@ class SnapshotV1(TypedDict):
     notifications_guid: str
     notifications_version: int
 
+
 @dataclass(frozen=True)
 class StateRequestV1:
     context: str | None

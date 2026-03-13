@@ -217,7 +217,6 @@ class LogOutput:
 
 
 class Log:
-
     def __init__(self):
         self._lock = threading.RLock()
         self.context: "AgentContext|None" = None  # set from outside
@@ -343,9 +342,7 @@ class Log:
             if item.heading and item.update_progress != "none":
                 if item.no >= self.progress_no:
                     self.progress = item.heading
-                    self.progress_no = (
-                        item.no if item.update_progress == "persistent" else -1
-                    )
+                    self.progress_no = item.no if item.update_progress == "persistent" else -1
                     self.progress_active = True
         if notify_state_monitor:
             self._notify_state_monitor_for_context_update()
@@ -420,6 +417,7 @@ class Log:
         """Recursively mask secrets in nested objects."""
         try:
             from ctxai.agent import AgentContext
+
             secrets_mgr = get_secrets_manager(self.context or AgentContext.current())
 
             # debug helper to identify context mismatch

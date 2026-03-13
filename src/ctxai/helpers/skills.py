@@ -4,9 +4,9 @@ import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Literal, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
-from ctxai.helpers import files, subagents, projects, file_tree, runtime
+from ctxai.helpers import files, subagents, file_tree, runtime
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
@@ -42,7 +42,7 @@ def get_skills_base_dir() -> Path:
 
 
 def get_skill_roots(
-    agent: Agent|None=None,
+    agent: Agent | None = None,
 ) -> List[str]:
 
     if agent:
@@ -50,16 +50,18 @@ def get_skill_roots(
         paths = subagents.get_paths(agent, "skills")
     else:
         # skill roots available globally
-        project_agents = files.find_existing_paths_by_pattern("usr/projects/*/.a0proj/agents/*/skills") # agents in projects
-        projects = files.find_existing_paths_by_pattern("usr/projects/*/.a0proj/skills") # projects
-        usr_agents = files.find_existing_paths_by_pattern("usr/agents/*/skills") # agents
-        agents = files.find_existing_paths_by_pattern("agents/*/skills") # agents
-        plugins = files.find_existing_paths_by_pattern("plugins/*/skills") # plugins
-        usr_plugins = files.find_existing_paths_by_pattern("usr/plugins/*/skills") # plugins
-        plugins_agents = files.find_existing_paths_by_pattern("plugins/*/agents/*/skills") # agents in plugins
-        usr_plugins_agents = files.find_existing_paths_by_pattern("usr/plugins/*/agents/*/skills") # agents in plugins
+        project_agents = files.find_existing_paths_by_pattern(
+            "usr/projects/*/.a0proj/agents/*/skills"
+        )  # agents in projects
+        projects = files.find_existing_paths_by_pattern("usr/projects/*/.a0proj/skills")  # projects
+        usr_agents = files.find_existing_paths_by_pattern("usr/agents/*/skills")  # agents
+        agents = files.find_existing_paths_by_pattern("agents/*/skills")  # agents
+        plugins = files.find_existing_paths_by_pattern("plugins/*/skills")  # plugins
+        usr_plugins = files.find_existing_paths_by_pattern("usr/plugins/*/skills")  # plugins
+        plugins_agents = files.find_existing_paths_by_pattern("plugins/*/agents/*/skills")  # agents in plugins
+        usr_plugins_agents = files.find_existing_paths_by_pattern("usr/plugins/*/agents/*/skills")  # agents in plugins
         paths = [
-            files.get_abs_path("skills"), 
+            files.get_abs_path("skills"),
             files.get_abs_path("usr/skills"),
             *project_agents,
             *projects,
@@ -183,9 +185,7 @@ def _parse_frontmatter_fallback(frontmatter_text: str) -> Dict[str, Any]:
             if val == "":
                 data[key] = []
             else:
-                if (val.startswith('"') and val.endswith('"')) or (
-                    val.startswith("'") and val.endswith("'")
-                ):
+                if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
                     val = val[1:-1]
                 data[key] = val
             continue
@@ -193,9 +193,7 @@ def _parse_frontmatter_fallback(frontmatter_text: str) -> Dict[str, Any]:
         m_list = re.match(r"^\s*-\s*(.*)$", line)
         if m_list and current_key:
             item = m_list.group(1).strip()
-            if (item.startswith('"') and item.endswith('"')) or (
-                item.startswith("'") and item.endswith("'")
-            ):
+            if (item.startswith('"') and item.endswith('"')) or (item.startswith("'") and item.endswith("'")):
                 item = item[1:-1]
             if not isinstance(data.get(current_key), list):
                 data[current_key] = []
@@ -247,24 +245,17 @@ def skill_from_markdown(
     skill_dir = Path(files.normalize_a0_path(str(skill_md_path.parent)))
 
     name = str(fm.get("name") or fm.get("skill") or "").strip()
-    description = str(
-        fm.get("description") or fm.get("when_to_use") or fm.get("summary") or ""
-    ).strip()
+    description = str(fm.get("description") or fm.get("when_to_use") or fm.get("summary") or "").strip()
 
     # Cross-platform aliases:
     # - Claude Code leans on description (triggers may be embedded there)
     # - Some repos use triggers/trigger_patterns
     triggers = _coerce_list(
-        fm.get("triggers")
-        or fm.get("trigger_patterns")
-        or fm.get("trigger")
-        or fm.get("activation")
+        fm.get("triggers") or fm.get("trigger_patterns") or fm.get("trigger") or fm.get("activation")
     )
 
     tags = _coerce_list(fm.get("tags") or fm.get("tag"))
-    allowed_tools = _coerce_list(
-        fm.get("allowed-tools") or fm.get("allowed_tools") or fm.get("tools")
-    )
+    allowed_tools = _coerce_list(fm.get("allowed-tools") or fm.get("allowed_tools") or fm.get("tools"))
 
     version = str(fm.get("version") or "").strip()
     author = str(fm.get("author") or "").strip()
@@ -299,7 +290,7 @@ def skill_from_markdown(
 
 
 def list_skills(
-    agent:Agent|None=None,
+    agent: Agent | None = None,
     include_content: bool = False,
 ) -> List[Skill]:
     """List skills, optionally filtered by agent scope."""
@@ -323,7 +314,7 @@ def list_skills(
         key = _normalize_name(s.name) or _normalize_name(s.path.name)
         if key and key not in by_name:
             by_name[key] = s
-    
+
     return list(by_name.values())
 
 
@@ -343,7 +334,6 @@ def delete_skill(
     else:
         raise ValueError("Skill root not in current scope")
 
-        
     if not os.path.isdir(skill_path):
         raise FileNotFoundError("Skill directory not found")
 
@@ -353,7 +343,7 @@ def delete_skill(
 
 def find_skill(
     skill_name: str,
-    agent:Agent|None=None,
+    agent: Agent | None = None,
     include_content: bool = False,
 ) -> Optional[Skill]:
     target = _normalize_name(skill_name)
@@ -370,6 +360,7 @@ def find_skill(
             if _normalize_name(s.name) == target or _normalize_name(s.path.name) == target:
                 return s
     return None
+
 
 def load_skill_for_agent(
     skill_name: str,
@@ -441,10 +432,11 @@ def _get_skill_files(skill_dir: Path) -> str:
 
     return str(tree)
 
+
 def search_skills(
     query: str,
     limit: int = 25,
-    agent: Agent|None=None,
+    agent: Agent | None = None,
 ) -> List[Skill]:
     q = (query or "").strip().lower()
     if not q:
@@ -518,10 +510,7 @@ def validate_skill_md(skill_md_path: Path) -> List[str]:
     if fm_errors:
         return fm_errors
 
-    skill = skill_from_markdown(
-        skill_md_path, include_content=False, validate=False
-    )
+    skill = skill_from_markdown(skill_md_path, include_content=False, validate=False)
     if not skill:
         return ["Unable to parse SKILL.md frontmatter"]
     return validate_skill(skill)
-

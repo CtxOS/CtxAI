@@ -15,7 +15,7 @@ from ctxai.helpers import files, git, mcp_server, fasta2a_server, settings as se
 from ctxai.helpers.files import get_abs_path
 from ctxai.helpers import runtime, dotenv, process
 from ctxai.helpers.websocket import WebSocketHandler, validate_ws_origin
-from ctxai.helpers.api import register_api_route, requires_auth, csrf_protect
+from ctxai.helpers.api import register_api_route, requires_auth
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers import login
 import socketio  # type: ignore[import-untyped]
@@ -29,6 +29,7 @@ from flask import send_file
 
 # disable logging
 import logging
+
 logging.getLogger().setLevel(logging.WARNING)
 
 
@@ -36,7 +37,7 @@ logging.getLogger().setLevel(logging.WARNING)
 os.environ["TZ"] = "UTC"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 # Apply the timezone change
-if hasattr(time, 'tzset'):
+if hasattr(time, "tzset"):
     time.tzset()
 
 # initialize the internal Flask server
@@ -51,7 +52,8 @@ WerkzeugRequest.max_form_memory_size = UPLOAD_LIMIT_BYTES
 
 webapp.config.update(
     JSON_SORT_KEYS=False,
-    SESSION_COOKIE_NAME="session_" + runtime.get_runtime_id(),  # bind the session cookie name to runtime id to prevent session collision on same host
+    SESSION_COOKIE_NAME="session_"
+    + runtime.get_runtime_id(),  # bind the session cookie name to runtime id to prevent session collision on same host
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_PERMANENT=True,
     PERMANENT_SESSION_LIFETIME=timedelta(days=1),
@@ -68,16 +70,14 @@ socketio_server = socketio.AsyncServer(
     logger=False,
     engineio_logger=False,
     ping_interval=25,  # explicit default to avoid future lib changes
-    ping_timeout=20,   # explicit default to avoid future lib changes
+    ping_timeout=20,  # explicit default to avoid future lib changes
     max_http_buffer_size=50 * 1024 * 1024,
 )
 
 websocket_manager = WebSocketManager(socketio_server, lock)
 _settings = settings_helper.get_settings()
 settings_helper.set_runtime_settings_snapshot(_settings)
-websocket_manager.set_server_restart_broadcast(
-    _settings.get("websocket_server_restart_enabled", True)
-)
+websocket_manager.set_server_restart_broadcast(_settings.get("websocket_server_restart_enabled", True))
 
 # Set up basic authentication for UI and API but not MCP
 # basic_auth = BasicAuth(webapp)
@@ -87,16 +87,16 @@ websocket_manager.set_server_restart_broadcast(
 @extension.extensible
 async def login_handler():
     error = None
-    if request.method == 'POST':
+    if request.method == "POST":
         user = dotenv.get_dotenv_value("AUTH_LOGIN")
         password = dotenv.get_dotenv_value("AUTH_PASSWORD")
 
-        if request.form['username'] == user and request.form['password'] == password:
-            session['authentication'] = login.get_credentials_hash()
-            return redirect(url_for('serve_index'))
+        if request.form["username"] == user and request.form["password"] == password:
+            session["authentication"] = login.get_credentials_hash()
+            return redirect(url_for("serve_index"))
         else:
             await asyncio.sleep(1)
-            error = 'Invalid Credentials. Please try again.'
+            error = "Invalid Credentials. Please try again."
 
     login_page_content = files.read_file("webui/login.html")
     return render_template_string(login_page_content, error=error)
@@ -105,8 +105,8 @@ async def login_handler():
 @webapp.route("/logout")
 @extension.extensible
 async def logout_handler():
-    session.pop('authentication', None)
-    return redirect(url_for('login_handler'))
+    session.pop("authentication", None)
+    return redirect(url_for("login_handler"))
 
 
 # handle default address, load index
@@ -140,10 +140,12 @@ async def serve_index():
 async def serve_builtin_plugin_asset(plugin_name, asset_path):
     return await _serve_plugin_asset(plugin_name, asset_path)
 
+
 @webapp.route("/usr/plugins/<plugin_name>/<path:asset_path>", methods=["GET"])
 @requires_auth
 async def serve_plugin_asset(plugin_name, asset_path):
     return await _serve_plugin_asset(plugin_name, asset_path)
+
 
 @webapp.route("/extensions/webui/<path:asset_path>", methods=["GET"])
 @requires_auth
@@ -161,27 +163,28 @@ async def _serve_plugin_asset(plugin_name, asset_path):
     Resolves using the plugin system (with overrides).
     """
     from ctxai.helpers import plugins
-    
-    
+
     # Use the new find_plugin helper
     plugin_dir = plugins.find_plugin_dir(plugin_name)
     if not plugin_dir:
         return Response("Plugin not found", 404)
-    
+
     # Resolve the plugin asset path with security checks
     try:
         # Construct path using plugin root
         asset_file = files.get_abs_path(plugin_dir, asset_path)
         webui_dir = files.get_abs_path(plugin_dir, "webui")
         webui_extensions_dir = files.get_abs_path(plugin_dir, "extensions/webui")
-        
+
         # Security: ensure the resolved path is within the plugin webui directory
-        if not files.is_in_dir(str(asset_file), str(webui_dir)) and not files.is_in_dir(str(asset_file), str(webui_extensions_dir)):
+        if not files.is_in_dir(str(asset_file), str(webui_dir)) and not files.is_in_dir(
+            str(asset_file), str(webui_extensions_dir)
+        ):
             return Response("Access denied", 403)
-            
+
         if not files.is_file(asset_file):
             return Response("Asset not found", 404)
-            
+
         return send_file(str(asset_file))
     except Exception as e:
         PrintStyle.error(f"Error serving plugin asset: {e}")
@@ -246,9 +249,7 @@ def configure_websocket_namespaces(
 
     socketio_server._handle_connect = _handle_connect_with_namespace_gatekeeper  # type: ignore[assignment]
 
-    def _register_namespace_handlers(
-        namespace: str, namespace_handlers: list[WebSocketHandler]
-    ) -> None:
+    def _register_namespace_handlers(namespace: str, namespace_handlers: list[WebSocketHandler]) -> None:
         # A namespace is the WebSocket equivalent of an API endpoint.
         # Security requirements must be consistent within the namespace (no any()-based union).
         auth_required = False
@@ -257,10 +258,7 @@ def configure_websocket_namespaces(
             auth_required = bool(namespace_handlers[0].requires_auth())
             csrf_required = bool(namespace_handlers[0].requires_csrf())
             for handler in namespace_handlers[1:]:
-                if (
-                    bool(handler.requires_auth()) != auth_required
-                    or bool(handler.requires_csrf()) != csrf_required
-                ):
+                if bool(handler.requires_auth()) != auth_required or bool(handler.requires_csrf()) != csrf_required:
                     raise ValueError(
                         f"WebSocket namespace {namespace!r} has mixed auth/csrf requirements across handlers"
                     )
@@ -291,9 +289,7 @@ def configure_websocket_namespaces(
                             )
                             return False
                     else:
-                        PrintStyle.debug(
-                            "WebSocket authentication required but credentials not configured; proceeding"
-                        )
+                        PrintStyle.debug("WebSocket authentication required but credentials not configured; proceeding")
 
                 if _csrf_required:
                     expected_token = session.get("csrf_token")
@@ -342,9 +338,7 @@ def configure_websocket_namespaces(
                 _namespace: str = namespace,
             ):
                 payload = data or {}
-                return await websocket_manager.route_event(
-                    _namespace, _event_type, payload, sid
-                )
+                return await websocket_manager.route_event(_namespace, _event_type, payload, sid)
 
         for _event_type in websocket_manager.iter_event_types(namespace):
             _register_socketio_event(_event_type)
@@ -380,9 +374,7 @@ def run():
 
     # Get configuration from environment
     port = runtime.get_web_ui_port()
-    host = (
-        runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "localhost"
-    )
+    host = runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "localhost"
 
     register_api_route(webapp, lock)
 
@@ -412,6 +404,7 @@ def run():
         TODO(dev): add cleanup + flush-to-disk logic here.
         """
         return
+
     flush_ran = False
 
     def _run_flush(reason: str) -> None:

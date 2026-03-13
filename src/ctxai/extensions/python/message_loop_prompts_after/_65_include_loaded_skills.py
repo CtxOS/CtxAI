@@ -25,7 +25,6 @@ class IncludeLoadedSkills(Extension):
         if not content:
             return
 
-
         # Inject into extras
         extras["loaded_skills"] = self.agent.read_prompt(
             "agent.system.skills.loaded.md",

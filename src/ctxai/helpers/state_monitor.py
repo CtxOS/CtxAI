@@ -73,16 +73,12 @@ class StateMonitor:
             # Use the manager's dispatcher loop for all scheduling so mark_dirty can be
             # invoked safely from non-async contexts and other threads.
             self._dispatcher_loop = getattr(manager, "_dispatcher_loop", None)
-        _debug_log(
-            f"[StateMonitor] bind_manager handler_id={handler_id or self._emit_handler_id}"
-        )
+        _debug_log(f"[StateMonitor] bind_manager handler_id={handler_id or self._emit_handler_id}")
 
     def register_sid(self, namespace: str, sid: str) -> None:
         identity: ConnectionIdentity = (namespace, sid)
         with self._lock:
-            self._projections.setdefault(
-                identity, ConnectionProjection(namespace=namespace, sid=sid)
-            )
+            self._projections.setdefault(identity, ConnectionProjection(namespace=namespace, sid=sid))
         _debug_log(f"[StateMonitor] register_sid namespace={namespace} sid={sid}")
 
     def unregister_sid(self, namespace: str, sid: str) -> None:
@@ -136,9 +132,7 @@ class StateMonitor:
     ) -> None:
         identity: ConnectionIdentity = (namespace, sid)
         with self._lock:
-            projection = self._projections.setdefault(
-                identity, ConnectionProjection(namespace=namespace, sid=sid)
-            )
+            projection = self._projections.setdefault(identity, ConnectionProjection(namespace=namespace, sid=sid))
             projection.request = request
             projection.seq_base = seq_base
             projection.seq = seq_base
@@ -187,11 +181,7 @@ class StateMonitor:
                 return
             projection.dirty_version += 1
             if runtime.is_development():
-                projection.dirty_reason = (
-                    reason.strip()
-                    if isinstance(reason, str) and reason.strip()
-                    else "unknown"
-                )
+                projection.dirty_reason = reason.strip() if isinstance(reason, str) and reason.strip() else "unknown"
                 projection.dirty_wave_id = wave_id
         self._schedule_debounce_on_loop(identity)
 
@@ -217,9 +207,7 @@ class StateMonitor:
             if running is not None and not running.done():
                 return
 
-            handle = loop.call_later(
-                self.debounce_seconds, self._on_debounce_fire, identity
-            )
+            handle = loop.call_later(self.debounce_seconds, self._on_debounce_fire, identity)
             self._debounce_handles[identity] = handle
             _debug_log(
                 f"[StateMonitor] schedule_push namespace={projection.namespace} sid={projection.sid} "
@@ -293,11 +281,7 @@ class StateMonitor:
             }
 
             try:
-                logs_len = (
-                    len(snapshot.get("logs", []))
-                    if isinstance(snapshot.get("logs"), list)
-                    else None
-                )
+                logs_len = len(snapshot.get("logs", [])) if isinstance(snapshot.get("logs"), list) else None
                 _debug_log(
                     f"[StateMonitor] emit state_push namespace={namespace} sid={sid} seq={seq} "
                     f"context={request.context!r} logs_len={logs_len} "
@@ -312,15 +296,11 @@ class StateMonitor:
                 )
             except ConnectionNotFoundError:
                 # Sid was removed before the emit; treat as benign.
-                _debug_log(
-                    f"[StateMonitor] emit skipped: sid not found namespace={namespace} sid={sid}"
-                )
+                _debug_log(f"[StateMonitor] emit skipped: sid not found namespace={namespace} sid={sid}")
                 return
             except RuntimeError:
                 # Dispatcher loop may be closing (e.g., during shutdown or test teardown).
-                _debug_log(
-                    f"[StateMonitor] emit skipped: dispatcher closing namespace={namespace} sid={sid}"
-                )
+                _debug_log(f"[StateMonitor] emit skipped: dispatcher closing namespace={namespace} sid={sid}")
                 return
         finally:
             follow_up = False

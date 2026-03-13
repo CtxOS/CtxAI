@@ -1,5 +1,4 @@
 import asyncio
-from datetime import datetime
 import time
 from ctxai.helpers.task_scheduler import TaskScheduler
 from ctxai.helpers.print_style import PrintStyle
@@ -31,7 +30,9 @@ async def run_loop():
                 await scheduler_tick()
             except Exception as e:
                 PrintStyle().error(errors.format_error(e))
-        await asyncio.sleep(SLEEP_TIME)  # TODO! - if we lower it under 1min, it can run a 5min job multiple times in it's target minute
+        await asyncio.sleep(
+            SLEEP_TIME
+        )  # TODO! - if we lower it under 1min, it can run a 5min job multiple times in it's target minute
 
 
 async def scheduler_tick():

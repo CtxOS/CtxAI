@@ -5,8 +5,16 @@ import random
 import re
 from ctxai.helpers.tool import Tool, Response
 from ctxai.helpers.task_scheduler import (
-    TaskScheduler, ScheduledTask, AdHocTask, PlannedTask,
-    serialize_task, TaskState, TaskSchedule, TaskPlan, parse_datetime, serialize_datetime
+    TaskScheduler,
+    ScheduledTask,
+    AdHocTask,
+    PlannedTask,
+    serialize_task,
+    TaskState,
+    TaskSchedule,
+    TaskPlan,
+    parse_datetime,
+    serialize_datetime,
 )
 from ctxai.agent import AgentContext
 from ctxai.helpers import persist_chat
@@ -16,7 +24,6 @@ DEFAULT_WAIT_TIMEOUT = 300
 
 
 class SchedulerTool(Tool):
-
     async def execute(self, **kwargs):
         if self.method == "list_tasks":
             return await self.list_tasks(**kwargs)
@@ -66,9 +73,17 @@ class SchedulerTool(Tool):
                 continue
             if type_filter and task.type not in type_filter:
                 continue
-            if next_run_within_filter and task.get_next_run_minutes() is not None and task.get_next_run_minutes() > next_run_within_filter:  # type: ignore
+            if (
+                next_run_within_filter
+                and task.get_next_run_minutes() is not None
+                and task.get_next_run_minutes() > next_run_within_filter
+            ):  # type: ignore
                 continue
-            if next_run_after_filter and task.get_next_run_minutes() is not None and task.get_next_run_minutes() < next_run_after_filter:  # type: ignore
+            if (
+                next_run_after_filter
+                and task.get_next_run_minutes() is not None
+                and task.get_next_run_minutes() < next_run_after_filter
+            ):  # type: ignore
                 continue
             filtered_tasks.append(serialize_task(task))
 
@@ -223,11 +238,7 @@ class SchedulerTool(Tool):
             todo.append(dt)
 
         # Create task plan with todo list
-        task_plan = TaskPlan.create(
-            todo=todo,
-            in_progress=None,
-            done=[]
-        )
+        task_plan = TaskPlan.create(todo=todo, in_progress=None, done=[])
 
         project_slug, project_color = self._resolve_project_metadata()
 
@@ -240,7 +251,7 @@ class SchedulerTool(Tool):
             plan=task_plan,
             context_id=None if dedicated_context else self.agent.context.id,
             project_name=project_slug,
-            project_color=project_color
+            project_color=project_color,
         )
         await TaskScheduler.get().add_task(task)
         return Response(message=f"Planned task '{name}' created: {task.uuid}", break_loop=False)
@@ -256,7 +267,9 @@ class SchedulerTool(Tool):
             return Response(message=f"Task not found: {task_uuid}", break_loop=False)
 
         if task.context_id == self.agent.context.id:
-            return Response(message="You can only wait for tasks running in their own dedicated context.", break_loop=False)
+            return Response(
+                message="You can only wait for tasks running in their own dedicated context.", break_loop=False
+            )
 
         done = False
         elapsed = 0
@@ -270,11 +283,13 @@ class SchedulerTool(Tool):
                 await asyncio.sleep(1)
                 elapsed += 1
                 if elapsed > DEFAULT_WAIT_TIMEOUT:
-                    return Response(message=f"Task wait timeout ({DEFAULT_WAIT_TIMEOUT} seconds): {task_uuid}", break_loop=False)
+                    return Response(
+                        message=f"Task wait timeout ({DEFAULT_WAIT_TIMEOUT} seconds): {task_uuid}", break_loop=False
+                    )
             else:
                 done = True
 
         return Response(
             message=f"*Task*: {task_uuid}\n*State*: {task.state}\n*Last run*: {serialize_datetime(task.last_run)}\n*Result*:\n{task.last_result}",
-            break_loop=False
+            break_loop=False,
         )

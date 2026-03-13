@@ -76,9 +76,7 @@ class Plugins(ApiHandler):
             loaded_agent_profile = entry.get("agent_profile", "")
         else:
             settings = plugins.get_plugin_config(plugin_name, agent=None) or {}
-            default_path = files.get_abs_path(
-                plugins.find_plugin_dir(plugin_name), plugins.CONFIG_DEFAULT_FILE_NAME
-            )
+            default_path = files.get_abs_path(plugins.find_plugin_dir(plugin_name), plugins.CONFIG_DEFAULT_FILE_NAME)
             path = default_path if files.exists(default_path) else ""
             loaded_project_name = ""
             loaded_agent_profile = ""
@@ -123,9 +121,7 @@ class Plugins(ApiHandler):
         if result:
             entry = result[0]
             path = entry.get("path", "")
-            status = (
-                "enabled" if path.endswith(plugins.ENABLED_FILE_NAME) else "disabled"
-            )
+            status = "enabled" if path.endswith(plugins.ENABLED_FILE_NAME) else "disabled"
             return {
                 "ok": True,
                 "status": status,
@@ -150,11 +146,7 @@ class Plugins(ApiHandler):
             return Response(status=400, response="Missing plugin_name")
 
         configs = plugins.find_plugin_assets(
-            (
-                plugins.CONFIG_FILE_NAME
-                if asset_type == "config"
-                else plugins.TOGGLE_FILE_PATTERN
-            ),
+            (plugins.CONFIG_FILE_NAME if asset_type == "config" else plugins.TOGGLE_FILE_PATTERN),
             plugin_name=plugin_name,
             project_name="*",
             agent_profile="*",
@@ -249,9 +241,7 @@ class Plugins(ApiHandler):
         if enabled is None:
             return Response(status=400, response="Missing enabled state")
 
-        plugins.toggle_plugin(
-            plugin_name, bool(enabled), project_name, agent_profile, clear_overrides
-        )
+        plugins.toggle_plugin(plugin_name, bool(enabled), project_name, agent_profile, clear_overrides)
         return {"ok": True}
 
     @extension.extensible
@@ -308,9 +298,7 @@ class Plugins(ApiHandler):
             output = f"Error: {str(e)}"
 
         exec_record = {"executed_at": executed_at, "exit_code": exit_code}
-        exec_path = plugins.determine_plugin_asset_path(
-            plugin_name, "", "", "init_exec.json"
-        )
+        exec_path = plugins.determine_plugin_asset_path(plugin_name, "", "", "init_exec.json")
         if exec_path:
             files.write_file(exec_path, json.dumps(exec_record))
 
@@ -327,9 +315,7 @@ class Plugins(ApiHandler):
         if not plugin_name:
             return Response(status=400, response="Missing plugin_name")
 
-        exec_path = plugins.determine_plugin_asset_path(
-            plugin_name, "", "", "init_exec.json"
-        )
+        exec_path = plugins.determine_plugin_asset_path(plugin_name, "", "", "init_exec.json")
         if exec_path and files.exists(exec_path):
             try:
                 data = json.loads(files.read_file(exec_path))

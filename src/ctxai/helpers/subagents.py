@@ -1,6 +1,6 @@
 from ctxai.helpers import files
 from ctxai.helpers import yaml as yaml_helper
-from typing import TypedDict, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from pydantic import BaseModel, model_validator
 import json
 from typing import Literal
@@ -51,11 +51,7 @@ def get_agents_dict(
         merged: dict[str, SubAgentListItem] = dict(base)
         for name, override in overrides.items():
             base_agent = merged.get(name)
-            merged[name] = (
-                _merge_agent_list_items(base_agent, override)
-                if base_agent
-                else override
-            )
+            merged[name] = _merge_agent_list_items(base_agent, override) if base_agent else override
         return merged
 
     from ctxai.helpers import plugins
@@ -108,9 +104,7 @@ def _get_agents_list_from_dir(dir: str, origin: Origin) -> dict[str, SubAgentLis
 
 
 def load_agent_data(name: str, project_name: str | None = None) -> SubAgent:
-    def _merge_agent(
-        original: SubAgent | None, override: SubAgent | None = None
-    ) -> SubAgent | None:
+    def _merge_agent(original: SubAgent | None, override: SubAgent | None = None) -> SubAgent | None:
         if original and override:
             return _merge_agents(original, override)
         elif original:
@@ -120,9 +114,7 @@ def load_agent_data(name: str, project_name: str | None = None) -> SubAgent:
     from ctxai.helpers import plugins
 
     # load default, plugin, and user agents and merge
-    default_agent = _load_agent_data_from_dir(
-        DEFAULT_AGENTS_DIR, name, origin="default"
-    )
+    default_agent = _load_agent_data_from_dir(DEFAULT_AGENTS_DIR, name, origin="default")
     merged = default_agent
 
     # merge with plugin agents
@@ -139,15 +131,11 @@ def load_agent_data(name: str, project_name: str | None = None) -> SubAgent:
         from ctxai.helpers import projects
 
         project_agents_dir = projects.get_project_meta(project_name, "agents")
-        project_agent = _load_agent_data_from_dir(
-            project_agents_dir, name, origin="project"
-        )
+        project_agent = _load_agent_data_from_dir(project_agents_dir, name, origin="project")
         merged = _merge_agent(merged, project_agent)
 
     if merged is None:
-        raise FileNotFoundError(
-            f"Agent '{name}' not found in default, plugin, or custom directories"
-        )
+        raise FileNotFoundError(f"Agent '{name}' not found in default, plugin, or custom directories")
 
     return merged
 
@@ -238,9 +226,7 @@ def _merge_agents(base: SubAgent | None, override: SubAgent | None) -> SubAgent 
     )
 
 
-def _merge_agent_list_items(
-    base: SubAgentListItem, override: SubAgentListItem
-) -> SubAgentListItem:
+def _merge_agent_list_items(base: SubAgentListItem, override: SubAgentListItem) -> SubAgentListItem:
     return SubAgentListItem(
         name=override.name or base.name,
         title=override.title or base.title,
@@ -320,9 +306,7 @@ def get_available_agents_dict(
     # filter by project settings
     from ctxai.helpers import projects
 
-    project_settings = (
-        projects.load_project_subagents(project_name) if project_name else {}
-    )
+    project_settings = projects.load_project_subagents(project_name) if project_name else {}
 
     filtered_agents: dict[str, SubAgentListItem] = {}
     for name, agent in all_agents.items():
@@ -336,7 +320,7 @@ def get_available_agents_dict(
 def get_paths(
     agent: "Agent|None",
     *subpaths,
-    must_exist_completely: bool = True, 
+    must_exist_completely: bool = True,
     include_project: bool = True,
     include_user: bool = True,
     include_default: bool = True,
@@ -357,9 +341,7 @@ def get_paths(
 
         if project_name and profile_name:
             # project/agents/<profile>/...
-            project_agent_dir = projects.get_project_meta(
-                project_name, "agents", profile_name
-            )
+            project_agent_dir = projects.get_project_meta(project_name, "agents", profile_name)
             if files.exists(files.get_abs_path(project_agent_dir, *check_subpaths)):
                 paths.append(files.get_abs_path(project_agent_dir, *subpaths))
 
@@ -370,10 +352,11 @@ def get_paths(
                 paths.append(path)
 
     if profile_name:
-
         # usr/agents/<profile>/...
         path = files.get_abs_path(USER_AGENTS_DIR, profile_name, *subpaths)
-        if (not must_exist_completely) or files.exists(files.get_abs_path(USER_AGENTS_DIR, profile_name, *check_subpaths)):
+        if (not must_exist_completely) or files.exists(
+            files.get_abs_path(USER_AGENTS_DIR, profile_name, *check_subpaths)
+        ):
             paths.append(path)
 
         # plugin agents/<profile>/...
@@ -386,7 +369,9 @@ def get_paths(
 
         # agents/<profile>/...
         path = files.get_abs_path(DEFAULT_AGENTS_DIR, profile_name, *subpaths)
-        if (not must_exist_completely) or files.exists(files.get_abs_path(DEFAULT_AGENTS_DIR, profile_name, *check_subpaths)):
+        if (not must_exist_completely) or files.exists(
+            files.get_abs_path(DEFAULT_AGENTS_DIR, profile_name, *check_subpaths)
+        ):
             paths.append(path)
 
     if include_user:

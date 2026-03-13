@@ -1,7 +1,6 @@
 from ctxai.agent import AgentConfig
 import ctxai.models as models
 from ctxai.helpers import runtime, settings, defer, extension
-from ctxai.helpers.print_style import PrintStyle
 
 
 @extension.extensible
@@ -114,40 +113,54 @@ def initialize_agent(override_settings: dict | None = None):
     # return config object
     return config
 
+
 @extension.extensible
 def initialize_chats():
     from ctxai.helpers import persist_chat
+
     async def initialize_chats_async():
         persist_chat.load_tmp_chats()
+
     return defer.DeferredTask().start_task(initialize_chats_async)
+
 
 @extension.extensible
 def initialize_mcp():
     set = settings.get_settings()
+
     async def initialize_mcp_async():
         from ctxai.helpers.mcp_handler import initialize_mcp as _initialize_mcp
+
         return _initialize_mcp(set["mcp_servers"])
+
     return defer.DeferredTask().start_task(initialize_mcp_async)
+
 
 @extension.extensible
 def initialize_job_loop():
     from ctxai.helpers.job_loop import run_loop
+
     return defer.DeferredTask("JobLoop").start_task(run_loop)
+
 
 @extension.extensible
 def initialize_preload():
     from ctxai import preload
+
     return defer.DeferredTask().start_task(preload.preload)
+
 
 @extension.extensible
 def initialize_migration():
     from ctxai.helpers import migration, dotenv
+
     # run migration
     migration.startup_migration()
     # reload .env as it might have been moved
     dotenv.load_dotenv()
     # reload settings to ensure new paths are picked up
     settings.reload_settings()
+
 
 def _args_override(config):
     # update config with runtime args
@@ -163,11 +176,6 @@ def _args_override(config):
             elif isinstance(getattr(config, key), str):
                 value = str(value)
             else:
-                raise Exception(
-                    f"Unsupported argument type of '{key}': {type(getattr(config, key))}"
-                )
+                raise Exception(f"Unsupported argument type of '{key}': {type(getattr(config, key))}")
 
             setattr(config, key, value)
-
-
-

@@ -109,9 +109,7 @@ def validate_ws_origin(environ: dict[str, Any]) -> tuple[bool, str | None]:
         forwarded_scheme = forwarded_proto_raw.split(",")[0].strip().lower()
     forwarded_scheme = forwarded_scheme or origin_parsed.scheme
     forwarded_port = (
-        forwarded_port
-        if forwarded_port is not None
-        else _default_port_for_scheme(forwarded_scheme) or origin_port
+        forwarded_port if forwarded_port is not None else _default_port_for_scheme(forwarded_scheme) or origin_port
     )
 
     candidates: list[tuple[str, int]] = []
@@ -245,27 +243,25 @@ class WebSocketResult:
             "ok": self._ok,
         }
 
-        effective_duration = (
-            self._duration_ms if self._duration_ms is not None else duration_ms
-        )
+        effective_duration = self._duration_ms if self._duration_ms is not None else duration_ms
         if effective_duration is not None:
             result["durationMs"] = round(effective_duration, 4)
 
-        correlation = (
-            self._correlation_id
-            if self._correlation_id is not None
-            else fallback_correlation_id
-        )
+        correlation = self._correlation_id if self._correlation_id is not None else fallback_correlation_id
         if correlation is not None:
             result["correlationId"] = correlation
 
         if self._ok:
             result["data"] = dict(self._data) if self._data is not None else {}
         else:
-            result["error"] = dict(self._error) if self._error is not None else {
-                "code": "INTERNAL_ERROR",
-                "error": "Internal server error",
-            }
+            result["error"] = (
+                dict(self._error)
+                if self._error is not None
+                else {
+                    "code": "INTERNAL_ERROR",
+                    "error": "Internal server error",
+                }
+            )
         return result
 
 
@@ -286,9 +282,7 @@ class WebSocketHandler(ABC):
 
         cls = self.__class__
         if not WebSocketHandler._construction_tokens.get(cls):
-            raise SingletonInstantiationError(
-                f"{cls.__name__} must be instantiated via {cls.__name__}.get_instance()"
-            )
+            raise SingletonInstantiationError(f"{cls.__name__} must be instantiated via {cls.__name__}.get_instance()")
 
         self.socketio: socketio.AsyncServer = socketio
         self.lock: threading.RLock = lock
@@ -321,9 +315,7 @@ class WebSocketHandler(ABC):
                 return instance
 
             if socketio is None or lock is None:
-                raise ValueError(
-                    f"{cls.__name__}.get_instance() requires socketio and lock on first call"
-                )
+                raise ValueError(f"{cls.__name__}.get_instance() requires socketio and lock on first call")
 
             WebSocketHandler._construction_tokens[cls] = True
             try:
@@ -362,13 +354,9 @@ class WebSocketHandler(ABC):
             if not isinstance(event, str):
                 raise TypeError("Event type declarations must be strings")
             if not _EVENT_NAME_PATTERN.fullmatch(event):
-                raise ValueError(
-                    f"Invalid event type '{event}' – must match lowercase_snake_case"
-                )
+                raise ValueError(f"Invalid event type '{event}' – must match lowercase_snake_case")
             if event in _RESERVED_EVENT_NAMES:
-                raise ValueError(
-                    f"Event type '{event}' is reserved by Socket.IO and cannot be used"
-                )
+                raise ValueError(f"Event type '{event}' is reserved by Socket.IO and cannot be used")
             if event in seen:
                 raise ValueError(f"Duplicate event type '{event}' declared in handler")
             seen.add(event)

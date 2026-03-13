@@ -317,9 +317,7 @@ def build_scenarios() -> List[Scenario]:
                 "sandbox": {},
                 "vendor": {},
             },
-            ignore_content="\n".join(
-                ["*.tmp", "cache/", "!src/cache/keep.txt", "logs/", "!logs/2025.log"]
-            ),
+            ignore_content="\n".join(["*.tmp", "cache/", "!src/cache/keep.txt", "logs/", "!logs/2025.log"]),
             configs=[
                 Config(
                     "string • folders-first with summaries",
@@ -822,9 +820,7 @@ def build_scenarios() -> List[Scenario]:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Visualize file_tree() outputs across configurations."
-    )
+    parser = argparse.ArgumentParser(description="Visualize file_tree() outputs across configurations.")
     parser.add_argument(
         "--scenario",
         action="append",

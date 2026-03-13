@@ -5,6 +5,5 @@ from ctxai.plugins._memory.helpers.memory import reload as memory_reload
 
 
 class MemoryReload(Extension):
-
     async def execute(self, **kwargs):
         memory_reload()

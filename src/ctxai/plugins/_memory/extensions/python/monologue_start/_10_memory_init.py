@@ -6,7 +6,6 @@ from ctxai.plugins._memory.helpers import memory
 
 
 class MemoryInit(Extension):
-
     async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
         if not self.agent:
             return

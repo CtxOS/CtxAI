@@ -2,6 +2,7 @@ import functools
 import inspect
 from pyinstrument import Profiler
 
+
 def trace_performance(*, show_all=False, color=True, unicode=True):
     """
     Decorator that profiles a function and prints a call tree when it finishes.

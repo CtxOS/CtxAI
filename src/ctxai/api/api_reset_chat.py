@@ -28,20 +28,12 @@ class ApiResetChat(ApiHandler):
             context_id = input.get("context_id")
 
             if not context_id:
-                return Response(
-                    '{"error": "context_id is required"}',
-                    status=400,
-                    mimetype="application/json"
-                )
+                return Response('{"error": "context_id is required"}', status=400, mimetype="application/json")
 
             # Check if context exists
             context = AgentContext.use(context_id)
             if not context:
-                return Response(
-                    '{"error": "Chat context not found"}',
-                    status=404,
-                    mimetype="application/json"
-                )
+                return Response('{"error": "Chat context not found"}', status=404, mimetype="application/json")
 
             # Reset the chat context (clears history but keeps context alive)
             context.reset()
@@ -50,21 +42,15 @@ class ApiResetChat(ApiHandler):
             persist_chat.remove_msg_files(context_id)
 
             # Log the reset
-            PrintStyle(
-                background_color="#3498DB", font_color="white", bold=True, padding=True
-            ).print(f"API Chat reset: {context_id}")
+            PrintStyle(background_color="#3498DB", font_color="white", bold=True, padding=True).print(
+                f"API Chat reset: {context_id}"
+            )
 
             # Return success response
-            return {
-                "success": True,
-                "message": "Chat reset successfully",
-                "context_id": context_id
-            }
+            return {"success": True, "message": "Chat reset successfully", "context_id": context_id}
 
         except Exception as e:
             PrintStyle.error(f"API reset chat error: {str(e)}")
             return Response(
-                json.dumps({"error": f"Internal server error: {str(e)}"}),
-                status=500,
-                mimetype="application/json"
+                json.dumps({"error": f"Internal server error: {str(e)}"}), status=500, mimetype="application/json"
             )

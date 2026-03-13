@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from fnmatch import fnmatch
 import json
-from ntpath import isabs
 import os
 import re
 import base64
@@ -27,9 +26,7 @@ class VariablesPlugin(ABC):
         pass
 
 
-def load_plugin_variables(
-    file: str, backup_dirs: list[str] | None = None, **kwargs
-) -> dict[str, Any]:
+def load_plugin_variables(file: str, backup_dirs: list[str] | None = None, **kwargs) -> dict[str, Any]:
     if not file.endswith(".md"):
         return {}
 
@@ -45,12 +42,9 @@ def load_plugin_variables(
         plugin_file = None
 
     if plugin_file and exists(plugin_file):
-
         from ctxai.helpers import extract_tools
 
-        classes = extract_tools.load_classes_from_file(
-            plugin_file, VariablesPlugin, one_per_file=False
-        )
+        classes = extract_tools.load_classes_from_file(plugin_file, VariablesPlugin, one_per_file=False)
         for cls in classes:
             return cls().get_variables(file, backup_dirs, **kwargs)  # type: ignore < abstract class here is ok, it is always a subclass
 
@@ -84,9 +78,7 @@ def load_plugin_variables(
 from ctxai.helpers.strings import sanitize_string
 
 
-def parse_file(
-    _filename: str, _directories: list[str] | None = None, _encoding="utf-8", **kwargs
-):
+def parse_file(_filename: str, _directories: list[str] | None = None, _encoding="utf-8", **kwargs):
     if _directories is None:
         _directories = []
 
@@ -119,9 +111,7 @@ def parse_file(
         return content
 
 
-def read_prompt_file(
-    _file: str, _directories: list[str] | None = None, _encoding="utf-8", **kwargs
-):
+def read_prompt_file(_file: str, _directories: list[str] | None = None, _encoding="utf-8", **kwargs):
     if _directories is None:
         _directories = []
 
@@ -214,6 +204,7 @@ def read_file(relative_path: str, encoding="utf-8"):
     with open(absolute_path, "r", encoding=encoding) as f:
         return f.read()
 
+
 def read_file_json(relative_path: str, encoding="utf-8"):
     # Try to get the absolute path for the file from the original directory or backup directories
     absolute_path = get_abs_path(relative_path)
@@ -222,11 +213,13 @@ def read_file_json(relative_path: str, encoding="utf-8"):
     with open(absolute_path, "r", encoding=encoding) as f:
         return json.load(f)
 
+
 def read_file_yaml(relative_path: str, encoding="utf-8"):
     absolute_path = get_abs_path(relative_path)
 
     with open(absolute_path, "r", encoding=encoding) as f:
         return yaml.loads(f.read())
+
 
 def read_file_bin(relative_path: str):
     # Try to get the absolute path for the file from the original directory or backup directories
@@ -266,9 +259,7 @@ def is_probably_binary_bytes(data: bytes, threshold: float = 0.3) -> bool:
     return (suspicious / len(data)) > threshold
 
 
-def is_probably_binary_file(
-    file_path: str, sample_size: int = 10 * 1024, threshold: float = 0.3
-) -> bool:
+def is_probably_binary_file(file_path: str, sample_size: int = 10 * 1024, threshold: float = 0.3) -> bool:
     """Binary detection by reading only the first ~sample_size bytes of a file."""
     try:
         with open(file_path, "rb") as f:
@@ -308,13 +299,9 @@ def replace_placeholders_dict(_content: dict, **kwargs):
                         if value == f"{{{{{placeholder}}}}}":
                             return replacement
                         elif isinstance(replacement, (dict, list)):
-                            value = value.replace(
-                                f"{{{{{placeholder}}}}}", json.dumps(replacement)
-                            )
+                            value = value.replace(f"{{{{{placeholder}}}}}", json.dumps(replacement))
                         else:
-                            value = value.replace(
-                                f"{{{{{placeholder}}}}}", str(replacement)
-                            )
+                            value = value.replace(f"{{{{{placeholder}}}}}", str(replacement))
             return value
         elif isinstance(value, dict):
             return {k: replace_value(v) for k, v in value.items()}
@@ -359,9 +346,7 @@ def find_file_in_dirs(_filename: str, _directories: list[str]):
             return full_path
 
     # If the file is not found, raise FileNotFoundError
-    raise FileNotFoundError(
-        f"File '{_filename}' not found in any of the provided directories."
-    )
+    raise FileNotFoundError(f"File '{_filename}' not found in any of the provided directories.")
 
 
 def get_unique_filenames_in_dirs(
@@ -427,10 +412,12 @@ def write_file(relative_path: str, content: str, encoding: str = "utf-8"):
     with open(abs_path, "w", encoding=encoding) as f:
         f.write(content)
 
+
 def delete_file(relative_path: str):
     abs_path = get_abs_path(relative_path)
     if exists(abs_path):
         os.remove(abs_path)
+
 
 def write_file_bin(relative_path: str, content: bytes):
     abs_path = get_abs_path(relative_path)
@@ -671,9 +658,7 @@ def safe_file_name(filename: str) -> str:
     return re.sub(r"[^a-zA-Z0-9-._]", "_", filename)
 
 
-def read_text_files_in_dir(
-    dir_path: str, max_size: int = 1024 * 1024, pattern: str = "*"
-) -> dict[str, str]:
+def read_text_files_in_dir(dir_path: str, max_size: int = 1024 * 1024, pattern: str = "*") -> dict[str, str]:
 
     abs_path = get_abs_path(dir_path)
     if not os.path.exists(abs_path):

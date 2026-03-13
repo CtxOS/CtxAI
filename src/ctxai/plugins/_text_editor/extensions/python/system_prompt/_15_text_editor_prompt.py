@@ -1,10 +1,9 @@
 from ctxai.helpers.extension import Extension
 from ctxai.helpers import plugins
-from ctxai.agent import Agent, LoopData
+from ctxai.agent import LoopData
 
 
 class TextEditorPrompt(Extension):
-
     async def execute(
         self,
         system_prompt: list[str] = [],

@@ -8,7 +8,6 @@ from ctxai.helpers import guids
 from langchain_community.vectorstores import FAISS
 
 # faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
-from ctxai.helpers import faiss_monkey_patch
 import faiss
 
 
@@ -16,9 +15,9 @@ from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores.utils import (
     DistanceStrategy,
 )
-from langchain_core.embeddings import Embeddings
 
-import os, json
+import os
+import json
 
 import numpy as np
 
@@ -26,7 +25,7 @@ from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers import files, plugins, projects
 from langchain_core.documents import Document
 from . import knowledge_import
-from ctxai.helpers.log import Log, LogItem
+from ctxai.helpers.log import LogItem
 from enum import Enum
 from ctxai.agent import Agent, AgentContext
 import ctxai.models as models
@@ -42,7 +41,9 @@ class MyFaiss(FAISS):
     # override aget_by_ids
     def get_by_ids(self, ids: Sequence[str], /) -> List[Document]:
         # return all self.docstore._dict[id] in ids
-        return [self.docstore._dict[id] for id in (ids if isinstance(ids, list) else [ids]) if id in self.docstore._dict]  # type: ignore
+        return [
+            self.docstore._dict[id] for id in (ids if isinstance(ids, list) else [ids]) if id in self.docstore._dict
+        ]  # type: ignore
 
     async def aget_by_ids(self, ids: Sequence[str], /) -> List[Document]:
         return self.get_by_ids(ids)
@@ -52,7 +53,6 @@ class MyFaiss(FAISS):
 
 
 class Memory:
-
     class Area(Enum):
         MAIN = "main"
         FRAGMENTS = "fragments"
@@ -111,9 +111,7 @@ class Memory:
                     memory_subdir, agent_config.knowledge_subdirs or []
                 )
                 if knowledge_subdirs:
-                    await wrap.preload_knowledge(
-                        log_item, knowledge_subdirs, memory_subdir
-                    )
+                    await wrap.preload_knowledge(log_item, knowledge_subdirs, memory_subdir)
             Memory.index[memory_subdir] = db
         return Memory(db=Memory.index[memory_subdir], memory_subdir=memory_subdir)
 
@@ -137,9 +135,7 @@ class Memory:
         if log_item:
             log_item.stream(progress="\nInitializing VectorDB")
 
-        em_dir = files.get_abs_path(
-            "tmp/memory/embeddings"
-        )  # just caching, no need to parameterize
+        em_dir = files.get_abs_path("tmp/memory/embeddings")  # just caching, no need to parameterize
         db_dir = abs_db_dir(memory_subdir)
 
         # make sure embeddings and database directories exist
@@ -156,14 +152,10 @@ class Memory:
             model_config.name,
             **model_config.build_kwargs(),
         )
-        embeddings_model_id = files.safe_file_name(
-            model_config.provider + "_" + model_config.name
-        )
+        embeddings_model_id = files.safe_file_name(model_config.provider + "_" + model_config.name)
 
         # here we setup the embeddings model with the chosen cache storage
-        embedder = CacheBackedEmbeddings.from_bytes_store(
-            embeddings_model, store, namespace=embeddings_model_id
-        )
+        embedder = CacheBackedEmbeddings.from_bytes_store(embeddings_model, store, namespace=embeddings_model_id)
 
         # initial DB and docs variables
         db: MyFaiss | None = None
@@ -246,9 +238,7 @@ class Memory:
         self.db = db
         self.memory_subdir = memory_subdir
 
-    async def preload_knowledge(
-        self, log_item: LogItem | None, kn_dirs: list[str], memory_subdir: str
-    ):
+    async def preload_knowledge(self, log_item: LogItem | None, kn_dirs: list[str], memory_subdir: str):
         if log_item:
             log_item.update(heading="Preloading knowledge...")
 
@@ -274,13 +264,9 @@ class Memory:
             if index[file]["state"] in ["changed", "removed"] and index[file].get(
                 "ids", []
             ):  # for knowledge files that have been changed or removed and have IDs
-                await self.delete_documents_by_ids(
-                    index[file]["ids"]
-                )  # remove original version
+                await self.delete_documents_by_ids(index[file]["ids"])  # remove original version
             if index[file]["state"] == "changed":
-                index[file]["ids"] = await self.insert_documents(
-                    index[file]["documents"]
-                )  # insert new version
+                index[file]["ids"] = await self.insert_documents(index[file]["documents"])  # insert new version
 
         # remove index where state="removed"
         index = {k: v for k, v in index.items() if v["state"] != "removed"}
@@ -327,9 +313,7 @@ class Memory:
     def get_document_by_id(self, id: str) -> Document | None:
         return self.db.get_by_ids(id)[0]
 
-    async def search_similarity_threshold(
-        self, query: str, limit: int, threshold: float, filter: str = ""
-    ):
+    async def search_similarity_threshold(self, query: str, limit: int, threshold: float, filter: str = ""):
         comparator = Memory._get_comparator(filter) if filter else None
 
         return await self.db.asearch(
@@ -340,18 +324,14 @@ class Memory:
             filter=comparator,
         )
 
-    async def delete_documents_by_query(
-        self, query: str, threshold: float, filter: str = ""
-    ):
+    async def delete_documents_by_query(self, query: str, threshold: float, filter: str = ""):
         k = 100
         tot = 0
         removed = []
 
         while True:
             # Perform similarity search with score
-            docs = await self.search_similarity_threshold(
-                query, limit=k, threshold=threshold, filter=filter
-            )
+            docs = await self.search_similarity_threshold(query, limit=k, threshold=threshold, filter=filter)
             removed += docs
 
             # Extract document IDs and filter based on score
@@ -376,9 +356,7 @@ class Memory:
 
     async def delete_documents_by_ids(self, ids: list[str]):
         # aget_by_ids is not yet implemented in faiss, need to do a workaround
-        rem_docs = await self.db.aget_by_ids(
-            ids
-        )  # existing docs to remove (prevents error)
+        rem_docs = await self.db.aget_by_ids(ids)  # existing docs to remove (prevents error)
         if rem_docs:
             rem_ids = [doc.metadata["id"] for doc in rem_docs]  # ids to remove
             await self.db.adelete(ids=rem_ids)
@@ -448,9 +426,7 @@ class Memory:
     @staticmethod
     def _cosine_normalizer(val: float) -> float:
         res = (1 + val) / 2
-        res = max(
-            0, min(1, res)
-        )  # float precision can cause values like 1.0000000596046448
+        res = max(0, min(1, res))  # float precision can cause values like 1.0000000596046448
         return res
 
     @staticmethod
@@ -498,9 +474,7 @@ def abs_knowledge_dir(knowledge_subdir: str, *sub_dirs: str) -> str:
     if knowledge_subdir.startswith("projects/"):
         from ctxai.helpers.projects import get_project_meta
 
-        return files.get_abs_path(
-            get_project_meta(knowledge_subdir[9:]), "knowledge", *sub_dirs
-        )
+        return files.get_abs_path(get_project_meta(knowledge_subdir[9:]), "knowledge", *sub_dirs)
     # standard subdirs
     if knowledge_subdir == "default":
         return files.get_abs_path("knowledge", *sub_dirs)
@@ -519,7 +493,7 @@ def get_agent_memory_subdir(agent: Agent) -> str:
 
     if not config:
         return "default"
-    
+
     # Check if project isolation is enabled and we are in a project
     if config.get("project_memory_isolation", True):
         project_name = projects.get_context_project_name(agent.context)
@@ -547,9 +521,7 @@ def get_existing_memory_subdirs() -> list[str]:
 
         project_subdirs = files.get_subdirectories(get_projects_parent_folder())
         for project_subdir in project_subdirs:
-            if files.exists(
-                get_project_meta(project_subdir), "memory", "index.faiss"
-            ):
+            if files.exists(get_project_meta(project_subdir), "memory", "index.faiss"):
                 subdirs.append(f"projects/{project_subdir}")
 
         # Ensure 'default' is always available
@@ -562,9 +534,7 @@ def get_existing_memory_subdirs() -> list[str]:
         return ["default"]
 
 
-def get_knowledge_subdirs_by_memory_subdir(
-    memory_subdir: str, default: list[str]
-) -> list[str]:
+def get_knowledge_subdirs_by_memory_subdir(memory_subdir: str, default: list[str]) -> list[str]:
     if memory_subdir.startswith("projects/"):
         from ctxai.helpers.projects import get_project_meta
 

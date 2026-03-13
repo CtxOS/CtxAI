@@ -7,6 +7,7 @@ collect it without making real network calls.  To run the smoke test manually:
 
     uv run python tests/rate_limiter_test.py
 """
+
 import asyncio
 import pytest
 

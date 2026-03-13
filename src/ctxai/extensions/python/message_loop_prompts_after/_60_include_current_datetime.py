@@ -18,9 +18,7 @@ class IncludeCurrentDatetime(Extension):
             current_datetime = current_datetime.split("+")[0]
 
         # read prompt
-        datetime_prompt = self.agent.read_prompt(
-            "agent.system.datetime.md", date_time=current_datetime
-        )
+        datetime_prompt = self.agent.read_prompt("agent.system.datetime.md", date_time=current_datetime)
 
         # add current datetime to the loop data
         loop_data.extras_temporary["current_datetime"] = datetime_prompt

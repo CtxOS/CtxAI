@@ -5,7 +5,6 @@ from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.dotenv import get_dotenv_value, save_dotenv_value
 
 
-
 class Localization:
     """
     Localization class for handling timezone conversions between UTC and local time.
@@ -123,7 +122,7 @@ class Localization:
                     )
             except ValueError:
                 # If timezone parsing fails, try without timezone
-                base = localtime_str.split('Z')[0].split('+')[0]
+                base = localtime_str.split("Z")[0].split("+")[0]
                 local_datetime_obj = datetime.fromisoformat(base)
                 local_datetime_obj = local_datetime_obj.replace(
                     tzinfo=dt_timezone(timedelta(minutes=self._offset_minutes))

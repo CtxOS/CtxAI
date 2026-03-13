@@ -2,7 +2,6 @@ from typing import Any, List, Sequence
 from langchain_community.vectorstores import FAISS
 
 # faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
-from ctxai.helpers import faiss_monkey_patch
 import faiss
 
 
@@ -23,7 +22,9 @@ class MyFaiss(FAISS):
     # override aget_by_ids
     def get_by_ids(self, ids: Sequence[str], /) -> List[Document]:
         # return all self.docstore._dict[id] in ids
-        return [self.docstore._dict[id] for id in (ids if isinstance(ids, list) else [ids]) if id in self.docstore._dict]  # type: ignore
+        return [
+            self.docstore._dict[id] for id in (ids if isinstance(ids, list) else [ids]) if id in self.docstore._dict
+        ]  # type: ignore
 
     async def aget_by_ids(self, ids: Sequence[str], /) -> List[Document]:
         return self.get_by_ids(ids)
@@ -33,7 +34,6 @@ class MyFaiss(FAISS):
 
 
 class VectorDB:
-
     _cached_embeddings: dict[str, CacheBackedEmbeddings] = {}
 
     @staticmethod
@@ -48,12 +48,10 @@ class VectorDB:
         )
         if namespace not in VectorDB._cached_embeddings:
             store = InMemoryByteStore()
-            VectorDB._cached_embeddings[namespace] = (
-                CacheBackedEmbeddings.from_bytes_store(
-                    model,
-                    store,
-                    namespace=namespace,
-                )
+            VectorDB._cached_embeddings[namespace] = CacheBackedEmbeddings.from_bytes_store(
+                model,
+                store,
+                namespace=namespace,
             )
         return VectorDB._cached_embeddings[namespace]
 
@@ -73,9 +71,7 @@ class VectorDB:
             relevance_score_fn=cosine_normalizer,
         )
 
-    async def search_by_similarity_threshold(
-        self, query: str, limit: int, threshold: float, filter: str = ""
-    ):
+    async def search_by_similarity_threshold(self, query: str, limit: int, threshold: float, filter: str = ""):
         comparator = get_comparator(filter) if filter else None
 
         return await self.db.asearch(
@@ -110,9 +106,7 @@ class VectorDB:
 
     async def delete_documents_by_ids(self, ids: list[str]):
         # aget_by_ids is not yet implemented in faiss, need to do a workaround
-        rem_docs = await self.db.aget_by_ids(
-            ids
-        )  # existing docs to remove (prevents error)
+        rem_docs = await self.db.aget_by_ids(ids)  # existing docs to remove (prevents error)
         if rem_docs:
             rem_ids = [doc.metadata["id"] for doc in rem_docs]  # ids to remove
             await self.db.adelete(ids=rem_ids)
@@ -132,9 +126,7 @@ def format_docs_plain(docs: list[Document]) -> list[str]:
 
 def cosine_normalizer(val: float) -> float:
     res = (1 + val) / 2
-    res = max(
-        0, min(1, res)
-    )  # float precision can cause values like 1.0000000596046448
+    res = max(0, min(1, res))  # float precision can cause values like 1.0000000596046448
     return res
 
 
@@ -143,7 +135,7 @@ def get_comparator(condition: str):
         try:
             result = simple_eval(condition, names=data)
             return result
-        except Exception as e:
+        except Exception:
             # PrintStyle.error(f"Error evaluating condition: {e}")
             return False
 

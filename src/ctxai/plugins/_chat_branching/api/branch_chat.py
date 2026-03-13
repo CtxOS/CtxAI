@@ -66,6 +66,7 @@ class BranchChat(ApiHandler):
 
         # Notify all tabs
         from ctxai.helpers.state_monitor_integration import mark_dirty_all
+
         mark_dirty_all(reason="plugins.chat_branching.BranchChat")
 
         return {

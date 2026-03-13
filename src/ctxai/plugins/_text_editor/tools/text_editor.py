@@ -15,9 +15,7 @@ from ctxai.plugins._text_editor.helpers.file_ops import (
 _MTIME_KEY = "_text_editor_mtimes"
 
 
-
 class TextEditor(Tool):
-
     async def execute(self, **kwargs):
         if self.method == "read":
             return await self._read(**kwargs)
@@ -63,9 +61,7 @@ class TextEditor(Tool):
             "content": result["content"],
             "warnings": result["warnings"],
         }
-        await call_extensions_async(
-            "text_editor_read_after", agent=self.agent, data=ext_data
-        )
+        await call_extensions_async("text_editor_read_after", agent=self.agent, data=ext_data)
 
         msg = self.agent.read_prompt(
             "fw.text_editor.read_ok.md",
@@ -79,28 +75,23 @@ class TextEditor(Tool):
     # ------------------------------------------------------------------
     # WRITE
     # ------------------------------------------------------------------
-    async def _write(
-        self, path: str = "", content: str | None = "", **kwargs
-    ) -> Response:
+    async def _write(self, path: str = "", content: str | None = "", **kwargs) -> Response:
         if not path:
             return self._error("write", path, "path is required")
 
         # Extension point
         ext_data = {"path": path, "content": content}
-        await call_extensions_async(
-            "text_editor_write_before", agent=self.agent, data=ext_data
-        )
+        await call_extensions_async("text_editor_write_before", agent=self.agent, data=ext_data)
 
-        result = await runtime.call_development_function(
-            write_file, ext_data["path"], ext_data["content"]
-        )
+        result = await runtime.call_development_function(write_file, ext_data["path"], ext_data["content"])
 
         if result["error"]:
             return self._error("write", path, result["error"])
 
         # Extension point
         await call_extensions_async(
-            "text_editor_write_after", agent=self.agent,
+            "text_editor_write_after",
+            agent=self.agent,
             data={"path": path, "total_lines": result["total_lines"]},
         )
 
@@ -148,34 +139,25 @@ class TextEditor(Tool):
 
         # Extension point
         ext_data = {"path": expanded, "edits": parsed}
-        await call_extensions_async(
-            "text_editor_patch_before", agent=self.agent, data=ext_data
-        )
+        await call_extensions_async("text_editor_patch_before", agent=self.agent, data=ext_data)
 
         try:
-            total_lines = await runtime.call_development_function(
-                apply_patch, ext_data["path"], ext_data["edits"]
-            )
+            total_lines = await runtime.call_development_function(apply_patch, ext_data["path"], ext_data["edits"])
         except Exception as exc:
             return self._error("patch", path, str(exc))
 
         # Extension point
         await call_extensions_async(
-            "text_editor_patch_after", agent=self.agent,
+            "text_editor_patch_after",
+            agent=self.agent,
             data={"path": expanded, "total_lines": total_lines},
         )
 
         # Refresh file info after patch for updated mtime
-        post_info = await runtime.call_development_function(
-            file_info, expanded
-        )
-        _apply_patch_post(
-            self.agent, post_info, total_lines, ext_data["edits"]
-        )
+        post_info = await runtime.call_development_function(file_info, expanded)
+        _apply_patch_post(self.agent, post_info, total_lines, ext_data["edits"])
 
-        patch_content = await _read_patch_region(
-            expanded, ext_data["edits"], total_lines, _get_config(self.agent)
-        )
+        patch_content = await _read_patch_region(expanded, ext_data["edits"], total_lines, _get_config(self.agent))
 
         msg = self.agent.read_prompt(
             "fw.text_editor.patch_ok.md",
@@ -190,9 +172,7 @@ class TextEditor(Tool):
     # Shared error helper
     # ------------------------------------------------------------------
     def _error(self, action: str, path: str, error: str) -> Response:
-        msg = self.agent.read_prompt(
-            f"fw.text_editor.{action}_error.md", path=path, error=error
-        )
+        msg = self.agent.read_prompt(f"fw.text_editor.{action}_error.md", path=path, error=error)
         return Response(message=msg, break_loop=False)
 
 
@@ -200,22 +180,18 @@ class TextEditor(Tool):
 # Standalone helpers
 # ------------------------------------------------------------------
 
-async def _read_patch_region(
-    path: str, edits: list[dict], total_lines: int, cfg: dict
-) -> str:
+
+async def _read_patch_region(path: str, edits: list[dict], total_lines: int, cfg: dict) -> str:
     if not edits:
         return ""
 
     min_from = min(e["from"] for e in edits)
     added = sum(
-        e["content"].count("\n")
-        + (1 if e["content"] and not e["content"].endswith("\n") else 0)
-        for e in edits if e.get("content")
+        e["content"].count("\n") + (1 if e["content"] and not e["content"].endswith("\n") else 0)
+        for e in edits
+        if e.get("content")
     )
-    removed = sum(
-        max(e["to"] - e["from"] + 1, 0)
-        for e in edits if not e.get("insert")
-    )
+    removed = sum(max(e["to"] - e["from"] + 1, 0) for e in edits if not e.get("insert"))
     max_to = max(e["to"] for e in edits)
     end_line = max_to + added - removed + 3
 
@@ -240,9 +216,7 @@ def _record_mtime(agent, info: FileInfo, total_lines: int):
 
 
 def _count_content_lines(content: str) -> int:
-    return content.count("\n") + (
-        1 if content and not content.endswith("\n") else 0
-    )
+    return content.count("\n") + (1 if content and not content.endswith("\n") else 0)
 
 
 def _all_edits_in_place(edits: list[dict]) -> bool:
@@ -256,9 +230,7 @@ def _all_edits_in_place(edits: list[dict]) -> bool:
     return True
 
 
-def _apply_patch_post(
-    agent, info: FileInfo, new_total: int, edits: list[dict]
-):
+def _apply_patch_post(agent, info: FileInfo, new_total: int, edits: list[dict]):
     mtimes = agent.data.setdefault(_MTIME_KEY, {})
     real = info["realpath"]
 
@@ -288,28 +260,24 @@ def _check_mtime(agent, info: FileInfo) -> str:
     mtimes = agent.data.get(_MTIME_KEY, {})
     real = info["realpath"]
     if real not in mtimes:
-        return agent.read_prompt(
-            "fw.text_editor.patch_need_read.md", path=info["expanded"]
-        )
+        return agent.read_prompt("fw.text_editor.patch_need_read.md", path=info["expanded"])
     stored = mtimes[real]
     mtime = stored.get("mtime") if isinstance(stored, dict) else stored
     if mtime is None:
         mtimes.pop(real, None)
-        return agent.read_prompt(
-            "fw.text_editor.patch_need_read.md", path=info["expanded"]
-        )
+        return agent.read_prompt("fw.text_editor.patch_need_read.md", path=info["expanded"])
     current = info["mtime"]
     if current is None:
         return ""
     if current != mtime:
-        return agent.read_prompt(
-            "fw.text_editor.patch_stale_read.md", path=info["expanded"]
-        )
+        return agent.read_prompt("fw.text_editor.patch_stale_read.md", path=info["expanded"])
     return ""
+
 
 # ------------------------------------------------------------------
 # Config
 # ------------------------------------------------------------------
+
 
 def _get_config(agent) -> dict:
     config = plugins.get_plugin_config("_text_editor", agent=agent) or {}

@@ -80,6 +80,7 @@ class NotificationManager:
         id: str = "",
     ) -> NotificationItem:
         from ctxai.agent import AgentContext
+
         return AgentContext.get_notification_manager().add_notification(
             type, priority, message, title, detail, display_time, group, id
         )
@@ -113,7 +114,7 @@ class NotificationManager:
                 self.updates.append(existing.no)
                 item = existing
             else:
-            # Create notification item
+                # Create notification item
                 item = NotificationItem(
                     manager=self,
                     no=len(self.notifications),
@@ -133,6 +134,7 @@ class NotificationManager:
                 self._enforce_limit()
 
         from ctxai.helpers.state_monitor_integration import mark_dirty_all
+
         mark_dirty_all(reason="notification.NotificationManager.add_notification")
         return item
 
@@ -193,6 +195,7 @@ class NotificationManager:
             return 0
 
         from ctxai.helpers.state_monitor_integration import mark_dirty_all
+
         mark_dirty_all(reason="notification.NotificationManager.mark_read_by_ids")
         return len(changed_nos)
 
@@ -214,6 +217,7 @@ class NotificationManager:
             return
 
         from ctxai.helpers.state_monitor_integration import mark_dirty_all
+
         mark_dirty_all(reason="notification.NotificationManager._update_item")
 
     def mark_all_read(self):
@@ -230,6 +234,7 @@ class NotificationManager:
             return
 
         from ctxai.helpers.state_monitor_integration import mark_dirty_all
+
         mark_dirty_all(reason="notification.NotificationManager.mark_all_read")
 
     def clear_all(self):
@@ -238,6 +243,7 @@ class NotificationManager:
             self.updates = []
             self.guid = str(uuid.uuid4())
         from ctxai.helpers.state_monitor_integration import mark_dirty_all
+
         mark_dirty_all(reason="notification.NotificationManager.clear_all")
 
     def get_notifications_by_type(self, type: NotificationType) -> list[NotificationItem]:

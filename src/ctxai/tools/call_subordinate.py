@@ -5,13 +5,9 @@ from ctxai.extensions.python.hist_add_tool_result import _90_save_tool_call_file
 
 
 class Delegation(Tool):
-
     async def execute(self, message="", reset="", **kwargs):
         # create subordinate agent using the data object on this agent and set superior agent to his data object
-        if (
-            self.agent.get_data(Agent.DATA_NAME_SUBORDINATE) is None
-            or str(reset).lower().strip() == "true"
-        ):
+        if self.agent.get_data(Agent.DATA_NAME_SUBORDINATE) is None or str(reset).lower().strip() == "true":
             # initialize default config
             config = initialize.initialize.initialize_agent()
 

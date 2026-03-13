@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import time
 import uuid
 from pathlib import Path
@@ -79,4 +78,3 @@ class SkillsImportPreview(ApiHandler):
                 tmp_path.unlink(missing_ok=True)  # type: ignore[arg-type]
             except Exception:
                 pass
-

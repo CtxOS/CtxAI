@@ -28,20 +28,15 @@ def format_error(
     if not start_entries and not end_entries:
         trimmed_lines = []
     else:
-
         # Find all "File" lines
-        file_indices = [
-            i for i, line in enumerate(lines) if line.strip().startswith("File ")
-        ]
+        file_indices = [i for i, line in enumerate(lines) if line.strip().startswith("File ")]
 
         # If we found at least one "File" line, trim the middle if there are more than start_entries+end_entries lines
         if len(file_indices) > start_entries + end_entries:
             start_index = max(0, len(file_indices) - start_entries - end_entries)
             trimmed_lines = (
                 lines[: file_indices[start_index]]
-                + [
-                    f"\n>>>  {len(file_indices) - start_entries - end_entries} stack lines skipped <<<\n"
-                ]
+                + [f"\n>>>  {len(file_indices) - start_entries - end_entries} stack lines skipped <<<\n"]
                 + lines[file_indices[start_index + end_entries] :]
             )
         else:

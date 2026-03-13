@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 import json
 import os
 import time
-from turtle import stamp
 import urllib.request
 import uuid
 import zipfile
@@ -128,9 +127,7 @@ def install_from_zip(zip_path: str, original_filename: str | None = None) -> dic
         try:
             run_install_hook(plugin_name)
         except Exception as e:
-            print_style.PrintStyle.error(
-                f"Failed to run installation hook for {plugin_name}: {e}"
-            )
+            print_style.PrintStyle.error(f"Failed to run installation hook for {plugin_name}: {e}")
             files.delete_dir(dest)
             raise
 
@@ -147,7 +144,7 @@ def install_from_zip(zip_path: str, original_filename: str | None = None) -> dic
         try:
             files.delete_dir(extract_dir)
             files.delete_file(zip_path)
-        except Exception as e:
+        except Exception:
             pass
 
 
@@ -177,9 +174,7 @@ def install_from_git(url: str, token: str | None = None, plugin_name: str = "") 
     try:
         run_install_hook(plugin_name)
     except Exception as e:
-        print_style.PrintStyle.error(
-            f"Failed to run installation hook for {plugin_name}: {e}"
-        )
+        print_style.PrintStyle.error(f"Failed to run installation hook for {plugin_name}: {e}")
         files.delete_dir(final_dir)
         raise
 
@@ -216,9 +211,7 @@ def update_from_git(plugin_name: str) -> dict:
     try:
         run_install_hook(plugin_name)
     except Exception as e:
-        print_style.PrintStyle.error(
-            f"Failed to run installation hook for {plugin_name}: {e}"
-        )
+        print_style.PrintStyle.error(f"Failed to run installation hook for {plugin_name}: {e}")
         raise
 
     after_plugin_change([plugin_name])
@@ -231,7 +224,9 @@ def update_from_git(plugin_name: str) -> dict:
         "title": meta.title if meta else plugin_name,
         "path": files.deabsolute_path(plugin_dir),
         "current_commit": head.hexsha,
-        "current_commit_timestamp": datetime.fromtimestamp(head.committed_date, timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+        "current_commit_timestamp": datetime.fromtimestamp(head.committed_date, timezone.utc).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        ),
         "version": getattr(meta, "version", "") or "",
         "branch": repo.active_branch.name if not repo.head.is_detached else "",
         "remote_url": git.strip_auth_from_url(repo.remotes.origin.url) if repo.remotes else "",
