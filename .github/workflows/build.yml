@@ -42,7 +42,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: docker/run
-          file: Dockerfile
+          file: docker/run/Dockerfile
           build-args: |
             BRANCH=${{ github.head_ref || github.ref_name }}
           push: false
