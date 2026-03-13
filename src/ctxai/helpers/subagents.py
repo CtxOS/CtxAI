@@ -1,4 +1,4 @@
-from ctxai.helpers import files
+from ctxai.helpers import files, plugins
 from ctxai.helpers import yaml as yaml_helper
 from typing import TYPE_CHECKING
 from pydantic import BaseModel, model_validator
@@ -397,7 +397,3 @@ def get_paths(
             paths.append(path)
 
     return paths
-
-
-# end-of-file imports to prevent circular imports
-from ctxai.helpers import plugins

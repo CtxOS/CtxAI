@@ -14,6 +14,8 @@ from typing import (
     TypedDict,
 )
 
+from browser_use.llm import ChatOpenRouter, ChatGoogle
+
 from ctxai.helpers import dotenv
 from ctxai.helpers import settings, dirty_json
 from ctxai.helpers.dotenv import load_dotenv
@@ -600,9 +602,6 @@ class AsyncAIChatReplacement:
     def __init__(self, wrapper, *args, **kwargs):
         self._wrapper = wrapper
         self.chat = AsyncAIChatReplacement._Chat(wrapper)
-
-
-from browser_use.llm import ChatOpenRouter, ChatGoogle
 
 
 class BrowserCompatibleChatWrapper(ChatOpenRouter):

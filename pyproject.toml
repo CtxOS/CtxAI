@@ -133,6 +133,9 @@ pythonpath = ["src"]
 line-length = 120
 target-version = "py312"
 
+[tool.ruff.lint]
+ignore = ["E402", "F841"]
+
 [tool.pre-commit]
 default_stages = ["pre-commit"]
 
