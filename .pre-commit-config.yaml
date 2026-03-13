@@ -1,0 +1,35 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=10000']
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-ast
+      - id: debug-statements
+
+  - repo: https://github.com/asottile/add-trailing-comma
+    rev: v3.9.0
+    hooks:
+      - id: add-trailing-comma
+
+  - repo: https://github.com/asottile/reorder-python-imports
+    rev: v3.15.2
+    hooks:
+      - id: reorder-python-imports
+        args: [--force-single-line]
+
+default_language_version:
+  python: python3.12
