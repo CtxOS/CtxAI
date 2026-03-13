@@ -11,11 +11,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import asyncio
 import pytest
-from ctxai.helpers import settings
 
 
 def get_test_urls():
     """Get the URLs to test based on current settings."""
+    from ctxai.helpers import settings
+
     try:
         cfg = settings.get_settings()
         token = cfg.get("mcp_server_token", "")
@@ -116,6 +117,8 @@ def print_troubleshooting():
 
 def validate_token_format():
     """Validate that the token format is correct."""
+    from ctxai.helpers import settings
+
     try:
         cfg = settings.get_settings()
         token = cfg.get("mcp_server_token", "")
@@ -146,33 +149,33 @@ def validate_token_format():
         return False
 
 
-@pytest.mark.asyncio
-async def test_server_connectivity():
+def test_server_connectivity():
     """Test basic server connectivity."""
+    import socket
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(1)
     try:
-        import httpx
+        result = sock.connect_ex(("localhost", 50101))
+    finally:
+        sock.close()
 
-        print("🌐 Server Connectivity Test")
-        print("=" * 30)
+    if result != 0:
+        pytest.skip("Server not running")
 
-        async with httpx.AsyncClient() as client:
-            try:
-                # Test basic server
-                await client.get("http://localhost:50101/", timeout=5.0)
-                print("✅ Ctx AI server is running")
-                return True
-            except httpx.ConnectError:
-                print("❌ Cannot connect to Ctx AI server")
-                print("   Make sure the server is running: python run_ui.py")
-                return False
-            except Exception as e:
-                print(f"❌ Server connectivity error: {e}")
-                return False
+    import httpx
+    import httpx._transports
 
-    except ImportError:
-        print("ℹ️  httpx not available, skipping connectivity test")
-        print("   Install with: pip install httpx")
-        return None
+    print("🌐 Server Connectivity Test")
+    print("=" * 30)
+
+    try:
+        response = httpx.get("http://localhost:50101/", timeout=5.0)
+        print(f"✅ Ctx AI server is running: {response.status_code}")
+    except httpx.ConnectError:
+        pytest.skip("Cannot connect to Ctx AI server")
+    except Exception as e:
+        pytest.skip(f"Server connectivity error: {e}")
 
 
 def main():
