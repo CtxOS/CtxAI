@@ -27,7 +27,7 @@ class ProcessQueue(Extension):
         """Wait for task to complete, then send next queued message."""
 
         # Wait for current task to finish, but no more than 1 minute to prevent hanging tasks
-        total_wait = 0
+        total_wait: int = 0
         while context.is_running() and total_wait < 60:
             await asyncio.sleep(0.1)
             total_wait += 0.1
