@@ -3,7 +3,7 @@ from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers import settings
 
 
-from typing import Any, cast
+from typing import Any
 
 
 class SetSettings(ApiHandler):
