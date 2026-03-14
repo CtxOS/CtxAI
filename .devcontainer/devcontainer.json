@@ -7,7 +7,7 @@
     }
   },
   "build": {
-    "cacheFrom": "ctxos/ctxai:base"
+    "cacheFrom": "ctxos/ctxai-base"
   },
   "customizations": {
     "vscode": {

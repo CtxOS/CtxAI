@@ -1,4 +1,4 @@
-FROM ctxos/ctxai/base:latest
+FROM ctxos/ctxai-base:latest
 
 # Check if the argument is provided, else throw an error
 ARG BRANCH
