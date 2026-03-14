@@ -2,7 +2,9 @@
   "name": "Ctx AI",
   "image": "mcr.microsoft.com/devcontainers/python:3.12",
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:1": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:1": {
+      "moby": false
+    }
   },
   "build": {
     "cacheFrom": "ctxos/ctxai:base"
