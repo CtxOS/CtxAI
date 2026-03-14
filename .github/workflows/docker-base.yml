@@ -27,15 +27,14 @@ jobs:
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/base
+          images: neopilotai/ctxai-base
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -48,7 +47,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: docker/base
-          file: Dockerfile
+          file: docker/base/Dockerfile
           push: ${{ github.event_name != 'workflow_dispatch' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
