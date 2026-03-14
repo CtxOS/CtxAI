@@ -529,7 +529,7 @@ export function drawProcessStep({
     .filter(Boolean)
     .forEach((button) => stepActionBtns.appendChild(button));
 
-  // update the process grop header by this step
+  // update the process group header by this step
   updateProcessGroupHeader(group);
 
   // remove shine from previous steps and add to this one if new and not completed
@@ -596,7 +596,7 @@ function drawStandaloneMessage({
   kvps = null,
   actionButtons = [],
 }) {
-  // end last process group on any standalone messge
+  // end last process group on any standalone message
   completeLastProcessGroup();
 
   const container = getOrCreateMessageContainer(

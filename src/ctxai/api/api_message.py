@@ -80,7 +80,7 @@ class ApiMessage(ApiHandler):
             if not context:
                 return Response('{"error": "Context not found"}', status=404, mimetype="application/json")
 
-            # Validation: if agent profile is provided, it must match the exising
+            # Validation: if agent profile is provided, it must match the existing
             if agent_profile and context.agent0.config.profile != agent_profile:
                 return Response(
                     '{"error": "Cannot override agent profile on existing context"}',
