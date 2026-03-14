@@ -20,13 +20,15 @@ if [ "$BRANCH" = "local" ]; then
 else
     # For other branches, clone from GitHub
     echo "Cloning repository from branch $BRANCH..."
-    git clone -b "$BRANCH" "https://github.com/ctxos/ctxai" "/git/ctxai" || {
+    git clone -b "$BRANCH" "https://github.com/neopilotai/CtxAI" "/git/ctxai" || {
         echo "CRITICAL ERROR: Failed to clone repository. Branch: $BRANCH"
         exit 1
     }
 fi
 
 . "/ins/setup_venv.sh" "$@"
+
+cd /git/ctxai
 
 # moved to base image
 # # Ensure the virtual environment and pip setup
@@ -35,12 +37,12 @@ fi
 # pip install torch --index-url https://download.pytorch.org/whl/cpu
 
 # Install remaining A0 python packages
-uv pip install -r /git/ctxai/requirements.txt
+uv pip install -r requirements.txt
 # override for packages that have unnecessarily strict dependencies
-uv pip install -r /git/ctxai/requirements2.txt
+uv pip install -r requirements2.txt
 
 # install playwright
 bash /ins/install_playwright.sh "$@"
 
 # Preload A0
-python /git/ctxai/preload.py --dockerized=true
+python src/ctxai/preload.py --dockerized=true
