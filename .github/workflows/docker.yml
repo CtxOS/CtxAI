@@ -32,7 +32,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: neopilotai/ctxai
+          images: ctxos/ctxai
           tags: |
             type=ref,event=branch
             type=ref,event=pr

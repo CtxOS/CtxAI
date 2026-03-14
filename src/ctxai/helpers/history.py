@@ -98,6 +98,9 @@ class Message(Record):
         self.summary = summary
         self.tokens = self.calculate_tokens()
 
+    async def summarize(self) -> str:
+        return self.summary
+
     async def compress(self):
         return False
 
@@ -122,7 +125,7 @@ class Message(Record):
     @staticmethod
     def from_dict(data: dict, history: "History"):
         content = data.get("content", "Content lost")
-        msg = Message(ai=data["ai"], content=content)
+        msg = Message(ai=data["ai"], content=content)  # type: ignore[abstract]
         msg.summary = data.get("summary", "")
         msg.tokens = data.get("tokens", 0)
         return msg
@@ -141,7 +144,7 @@ class Topic(Record):
             return sum(msg.get_tokens() for msg in self.messages)
 
     def add_message(self, ai: bool, content: MessageContent, tokens: int = 0) -> Message:
-        msg = Message(ai=ai, content=content, tokens=tokens)
+        msg = Message(ai=ai, content=content, tokens=tokens)  # type: ignore[abstract]
         self.messages.append(msg)
         return msg
 
@@ -206,7 +209,7 @@ class Topic(Record):
         msg_to_sum = self.messages[1 : cnt_to_sum + 1]
         summary = await self.summarize_messages(msg_to_sum)
         sum_msg_content = self.history.agent.parse_prompt("fw.msg_summary.md", summary=summary)
-        sum_msg = Message(False, sum_msg_content)
+        sum_msg = Message(False, sum_msg_content)  # type: ignore[abstract]
         self.messages[1 : cnt_to_sum + 1] = [sum_msg]
         return True
 
@@ -444,7 +447,7 @@ class History(Record):
 
 
 def deserialize_history(json_data: str, agent) -> History:
-    history = History(agent=agent)
+    history = History(agent=agent)  # type: ignore[abstract]
     if json_data:
         data = _json_loads(json_data)
         history = History.from_dict(data, history=history)
