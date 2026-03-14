@@ -54,7 +54,7 @@ attrs==25.4.0
     #   jsonschema
     #   phonemizer-fork
     #   referencing
-authlib==1.6.6
+authlib==1.6.7
     # via
     #   browser-use
     #   fastmcp
@@ -250,7 +250,7 @@ filetype==1.2.0
     # via unstructured
 flaredantic==0.1.5
     # via ctxai
-flask==3.0.3
+flask==3.1.3
     # via
     #   ctxai
     #   flask-basicauth
@@ -444,7 +444,7 @@ langchain-core==0.3.49
     #   langchain-community
     #   langchain-text-splitters
     #   langchain-unstructured
-langchain-text-splitters==0.3.7
+langchain-text-splitters==0.3.9
     # via langchain
 langchain-unstructured==0.1.6
     # via ctxai
@@ -472,7 +472,7 @@ lxml==6.0.2
     #   python-docx
     #   python-pptx
     #   unstructured
-lxml-html-clean==0.3.1
+lxml-html-clean==0.4.4
     # via ctxai
 markdown==3.7
     # via
@@ -496,7 +496,7 @@ marshmallow==3.26.2
     # via dataclasses-json
 matplotlib==3.10.8
     # via unstructured-inference
-mcp==1.22.0
+mcp==1.23.0
     # via
     #   browser-use
     #   ctxai
@@ -691,7 +691,7 @@ pi-heif==1.3.0
     # via unstructured
 pikepdf==10.5.0
     # via unstructured
-pillow==12.1.0
+pillow==12.1.1
     # via
     #   matplotlib
     #   newspaper3k
@@ -1531,7 +1531,7 @@ pyparsing==3.3.2
     #   httplib2
     #   matplotlib
     #   rdflib
-pypdf==6.0.0
+pypdf==6.8.0
     # via
     #   browser-use
     #   ctxai
@@ -1715,7 +1715,7 @@ shellingham==1.5.4
     # via typer
 simple-websocket==1.1.0
     # via python-engineio
-simpleeval==1.0.3
+simpleeval==1.0.5
     # via ctxai
 six==1.17.0
     # via
@@ -1798,7 +1798,7 @@ tokenizers==0.22.2
     # via
     #   litellm
     #   transformers
-torch==2.2.2
+torch==2.8.0
     # via
     #   accelerate
     #   curated-transformers
@@ -1890,7 +1890,7 @@ tzdata==2025.3
     #   tzlocal
 tzlocal==5.3.1
     # via exchangelib
-unstructured==0.16.23
+unstructured==0.18.18
     # via ctxai
 unstructured-client==0.31.0
     # via
