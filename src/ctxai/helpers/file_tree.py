@@ -210,8 +210,12 @@ def file_tree(
     queue.clear()
 
     if limit_reached and remaining_queue:
-        for folder_node, folder_path, _ in remaining_queue:
-            summary = _create_folder_unprocessed_comment(
+        for item in remaining_queue:
+            folder_node: _TreeEntry | None = item[0]
+            folder_path: str = item[1]
+            if folder_node is None:
+                continue
+            summary = _create_folder_unprocessed_comment(  # type: ignore[arg-type]
                 folder_node,
                 folder_path,
                 abs_root,

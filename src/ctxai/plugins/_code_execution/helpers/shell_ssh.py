@@ -63,7 +63,7 @@ class SSHInteractiveSession:
                 initial_command = "unset PROMPT_COMMAND PS0; stty -echo"
                 if self.cwd:
                     initial_command = f"cd {self.cwd}; {initial_command}"
-                self.shell.send(f"{initial_command}\n".encode())
+                self.shell.send(f"{initial_command}\n".encode())  # type: ignore[union-attr]
 
                 # wait for initial prompt/output to settle
                 while True:

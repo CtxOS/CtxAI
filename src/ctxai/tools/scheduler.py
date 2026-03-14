@@ -73,17 +73,18 @@ class SchedulerTool(Tool):
                 continue
             if type_filter and task.type not in type_filter:
                 continue
+            next_run = task.get_next_run_minutes()
             if (
                 next_run_within_filter
-                and task.get_next_run_minutes() is not None
-                and task.get_next_run_minutes() > next_run_within_filter
-            ):  # type: ignore
+                and next_run is not None
+                and next_run > next_run_within_filter
+            ):
                 continue
             if (
                 next_run_after_filter
-                and task.get_next_run_minutes() is not None
-                and task.get_next_run_minutes() < next_run_after_filter
-            ):  # type: ignore
+                and next_run is not None
+                and next_run < next_run_after_filter
+            ):
                 continue
             filtered_tasks.append(serialize_task(task))
 
@@ -179,7 +180,7 @@ class SchedulerTool(Tool):
         )
 
         # Validate cron expression, agent might hallucinate
-        cron_regex = "^((((\d+,)+\d+|(\d+(\/|-|#)\d+)|\d+L?|\*(\/\d+)?|L(-\d+)?|\?|[A-Z]{3}(-[A-Z]{3})?) ?){5,7})$"
+        cron_regex = r"^((((\d+,)+\d+|(\d+(\/|-|#)\d+)|\d+L?|\*(\/\d+)?|L(-\d+)?|\?|[A-Z]{3}(-[A-Z]{3})?) ?){5,7})$"
         if not re.match(cron_regex, task_schedule.to_crontab()):
             return Response(message="Invalid cron expression: " + task_schedule.to_crontab(), break_loop=False)
 

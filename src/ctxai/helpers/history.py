@@ -185,8 +185,8 @@ class Topic(Record):
                 trunc = messages.truncate_dict_by_ratio(
                     self.history.agent,
                     out[0]["content"],
-                    trim_to_chars * 1.15,
-                    trim_to_chars * 0.85,
+                    int(trim_to_chars * 1.15),
+                    int(trim_to_chars * 0.85),
                 )
                 msg.set_summary(_json_dumps(trunc))
 
@@ -494,7 +494,7 @@ def _output_content_langchain(content: MessageContent):
 
 
 def group_outputs_abab(outputs: list[OutputMessage]) -> list[OutputMessage]:
-    result = []
+    result: list[OutputMessage] = []
     for out in outputs:
         if result and result[-1]["ai"] == out["ai"]:
             result[-1] = OutputMessage(
@@ -507,7 +507,7 @@ def group_outputs_abab(outputs: list[OutputMessage]) -> list[OutputMessage]:
 
 
 def group_messages_abab(messages: list[BaseMessage]) -> list[BaseMessage]:
-    result = []
+    result: list[BaseMessage] = []
     for msg in messages:
         if result and isinstance(result[-1], type(msg)):
             # create new instance of the same type with merged content
