@@ -495,7 +495,7 @@ const model = {
   },
 
   getSelectedAbsPath(...relPath) {
-    return ["/ctx/usr/projects", this.selectedProject.name, ...relPath]
+    return ["/ctx/src/ctxai/usr/projects", this.selectedProject.name, ...relPath]
       .join("/")
       .replace(/\/+/g, "/");
   },

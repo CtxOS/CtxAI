@@ -39,9 +39,9 @@ class ApiFilesGet(ApiHandler):
             for path in paths:
                 try:
                     # Convert internal paths to external paths
-                    if path.startswith("/ctx/tmp/uploads/"):
+                    if path.startswith("/ctx/src/ctxai/tmp/uploads/"):
                         # Internal path - convert to external
-                        filename = path.replace("/ctx/tmp/uploads/", "")
+                        filename = path.replace("/ctx/src/ctxai/tmp/uploads/", "")
                         external_path = files.get_abs_path("usr/uploads", filename)
                         filename = os.path.basename(external_path)
                     elif path.startswith("/ctx/"):
