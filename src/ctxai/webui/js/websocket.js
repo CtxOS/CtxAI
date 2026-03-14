@@ -23,12 +23,18 @@ function assertPlainObject(value, fieldName) {
  * @returns {string}
  */
 function generateUuid() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
 
   const buffer = new Uint8Array(16);
-  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.getRandomValues === "function"
+  ) {
     crypto.getRandomValues(buffer);
   } else {
     for (let i = 0; i < buffer.length; i += 1) {
@@ -150,14 +156,21 @@ export function normalizeProducerOptions(options) {
   if (options == null) return {};
   const source = assertPlainObject(options, "options");
 
-  const unknownKeys = Object.keys(source).filter((key) => !_OPTION_KEYS.has(key));
+  const unknownKeys = Object.keys(source).filter(
+    (key) => !_OPTION_KEYS.has(key),
+  );
   if (unknownKeys.length > 0) {
-    throw new Error(`Unsupported producer option(s): ${unknownKeys.join(", ")}`);
+    throw new Error(
+      `Unsupported producer option(s): ${unknownKeys.join(", ")}`,
+    );
   }
 
   const normalized = {};
 
-  const includeHandlers = normalizeStringList(source.includeHandlers, "includeHandlers");
+  const includeHandlers = normalizeStringList(
+    source.includeHandlers,
+    "includeHandlers",
+  );
   if (includeHandlers) {
     normalized.includeHandlers = includeHandlers;
   }
@@ -182,7 +195,9 @@ export function normalizeProducerOptions(options) {
   }
 
   if (normalized.includeHandlers && normalized.excludeHandlers) {
-    throw new Error("includeHandlers and excludeHandlers cannot be used together");
+    throw new Error(
+      "includeHandlers and excludeHandlers cannot be used together",
+    );
   }
 
   return normalized;
@@ -341,7 +356,10 @@ class WebSocketClient {
   setDevelopmentFlag(value) {
     const normalized = Boolean(value);
     this.isDevelopment = normalized;
-    window.runtimeInfo = { ...(window.runtimeInfo || {}), isDevelopment: normalized };
+    window.runtimeInfo = {
+      ...(window.runtimeInfo || {}),
+      isDevelopment: normalized,
+    };
   }
 
   debugLog(...args) {
@@ -390,7 +408,9 @@ class WebSocketClient {
       });
     })()
       .catch((error) => {
-        throw new Error(`WebSocket connection failed: ${error.message || error}`);
+        throw new Error(
+          `WebSocket connection failed: ${error.message || error}`,
+        );
       })
       .finally(() => {
         this.connecting = false;
@@ -413,7 +433,8 @@ class WebSocketClient {
 
   async emit(eventType, data, options = {}) {
     const correlationId =
-      normalizeCorrelationId(options?.correlationId) || createCorrelationId("emit");
+      normalizeCorrelationId(options?.correlationId) ||
+      createCorrelationId("emit");
     const payload = this.buildPayload(data);
     payload.correlationId = correlationId;
 
@@ -449,13 +470,13 @@ class WebSocketClient {
 
     return new Promise((resolve, reject) => {
       if (timeoutMs > 0) {
-      this.socket
+        this.socket
           .timeout(timeoutMs)
           .emit(eventType, payload, (err, response) => {
-          if (err) {
-            reject(new Error("Request timeout"));
-            return;
-          }
+            if (err) {
+              reject(new Error("Request timeout"));
+              return;
+            }
             resolve(this.normalizeRequestResponse(response));
           });
         return;
@@ -463,7 +484,7 @@ class WebSocketClient {
 
       this.socket.emit(eventType, payload, (response) => {
         resolve(this.normalizeRequestResponse(response));
-        });
+      });
     });
   }
 
@@ -472,7 +493,8 @@ class WebSocketClient {
       return { correlationId: null, results: [] };
     }
     const correlationId =
-      typeof response.correlationId === "string" && response.correlationId.trim().length > 0
+      typeof response.correlationId === "string" &&
+      response.correlationId.trim().length > 0
         ? response.correlationId.trim()
         : null;
     const results = Array.isArray(response.results) ? response.results : [];
@@ -566,7 +588,10 @@ class WebSocketClient {
         getCsrfToken()
           .then((token) => cb({ csrf_token: token }))
           .catch((error) => {
-            console.error("[websocket] failed to fetch CSRF token for connect", error);
+            console.error(
+              "[websocket] failed to fetch CSRF token for connect",
+              error,
+            );
             cb({});
           });
       },
@@ -580,9 +605,7 @@ class WebSocketClient {
 
       const runtimeId = getRuntimeId();
       const runtimeChanged = Boolean(
-        this._lastRuntimeId &&
-          runtimeId &&
-          this._lastRuntimeId !== runtimeId
+        this._lastRuntimeId && runtimeId && this._lastRuntimeId !== runtimeId,
       );
       const firstConnect = !this._hasConnectedOnce;
       this._hasConnectedOnce = true;

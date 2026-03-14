@@ -28,7 +28,7 @@ class Message(ApiHandler):
             attachments = request.files.getlist("attachments")
             attachment_paths = []
 
-            upload_folder_int = "/a0/usr/uploads"
+            upload_folder_int = "/ctx/usr/uploads"
             upload_folder_ext = files.get_abs_path("usr/uploads")  # for development environment
 
             if attachments:
@@ -56,7 +56,7 @@ class Message(ApiHandler):
         # Obtain agent context
         context = self.use_context(ctxid)
 
-        # call extension point, alow it to modify data
+        # call extension point, allow it to modify data
         data = {"message": message, "attachment_paths": attachment_paths}
         await extension.call_extensions_async("user_message_ui", agent=context.get_agent(), data=data)
         message = data.get("message", "")

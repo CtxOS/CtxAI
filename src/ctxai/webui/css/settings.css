@@ -58,7 +58,7 @@ select {
 
 textarea {
   min-height: 100px;
-  font-family: 'Roboto Mono', monospace;
+  font-family: "Roboto Mono", monospace;
   scroll-behavior: smooth;
   resize: none;
   background-clip: border-box;
@@ -74,7 +74,7 @@ textarea:focus {
 
 .light-mode input[type="text"]:focus,
 .light-mode input[type="number"]:focus,
-.light-mode input[type="password"]:focus, 
+.light-mode input[type="password"]:focus,
 .light-mode textarea:focus {
   filter: brightness(1.1);
 }
@@ -180,8 +180,11 @@ nav ul li a {
   border-radius: 8px;
   padding: 1rem;
   width: 100%;
-  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  transition:
+    background-color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out,
+    opacity 0.2s ease-in-out;
 }
 
 nav ul li a:hover {
@@ -273,7 +276,7 @@ nav ul li a img {
 
 .settings-tabs::before,
 .settings-tabs::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 2px;
   bottom: 3px;
@@ -328,7 +331,6 @@ nav ul li a img {
   min-width: min-content;
   max-width: 150px;
 }
-
 
 /* Responsive Design for Settings Tabs */
 @media (max-width: 640px) {

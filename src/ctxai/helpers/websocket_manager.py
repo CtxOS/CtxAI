@@ -166,7 +166,7 @@ class WebSocketManager:
         return summary
 
     def _summarize_results(self, results: List[dict[str, Any]]) -> dict[str, Any]:
-        summary = {"ok": 0, "error": 0, "handlers": []}
+        summary: dict[str, Any] = {"ok": 0, "error": 0, "handlers": []}
         for result in results:
             handler_id = result.get("handlerId")
             ok = bool(result.get("ok"))
@@ -265,7 +265,7 @@ class WebSocketManager:
         include: Set[str] | None,
         exclude: Set[str] | None,
     ) -> tuple[list[WebSocketHandler], Set[str]]:
-        registered = self.handlers.get(namespace, {}).get(event_type, [])
+        registered = self.handlers.get(namespace, {}).get(event_type, [])  # type: ignore[call-overload]
         available_ids = {handler.identifier for handler in registered}
 
         if include is not None:
@@ -521,7 +521,7 @@ class WebSocketManager:
         include = include_handlers or include_meta
         exclude = exclude_handlers or (exclude_meta if allow_exclude else None)
 
-        registered = self.handlers.get(namespace, {}).get(event_type, [])
+        registered = self.handlers.get(namespace, {}).get(event_type, [])  # type: ignore[call-overload]
         if not registered:
             PrintStyle.warning(f"No handlers registered for event '{event_type}'")
             error = self._build_error_result(

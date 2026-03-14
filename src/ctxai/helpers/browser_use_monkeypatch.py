@@ -140,9 +140,10 @@ def _patched_fix_gemini_schema(self, schema: dict[str, Any]) -> dict[str, Any]:
                         cleaned[key] = cleaned_value
 
             # If this is an object type with empty properties, add a placeholder
+            type_val = cleaned.get("type", "")
             if (
-                isinstance(cleaned.get("type", ""), str)
-                and cleaned.get("type", "").upper() == "OBJECT"
+                isinstance(type_val, str)
+                and type_val.upper() == "OBJECT"
                 and "properties" in cleaned
                 and isinstance(cleaned["properties"], dict)
                 and len(cleaned["properties"]) == 0
@@ -150,8 +151,9 @@ def _patched_fix_gemini_schema(self, schema: dict[str, Any]) -> dict[str, Any]:
                 cleaned["properties"] = {"_placeholder": {"type": "string"}}
 
             # PATCH: Also remove 'title' from the required list if it exists
-            if "required" in cleaned and isinstance(cleaned.get("required"), list):
-                cleaned["required"] = [p for p in cleaned["required"] if p != "title"]
+            required_val = cleaned.get("required")
+            if isinstance(required_val, list):
+                cleaned["required"] = [p for p in required_val if p != "title"]
 
             return cleaned
         elif isinstance(obj, list):

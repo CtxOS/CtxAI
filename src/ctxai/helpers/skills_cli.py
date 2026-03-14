@@ -12,7 +12,7 @@ Usage:
 
 import argparse
 import sys
-import yaml
+import yaml  # type: ignore[import-untyped]
 import re
 from pathlib import Path
 from typing import Optional, List

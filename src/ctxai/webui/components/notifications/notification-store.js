@@ -71,7 +71,7 @@ const model = {
         this.adjustNotificationData(notification);
 
         const existingNotificationIndex = this.notifications.findIndex(
-          (n) => n.id === notification.id
+          (n) => n.id === notification.id,
         );
         const existingNotification =
           existingNotificationIndex >= 0
@@ -116,7 +116,7 @@ const model = {
     // If notification has a group, remove any existing toasts with the same group
     if (notification.group && notification.group.trim() !== "") {
       const existingToast = this.toastStack.find(
-        (t) => t.group === notification.group
+        (t) => t.group === notification.group,
       );
       if (existingToast && existingToast.toastId)
         this.removeFromToastStack(existingToast.toastId);
@@ -228,7 +228,7 @@ const model = {
     if (
       target instanceof Element &&
       target.closest(
-        'button, a, input, select, textarea, summary, label, [role="button"], [data-toast-interactive]'
+        'button, a, input, select, textarea, summary, label, [role="button"], [data-toast-interactive]',
       )
     ) {
       if (toast?.id) {
@@ -244,7 +244,7 @@ const model = {
   // Add or update a notification
   addOrUpdateNotification(notification) {
     const existingIndex = this.notifications.findIndex(
-      (n) => n.id === notification.id
+      (n) => n.id === notification.id,
     );
 
     if (existingIndex >= 0) {
@@ -265,7 +265,7 @@ const model = {
   updateUnreadCount() {
     const unread = this.notifications.filter((n) => !n.read).length;
     const unreadPrio = this.notifications.filter(
-      (n) => !n.read && n.priority > NotificationPriority.NORMAL
+      (n) => !n.read && n.priority > NotificationPriority.NORMAL,
     ).length;
     if (this.unreadCount !== unread) this.unreadCount = unread;
     if (this.unreadPrioCount !== unreadPrio) this.unreadPrioCount = unreadPrio;
@@ -274,7 +274,7 @@ const model = {
   // Mark notification as read
   async markAsRead(notificationId) {
     const notification = this.notifications.find(
-      (n) => n.id === notificationId
+      (n) => n.id === notificationId,
     );
     if (notification && !notification.read) {
       notification.read = true;
@@ -368,7 +368,7 @@ const model = {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const initialCount = this.notifications.length;
     this.notifications = this.notifications.filter(
-      (n) => new Date(n.timestamp) > oneHourAgo
+      (n) => new Date(n.timestamp) > oneHourAgo,
     );
 
     if (this.notifications.length !== initialCount) {
@@ -434,7 +434,7 @@ const model = {
     detail = "",
     display_time = 3,
     group = "",
-    priority = defaultPriority
+    priority = defaultPriority,
   ) {
     try {
       const response = await globalThis.sendJsonData("/notification_create", {
@@ -466,7 +466,7 @@ const model = {
     detail = "",
     display_time = 3,
     group = "",
-    priority = defaultPriority
+    priority = defaultPriority,
   ) {
     return await this.createNotification(
       NotificationType.INFO,
@@ -475,7 +475,7 @@ const model = {
       detail,
       display_time,
       group,
-      priority
+      priority,
     );
   },
 
@@ -485,7 +485,7 @@ const model = {
     detail = "",
     display_time = 3,
     group = "",
-    priority = defaultPriority
+    priority = defaultPriority,
   ) {
     return await this.createNotification(
       NotificationType.SUCCESS,
@@ -494,7 +494,7 @@ const model = {
       detail,
       display_time,
       group,
-      priority
+      priority,
     );
   },
 
@@ -504,7 +504,7 @@ const model = {
     detail = "",
     display_time = 3,
     group = "",
-    priority = defaultPriority
+    priority = defaultPriority,
   ) {
     return await this.createNotification(
       NotificationType.WARNING,
@@ -513,7 +513,7 @@ const model = {
       detail,
       display_time,
       group,
-      priority
+      priority,
     );
   },
 
@@ -523,7 +523,7 @@ const model = {
     detail = "",
     display_time = 3,
     group = "",
-    priority = defaultPriority
+    priority = defaultPriority,
   ) {
     return await this.createNotification(
       NotificationType.ERROR,
@@ -532,7 +532,7 @@ const model = {
       detail,
       display_time,
       group,
-      priority
+      priority,
     );
   },
 
@@ -542,7 +542,7 @@ const model = {
     detail = "",
     display_time = 3,
     group = "",
-    priority = defaultPriority
+    priority = defaultPriority,
   ) {
     return await this.createNotification(
       NotificationType.PROGRESS,
@@ -551,7 +551,7 @@ const model = {
       detail,
       display_time,
       group,
-      priority
+      priority,
     );
   },
 
@@ -596,7 +596,7 @@ const model = {
     title = "",
     display_time = 5,
     group = "",
-    priority = defaultPriority
+    priority = defaultPriority,
   ) {
     const timestamp = new Date().toISOString();
     const notification = {
@@ -619,7 +619,7 @@ const model = {
     // If notification has a group, remove any existing toasts with the same group
     if (group && String(group).trim() !== "") {
       const existingToastIndex = this.toastStack.findIndex(
-        (t) => t.group === group
+        (t) => t.group === group,
       );
 
       if (existingToastIndex >= 0) {
@@ -668,7 +668,7 @@ const model = {
     display_time = 5,
     group = "",
     priority = defaultPriority,
-    frontendOnly = false
+    frontendOnly = false,
   ) {
     // Try to send to backend first if connected
     if (!frontendOnly) {
@@ -681,7 +681,7 @@ const model = {
             "",
             display_time,
             group,
-            priority
+            priority,
           );
           if (notificationId) {
             // Backend handled it, notification will arrive via polling
@@ -691,7 +691,7 @@ const model = {
           console.log(
             `Backend unavailable for notification, showing as frontend-only: ${
               error.message || error
-            }`
+            }`,
           );
         }
       } else {
@@ -706,7 +706,7 @@ const model = {
       title,
       display_time,
       group,
-      priority
+      priority,
     );
   },
 
@@ -717,7 +717,7 @@ const model = {
     display_time = 8,
     group = "",
     priority = defaultPriority,
-    frontendOnly = false
+    frontendOnly = false,
   ) {
     return await this.addFrontendToast(
       NotificationType.ERROR,
@@ -726,7 +726,7 @@ const model = {
       display_time,
       group,
       priority,
-      frontendOnly
+      frontendOnly,
     );
   },
 
@@ -736,7 +736,7 @@ const model = {
     display_time = 5,
     group = "",
     priority = defaultPriority,
-    frontendOnly = false
+    frontendOnly = false,
   ) {
     return await this.addFrontendToast(
       NotificationType.WARNING,
@@ -745,7 +745,7 @@ const model = {
       display_time,
       group,
       priority,
-      frontendOnly
+      frontendOnly,
     );
   },
 
@@ -755,7 +755,7 @@ const model = {
     display_time = 3,
     group = "",
     priority = defaultPriority,
-    frontendOnly = false
+    frontendOnly = false,
   ) {
     return await this.addFrontendToast(
       NotificationType.INFO,
@@ -764,7 +764,7 @@ const model = {
       display_time,
       group,
       priority,
-      frontendOnly
+      frontendOnly,
     );
   },
 
@@ -774,7 +774,7 @@ const model = {
     display_time = 3,
     group = "",
     priority = defaultPriority,
-    frontendOnly = false
+    frontendOnly = false,
   ) {
     return await this.addFrontendToast(
       NotificationType.SUCCESS,
@@ -783,7 +783,7 @@ const model = {
       display_time,
       group,
       priority,
-      frontendOnly
+      frontendOnly,
     );
   },
 
@@ -793,7 +793,7 @@ const model = {
     display_time = 3,
     group = "",
     priority = defaultPriority,
-    frontendOnly = false
+    frontendOnly = false,
   ) {
     return await this.addFrontendToast(
       NotificationType.PROGRESS,
@@ -802,7 +802,7 @@ const model = {
       display_time,
       group,
       priority,
-      frontendOnly
+      frontendOnly,
     );
   },
 
@@ -822,13 +822,21 @@ const model = {
   async frontendNotification({
     type,
     message,
-    title = '',
+    title = "",
     displayTime = 5,
-    group = '',
+    group = "",
     priority = defaultPriority,
-    frontendOnly = false
+    frontendOnly = false,
   }) {
-    return await this.addFrontendToast(type, message, title, displayTime, group, priority, frontendOnly);
+    return await this.addFrontendToast(
+      type,
+      message,
+      title,
+      displayTime,
+      group,
+      priority,
+      frontendOnly,
+    );
   },
 };
 

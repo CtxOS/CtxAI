@@ -47,7 +47,7 @@ class SchedulerTaskCreate(ApiHandler):
 
         if project_slug:
             try:
-                metadata = load_basic_project_data(requested_project_slug)
+                metadata = load_basic_project_data(requested_project_slug)  # type: ignore[arg-type]
                 project_color = metadata.get("color") or None
             except Exception as exc:
                 printer.error(f"SchedulerTaskCreate: failed to load project '{project_slug}': {exc}")

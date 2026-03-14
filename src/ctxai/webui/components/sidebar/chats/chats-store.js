@@ -24,7 +24,7 @@ const model = {
     return this.selected;
   },
 
-  getSelectedContext(){
+  getSelectedContext() {
     return this.selectedContext;
   },
 
@@ -53,7 +53,7 @@ const model = {
   applyContexts(contextsList) {
     // Sort by created_at time (newer first)
     this.contexts = contextsList.sort(
-      (a, b) => (b.created_at || 0) - (a.created_at || 0)
+      (a, b) => (b.created_at || 0) - (a.created_at || 0),
     );
 
     // Keep selectedContext in sync when the currently selected context's
@@ -145,13 +145,13 @@ const model = {
     try {
       const context = ctxid || this.selected || getContext();
       await sendJsonData("/chat_reset", {
-        context
+        context,
       });
 
       // Increment reset counter
-      if (typeof globalThis.resetCounter === 'number') {
+      if (typeof globalThis.resetCounter === "number") {
         globalThis.resetCounter = globalThis.resetCounter + 1;
-      }      
+      }
     } catch (e) {
       toastFetchError("Error resetting chat", e);
     }
@@ -160,38 +160,38 @@ const model = {
   // Create new chat
   async newChat() {
     try {
-
       // first create a new chat on the backend
       const response = await sendJsonData("/chat_create", {
-        current_context: this.selected
+        current_context: this.selected,
       });
 
       if (response.ok) {
         this.selectChat(response.ctxid);
         return;
       }
-
     } catch (e) {
       toastFetchError("Error creating new chat", e);
     }
   },
 
-  deselectChat(){
+  deselectChat() {
     globalThis.deselectChat(); //TODO move here
   },
 
   // Smoothly scroll the chats list to top if present
   _scrollChatsToTop() {
-    const listEl = document.querySelector('#chats-section .chats-config-list');
+    const listEl = document.querySelector("#chats-section .chats-config-list");
     if (!listEl) return; // no-op if not in DOM
-    listEl.scrollTo({ top: 0, behavior: 'smooth' });
+    listEl.scrollTo({ top: 0, behavior: "smooth" });
   },
 
   // Load chats from files
   async loadChats() {
     try {
       const fileContents = await this.readJsonFiles();
-      const response = await sendJsonData("/chat_load", { chats: fileContents });
+      const response = await sendJsonData("/chat_load", {
+        chats: fileContents,
+      });
 
       if (!response) {
         toast("No response returned.", "error");
@@ -287,9 +287,14 @@ const model = {
   // Set selected context
   setSelected(contextId) {
     this.selected = contextId || "";
-    this.selectedContext = this.contexts.find((ctx) => ctx.id === this.selected);
+    this.selectedContext = this.contexts.find(
+      (ctx) => ctx.id === this.selected,
+    );
     // if not found in contexts, try to find in tasks < not nice, will need refactor later
-    if(!this.selectedContext) this.selectedContext = tasksStore.tasks.find((ctx) => ctx.id === this.selected);
+    if (!this.selectedContext)
+      this.selectedContext = tasksStore.tasks.find(
+        (ctx) => ctx.id === this.selected,
+      );
     if (this.selected) {
       sessionStorage.setItem("lastSelectedChat", this.selected);
     } else {
@@ -325,9 +330,13 @@ const model = {
       const deadline = Date.now() + 800;
       while (Date.now() < deadline) {
         try {
-          
-          const stack = Array.isArray(notificationStore.toastStack) ? notificationStore.toastStack : null;
-          if (stack && stack.some((toast) => toast && toast.id === notificationId)) {
+          const stack = Array.isArray(notificationStore.toastStack)
+            ? notificationStore.toastStack
+            : null;
+          if (
+            stack &&
+            stack.some((toast) => toast && toast.id === notificationId)
+          ) {
             break;
           }
         } catch (_err) {
@@ -365,7 +374,7 @@ const model = {
     } catch (_e) {
       // ignore
     }
-  }
+  },
 };
 
 const store = createStore("chats", model);

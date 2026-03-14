@@ -256,6 +256,6 @@ def _get_extensions(folder: str):
     if not files.exists(folder):
         return []
 
-    classes = extract_tools.load_classes_from_folder(folder, "*", Extension)
+    classes = extract_tools.load_classes_from_folder(folder, "*", Extension)  # type: ignore[type-abstract]
     cache.add(_CACHE_AREA, folder, classes)
     return classes

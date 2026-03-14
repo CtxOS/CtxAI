@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Iterable, cast
 import os
 import secrets
 import time
@@ -225,7 +226,7 @@ def configure_websocket_namespaces(
     # default, but request-style calls must resolve deterministically with NO_HANDLERS.
     namespace_map.setdefault("/", [])
 
-    websocket_manager.register_handlers(namespace_map)
+    websocket_manager.register_handlers(cast(dict[str, Iterable[WebSocketHandler]], namespace_map))
 
     allowed_namespaces = set(namespace_map.keys())
     original_handle_connect = socketio_server._handle_connect  # type: ignore[attr-defined]

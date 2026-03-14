@@ -129,7 +129,9 @@ function safeJsonClone(value) {
 function normalizeAttachments(value) {
   if (!value) return [];
   if (Array.isArray(value)) {
-    return value.filter((item) => typeof item === "string" && item.trim().length > 0);
+    return value.filter(
+      (item) => typeof item === "string" && item.trim().length > 0,
+    );
   }
   if (typeof value === "string") {
     return value
@@ -143,9 +145,8 @@ function normalizeAttachments(value) {
 function normalizeSchedule(schedule) {
   if (!schedule) return defaultSchedule();
   if (typeof schedule === "string") {
-    const [minute = "*", hour = "*", day = "*", month = "*", weekday = "*"] = schedule
-      .split(" ")
-      .map((segment) => segment || "*");
+    const [minute = "*", hour = "*", day = "*", month = "*", weekday = "*"] =
+      schedule.split(" ").map((segment) => segment || "*");
     return {
       minute,
       hour,
@@ -209,7 +210,8 @@ function extractProjectInfo(task) {
 }
 
 function composeEditingTask(task = {}) {
-  const base = task && task.uuid ? { ...task } : { ...defaultEditingTask(), ...task };
+  const base =
+    task && task.uuid ? { ...task } : { ...defaultEditingTask(), ...task };
   return {
     ...base,
     schedule: normalizeSchedule(base.schedule),
@@ -218,7 +220,9 @@ function composeEditingTask(task = {}) {
     token: base.token || "",
     project: base.project || extractProjectInfo(base) || null,
     dedicated_context:
-      typeof base.dedicated_context === "boolean" ? base.dedicated_context : true,
+      typeof base.dedicated_context === "boolean"
+        ? base.dedicated_context
+        : true,
     state: base.state || DEFAULT_TASK_STATE,
   };
 }
@@ -277,11 +281,17 @@ async function callSchedulerEndpoint(endpoint, payload = {}, defaultError) {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      return { ok: false, error: data?.error || defaultError || "Scheduler request failed" };
+      return {
+        ok: false,
+        error: data?.error || defaultError || "Scheduler request failed",
+      };
     }
     return { ok: true, data };
   } catch (error) {
-    return { ok: false, error: error?.message || defaultError || "Scheduler request failed" };
+    return {
+      ok: false,
+      error: error?.message || defaultError || "Scheduler request failed",
+    };
   }
 }
 
@@ -290,7 +300,7 @@ const schedulerApi = {
     const result = await callSchedulerEndpoint(
       "/scheduler_tasks_list",
       { timezone: getUserTimezone() },
-      "Failed to fetch tasks"
+      "Failed to fetch tasks",
     );
     if (!result.ok) return { ok: false, error: result.error };
     const rawTasks = Array.isArray(result.data?.tasks) ? result.data.tasks : [];
@@ -305,10 +315,12 @@ const schedulerApi = {
     const result = await callSchedulerEndpoint(
       "/scheduler_task_create",
       payload,
-      "Failed to create task"
+      "Failed to create task",
     );
     if (!result.ok) return { ok: false, error: result.error };
-    const task = result.data?.task ? normalizeTaskFromBackend(result.data.task) : null;
+    const task = result.data?.task
+      ? normalizeTaskFromBackend(result.data.task)
+      : null;
     return { ok: true, task };
   },
 
@@ -316,10 +328,12 @@ const schedulerApi = {
     const result = await callSchedulerEndpoint(
       "/scheduler_task_update",
       payload,
-      "Failed to update task"
+      "Failed to update task",
     );
     if (!result.ok) return { ok: false, error: result.error };
-    const task = result.data?.task ? normalizeTaskFromBackend(result.data.task) : null;
+    const task = result.data?.task
+      ? normalizeTaskFromBackend(result.data.task)
+      : null;
     return { ok: true, task };
   },
 
@@ -327,7 +341,7 @@ const schedulerApi = {
     return callSchedulerEndpoint(
       "/scheduler_task_run",
       { task_id: taskId, timezone: getUserTimezone() },
-      "Failed to run task"
+      "Failed to run task",
     );
   },
 
@@ -335,7 +349,7 @@ const schedulerApi = {
     return callSchedulerEndpoint(
       "/scheduler_task_delete",
       { task_id: taskId, timezone: getUserTimezone() },
-      "Failed to delete task"
+      "Failed to delete task",
     );
   },
 };
@@ -355,7 +369,8 @@ function pushNotification(type, message, title = "Scheduler", duration) {
 }
 
 function destroyPlannerInput(inputId) {
-  const input = typeof document !== "undefined" ? document.getElementById(inputId) : null;
+  const input =
+    typeof document !== "undefined" ? document.getElementById(inputId) : null;
   if (!input || !input._flatpickr) return;
   input._flatpickr.destroy();
   const wrapper = input.closest(".scheduler-flatpickr-wrapper");
@@ -485,13 +500,17 @@ const schedulerStoreModel = {
 
     if (this.filterType && this.filterType !== "all") {
       filtered = filtered.filter((task) =>
-        task.type ? task.type.toLowerCase() === this.filterType.toLowerCase() : false
+        task.type
+          ? task.type.toLowerCase() === this.filterType.toLowerCase()
+          : false,
       );
     }
 
     if (this.filterState && this.filterState !== "all") {
       filtered = filtered.filter((task) =>
-        task.state ? task.state.toLowerCase() === this.filterState.toLowerCase() : false
+        task.state
+          ? task.state.toLowerCase() === this.filterState.toLowerCase()
+          : false,
       );
     }
 
@@ -499,7 +518,8 @@ const schedulerStoreModel = {
   },
 
   get totalPages() {
-    if (!Array.isArray(this.filteredTasks) || this.filteredTasks.length === 0) return 1;
+    if (!Array.isArray(this.filteredTasks) || this.filteredTasks.length === 0)
+      return 1;
     return Math.ceil(this.filteredTasks.length / this.pageSize);
   },
 
@@ -662,7 +682,7 @@ const schedulerStoreModel = {
           this.tasks = [...this.tasks, result.task];
         } else {
           this.tasks = this.tasks.map((task) =>
-            task.uuid === result.task.uuid ? result.task : task
+            task.uuid === result.task.uuid ? result.task : task,
           );
         }
       } else {
@@ -709,7 +729,10 @@ const schedulerStoreModel = {
 
     this.showLoadingState = true;
     try {
-      const result = await schedulerApi.updateTask({ task_id: taskId, state: "idle" });
+      const result = await schedulerApi.updateTask({
+        task_id: taskId,
+        state: "idle",
+      });
       if (!result.ok) throw new Error(result.error);
       this.notifySuccess("Task state reset to idle");
       await this.fetchTasks({ manual: true });
@@ -726,7 +749,10 @@ const schedulerStoreModel = {
         await chatsStore.switchFromContext(taskId);
       }
     } catch (error) {
-      console.warn("[scheduler] Failed to switch from context before delete", error);
+      console.warn(
+        "[scheduler] Failed to switch from context before delete",
+        error,
+      );
     }
 
     try {
@@ -940,7 +966,7 @@ const schedulerStoreModel = {
   syncTasksFromSidebar(sidebarTasks) {
     // Sync scheduler store with sidebar's poll data for instant access
     if (!Array.isArray(sidebarTasks) || sidebarTasks.length === 0) return;
-    
+
     // Smart merge: preserve object references to prevent UI flickering
     const taskMap = new Map(this.tasks.map((t) => [t.uuid, t]));
     this.tasks = sidebarTasks.map((sidebarTask) => {
@@ -961,12 +987,12 @@ const schedulerStoreModel = {
   showTaskDetail(taskId) {
     // Sync with sidebar data if our array is empty (e.g., on page load before modal opened)
     if (this.tasks.length === 0) {
-      const tasksStore = globalThis.Alpine?.store?.('tasks');
+      const tasksStore = globalThis.Alpine?.store?.("tasks");
       if (tasksStore?.tasks?.length > 0) {
         this.syncTasksFromSidebar(tasksStore.tasks);
       }
     }
-    
+
     const task = this.tasks.find((t) => t.uuid === taskId);
     if (!task) {
       this.notifyError("Task not found");
@@ -979,7 +1005,9 @@ const schedulerStoreModel = {
     }
 
     this.selectedTaskForDetail = snapshot;
-    const closePromise = window.openModal("modals/scheduler/scheduler-task-detail.html");
+    const closePromise = window.openModal(
+      "modals/scheduler/scheduler-task-detail.html",
+    );
     if (closePromise && typeof closePromise.then === "function") {
       closePromise.then(() => {
         if (this.selectedTaskForDetail?.uuid === snapshot.uuid) {
@@ -1060,10 +1088,14 @@ const schedulerStoreModel = {
       this.editingTask.plan.todo = [];
     }
 
-    const inputId = mode === "edit" ? "newPlannedTime-edit" : "newPlannedTime-create";
+    const inputId =
+      mode === "edit" ? "newPlannedTime-edit" : "newPlannedTime-create";
     const input = document.getElementById(inputId);
     if (!input) {
-      console.warn("[scheduler] Input element not found for planned time", inputId);
+      console.warn(
+        "[scheduler] Input element not found for planned time",
+        inputId,
+      );
       return;
     }
 
@@ -1084,7 +1116,8 @@ const schedulerStoreModel = {
   },
 
   generateRandomToken() {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let token = "";
     for (let i = 0; i < 16; i++) {
       token += characters.charAt(Math.floor(Math.random() * characters.length));

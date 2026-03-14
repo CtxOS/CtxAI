@@ -28,7 +28,7 @@ const model = {
   settings: null,
   additional: null,
   workdirFileStructureTestOutput: "",
-  
+
   // Tab state
   _activeTab: DEFAULT_TAB,
   get activeTab() {
@@ -52,7 +52,7 @@ const model = {
   async onOpen() {
     this.error = null;
     this.isLoading = true;
-    
+
     try {
       const response = await API.callJsonApi("settings_get", null);
       if (response && response.settings) {
@@ -92,8 +92,6 @@ const model = {
     this.activeTab = tabName;
   },
 
-
-
   get apiKeyProviders() {
     const seen = new Set();
     const options = [];
@@ -119,13 +117,15 @@ const model = {
 
     this.isLoading = true;
     try {
-      const response = await API.callJsonApi("settings_set", { settings: this.settings });
+      const response = await API.callJsonApi("settings_set", {
+        settings: this.settings,
+      });
       if (response && response.settings) {
         this.settings = response.settings;
         this.additional = response.additional || this.additional;
         toast("Settings saved successfully", "success");
         document.dispatchEvent(
-          new CustomEvent("settings-updated", { detail: response.settings })
+          new CustomEvent("settings-updated", { detail: response.settings }),
         );
         return true;
       } else {
@@ -156,14 +156,17 @@ const model = {
   async testWorkdirFileStructure() {
     if (!this.settings) return;
     try {
-      const response = await API.callJsonApi("settings_workdir_file_structure", {
-        workdir_path: this.settings.workdir_path,
-        workdir_max_depth: this.settings.workdir_max_depth,
-        workdir_max_files: this.settings.workdir_max_files,
-        workdir_max_folders: this.settings.workdir_max_folders,
-        workdir_max_lines: this.settings.workdir_max_lines,
-        workdir_gitignore: this.settings.workdir_gitignore,
-      });
+      const response = await API.callJsonApi(
+        "settings_workdir_file_structure",
+        {
+          workdir_path: this.settings.workdir_path,
+          workdir_max_depth: this.settings.workdir_max_depth,
+          workdir_max_files: this.settings.workdir_max_files,
+          workdir_max_folders: this.settings.workdir_max_folders,
+          workdir_max_lines: this.settings.workdir_max_lines,
+          workdir_gitignore: this.settings.workdir_gitignore,
+        },
+      );
       this.workdirFileStructureTestOutput = response?.data || "";
       window.openModal("settings/agent/workdir-file-structure-test.html");
     } catch (e) {
@@ -191,4 +194,3 @@ const model = {
 const store = createStore("settings", model);
 
 export { store };
-

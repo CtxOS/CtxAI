@@ -49,7 +49,10 @@ const model = {
       this.output = response.output || "";
       this.exitCode = response.exit_code ?? null;
       if (response.executed_at) {
-        this.lastExec = { executed_at: response.executed_at, exit_code: response.exit_code ?? null };
+        this.lastExec = {
+          executed_at: response.executed_at,
+          exit_code: response.exit_code ?? null,
+        };
       }
     } catch (e) {
       this.output = e.message || String(e);

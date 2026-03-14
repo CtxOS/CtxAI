@@ -438,7 +438,7 @@ class MCPConfig(BaseModel):
             new_instance_data = {"servers": servers_data}  # Prepare data for re-initialization or update
 
             # Option 1: Re-initialize the existing instance (if __init__ is idempotent for other fields)
-            instance.__init__(servers_list=servers_data)
+            instance.__init__(servers_list=servers_data)  # type: ignore[misc]
 
             # Option 2: Or, if __init__ has side effects we don't want to repeat,
             # and 'servers' is the primary thing 'update' changes:
@@ -795,7 +795,7 @@ class MCPClientBase(ABC):
         operation_name = coro_func.__name__  # For logging
         # PrintStyle(font_color="cyan").print(f"MCPClientBase ({self.server.name}): Creating new session for operation '{operation_name}'...")
         # Store the original exception outside the async block
-        original_exception = None
+        original_exception: Exception | None = None
         try:
             async with AsyncExitStack() as temp_stack:
                 try:
@@ -822,15 +822,17 @@ class MCPClientBase(ABC):
                         original_exception = e
                     # Create a dummy exception to break out of the async block
                     raise RuntimeError("Dummy exception to break out of async block")
-        except Exception:
+        except Exception as outer_exc:
             # Check if this is our dummy exception
             if original_exception is not None:
-                e = original_exception
+                err = original_exception
+            else:
+                err = outer_exc
             # We have the original exception stored
             PrintStyle(background_color="#AA4455", font_color="white", padding=False).print(
-                f"MCPClientBase ({self.server.name} - {operation_name}): Error during operation: {type(e).__name__}: {e}"
+                f"MCPClientBase ({self.server.name} - {operation_name}): Error during operation: {type(err).__name__}: {err}"
             )
-            raise e  # Re-raise the original exception
+            raise err  # Re-raise the original exception
         # finally:
         #     PrintStyle(font_color="cyan").print(
         #         f"MCPClientBase ({self.server.name} - {operation_name}): Session and transport will be closed by AsyncExitStack."

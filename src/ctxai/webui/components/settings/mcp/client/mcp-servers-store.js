@@ -59,9 +59,11 @@ const model = {
   },
 
   getSettingsFieldConfigJson() {
-    return settingsStore.settings?.mcp_servers
-      ?? settingsStore.settings?.mcpServers
-      ?? "{\n    \"mcpServers\": {}\n}";
+    return (
+      settingsStore.settings?.mcp_servers ??
+      settingsStore.settings?.mcpServers ??
+      '{\n    "mcpServers": {}\n}'
+    );
   },
 
   onClose() {

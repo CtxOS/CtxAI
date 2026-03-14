@@ -937,7 +937,7 @@ class Agent:
 
         for path in paths:
             try:
-                classes = extract_tools.load_classes_from_file(path, Tool)  # type: ignore[arg-type]
+                classes = extract_tools.load_classes_from_file(path, Tool)  # type: ignore[type-abstract]
                 break
             except Exception:
                 continue

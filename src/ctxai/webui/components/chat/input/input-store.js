@@ -10,7 +10,8 @@ const model = {
   message: "",
 
   _getSendState() {
-    const hasInput = this.message.trim() || attachmentsStore?.attachments?.length > 0;
+    const hasInput =
+      this.message.trim() || attachmentsStore?.attachments?.length > 0;
     const hasQueue = !!messageQueueStore?.hasQueue;
     const running = !!chatsStore.selectedContext?.running;
 
@@ -174,7 +175,7 @@ const model = {
           if (globalThis.toast) {
             globalThis.toast(
               "Knowledge files imported: " + data.filenames.join(", "),
-              "success"
+              "success",
             );
           }
         }
@@ -206,7 +207,7 @@ const model = {
     this.message = "";
     attachmentsStore.clearAttachments();
     this.adjustTextareaHeight();
-  }
+  },
 };
 
 const store = createStore("chatInput", model);

@@ -4,12 +4,14 @@ let bootstrapTooltipObserver = null;
 
 function ensureBootstrapTooltip(element) {
   if (!element || !(element instanceof Element)) return;
-  
+
   const bs = globalThis.bootstrap;
   if (!bs?.Tooltip) return;
 
   const existing = bs.Tooltip.getInstance(element);
-  const title = element.getAttribute("title") || element.getAttribute("data-bs-original-title");
+  const title =
+    element.getAttribute("title") ||
+    element.getAttribute("data-bs-original-title");
 
   if (!title) return;
 
@@ -49,10 +51,10 @@ function initBootstrapTooltips(root = document) {
 
 function observeBootstrapTooltips() {
   if (!globalThis.bootstrap?.Tooltip) return;
-  
+
   // Prevent multiple observers
   if (bootstrapTooltipObserver) return;
-  
+
   bootstrapTooltipObserver = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (
@@ -68,10 +70,12 @@ function observeBootstrapTooltips() {
         // Check removed nodes for tooltip cleanup
         mutation.removedNodes.forEach((node) => {
           if (!(node instanceof Element)) return;
-          const tooltipElements = node.matches?.("[data-bs-tooltip-initialized]")
+          const tooltipElements = node.matches?.(
+            "[data-bs-tooltip-initialized]",
+          )
             ? [node]
             : Array.from(
-                node.querySelectorAll?.("[data-bs-tooltip-initialized]") || []
+                node.querySelectorAll?.("[data-bs-tooltip-initialized]") || [],
               );
           tooltipElements.forEach((el) => {
             if (el.isConnected) return;
@@ -81,7 +85,7 @@ function observeBootstrapTooltips() {
             }
           });
         });
-        
+
         mutation.addedNodes.forEach((node) => {
           if (!(node instanceof Element)) return;
           if (
@@ -115,6 +119,6 @@ export const store = createStore("tooltips", {
     initBootstrapTooltips();
     observeBootstrapTooltips();
   },
-  
+
   cleanup: cleanupTooltipObserver,
 });
