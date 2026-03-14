@@ -548,7 +548,7 @@ def fix_dev_path(path: str):
 
     if is_development():
         if path.startswith("/ctx/"):
-            path = path.replace("/ctx/", "")
+            path = path[5:]
     return get_abs_path(path)
 
 

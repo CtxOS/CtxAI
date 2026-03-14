@@ -822,12 +822,12 @@ class MCPClientBase(ABC):
                         original_exception = e
                     # Create a dummy exception to break out of the async block
                     raise RuntimeError("Dummy exception to break out of async block")
-        except Exception:
+        except Exception as outer_exc:
             # Check if this is our dummy exception
             if original_exception is not None:
                 err = original_exception
             else:
-                err = Exception("Unknown error")
+                err = outer_exc
             # We have the original exception stored
             PrintStyle(background_color="#AA4455", font_color="white", padding=False).print(
                 f"MCPClientBase ({self.server.name} - {operation_name}): Error during operation: {type(err).__name__}: {err}"

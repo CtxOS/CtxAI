@@ -8,7 +8,11 @@ class TestDirtyJson:
 
     def test_try_parse_invalid_json(self):
         result = try_parse("{key: value}")
-        assert result is not None
+        assert result == {"key": "value"}
+
+    def test_parse_invalid_json(self):
+        result = parse("{key: value}")
+        assert result == {"key": "value"}
 
     def test_try_parse_empty_string(self):
         result = try_parse("")
@@ -18,17 +22,14 @@ class TestDirtyJson:
         result = parse('{"key": "value"}')
         assert result == {"key": "value"}
 
-    def test_parse_invalid_json(self):
-        result = parse("{key: value}")
-        assert result is not None
-
     def test_stringify_basic(self):
         result = stringify({"key": "value"})
         assert result == '{"key": "value"}'
 
     def test_stringify_with_indent(self):
         result = stringify({"key": "value"}, indent=2)
-        assert "key" in result
+        assert "\n" in result
+        assert '\n  "key"' in result
 
     def test_dirty_json_init(self):
         dj = DirtyJson()

@@ -1,4 +1,12 @@
+import pytest
 from ctxai.helpers import cache
+
+
+@pytest.fixture(autouse=True)
+def reset_cache():
+    cache.reset()
+    yield
+    cache.reset()
 
 
 class TestCache:
