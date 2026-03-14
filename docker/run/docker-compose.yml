@@ -3,6 +3,6 @@ services:
     container_name: ctxai
     image: ctxos/ctxai:latest
     volumes:
-      - ./ctxai:/a0
+      - ./ctxai:/ctx
     ports:
       - "50080:80"

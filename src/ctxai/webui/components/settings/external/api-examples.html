@@ -328,7 +328,7 @@
           >
             <strong>Parameters:</strong><br />
             • <code>paths</code> (array, required): Array of file paths to
-            retrieve (e.g., ["/ctx/usr/uploads/file.txt"])
+            retrieve (e.g., ["/ctx/src/ctxai/usr/uploads/file.txt"])
           </p>
           <p
             style="
@@ -763,8 +763,8 @@ async function getFiles(filePaths) {
 
 // Example 1: Get specific files
 const filePaths = [
-    "/ctx/usr/uploads/document.txt",
-    "/ctx/usr/uploads/data.json"
+    "/ctx/src/ctxai/usr/uploads/document.txt",
+    "/ctx/src/ctxai/usr/uploads/data.json"
 ];
 getFiles(filePaths);
 
@@ -791,7 +791,7 @@ async function attachmentWorkflow() {
         console.log('Message sent with attachment');
 
         // Step 2: Retrieve the uploaded file
-        const retrievedFiles = await getFiles(["/ctx/usr/uploads/test.txt"]);
+        const retrievedFiles = await getFiles(["/ctx/src/ctxai/usr/uploads/test.txt"]);
 
         if (retrievedFiles && retrievedFiles["test.txt"]) {
             const originalContent = atob(retrievedFiles["test.txt"]);
