@@ -30,7 +30,7 @@ class ProcessQueue(Extension):
         total_wait: int = 0
         while context.is_running() and total_wait < 60:
             await asyncio.sleep(0.1)
-            total_wait += 0.1
+            total_wait += 1
 
         # Send next queued message if task is not running
         if not context.is_running():

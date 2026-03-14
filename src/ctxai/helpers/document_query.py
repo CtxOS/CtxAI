@@ -550,7 +550,7 @@ class DocumentQueryHelper:
                 temp_file_path = temp_file.name
         elif scheme in ["http", "https"]:
             # download the file from the web url to a temporary file using python libraries for downloading
-            import requests
+            import requests  # type: ignore[import-untyped]
             import tempfile
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:

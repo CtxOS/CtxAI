@@ -215,16 +215,16 @@ def file_tree(
             folder_path: str = item[1]
             if folder_node is None:
                 continue
-            summary = _create_folder_unprocessed_comment(  # type: ignore[arg-type]
+            folder_summary: _TreeEntry | None = _create_folder_unprocessed_comment(  # type: ignore[arg-type]
                 folder_node,
                 folder_path,
                 abs_root,
                 ignore_spec,
             )
-            if summary is None:
+            if folder_summary is None:
                 continue
-            folder_node.items = (folder_node.items or []) + [summary]
-            nodes_in_order.append(summary)
+            folder_node.items = (folder_node.items or []) + [folder_summary]
+            nodes_in_order.append(folder_summary)
 
     visible_nodes = nodes_in_order
 

@@ -1,4 +1,4 @@
-import yaml
+import yaml  # type: ignore[import-untyped]
 from ctxai.helpers import files, cache
 from typing import List, Dict, Optional, TypedDict, Literal
 

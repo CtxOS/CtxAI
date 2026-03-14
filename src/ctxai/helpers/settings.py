@@ -311,7 +311,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     # mask API keys before sending to frontend
     if isinstance(out["settings"].get("api_keys"), dict):
         api_keys = out["settings"]["api_keys"]  # type: ignore[union-attr]
-        for provider, value in list(api_keys.items()):
+        for provider, value in list(api_keys.items()):  # type: ignore[assignment]
             if value:
                 api_keys[provider] = API_KEY_PLACEHOLDER  # type: ignore[index]
 
@@ -393,7 +393,7 @@ def merge_settings(original: Settings, delta: dict) -> Settings:
 
 
 def normalize_settings(settings: Settings) -> Settings:
-    copy: Settings = settings.copy()  # type: ignore[assignment]
+    copy: dict[str, Any] = settings.copy()  # type: ignore[assignment]
     default = get_default_settings()
 
     # adjust settings values to match current version if needed
@@ -409,10 +409,10 @@ def normalize_settings(settings: Settings) -> Settings:
     # add missing keys and normalize types
     for key, value in default.items():
         if key not in copy:
-            copy[key] = value  # type: ignore[literal-required]
+            copy[key] = value
         else:
             try:
-                copy[key] = type(value)(copy[key])  # type: ignore[assignment]
+                copy[key] = type(value)(copy[key])  # type: ignore[assignment, call-arg]
                 if isinstance(copy[key], str):
                     copy[key] = copy[key].strip()  # type: ignore[assignment]
             except (ValueError, TypeError):
@@ -421,10 +421,10 @@ def normalize_settings(settings: Settings) -> Settings:
     # mcp server token is set automatically
     copy["mcp_server_token"] = create_auth_token()
 
-    return copy
+    return copy  # type: ignore[return-value]
 
 
-def _adjust_to_version(settings: Settings, default: Settings):
+def _adjust_to_version(settings: dict[str, Any], default: Settings):
     # starting with 0.9, the default prompt subfolder for agent no. 0 is agent0
     # switch to agent0 if the old default is used from v0.8
     if "version" not in settings or settings["version"].startswith("v0.8"):

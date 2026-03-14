@@ -11,7 +11,7 @@ from typing import Any, Callable, Dict, Literal, Optional, Type, TypeVar, Union,
 
 import nest_asyncio
 
-import pytz
+import pytz  # type: ignore[import-untyped]
 from crontab import CronTab
 from pydantic import BaseModel, Field, PrivateAttr
 

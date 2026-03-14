@@ -13,7 +13,7 @@ import threading
 
 class ApiMessage(ApiHandler):
     # Track chat lifetimes for cleanup
-    _chat_lifetimes = {}
+    _chat_lifetimes: dict[str, datetime] = {}
     _cleanup_lock = threading.Lock()
 
     @classmethod
