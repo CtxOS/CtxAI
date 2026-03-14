@@ -4,15 +4,34 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:1": {}
   },
+  "build": {
+    "cacheFrom": "neopilotai/ctxai:base"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
         "charliermarsh.ruff"
-      ]
+      ],
+      "settings": {
+        "files.eol": "\n",
+        "files.insertFinalNewline": true,
+        "files.trimTrailingWhitespace": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.typeCheckingMode": "basic"
+      }
     }
   },
   "postCreateCommand": "uv sync",
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+  "options": {
+    "cgroup": "host",
+    "memory": "8g",
+    "cpus": 4
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/CtxAI,type=bind,consistency=cached",
+  "workspaceFolder": "/workspaces/CtxAI"
 }
