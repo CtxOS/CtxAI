@@ -87,5 +87,3 @@ const model = {
 };
 
 export const store = createStore("fullScreenInputModal", model);
-
-

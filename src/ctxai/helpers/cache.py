@@ -65,6 +65,14 @@ def clear_all() -> None:
         _cache.clear()
 
 
+def reset() -> None:
+    global _enabled_global, _enabled_areas
+    with _lock:
+        _cache.clear()
+    _enabled_areas.clear()
+    _enabled_global = True
+
+
 def _is_enabled(area: str) -> bool:
     if not _enabled_global:
         return False

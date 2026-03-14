@@ -40,7 +40,7 @@ const model = {
         body: JSON.stringify({ action: "list" }),
       });
       const data = await response.json().catch(() => ({}));
-      this.agentProfiles = data.ok ? (data.data || []) : [];
+      this.agentProfiles = data.ok ? data.data || [] : [];
     } catch (e) {
       console.error("Failed to load agent profiles:", e);
       this.agentProfiles = [];
@@ -55,7 +55,7 @@ const model = {
         body: JSON.stringify({ action: "list_options" }),
       });
       const data = await response.json().catch(() => ({}));
-      this.projects = data.ok ? (data.data || []) : [];
+      this.projects = data.ok ? data.data || [] : [];
     } catch (e) {
       console.error("Failed to load projects:", e);
       this.projects = [];

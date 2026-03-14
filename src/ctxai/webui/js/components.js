@@ -10,17 +10,23 @@ const importLocks = new Map();
 
 export async function importComponent(path, targetElement) {
   // Create a unique key for this import based on the target element
-  const lockKey = targetElement.id || targetElement.getAttribute('data-component-id') || targetElement;
-  
+  const lockKey =
+    targetElement.id ||
+    targetElement.getAttribute("data-component-id") ||
+    targetElement;
+
   // If this component is already being loaded, return early
   if (importLocks.get(lockKey)) {
-    console.log(`Component ${path} is already being loaded for target`, targetElement);
+    console.log(
+      `Component ${path} is already being loaded for target`,
+      targetElement,
+    );
     return;
   }
-  
+
   // Set the lock
   importLocks.set(lockKey, true);
-  
+
   try {
     if (!targetElement) {
       throw new Error("Target element is required");
@@ -30,7 +36,11 @@ export async function importComponent(path, targetElement) {
     targetElement.innerHTML = '<div class="loading"></div>';
 
     // full component url
-    const componentUrl = path.startsWith("/") ? path : (path.startsWith("components/") ? path : "components/" + path);
+    const componentUrl = path.startsWith("/")
+      ? path
+      : path.startsWith("components/")
+        ? path
+        : "components/" + path;
 
     // get html from cache or fetch it
     let html;
@@ -40,7 +50,7 @@ export async function importComponent(path, targetElement) {
       const response = await fetch(componentUrl);
       if (!response.ok) {
         throw new Error(
-          `Error loading component ${path}: ${response.statusText}`
+          `Error loading component ${path}: ${response.statusText}`,
         );
       }
       html = await response.text();
@@ -69,7 +79,7 @@ export async function importComponent(path, targetElement) {
             // For <script type="module" src="..." use dynamic import
             const resolvedUrl = new URL(
               node.src,
-              globalThis.location.origin
+              globalThis.location.origin,
             ).toString();
 
             // Check if module is already in cache
@@ -81,7 +91,7 @@ export async function importComponent(path, targetElement) {
           } else {
             const virtualUrl = `${componentUrl.replaceAll(
               "/",
-              "_"
+              "_",
             )}.${++blobCounter}.js`;
 
             // For inline module scripts, use cache or create blob
@@ -94,12 +104,12 @@ export async function importComponent(path, targetElement) {
                   if (!/^https?:\/\//.test(importPath)) {
                     const absoluteUrl = new URL(
                       importPath,
-                      globalThis.location.origin
+                      globalThis.location.origin,
                     ).href;
                     return `import ${bindings} from "${absoluteUrl}"`;
                   }
                   return match;
-                }
+                },
               );
 
               // Add sourceURL to the content
@@ -113,7 +123,10 @@ export async function importComponent(path, targetElement) {
 
               const modulePromise = import(blobUrl)
                 .catch((err) => {
-                  console.error(`Failed to load inline module ${virtualUrl}:`, err);
+                  console.error(
+                    `Failed to load inline module ${virtualUrl}:`,
+                    err,
+                  );
                   throw err;
                 })
                 .finally(() => URL.revokeObjectURL(blobUrl));
@@ -165,7 +178,7 @@ export async function importComponent(path, targetElement) {
     await Promise.all(loadPromises);
 
     // Remove loading indicator
-    const loadingEl = targetElement.querySelector(':scope > .loading');
+    const loadingEl = targetElement.querySelector(":scope > .loading");
     if (loadingEl) {
       targetElement.removeChild(loadingEl);
     }
@@ -192,20 +205,20 @@ export async function loadComponents(roots = [document.documentElement]) {
 
     // Find all top-level components and load them in parallel
     const components = rootElements.flatMap((root) =>
-      Array.from(root.querySelectorAll("x-component"))
+      Array.from(root.querySelectorAll("x-component")),
     );
 
     if (components.length === 0) return;
 
     await Promise.all(
-      components.map(async (component) => {   
+      components.map(async (component) => {
         const path = component.getAttribute("path");
         if (!path) {
           console.error("x-component missing path attribute:", component);
           return;
         }
         await importComponent(path, component);
-      })
+      }),
     );
   } catch (error) {
     console.error("Error loading components:", error);
@@ -218,13 +231,13 @@ export function getParentAttributes(el) {
   let attrs = {};
 
   while (element) {
-    if (element.tagName.toLowerCase() === 'x-component') {
+    if (element.tagName.toLowerCase() === "x-component") {
       // Get all attributes
       for (let attr of element.attributes) {
         try {
           // Try to parse as JSON first
           attrs[attr.name] = JSON.parse(attr.value);
-        } catch(_e) {
+        } catch (_e) {
           // If not JSON, use raw value
           attrs[attr.name] = attr.value;
         }
@@ -238,8 +251,8 @@ export function getParentAttributes(el) {
 globalThis.xAttrs = getParentAttributes;
 
 // Initialize when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => loadComponents());
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => loadComponents());
 } else {
   loadComponents();
 }

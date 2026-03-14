@@ -23,7 +23,7 @@ const model = {
   onSaveSuccess: null, // Callback to refresh parent list
 
   // --- Public API ----------------------------------------------------------
-  
+
   /**
    * Open the editor for an existing file
    * @param {object} file - The file object { name, path, ... }
@@ -32,7 +32,7 @@ const model = {
   async openFile(file, onSaveSuccess) {
     if (this.isEditLoading) return;
     this.resetEditState();
-    
+
     this.editTarget = file;
     this.editFileName = file?.name || "";
     this.editOriginalName = this.editFileName;
@@ -44,16 +44,19 @@ const model = {
 
     this.editClosePromise = window.openModal(
       "modals/file-editor/file-edit-modal.html",
-      () => this.beforeCloseFileEditor()
+      () => this.beforeCloseFileEditor(),
     );
 
-    if (this.editClosePromise && typeof this.editClosePromise.then === "function") {
+    if (
+      this.editClosePromise &&
+      typeof this.editClosePromise.then === "function"
+    ) {
       this.editClosePromise.then(() => this.resetEditState());
     }
 
     try {
       const resp = await fetchApi(
-        `/edit_work_dir_file?path=${encodeURIComponent(file.path)}`
+        `/edit_work_dir_file?path=${encodeURIComponent(file.path)}`,
       );
       const data = await resp.json().catch(() => ({}));
 
@@ -87,7 +90,7 @@ const model = {
    */
   async openNewFile(currentPath, existingNames, onSaveSuccess) {
     this.resetEditState();
-    
+
     this.currentPath = currentPath;
     this.existingNames = Array.isArray(existingNames) ? existingNames : [];
     this.editIsNew = true;
@@ -103,10 +106,13 @@ const model = {
 
     this.editClosePromise = window.openModal(
       "modals/file-editor/file-edit-modal.html",
-      () => this.beforeCloseFileEditor()
+      () => this.beforeCloseFileEditor(),
     );
 
-    if (this.editClosePromise && typeof this.editClosePromise.then === "function") {
+    if (
+      this.editClosePromise &&
+      typeof this.editClosePromise.then === "function"
+    ) {
       this.editClosePromise.then(() => this.resetEditState());
     }
 
@@ -171,7 +177,7 @@ const model = {
       }
 
       // Trigger success callback
-      if (typeof this.onSaveSuccess === 'function') {
+      if (typeof this.onSaveSuccess === "function") {
         await this.onSaveSuccess();
       }
 
@@ -200,13 +206,13 @@ const model = {
   // --- Helpers -------------------------------------------------------------
 
   _extractErrorMessage(msg) {
-    if (typeof msg !== 'string') return msg;
+    if (typeof msg !== "string") return msg;
     // Extract clean error from traceback strings
-    const lines = msg.split('\n');
+    const lines = msg.split("\n");
     for (let i = lines.length - 1; i >= 0; i--) {
       const line = lines[i].trim();
-      if (line.includes(': ') && /Exception|Error/.test(line)) {
-        return line.split(': ').slice(1).join(': ').trim();
+      if (line.includes(": ") && /Exception|Error/.test(line)) {
+        return line.split(": ").slice(1).join(": ").trim();
       }
     }
     return msg;
@@ -246,8 +252,11 @@ const model = {
   },
 
   hasEditChanges() {
-    const currentValue = this.editor ? this.editor.getValue() : this.editContent;
-    const nameChanged = (this.editFileName || "") !== (this.editOriginalName || "");
+    const currentValue = this.editor
+      ? this.editor.getValue()
+      : this.editContent;
+    const nameChanged =
+      (this.editFileName || "") !== (this.editOriginalName || "");
     if (this.editIsNew) {
       return Boolean((this.editFileName || "").trim() || currentValue);
     }
@@ -257,9 +266,13 @@ const model = {
   editPathLabel() {
     if (this.editIsNew) {
       const name = this.editFileName?.trim();
-      return name ? this.buildChildPath(name) : this.normalizePath(this.currentPath || "");
+      return name
+        ? this.buildChildPath(name)
+        : this.normalizePath(this.currentPath || "");
     }
-    return this.editTarget?.path ? this.normalizePath(this.editTarget.path) : "";
+    return this.editTarget?.path
+      ? this.normalizePath(this.editTarget.path)
+      : "";
   },
 
   // --- Editor (ACE) integration --------------------------------------------
@@ -298,7 +311,8 @@ const model = {
     this.editor = editorInstance;
 
     const darkMode = window.localStorage?.getItem("darkMode");
-    const theme = darkMode !== "false" ? "ace/theme/github_dark" : "ace/theme/tomorrow";
+    const theme =
+      darkMode !== "false" ? "ace/theme/github_dark" : "ace/theme/tomorrow";
     this.editor.setTheme(theme);
     this.applyEditorMode();
     this.editor.setValue(this.editContent || "", -1);
@@ -361,7 +375,11 @@ const model = {
     };
     const mimeMode = mimeMap[mime];
     const extMode = extMap[ext];
-    const mode = (mime && mime !== "text/plain" ? mimeMode : null) || extMode || mimeMode || "text";
+    const mode =
+      (mime && mime !== "text/plain" ? mimeMode : null) ||
+      extMode ||
+      mimeMode ||
+      "text";
     return `ace/mode/${mode}`;
   },
 };

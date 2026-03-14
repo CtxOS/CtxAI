@@ -86,7 +86,8 @@ export class Scroller {
     this._scrollListener = () => {
       const current = this.element.scrollTop;
       const activeTargetRaw = this.element?.dataset?.scrollingTo;
-      const activeTarget = activeTargetRaw == null ? null : Number(activeTargetRaw);
+      const activeTarget =
+        activeTargetRaw == null ? null : Number(activeTargetRaw);
       if (!Number.isFinite(activeTarget)) {
         this._clearScrollingTo();
         return;
@@ -166,7 +167,8 @@ export class Scroller {
 
       const expected = this._getReapplyScrollSnapshot();
       delete this.element.dataset.scrollerReapplySnapshot;
-      if (expected != null && this._getEffectiveScrollTop() !== expected) return;
+      if (expected != null && this._getEffectiveScrollTop() !== expected)
+        return;
 
       if (!this.wasAtBottom) return;
       if (!this.isAtBottom()) return;

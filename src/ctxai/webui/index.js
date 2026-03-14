@@ -13,7 +13,7 @@ import { store as tasksStore } from "/components/sidebar/tasks/tasks-store.js";
 import { store as chatTopStore } from "/components/chat/top-section/chat-top-store.js";
 import { store as _tooltipsStore } from "/components/tooltips/tooltip-store.js";
 import { store as messageQueueStore } from "/components/chat/message-queue/message-queue-store.js";
-import { store as syncStore } from "/components/sync/sync-store.js"
+import { store as syncStore } from "/components/sync/sync-store.js";
 
 globalThis.fetchApi = api.fetchApi; // TODO - backward compatibility for non-modular scripts, remove once refactored to alpine
 
@@ -43,7 +43,12 @@ export async function sendMessage() {
     let attachmentsWithUrls = attachmentsStore.getAttachmentsForSending();
     const hasAttachments = attachmentsWithUrls.length > 0;
 
-    const sendCtx = { message, attachments: attachmentsWithUrls, context, cancel: false };
+    const sendCtx = {
+      message,
+      attachments: attachmentsWithUrls,
+      context,
+      cancel: false,
+    };
     await callJsExtensions("send_message_before", sendCtx);
     if (sendCtx.cancel) return;
     message = sendCtx.message;
@@ -58,11 +63,14 @@ export async function sendMessage() {
     if (message || hasAttachments) {
       // Check if agent is busy - queue instead of sending
       if (chatsStore.selectedContext.running || messageQueueStore.hasQueue) {
-        const success = messageQueueStore.addToQueue(message, attachmentsWithUrls);
+        const success = messageQueueStore.addToQueue(
+          message,
+          attachmentsWithUrls,
+        );
         // no await for the queue
         // if (success) {
-          inputStore.reset();
-          adjustTextareaHeight();
+        inputStore.reset();
+        adjustTextareaHeight();
         // }
         return;
       }
@@ -74,21 +82,27 @@ export async function sendMessage() {
       let response;
       const messageId = generateGUID();
 
-    // Clear input and attachments
-    inputStore.reset();
-    adjustTextareaHeight();
+      // Clear input and attachments
+      inputStore.reset();
+      adjustTextareaHeight();
 
       // Include attachments in the user message
       if (hasAttachments) {
         const heading =
-          attachmentsWithUrls.length > 0
-            ? "Uploading attachments..."
-            : "";
+          attachmentsWithUrls.length > 0 ? "Uploading attachments..." : "";
 
         // Render user message with attachments
-        await setMessages([{ id: messageId, type: "user", heading, content: message, kvps: {
-          // attachments: attachmentsWithUrls, // skip here, let the backend properly log them
-        }}]);
+        await setMessages([
+          {
+            id: messageId,
+            type: "user",
+            heading,
+            content: message,
+            kvps: {
+              // attachments: attachmentsWithUrls, // skip here, let the backend properly log them
+            },
+          },
+        ]);
 
         // sleep one frame to render the message before upload starts - better UX
         sleep(0);
@@ -155,13 +169,13 @@ export function toastFetchError(text, error) {
   if (getConnectionStatus()) {
     // Backend is connected, just show the error
     toastFrontendError(`${text}: ${errorMessage}`).catch((e) =>
-      console.error("Failed to show error toast:", e)
+      console.error("Failed to show error toast:", e),
     );
   } else {
     // Backend is disconnected, show connection error
     toastFrontendError(
       `${text} (backend appears to be disconnected): ${errorMessage}`,
-      "Connection Error"
+      "Connection Error",
     ).catch((e) => console.error("Failed to show connection error toast:", e));
   }
 }
@@ -292,13 +306,16 @@ export function buildStateRequestPayload(options = {}) {
   return {
     context: context || null,
     log_from: forceFull ? 0 : lastLogVersion,
-    notifications_from: forceFull ? 0 : notificationStore.lastNotificationVersion || 0,
+    notifications_from: forceFull
+      ? 0
+      : notificationStore.lastNotificationVersion || 0,
     timezone,
   };
 }
 
 export async function applySnapshot(snapshot, options = {}) {
-  const { touchConnectionStatus = false, onLogGuidReset = null } = options || {};
+  const { touchConnectionStatus = false, onLogGuidReset = null } =
+    options || {};
 
   let updated = false;
 
@@ -314,10 +331,7 @@ export async function applySnapshot(snapshot, options = {}) {
     return { updated: false };
   }
 
-  if (
-    snapshot.context != context &&
-    context !== null
-  ) {
+  if (snapshot.context != context && context !== null) {
     return { updated: false };
   }
 
@@ -390,28 +404,28 @@ export async function applySnapshot(snapshot, options = {}) {
       tasksStore.setSelected(context);
     }
 
-      if (!contextInChats && !contextInTasks) {
-        if (chatsStore.contexts.length > 0) {
-          // If it doesn't exist in the list but other contexts do, fall back to the first
-          const firstChatId = chatsStore.firstId();
-          if (firstChatId) {
-            setContext(firstChatId);
-            chatsStore.setSelected(firstChatId);
-          }
-        } else if (typeof deselectChat === "function") {
-          // No contexts remain – clear state so the welcome screen can surface
-          deselectChat();
+    if (!contextInChats && !contextInTasks) {
+      if (chatsStore.contexts.length > 0) {
+        // If it doesn't exist in the list but other contexts do, fall back to the first
+        const firstChatId = chatsStore.firstId();
+        if (firstChatId) {
+          setContext(firstChatId);
+          chatsStore.setSelected(firstChatId);
         }
+      } else if (typeof deselectChat === "function") {
+        // No contexts remain – clear state so the welcome screen can surface
+        deselectChat();
       }
-    } else {
-      // No context selected: keep it that way so the welcome screen stays visible.
     }
-
-    // update message queue
-    messageQueueStore.updateFromPoll();
-
-    return { updated };
+  } else {
+    // No context selected: keep it that way so the welcome screen stays visible.
   }
+
+  // update message queue
+  messageQueueStore.updateFromPoll();
+
+  return { updated };
+}
 
 export async function poll() {
   try {
@@ -461,7 +475,7 @@ function speakMessages(logs) {
       speechStore.speakStream(
         getChatBasedId(log.no),
         log.content,
-        log.kvps?.finished
+        log.kvps?.finished,
       );
       return;
 
@@ -614,13 +628,10 @@ export function toast(text, type = "info", timeout = 5000) {
 }
 globalThis.toast = toast;
 
-
 import { store as _chatNavigationStore } from "/components/chat/navigation/chat-navigation-store.js";
-
 
 // Navigation logic in chat-navigation-store.js
 // forceScrollChatToBottom is kept here as it is used by system events
-
 
 // setInterval(poll, 250);
 
@@ -641,7 +652,8 @@ async function startPolling() {
     let nextInterval = degradedIntervalMs;
 
     try {
-      const syncMode = typeof syncStore.mode === "string" ? syncStore.mode : null;
+      const syncMode =
+        typeof syncStore.mode === "string" ? syncStore.mode : null;
       // Polling is a fallback. In V1:
       // - DEGRADED: poll at fallback cadence to keep the UI usable while WS sync is unavailable.
       // - DISCONNECTED: do not poll; rely on Socket.IO reconnect and avoid console/network spam.
@@ -668,7 +680,10 @@ async function startPolling() {
       }
 
       // Avoid a “single poll on boot” while the websocket handshake is racing to take over.
-      if (Date.now() - startedAtMs < initialNoPollGraceMs && (!syncStore || !syncMode)) {
+      if (
+        Date.now() - startedAtMs < initialNoPollGraceMs &&
+        (!syncStore || !syncMode)
+      ) {
         setTimeout(_doPoll.bind(this), nextInterval);
         return;
       }
@@ -676,7 +691,8 @@ async function startPolling() {
       // Call through `globalThis.poll` so test harnesses (and future instrumentation)
       // can wrap/spy on polling behaviour. Fall back to the module-local function
       // if the global is unavailable.
-      const pollFn = typeof globalThis.poll === "function" ? globalThis.poll : poll;
+      const pollFn =
+        typeof globalThis.poll === "function" ? globalThis.poll : poll;
       pollInFlight = true;
       let result;
       try {
@@ -705,7 +721,8 @@ async function startPolling() {
       // If we're polling and the backend responds, try to re-establish push sync immediately.
       if (syncStore && pollOk) {
         const now = Date.now();
-        const modeNow = typeof syncStore.mode === "string" ? syncStore.mode : null;
+        const modeNow =
+          typeof syncStore.mode === "string" ? syncStore.mode : null;
         const kickCooldownMs = modeNow === "DISCONNECTED" ? 0 : 3000;
         const eligible =
           (modeNow === "DISCONNECTED" || modeNow === "DEGRADED") &&
@@ -718,7 +735,9 @@ async function startPolling() {
       }
 
       const effectiveMode =
-        syncStore && typeof syncStore.mode === "string" ? syncStore.mode : syncMode;
+        syncStore && typeof syncStore.mode === "string"
+          ? syncStore.mode
+          : syncMode;
       nextInterval =
         effectiveMode === "DEGRADED" || effectiveMode === "HANDSHAKE_PENDING"
           ? degradedIntervalMs
@@ -750,7 +769,6 @@ document.addEventListener("DOMContentLoaded", function () {
   progressBar = document.getElementById("progress-bar");
   autoScrollSwitch = document.getElementById("auto-scroll-switch");
   timeDate = document.getElementById("time-date-container");
-
 
   // Start polling for updates
   startPolling();

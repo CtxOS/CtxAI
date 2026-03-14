@@ -22,7 +22,7 @@ export function getCurrentContextId() {
   return chatsStore.getSelectedChatId();
 }
 
-export function getCurrentContext(){
+export function getCurrentContext() {
   return chatsStore.getSelectedContext();
 }
 

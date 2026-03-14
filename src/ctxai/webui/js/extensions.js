@@ -5,8 +5,6 @@ import * as cache from "./cache.js";
  * @typedef {string} WebuiExtension
  */
 
-
-
 /**
  * @typedef {Object} LoadWebuiExtensionsResponse
  * @property {WebuiExtension[]} extensions
@@ -37,12 +35,14 @@ export function clearCache() {
  * @param {...any} data
  * @returns {Promise<void>}
  */
-export async function callJsExtensions(extensionPoint, ...data){
-  const extensions = cache.get(JS_CACHE_AREA, extensionPoint, null) || await loadJsExtensions(extensionPoint);
-  for(const extension of extensions){
-    try{
+export async function callJsExtensions(extensionPoint, ...data) {
+  const extensions =
+    cache.get(JS_CACHE_AREA, extensionPoint, null) ||
+    (await loadJsExtensions(extensionPoint));
+  for (const extension of extensions) {
+    try {
       await extension.module.default(...data);
-    }catch(error){
+    } catch (error) {
       console.error(`Error calling extension: ${extension.path}`, error);
     }
   }
@@ -68,8 +68,8 @@ export async function loadJsExtensions(extensionPoint) {
     const imports = await Promise.all(
       response.extensions.map(async (path) => ({
         path,
-        module: await import(normalizePath(path))
-      }))
+        module: await import(normalizePath(path)),
+      })),
     );
     cache.add(JS_CACHE_AREA, extensionPoint, imports);
     return imports;
@@ -107,7 +107,10 @@ export async function loadHtmlExtensions(roots = [document.documentElement]) {
           console.error("x-extension missing id attribute:", extension);
           return;
         }
-        await importHtmlExtensions(path, /** @type {HTMLElement} */ (extension));
+        await importHtmlExtensions(
+          path,
+          /** @type {HTMLElement} */ (extension),
+        );
       }),
     );
   } catch (error) {
@@ -142,7 +145,10 @@ export async function reloadHtmlExtensions(roots = [document.documentElement]) {
         }
 
         extension.innerHTML = "";
-        await importHtmlExtensions(path, /** @type {HTMLElement} */ (extension));
+        await importHtmlExtensions(
+          path,
+          /** @type {HTMLElement} */ (extension),
+        );
       }),
     );
   } catch (error) {

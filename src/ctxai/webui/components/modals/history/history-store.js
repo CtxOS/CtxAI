@@ -12,7 +12,7 @@ const model = {
   // Open History modal
   async open() {
     if (this.isLoading) return; // Prevent double-open
-    
+
     this.isLoading = true;
     this.error = null;
     this.historyData = null;
@@ -20,32 +20,31 @@ const model = {
 
     try {
       // Open modal FIRST (immediate UI feedback, but DON'T await)
-      this.closePromise = window.openModal('modals/history/history.html');
-      
+      this.closePromise = window.openModal("modals/history/history.html");
+
       // Setup cleanup on modal close
-      if (this.closePromise && typeof this.closePromise.then === 'function') {
+      if (this.closePromise && typeof this.closePromise.then === "function") {
         this.closePromise.then(() => {
           this.destroy();
         });
       }
-      
+
       this.updateModalTitle(); // Set initial "loading" title
-      
+
       // Fetch data from backend
       const contextId = window.getContext();
-      const response = await window.sendJsonData('/history_get', {
+      const response = await window.sendJsonData("/history_get", {
         context: contextId,
       });
-      
+
       // Update state with data
       this.historyData = response.history;
       this.tokenCount = response.tokens || 0;
       this.isLoading = false;
       this.updateModalTitle(); // Update with token count
-      
+
       // Initialize ACE editor
       this.scheduleEditorInit();
-      
     } catch (error) {
       console.error("History fetch error:", error);
       this.error = error?.message || "Failed to load history";
@@ -91,7 +90,8 @@ const model = {
 
     // Configure theme based on dark mode (legacy parity: != "false")
     const darkMode = window.localStorage?.getItem("darkMode");
-    const theme = darkMode !== "false" ? "ace/theme/github_dark" : "ace/theme/tomorrow";
+    const theme =
+      darkMode !== "false" ? "ace/theme/github_dark" : "ace/theme/tomorrow";
 
     this.editor.setTheme(theme);
     this.editor.session.setMode("ace/mode/markdown");
@@ -104,7 +104,7 @@ const model = {
     window.requestAnimationFrame(() => {
       const modalTitles = document.querySelectorAll(".modal.show .modal-title");
       if (!modalTitles.length) return;
-      
+
       // Get the last (topmost) modal title
       const title = modalTitles[modalTitles.length - 1];
       if (!title) return;
@@ -129,4 +129,3 @@ const model = {
 };
 
 export const store = createStore("history", model);
-

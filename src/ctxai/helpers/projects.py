@@ -168,7 +168,7 @@ def _normalizeEditData(data: EditProjectData) -> EditProjectData:
         "variables": data.get("variables", ""),
         "color": data.get("color", ""),
         "git_url": data.get("git_url", ""),
-        "git_status": data.get("git_status", {"is_git_repo": False}),
+        "git_status": data.get("git_status", {"is_git_repo": False}),  # type: ignore[typeddict-item]
         "instruction_files_count": data.get("instruction_files_count", 0),
         "knowledge_files_count": data.get("knowledge_files_count", 0),
         "secrets": data.get("secrets", ""),

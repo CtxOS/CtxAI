@@ -103,6 +103,7 @@ def _truncate_value(val: T) -> T:
         return cast(T, tuple(_truncate_value(x) for x in val))
 
     # Convert non-str values to json for consistent length measurement
+    raw: str
     if isinstance(val, str):
         raw = val
     else:

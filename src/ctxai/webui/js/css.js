@@ -34,7 +34,7 @@ export function toggleCssProperty(selector, property, value) {
   // If not found, add it to the dynamic stylesheet
   const ruleIndex = dynamicStyleSheet.insertRule(
     `${selector} {}`,
-    dynamicStyleSheet.cssRules.length
+    dynamicStyleSheet.cssRules.length,
   );
   const rule = dynamicStyleSheet.cssRules[ruleIndex];
   _applyCssToRule(rule, property, value);
@@ -42,9 +42,9 @@ export function toggleCssProperty(selector, property, value) {
 
 // Helper to apply/remove a CSS property on a rule
 function _applyCssToRule(rule, property, value) {
-    if (value === undefined) {
-      rule.style.removeProperty(property);
-    } else {
-      rule.style.setProperty(property, value);
-    }
+  if (value === undefined) {
+    rule.style.removeProperty(property);
+  } else {
+    rule.style.setProperty(property, value);
   }
+}

@@ -44,9 +44,9 @@ def load_plugin_variables(file: str, backup_dirs: list[str] | None = None, **kwa
     if plugin_file and exists(plugin_file):
         from ctxai.helpers import extract_tools
 
-        classes = extract_tools.load_classes_from_file(plugin_file, VariablesPlugin, one_per_file=False)
+        classes = extract_tools.load_classes_from_file(plugin_file, VariablesPlugin, one_per_file=False)  # type: ignore[type-abstract]
         for cls in classes:
-            return cls().get_variables(file, backup_dirs, **kwargs)  # type: ignore < abstract class here is ok, it is always a subclass
+            return cls().get_variables(file, backup_dirs, **kwargs)  # type: ignore[abstract]
 
         # load python code and extract variables variables from it
         # module = None
@@ -522,7 +522,7 @@ def get_abs_path(*relative_paths):
 
 
 def get_abs_path_dockerized(*relative_paths):
-    "Ensures the abs path is dockerized (i.e. /a0/... path)"
+    "Ensures the abs path is dockerized (i.e. /ctx/... path)"
     abs = get_abs_path(*relative_paths)
     from ctxai.helpers import runtime
 
@@ -543,20 +543,20 @@ def deabsolute_path(path: str):
 
 
 def fix_dev_path(path: str):
-    "On dev environment, convert /a0/... paths to local absolute paths"
+    "On dev environment, convert /ctx/... paths to local absolute paths"
     from ctxai.helpers.runtime import is_development
 
     if is_development():
-        if path.startswith("/a0/"):
-            path = path.replace("/a0/", "")
+        if path.startswith("/ctx/"):
+            path = path[5:]
     return get_abs_path(path)
 
 
 def normalize_a0_path(path: str):
-    "Convert absolute paths into /a0/... paths"
+    "Convert absolute paths into /ctx/... paths"
     if is_in_base_dir(path):
         deabs = deabsolute_path(path)
-        return "/a0/" + deabs
+        return "/ctx/" + deabs
     return path
 
 

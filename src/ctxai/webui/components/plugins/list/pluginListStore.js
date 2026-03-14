@@ -18,9 +18,9 @@ const model = {
 
   async init() {
     this.loading = false;
-    await this.setTab('custom');
+    await this.setTab("custom");
     if (this.plugins.length === 0) {
-        await this.setTab('builtin');
+      await this.setTab("builtin");
     }
   },
 
@@ -84,8 +84,8 @@ const model = {
         perAgentConfig: !!plugin.per_agent_config,
       });
       // Set saveMode after open() (open resets it to 'plugin')
-      if (plugin.settings_sections?.includes('core')) {
-        pluginSettingsStore.saveMode = 'core';
+      if (plugin.settings_sections?.includes("core")) {
+        pluginSettingsStore.saveMode = "core";
       }
       window.openModal?.("components/plugins/plugin-settings.html");
     } catch (e) {
@@ -97,45 +97,51 @@ const model = {
     if (!plugin?.name) return;
     this.selectedPlugin = plugin;
     try {
-        if (!pluginToggleStore?.open) {
-            throw new Error("Plugin toggle store is unavailable.");
-        }
-        await pluginToggleStore.open(plugin);
-        window.openModal?.("components/plugins/toggle/plugin-toggle-advanced.html");
+      if (!pluginToggleStore?.open) {
+        throw new Error("Plugin toggle store is unavailable.");
+      }
+      await pluginToggleStore.open(plugin);
+      window.openModal?.(
+        "components/plugins/toggle/plugin-toggle-advanced.html",
+      );
     } catch (e) {
-        showErrorNotification(e, "Failed to open plugin switch");
+      showErrorNotification(e, "Failed to open plugin switch");
     }
   },
 
   async updateToggle(plugin, value) {
     if (!plugin?.name) return;
-    
-    if (value === 'advanced') {
-        await this.openPluginAdvancedToggle(plugin);
-        return; 
+
+    if (value === "advanced") {
+      await this.openPluginAdvancedToggle(plugin);
+      return;
     }
 
-    const enabled = value === 'enabled';
-    const clearOverrides = plugin.toggle_state === 'advanced';
-    if (clearOverrides && !window.confirm(
-        `"${plugin.display_name || plugin.name}" has per-scope activation rules that will be removed. Set globally to ${enabled ? 'ON' : 'OFF'}?`
-    )) return;
+    const enabled = value === "enabled";
+    const clearOverrides = plugin.toggle_state === "advanced";
+    if (
+      clearOverrides &&
+      !window.confirm(
+        `"${plugin.display_name || plugin.name}" has per-scope activation rules that will be removed. Set globally to ${enabled ? "ON" : "OFF"}?`,
+      )
+    )
+      return;
 
     this.loading = true;
     try {
-        const response = await api.callJsonApi("plugins", {
-            action: "toggle_plugin",
-            plugin_name: plugin.name,
-            enabled: enabled,
-            project_name: "",
-            agent_profile: "",
-            clear_overrides: clearOverrides,
-        });
-        if (response?.error) throw new Error(response.error);
-        await this.refresh();
+      const response = await api.callJsonApi("plugins", {
+        action: "toggle_plugin",
+        plugin_name: plugin.name,
+        enabled: enabled,
+        project_name: "",
+        agent_profile: "",
+        clear_overrides: clearOverrides,
+      });
+      if (response?.error) throw new Error(response.error);
+      await this.refresh();
     } catch (e) {
-        showErrorNotification(e, "Failed to toggle plugin");
-        this.loading = false;
+      showErrorNotification(e, "Failed to toggle plugin");
+      this.loading = false;
     }
   },
 
@@ -147,7 +153,8 @@ const model = {
         doc,
       });
       if (response?.error) throw new Error(response.error);
-      if (!markdownModalStore?.open) throw new Error("Markdown modal store unavailable.");
+      if (!markdownModalStore?.open)
+        throw new Error("Markdown modal store unavailable.");
       markdownModalStore.open(response.filename, response.content);
       window.openModal?.("components/modals/markdown/markdown-modal.html");
     } catch (e) {
@@ -191,7 +198,7 @@ const model = {
 };
 
 function showErrorNotification(error, heading) {
-    const text = error.message || error.text || JSON.stringify(error);
+  const text = error.message || error.text || JSON.stringify(error);
   notificationStore.frontendError(
     text,
     heading,

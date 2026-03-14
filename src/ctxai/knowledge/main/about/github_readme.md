@@ -26,7 +26,7 @@ Or see DeepWiki generated documentation:
 
 <div align="center">
 
-> ### 🚨 **AGENT ZERO SKILLS** 🚨
+> ### 🚨 **CTXAI SKILLS** 🚨
 > **Skills System** - portable, structured agent capabilities using the open `SKILL.md` standard (compatible with Claude Code, Codex and more).
 > 
 > **Plus:** Git-based Projects with authentication for public/private repositories - clone codebases directly into isolated workspaces.

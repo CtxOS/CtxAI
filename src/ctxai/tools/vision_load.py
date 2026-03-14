@@ -13,7 +13,7 @@ TOKENS_ESTIMATE = 1500
 
 class VisionLoad(Tool):
     async def execute(self, paths: list[str] = [], **kwargs) -> Response:
-        self.images_dict = {}
+        self.images_dict: dict[str, str | None] = {}
         template: list[dict[str, str]] = []  # type: ignore
 
         for path in paths:
@@ -66,7 +66,7 @@ class VisionLoad(Tool):
                         }
                     )
             # append as raw message content for LLMs with vision tokens estimate
-            msg = history.RawMessage(raw_content=content, preview="<Base64 encoded image data>")
+            msg = history.RawMessage(raw_content=content, preview="<Base64 encoded image data>")  # type: ignore[typeddict-item]
             self.agent.hist_add_message(False, content=msg, tokens=TOKENS_ESTIMATE * len(content))
         else:
             self.agent.hist_add_tool_result(self.name, "No images processed")

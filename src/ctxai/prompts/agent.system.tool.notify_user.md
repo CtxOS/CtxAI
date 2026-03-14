@@ -19,7 +19,7 @@ This tool can be used to notify the user of a message independent of the current
     ],
     "tool_name": "notify_user",
     "tool_args": {
-        "message": "Important notification: task xyz is completed succesfully",
+        "message": "Important notification: task xyz is completed successfully",
         "title": "Task Completed",
         "detail": "This is a test notification detail with <a href='https://www.google.com'>link</a>",
         "type": "success"

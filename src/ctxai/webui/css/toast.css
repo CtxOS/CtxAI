@@ -10,7 +10,9 @@
   align-items: center;
   z-index: 1000;
   transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.19, 0.86, 0.47, 1), background-color 0.3s ease;
+  transition:
+    transform 0.4s cubic-bezier(0.19, 0.86, 0.47, 1),
+    background-color 0.3s ease;
   will-change: transform;
 }
 
@@ -51,7 +53,7 @@
 }
 
 #toast.toast--success {
-  background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 #toast.toast--error {
@@ -59,7 +61,7 @@
 }
 
 #toast.toast--info {
-  background-color: #2196F3;
+  background-color: #2196f3;
 }
 
 .toast__close,
@@ -84,18 +86,18 @@
 
 @keyframes toastIn {
   from {
-      transform: translateY(100%);
+    transform: translateY(100%);
   }
   to {
-      transform: translateY(0);
+    transform: translateY(0);
   }
 }
 
 @keyframes toastOut {
   from {
-      transform: translateY(0);
+    transform: translateY(0);
   }
   to {
-      transform: translateY(100%);
+    transform: translateY(100%);
   }
 }

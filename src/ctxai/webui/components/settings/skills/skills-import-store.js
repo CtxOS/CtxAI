@@ -50,8 +50,10 @@ const model = {
 
   async loadProjects() {
     try {
-      const data = await api.callJsonApi("/projects", { action: "list_options" });
-      this.projects = data.ok ? (data.data || []) : [];
+      const data = await api.callJsonApi("/projects", {
+        action: "list_options",
+      });
+      this.projects = data.ok ? data.data || [] : [];
     } catch (e) {
       console.error("Failed to load projects:", e);
       this.projects = [];
@@ -61,7 +63,7 @@ const model = {
   async loadAgentProfiles() {
     try {
       const data = await api.callJsonApi("/agents", { action: "list" });
-      this.agentProfiles = data.ok ? (data.data || []) : [];
+      this.agentProfiles = data.ok ? data.data || [] : [];
     } catch (e) {
       console.error("Failed to load agent profiles:", e);
       this.agentProfiles = [];
@@ -91,7 +93,10 @@ const model = {
   buildFormData() {
     const formData = new FormData();
     formData.append("skills_file", this.skillsFile);
-    formData.append("ctxid", globalThis.getContext ? globalThis.getContext() : "");
+    formData.append(
+      "ctxid",
+      globalThis.getContext ? globalThis.getContext() : "",
+    );
     formData.append("namespace", sanitizeNamespace(this.namespace));
     formData.append("conflict", this.conflict);
 
@@ -167,7 +172,7 @@ const model = {
       if (window.toastFrontendInfo) {
         window.toastFrontendInfo(
           `Imported ${result.imported_count} skill folder(s)`,
-          "Skills Import"
+          "Skills Import",
         );
       }
     } catch (e) {
@@ -181,4 +186,3 @@ const model = {
 
 const store = createStore("skillsImportStore", model);
 export { store };
-

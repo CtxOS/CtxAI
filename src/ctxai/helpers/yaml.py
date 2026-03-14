@@ -1,5 +1,5 @@
 import json
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 
 def loads(text: str):

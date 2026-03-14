@@ -15,7 +15,9 @@ const model = {
   applyTasks(tasksList) {
     try {
       const tasks = Array.isArray(tasksList) ? tasksList : [];
-      const sorted = [...tasks].sort((a, b) => (b?.created_at || 0) - (a?.created_at || 0));
+      const sorted = [...tasks].sort(
+        (a, b) => (b?.created_at || 0) - (a?.created_at || 0),
+      );
       this.tasks = sorted;
 
       // After updating tasks, ensure selection is still valid
@@ -31,12 +33,16 @@ const model = {
   // Update selected task and persist for tab restore
   setSelected(taskId) {
     this.selected = taskId || "";
-    try { localStorage.setItem("lastSelectedTask", this.selected); } catch {}
+    try {
+      localStorage.setItem("lastSelectedTask", this.selected);
+    } catch {}
   },
 
   // Returns true if a task with the given id exists in the current list
   contains(taskId) {
-    return Array.isArray(this.tasks) && this.tasks.some((t) => t?.id === taskId);
+    return (
+      Array.isArray(this.tasks) && this.tasks.some((t) => t?.id === taskId)
+    );
   },
 
   // Convenience: id of the first task in the current list (or empty string)
@@ -69,5 +75,3 @@ const model = {
 };
 
 export const store = createStore("tasks", model);
-
-

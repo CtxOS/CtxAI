@@ -722,6 +722,11 @@ wheels = [
 ]
 
 [[package]]
+name = "codetypo"
+version = "2.3.1.dev12+g02005ebeb.d20260314"
+source = { git = "https://github.com/khulnasoft/codetypo#02005ebeb645efe2a0a5726d4b924edfcf34fff0" }
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -921,6 +926,7 @@ dependencies = [
     { name = "beautifulsoup4" },
     { name = "boto3" },
     { name = "browser-use" },
+    { name = "codetypo" },
     { name = "crontab" },
     { name = "docker" },
     { name = "duckduckgo-search" },
@@ -996,6 +1002,7 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12.3" },
     { name = "boto3", specifier = ">=1.35.0" },
     { name = "browser-use", specifier = "==0.5.11" },
+    { name = "codetypo", git = "https://github.com/khulnasoft/codetypo" },
     { name = "crontab", specifier = "==1.0.1" },
     { name = "docker", specifier = "==7.1.0" },
     { name = "duckduckgo-search", specifier = "==6.1.12" },

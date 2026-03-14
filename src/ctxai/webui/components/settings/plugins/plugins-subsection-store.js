@@ -9,8 +9,8 @@ const model = {
 
   resolveTab(element) {
     const host =
-      element?.closest("x-component")
-      || element?.parentElement?.closest("x-component");
+      element?.closest("x-component") ||
+      element?.parentElement?.closest("x-component");
     return host?.getAttribute("data-tab") || "";
   },
 

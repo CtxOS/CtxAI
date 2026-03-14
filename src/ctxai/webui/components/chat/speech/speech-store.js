@@ -59,7 +59,7 @@ const model = {
       "mic-listening",
       "mic-recording",
       "mic-waiting",
-      "mic-processing"
+      "mic-processing",
     );
     microphoneButton.classList.add(`mic-${status.toLowerCase()}`);
     microphoneButton.setAttribute("data-status", status);
@@ -96,7 +96,7 @@ const model = {
     // Guard against multiple initializations
     if (this._initialized) {
       console.log(
-        "[Speech Store] Already initialized, skipping duplicate init()"
+        "[Speech Store] Already initialized, skipping duplicate init()",
       );
       return;
     }
@@ -146,8 +146,9 @@ const model = {
 
         // Create a dummy audio context to "unlock" audio
         try {
-          this.audioContext = new (window.AudioContext ||
-            window.webkitAudioContext)();
+          this.audioContext = new (
+            window.AudioContext || window.webkitAudioContext
+          )();
           this.audioContext.resume();
         } catch (e) {
           console.log("AudioContext not available");
@@ -288,7 +289,7 @@ const model = {
       const byComma = seg.match(/[^,]+(?:,|$)/g);
       if (byComma.length > 1)
         return byComma.flatMap((p, i) =>
-          splitDeep(i < byComma.length - 1 ? p : p.replace(/,$/, ""))
+          splitDeep(i < byComma.length - 1 ? p : p.replace(/,$/, "")),
         );
       const out = [];
       let part = "";
@@ -531,10 +532,10 @@ const model = {
     try {
       const parser = new DOMParser();
       // Wrap in a div to handle fragments
-      const doc = parser.parseFromString(`<div>${text}</div>`, 'text/html');
+      const doc = parser.parseFromString(`<div>${text}</div>`, "text/html");
 
       // Replace <pre> and <code> tags with placeholder before extracting text
-      doc.querySelectorAll('pre, code').forEach(el => {
+      doc.querySelectorAll("pre, code").forEach((el) => {
         el.textContent = codePlaceholder;
       });
 
@@ -545,7 +546,7 @@ const model = {
       console.warn("[Speech Store] DOMParser failed, using fallback:", e);
       text = text.replace(/<pre[^>]*>[\s\S]*?<\/pre>/gi, codePlaceholder);
       text = text.replace(/<code[^>]*>[\s\S]*?<\/code>/gi, codePlaceholder);
-      text = text.replace(/<[^>]+>/g, ''); // strip remaining tags
+      text = text.replace(/<[^>]+>/g, ""); // strip remaining tags
     }
 
     // Remove markdown links: [label](url) → label
@@ -575,7 +576,7 @@ const model = {
     // Remove emojis and private unicode blocks
     text = text.replace(
       /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
-      ""
+      "",
     );
 
     // Replace URLs with just the domain name
@@ -593,7 +594,7 @@ const model = {
     // Replace UUIDs with 'UUID'
     text = text.replace(
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g,
-      "UUID"
+      "UUID",
     );
 
     // Collapse multiple spaces/tabs to a single space, but preserve newlines
@@ -798,8 +799,9 @@ class MicrophoneInput {
   }
 
   setupAudioAnalysis(stream) {
-    this.audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
+    this.audioContext = new (
+      window.AudioContext || window.webkitAudioContext
+    )();
     this.mediaStreamSource = this.audioContext.createMediaStreamSource(stream);
     this.analyserNode = this.audioContext.createAnalyser();
     this.analyserNode.fftSize = 2048;
@@ -945,7 +947,7 @@ class MicrophoneInput {
       console.error("Error accessing microphone:", err);
       toast(
         "Microphone access denied. Please enable microphone access in your browser settings.",
-        "error"
+        "error",
       );
       return false;
     }

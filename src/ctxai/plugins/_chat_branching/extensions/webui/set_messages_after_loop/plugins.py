@@ -281,7 +281,7 @@ def get_toggle_state(plugin_name: str) -> ToggleState:
 
     # root plugin paths
     plugin_paths = get_plugin_roots(plugin_name)
-    state = "enabled" if determined_toggle_from_paths(True, reversed(plugin_paths)) else "disabled"
+    state: ToggleState = "enabled" if determined_toggle_from_paths(True, reversed(plugin_paths)) else "disabled"
 
     # global toggles
     usr_toggles = [
