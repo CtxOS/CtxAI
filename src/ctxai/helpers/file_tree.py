@@ -17,9 +17,9 @@ SORT_BY_MODIFIED = "modified"
 SORT_ASC = "asc"
 SORT_DESC = "desc"
 
-OUTPUT_MODE_STRING = "string"
-OUTPUT_MODE_FLAT = "flat"
-OUTPUT_MODE_NESTED = "nested"
+OUTPUT_MODE_STRING: Literal["string"] = "string"
+OUTPUT_MODE_FLAT: Literal["flat"] = "flat"
+OUTPUT_MODE_NESTED: Literal["nested"] = "nested"
 
 
 def file_tree(

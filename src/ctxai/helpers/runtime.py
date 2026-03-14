@@ -2,7 +2,7 @@ import argparse
 import inspect
 import secrets
 from pathlib import Path
-from typing import TypeVar, Callable, Awaitable, Union, overload, cast
+from typing import TypeVar, Callable, Awaitable, Union, overload, cast, Any
 from ctxai.helpers import dotenv, rfc, settings, files
 import asyncio
 import threading
@@ -16,7 +16,7 @@ T = TypeVar("T")
 R = TypeVar("R")
 
 parser = argparse.ArgumentParser()
-args = {}
+args: dict[str, Any] = {}
 dockerman = None
 runtime_id = None
 
