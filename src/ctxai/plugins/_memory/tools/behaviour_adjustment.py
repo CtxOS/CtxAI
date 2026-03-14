@@ -7,7 +7,6 @@ from ctxai.plugins._memory.helpers import memory
 
 class UpdateBehaviour(Tool):
     async def execute(self, adjustments="", **kwargs):
-
         # stringify adjustments if needed
         if not isinstance(adjustments, str):
             adjustments = str(adjustments)
@@ -17,7 +16,6 @@ class UpdateBehaviour(Tool):
 
 
 async def update_behaviour(agent: Agent, log_item: LogItem, adjustments: str):
-
     # get system message and current ruleset
     system = agent.read_prompt("behaviour.merge.sys.md")
     current_rules = read_rules(agent)

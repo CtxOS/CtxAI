@@ -394,7 +394,6 @@ class LiteLLMChatWrapper(SimpleChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> str:
-
         msgs = self._convert_messages(messages)
 
         # Apply rate limiting if configured
@@ -418,7 +417,6 @@ class LiteLLMChatWrapper(SimpleChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> Iterator[ChatGenerationChunk]:
-
         msgs = self._convert_messages(messages)
 
         # Apply rate limiting if configured
@@ -489,7 +487,6 @@ class LiteLLMChatWrapper(SimpleChatModel):
         explicit_caching: bool = False,
         **kwargs: Any,
     ) -> Tuple[str, str]:
-
         turn_off_logging()
 
         if not messages:

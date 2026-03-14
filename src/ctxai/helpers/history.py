@@ -197,7 +197,6 @@ class Topic(Record):
         return compress
 
     async def compress_attention(self, ratio: float = CURRENT_TOPIC_ATTENTION_COMPRESSION) -> bool:
-
         middle = len(self.messages) - 2
         if middle < 2:
             return False
@@ -395,7 +394,6 @@ class History(Record):
         return compressed
 
     async def compress_topics(self) -> bool:
-
         # 1. first identify large messages and compress them cheaply
         for topic in self.topics:
             if topic.compress_large_messages(HISTORY_TOPIC_RATIO * LARGE_MESSAGE_TO_HISTORY_TOPIC_RATIO):

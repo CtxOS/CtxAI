@@ -346,7 +346,6 @@ def get_plugin_config(
     project_name: str | None = None,
     agent_profile: str | None = None,
 ):
-
     if project_name is None and agent is not None:
         from ctxai.helpers import projects
 

@@ -5,7 +5,6 @@ from ctxai.helpers.notification import NotificationPriority, NotificationType
 
 class NotifyUserTool(Tool):
     async def execute(self, **kwargs):
-
         message = self.args.get("message", "")
         title = self.args.get("title", "")
         detail = self.args.get("detail", "")

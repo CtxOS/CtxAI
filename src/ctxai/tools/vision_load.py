@@ -13,7 +13,6 @@ TOKENS_ESTIMATE = 1500
 
 class VisionLoad(Tool):
     async def execute(self, paths: list[str] = [], **kwargs) -> Response:
-
         self.images_dict = {}
         template: list[dict[str, str]] = []  # type: ignore
 
@@ -48,7 +47,6 @@ class VisionLoad(Tool):
         return Response(message="dummy", break_loop=False)
 
     async def after_execution(self, response: Response, **kwargs):
-
         # build image data messages for LLMs, or error message
         content = []
         if self.images_dict:

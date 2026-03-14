@@ -814,9 +814,7 @@ class TaskScheduler:
         save_tmp_chat(context)
 
     async def _run_task(self, task: Union[ScheduledTask, AdHocTask, PlannedTask], task_context: str | None = None):
-
         async def _run_task_wrapper(task_uuid: str, task_context: str | None = None):
-
             # preflight checks with a snapshot of the task
             task_snapshot: Union[ScheduledTask, AdHocTask, PlannedTask] | None = self.get_task_by_uuid(task_uuid)
             if task_snapshot is None:
