@@ -475,7 +475,9 @@ def get_repo_status(repo_path: str) -> dict:
             return path.startswith(".a0proj") or path == ".a0proj"
 
         # Filter out A0 files from diff and untracked
-        changed_files = [d.a_path for d in repo.index.diff(None) if d.a_path] + [d.a_path for d in repo.index.diff("HEAD") if d.a_path]
+        changed_files = [d.a_path for d in repo.index.diff(None) if d.a_path] + [
+            d.a_path for d in repo.index.diff("HEAD") if d.a_path
+        ]
         untracked = [f for f in repo.untracked_files if f]
 
         real_changes = [f for f in changed_files if not is_a0_file(f)]

@@ -7,11 +7,11 @@ class TestDirtyJson:
         assert result == {"key": "value"}
 
     def test_try_parse_invalid_json(self):
-        result = try_parse('{key: value}')
+        result = try_parse("{key: value}")
         assert result is not None
 
     def test_try_parse_empty_string(self):
-        result = try_parse('')
+        result = try_parse("")
         assert result is None
 
     def test_parse_valid_json(self):
@@ -19,7 +19,7 @@ class TestDirtyJson:
         assert result == {"key": "value"}
 
     def test_parse_invalid_json(self):
-        result = parse('{key: value}')
+        result = parse("{key: value}")
         assert result is not None
 
     def test_stringify_basic(self):
@@ -45,7 +45,7 @@ class TestDirtyJson:
         assert result == {"a": 1}
 
     def test_dirty_json_parse_simple_array(self):
-        result = DirtyJson.parse_string('[1, 2, 3]')
+        result = DirtyJson.parse_string("[1, 2, 3]")
         assert result == [1, 2, 3]
 
     def test_dirty_json_parse_string(self):
@@ -53,17 +53,17 @@ class TestDirtyJson:
         assert result == "hello"
 
     def test_dirty_json_parse_number(self):
-        result = DirtyJson.parse_string('42')
+        result = DirtyJson.parse_string("42")
         assert result == 42
 
     def test_dirty_json_parse_boolean_true(self):
-        result = DirtyJson.parse_string('true')
+        result = DirtyJson.parse_string("true")
         assert result is True
 
     def test_dirty_json_parse_boolean_false(self):
-        result = DirtyJson.parse_string('false')
+        result = DirtyJson.parse_string("false")
         assert result is False
 
     def test_dirty_json_parse_null(self):
-        result = DirtyJson.parse_string('null')
+        result = DirtyJson.parse_string("null")
         assert result is None
