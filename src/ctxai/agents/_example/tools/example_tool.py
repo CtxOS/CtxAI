@@ -8,7 +8,6 @@ from ctxai.helpers.tool import Tool, Response
 
 class ExampleTool(Tool):
     async def execute(self, **kwargs):
-
         # parameters
         test_input = kwargs.get("test_input", "")
 

@@ -5,7 +5,6 @@ from ctxai.helpers.extension import Extension
 
 class LoadProfileSettings(Extension):
     def execute(self, **kwargs) -> None:
-
         if not self.agent or not self.agent.config.profile:
             return
 
@@ -31,7 +30,7 @@ class LoadProfileSettings(Extension):
 
         if settings_override:
             current_config = self.agent.config
-            new_config = initialize.initialize.initialize_agent(override_settings=settings_override)
+            new_config = initialize.initialize_agent(override_settings=settings_override)
 
             for override_key, config_attr in (
                 ("agent_profile", "profile"),

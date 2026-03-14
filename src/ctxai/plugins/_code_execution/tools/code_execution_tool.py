@@ -30,7 +30,6 @@ class State:
 
 class CodeExecution(Tool):
     async def execute(self, **kwargs) -> Response:
-
         await self.agent.handle_intervention()  # wait for intervention and handle it, if paused
 
         runtime_arg = self.args.get("runtime", "").lower().strip()

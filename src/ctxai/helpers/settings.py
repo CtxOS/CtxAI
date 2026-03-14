@@ -584,7 +584,7 @@ def _apply_settings(previous: Settings | None):
         from ctxai.agent import AgentContext
         from ctxai import initialize
 
-        config = initialize.initialize.initialize_agent()
+        config = initialize.initialize_agent()
         for ctx in AgentContext.all():
             ctx.config = config  # reinitialize context config with new settings
             # apply config to agents

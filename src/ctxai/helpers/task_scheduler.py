@@ -780,7 +780,7 @@ class TaskScheduler:
         if not task.context_id:
             raise ValueError(f"Task {task.name} has no context ID")
 
-        config = initialize.initialize.initialize_agent()
+        config = initialize.initialize_agent()
         context: AgentContext = AgentContext(config, id=task.context_id, name=task.name)
         # context.id = task.context_id
         # initial name before renaming is same as task name
@@ -814,9 +814,7 @@ class TaskScheduler:
         save_tmp_chat(context)
 
     async def _run_task(self, task: Union[ScheduledTask, AdHocTask, PlannedTask], task_context: str | None = None):
-
         async def _run_task_wrapper(task_uuid: str, task_context: str | None = None):
-
             # preflight checks with a snapshot of the task
             task_snapshot: Union[ScheduledTask, AdHocTask, PlannedTask] | None = self.get_task_by_uuid(task_uuid)
             if task_snapshot is None:

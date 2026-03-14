@@ -346,7 +346,6 @@ class Agent:
 
     @extension.extensible
     def __init__(self, number: int, config: AgentConfig, context: AgentContext | None = None):
-
         # agent config
         self.config = config
 

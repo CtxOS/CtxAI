@@ -9,7 +9,6 @@ from ctxai.helpers import plugins
 
 class RecallWait(Extension):
     async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
-
         if not self.agent:
             return
 

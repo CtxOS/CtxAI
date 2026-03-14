@@ -20,13 +20,11 @@
 /knowledge/custom/
 /instruments/
 
-# Handle logs directory
-logs/**
-!logs/**/
-
-# Handle tmp and usr directory
-tmp/**
-!tmp/**/
+# Handle src/ctxai logs and tmp directories
+src/ctxai/logs/**
+!src/ctxai/logs/**/
+src/ctxai/tmp/**
+!src/ctxai/tmp/**/
 
 # hack to keep .gitkeep but ignore nested repos
 # Ignore everything under usr

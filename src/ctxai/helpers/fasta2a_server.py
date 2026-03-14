@@ -82,7 +82,7 @@ class AgentZeroWorker(Worker):  # type: ignore[misc]
             agent_message = self._convert_message(message)
 
             # Always create new temporary context for this A2A conversation
-            cfg = initialize.initialize.initialize_agent()
+            cfg = initialize.initialize_agent()
             context = AgentContext(cfg, type=AgentContextType.BACKGROUND)
 
             # Retrieve project from message.metadata (standard A2A pattern)

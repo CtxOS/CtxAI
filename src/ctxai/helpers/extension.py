@@ -196,15 +196,15 @@ def call_extensions_sync(extension_point: str, agent: "Agent|None" = None, **kwa
 
 
 def get_webui_extensions(agent: "Agent | None", extension_point: str, filters: list[str] | None = None):
-    entries: list[str] = []
+    from ctxai.helpers.plugins import get_plugin_paths
+
+    entries: list[dict] = []
     effective_filters = filters or ["*"]
 
-    # search for extension folders in all agent's paths
-    folders = subagents.get_paths(
-        agent,
-        "extensions/webui",
-        extension_point,
-    )
+    base_dir = files.get_base_dir()
+    plugins_dir = files.get_abs_path(base_dir, "plugins")
+
+    folders = get_plugin_paths("extensions/webui", extension_point)
 
     extensions = []
 
@@ -215,7 +215,14 @@ def get_webui_extensions(agent: "Agent | None", extension_point: str, filters: l
 
     for extension in extensions:
         rel_path = files.deabsolute_path(extension)
-        entries.append(rel_path)
+
+        plugin_id = ""
+        if rel_path.startswith("plugins/"):
+            parts = rel_path.split("/")
+            if len(parts) >= 2:
+                plugin_id = parts[1]
+
+        entries.append({"plugin_id": plugin_id, "path": rel_path})
 
     return entries
 
