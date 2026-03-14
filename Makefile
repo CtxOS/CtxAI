@@ -14,7 +14,7 @@ docker-base-build:
 	docker build -f docker/base/Dockerfile -t ctxos/ctxai-base docker/base
 
 docker-run-build:
-	docker build -f docker/run/Dockerfile -t ctxai:latest .
+	docker build -f docker/run/Dockerfile --build-arg BRANCH=dev -t ctxai:latest docker/run
 
 docker-push:
 	docker tag ctxai:latest ctxos/ctxai:latest
