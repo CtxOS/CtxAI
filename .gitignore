@@ -28,6 +28,12 @@ logs/**
 tmp/**
 !tmp/**/
 
+# Handle src/ctxai logs and tmp directories
+src/ctxai/logs/**
+!src/ctxai/logs/**/
+src/ctxai/tmp/**
+!src/ctxai/tmp/**/
+
 # hack to keep .gitkeep but ignore nested repos
 # Ignore everything under usr
 usr/**
