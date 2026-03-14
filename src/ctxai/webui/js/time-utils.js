@@ -9,17 +9,17 @@
  * @returns {string} Formatted local time string
  */
 export function toLocalTime(utcIsoString, options = {}) {
-  if (!utcIsoString) return '';
+  if (!utcIsoString) return "";
 
   const date = new Date(utcIsoString);
   const defaultOptions = {
-    dateStyle: 'medium',
-    timeStyle: 'medium'
+    dateStyle: "medium",
+    timeStyle: "medium",
   };
 
   return new Intl.DateTimeFormat(
     undefined, // Use browser's locale
-    { ...defaultOptions, ...options }
+    { ...defaultOptions, ...options },
   ).format(date);
 }
 
@@ -29,7 +29,7 @@ export function toLocalTime(utcIsoString, options = {}) {
  * @returns {string} UTC ISO string
  */
 export function toUTCISOString(date) {
-  if (!date) return '';
+  if (!date) return "";
   return date.toISOString();
 }
 
@@ -47,16 +47,16 @@ export function getCurrentUTCISOString() {
  * @param {string} format - Format type ('full', 'date', 'time', 'short')
  * @returns {string} Formatted local time string
  */
-export function formatDateTime(utcIsoString, format = 'full') {
-  if (!utcIsoString) return '';
+export function formatDateTime(utcIsoString, format = "full") {
+  if (!utcIsoString) return "";
 
   const date = new Date(utcIsoString);
 
   const formatOptions = {
-    full: { dateStyle: 'medium', timeStyle: 'medium' },
-    date: { dateStyle: 'medium' },
-    time: { timeStyle: 'medium' },
-    short: { dateStyle: 'short', timeStyle: 'short' }
+    full: { dateStyle: "medium", timeStyle: "medium" },
+    date: { dateStyle: "medium" },
+    time: { timeStyle: "medium" },
+    short: { dateStyle: "short", timeStyle: "short" },
   };
 
   return toLocalTime(utcIsoString, formatOptions[format] || formatOptions.full);
@@ -76,7 +76,7 @@ export function getUserTimezone() {
  * @returns {string} Formatted duration (e.g., '45s', '2m30s')
  */
 export function formatDuration(durationMs) {
-  if (durationMs == null || durationMs < 0) return '0s';
+  if (durationMs == null || durationMs < 0) return "0s";
 
   // Round total seconds first to avoid "1m60s" when seconds round up to 60
   const totalSecs = Math.round(durationMs / 1000);

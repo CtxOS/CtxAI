@@ -141,7 +141,7 @@ const model = {
       `,
       type: "warning",
       confirmText: "Clone Anyway",
-      cancelText: "Cancel"
+      cancelText: "Cancel",
     });
     if (!confirmed) return;
 
@@ -176,7 +176,7 @@ const model = {
           5,
           "git_clone",
           notifications.NotificationPriority.NORMAL,
-          true
+          true,
         );
       }
     } catch (error) {
@@ -187,7 +187,7 @@ const model = {
         5,
         "git_clone",
         notifications.NotificationPriority.NORMAL,
-        true
+        true,
       );
     } finally {
       // Use the saved reference instead of this.selectedProject
@@ -217,7 +217,7 @@ const model = {
           3,
           "projects",
           notifications.NotificationPriority.NORMAL,
-          true
+          true,
         );
       } else {
         notifications.toastFrontendWarning(
@@ -226,7 +226,7 @@ const model = {
           5,
           "projects",
           notifications.NotificationPriority.NORMAL,
-          true
+          true,
         );
       }
     } catch (error) {
@@ -237,7 +237,7 @@ const model = {
         5,
         "projects",
         notifications.NotificationPriority.NORMAL,
-        true
+        true,
       );
     }
     await this.loadProjectsList();
@@ -256,7 +256,7 @@ const model = {
           3,
           "projects",
           notifications.NotificationPriority.NORMAL,
-          true
+          true,
         );
       } else {
         notifications.toastFrontendWarning(
@@ -265,7 +265,7 @@ const model = {
           5,
           "projects",
           notifications.NotificationPriority.NORMAL,
-          true
+          true,
         );
       }
     } catch (error) {
@@ -276,7 +276,7 @@ const model = {
         5,
         "projects",
         notifications.NotificationPriority.NORMAL,
-        true
+        true,
       );
     }
     await this.loadProjectsList();
@@ -290,14 +290,14 @@ const model = {
   async deleteProject(name) {
     // show confirmation dialog before proceeding
     const confirmed = window.confirm(
-      "Are you sure you want to permanently delete this project? This action is irreversible and ALL FILES will be deleted."
+      "Are you sure you want to permanently delete this project? This action is irreversible and ALL FILES will be deleted.",
     );
     if (!confirmed) return;
     try {
       const response = await api.callJsonApi("projects", {
         action: "delete",
         name: name,
-        });
+      });
       if (response.ok) {
         notifications.toastFrontendSuccess(
           "Project deleted successfully",
@@ -305,7 +305,7 @@ const model = {
           3,
           "projects",
           notifications.NotificationPriority.NORMAL,
-          true
+          true,
         );
         await this.loadProjectsList();
       } else {
@@ -315,7 +315,7 @@ const model = {
           5,
           "projects",
           notifications.NotificationPriority.NORMAL,
-          true
+          true,
         );
       }
     } catch (error) {
@@ -326,7 +326,7 @@ const model = {
         5,
         "projects",
         notifications.NotificationPriority.NORMAL,
-        true
+        true,
       );
     }
   },
@@ -368,7 +368,7 @@ const model = {
           3,
           "projects",
           notifications.NotificationPriority.NORMAL,
-          true
+          true,
         );
         return response.data;
       } else {
@@ -378,7 +378,7 @@ const model = {
           5,
           "projects",
           notifications.NotificationPriority.NORMAL,
-          true
+          true,
         );
         return null;
       }
@@ -390,7 +390,7 @@ const model = {
         5,
         "projects",
         notifications.NotificationPriority.NORMAL,
-        true
+        true,
       );
       return null;
     }
@@ -435,7 +435,7 @@ const model = {
     await this.browseSelected(".a0proj", "instructions");
     try {
       const newData = await this._createEditProjectData(
-        this.selectedProject.name
+        this.selectedProject.name,
       );
       this.selectedProject.instruction_files_count =
         newData.instruction_files_count;
@@ -464,7 +464,7 @@ const model = {
       });
 
       const newData = await this._createEditProjectData(
-        this.selectedProject.name
+        this.selectedProject.name,
       );
       this.selectedProject.knowledge_files_count =
         newData.knowledge_files_count;
@@ -502,7 +502,7 @@ const model = {
 
   async editActiveProject() {
     const ctx = shortcuts.getCurrentContext();
-    if(!ctx) return;
+    if (!ctx) return;
     this.openEditModal(ctx.project.name);
   },
 

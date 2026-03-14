@@ -244,8 +244,6 @@ export async function getCsrfToken() {
   }
 }
 
-
-
 let _extensionsModule = null;
 
 async function _getExtensions() {

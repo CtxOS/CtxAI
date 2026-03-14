@@ -47,10 +47,10 @@ export async function copyToClipboard(text) {
 export function showButtonFeedback(button, success, originalIcon) {
   const icon = button.querySelector(".material-symbols-outlined");
   if (!icon) return;
-  
+
   icon.textContent = success ? "check" : "error";
   button.classList.add(success ? "success" : "error");
-  
+
   setTimeout(() => {
     icon.textContent = originalIcon;
     button.classList.remove("success", "error");

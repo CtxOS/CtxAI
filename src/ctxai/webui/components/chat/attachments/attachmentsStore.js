@@ -48,7 +48,7 @@ const model = {
         existing.name === newAttachment.name &&
         existing.file &&
         newAttachment.file &&
-        existing.file.size === newAttachment.file.size
+        existing.file.size === newAttachment.file.size,
     );
     return !isDuplicate;
   },
@@ -79,7 +79,7 @@ const model = {
           e.preventDefault();
           e.stopPropagation();
         },
-        false
+        false,
       );
     });
 
@@ -94,7 +94,7 @@ const model = {
           this.showDragDropOverlay();
         }
       },
-      false
+      false,
     );
 
     // Handle drag leave
@@ -106,7 +106,7 @@ const model = {
           this.hideDragDropOverlay();
         }
       },
-      false
+      false,
     );
 
     // Handle drop
@@ -120,7 +120,7 @@ const model = {
         const files = e.dataTransfer.files;
         this.handleFiles(files);
       },
-      false
+      false,
     );
   },
 
@@ -129,7 +129,8 @@ const model = {
     console.log("Setting up paste handler...");
     document.addEventListener("paste", (e) => {
       // console.log("Paste event detected, target:", e.target.id);
-      if(e.target.id != "chat-input" && e.target.id != "full-screen-input") return;
+      if (e.target.id != "chat-input" && e.target.id != "full-screen-input")
+        return;
 
       const items = e.clipboardData.items;
       let imageFound = false;
@@ -156,7 +157,7 @@ const model = {
         (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
       ) {
         console.log(
-          "No images in clipboard, allowing normal text paste in input field"
+          "No images in clipboard, allowing normal text paste in input field",
         );
         return;
       }
@@ -215,9 +216,15 @@ const model = {
     Array.from(files).forEach((file) => {
       console.log("Processing file:", file.name, file.type);
       const ext = file.name.split(".").pop().toLowerCase();
-      const isImage = ["jpg", "jpeg", "png", "bmp", "gif", "webp", "svg"].includes(
-        ext
-      );
+      const isImage = [
+        "jpg",
+        "jpeg",
+        "png",
+        "bmp",
+        "gif",
+        "webp",
+        "svg",
+      ].includes(ext);
 
       const attachment = {
         file: file,
@@ -353,7 +360,9 @@ const model = {
         previewUrl: previewUrl,
         clickHandler: () => {
           if (this.isImageFile(filename)) {
-            imageViewerStore.open(this.getServerImgUrl(filename), { name: filename });
+            imageViewerStore.open(this.getServerImgUrl(filename), {
+              name: filename,
+            });
           } else {
             this.downloadAttachment(filename);
           }
@@ -416,10 +425,9 @@ const model = {
         const r = (Math.random() * 16) | 0;
         const v = c == "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
-      }
+      },
     );
   },
-
 };
 
 const store = createStore("chatAttachments", model);

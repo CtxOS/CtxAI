@@ -4,10 +4,7 @@
 import { store as preferencesStore } from "/components/sidebar/bottom/preferences/preferences-store.js";
 
 export function applyModeSteps(detailMode, showUtils) {
-  const mode =
-    detailMode ||
-    preferencesStore.detailMode ||
-    "current";
+  const mode = detailMode || preferencesStore.detailMode || "current";
 
   const chatHistory = document.getElementById("chat-history");
   if (!chatHistory) return;
@@ -23,4 +20,3 @@ export function applyModeSteps(detailMode, showUtils) {
     }
   }
 }
-

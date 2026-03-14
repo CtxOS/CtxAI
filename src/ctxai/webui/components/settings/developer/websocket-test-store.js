@@ -131,22 +131,33 @@ const model = {
             `server_restart received (runtimeId=${envelope.data.runtimeId ?? "unknown"})`,
           );
         } catch (error) {
-          this.appendLog(`server_restart envelope invalid: ${error.message || error}`);
+          this.appendLog(
+            `server_restart envelope invalid: ${error.message || error}`,
+          );
         }
       };
       websocket
         .on("server_restart", this._serverRestartHandler)
         .catch((error) => {
-          this.appendLog(`Failed to subscribe to server_restart: ${error.message || error}`);
+          this.appendLog(
+            `Failed to subscribe to server_restart: ${error.message || error}`,
+          );
         });
     } else {
-      this.appendLog("WebSocket tester harness is available only in development runtime.");
+      this.appendLog(
+        "WebSocket tester harness is available only in development runtime.",
+      );
     }
   },
 
   detach() {
-    if (this._subscriptionHandlers && typeof this._subscriptionHandlers === "object") {
-      for (const [eventType, handler] of Object.entries(this._subscriptionHandlers)) {
+    if (
+      this._subscriptionHandlers &&
+      typeof this._subscriptionHandlers === "object"
+    ) {
+      for (const [eventType, handler] of Object.entries(
+        this._subscriptionHandlers,
+      )) {
         if (typeof handler === "function") {
           clientForEventType(eventType).off(eventType, handler);
         }
@@ -177,7 +188,9 @@ const model = {
 
   assertEnabled() {
     if (!this.isEnabled) {
-      throw new Error("WebSocket harness is available only in development runtime.");
+      throw new Error(
+        "WebSocket harness is available only in development runtime.",
+      );
     }
   },
 
@@ -228,18 +241,32 @@ const model = {
         const result = await step();
         results.push(result);
         if (!result.ok) {
-          await this._toast("warning", `Automatic suite halted: ${result.label} failed`, "WebSocket Harness");
-          this.appendLog(`Automatic suite halted on step: ${result.label} (${result.error || 'unknown error'})`);
+          await this._toast(
+            "warning",
+            `Automatic suite halted: ${result.label} failed`,
+            "WebSocket Harness",
+          );
+          this.appendLog(
+            `Automatic suite halted on step: ${result.label} (${result.error || "unknown error"})`,
+          );
           this.running = false;
           return;
         }
       }
 
-      await this._toast("success", "Automatic WebSocket validation succeeded", "WebSocket Harness");
+      await this._toast(
+        "success",
+        "Automatic WebSocket validation succeeded",
+        "WebSocket Harness",
+      );
       this.appendLog("Automatic suite completed successfully.");
     } catch (error) {
       this.appendLog(`Automatic suite failed: ${error.message || error}`);
-      await this._toast("error", `Automatic suite failed: ${error.message || error}`, "WebSocket Harness");
+      await this._toast(
+        "error",
+        `Automatic suite failed: ${error.message || error}`,
+        "WebSocket Harness",
+      );
     } finally {
       this.running = false;
     }
@@ -256,12 +283,24 @@ const model = {
         `${result.ok ? "PASS" : "FAIL"} - ${result.label}${result.error ? `: ${result.error}` : ""}`,
       );
       if (result.ok) {
-        await this._toast("success", `${result.label} succeeded`, "WebSocket Harness");
+        await this._toast(
+          "success",
+          `${result.label} succeeded`,
+          "WebSocket Harness",
+        );
       } else {
-        await this._toast("warning", `${result.label} failed: ${result.error}`, "WebSocket Harness");
+        await this._toast(
+          "warning",
+          `${result.label} failed: ${result.error}`,
+          "WebSocket Harness",
+        );
       }
     } catch (error) {
-      await this._toast("error", `${error.message || error}`, "WebSocket Harness");
+      await this._toast(
+        "error",
+        `${error.message || error}`,
+        "WebSocket Harness",
+      );
       this.appendLog(`Manual step error: ${error.message || error}`);
     } finally {
       this.manualRunning = false;
@@ -291,7 +330,11 @@ const model = {
           typeof envelope?.ts === "string",
       );
       this.appendLog("Received broadcast echo with valid envelope metadata.");
-      return { ok: received, label, error: received ? undefined : "Envelope validation failed" };
+      return {
+        ok: received,
+        label,
+        error: received ? undefined : "Envelope validation failed",
+      };
     } catch (error) {
       this.appendLog(`${label} failed: ${error.message || error}`);
       return { ok: false, label, error: error.message || error };
@@ -318,23 +361,28 @@ const model = {
       const first = response.results?.[0];
       const ok = Boolean(
         response?.correlationId &&
-          Array.isArray(response.results) &&
-          first?.ok === true &&
-          first?.handlerId &&
-          first?.correlationId === response.correlationId &&
-          first?.data?.echo === 42,
+        Array.isArray(response.results) &&
+        first?.ok === true &&
+        first?.handlerId &&
+        first?.correlationId === response.correlationId &&
+        first?.data?.echo === 42,
       );
       const delayedOk = Boolean(
         Array.isArray(delayedResponse.results) &&
-          delayedResponse.results[0]?.ok === true &&
-          delayedResponse.results[0]?.data?.status === "delayed",
+        delayedResponse.results[0]?.ok === true &&
+        delayedResponse.results[0]?.data?.status === "delayed",
       );
       this.appendLog(`Request-response result: ${JSON.stringify(response)}`);
-      this.appendLog(`Request-response (no-timeout) result: ${JSON.stringify(delayedResponse)}`);
+      this.appendLog(
+        `Request-response (no-timeout) result: ${JSON.stringify(delayedResponse)}`,
+      );
       return {
         ok: ok && delayedOk,
         label,
-        error: ok && delayedOk ? undefined : "Unexpected response payload or default timeout behaviour",
+        error:
+          ok && delayedOk
+            ? undefined
+            : "Unexpected response payload or default timeout behaviour",
       };
     } catch (error) {
       this.appendLog(`${label} failed: ${error.message || error}`);
@@ -382,8 +430,15 @@ const model = {
       const emitOptions = {
         correlationId: createCorrelationId("harness-persistence"),
       };
-      await websocket.emit("ws_tester_trigger_persistence", { phase: "before" }, emitOptions);
-      await this.waitForEvent("ws_tester_persistence", (data) => data?.phase === "before");
+      await websocket.emit(
+        "ws_tester_trigger_persistence",
+        { phase: "before" },
+        emitOptions,
+      );
+      await this.waitForEvent(
+        "ws_tester_persistence",
+        (data) => data?.phase === "before",
+      );
       this.appendLog("Initial subscription event received.");
 
       websocket.socket.disconnect();
@@ -396,9 +451,17 @@ const model = {
         { phase: "after" },
         emitOptions,
       );
-      const received = await this.waitForEvent("ws_tester_persistence", (data) => data?.phase === "after", 2000);
+      const received = await this.waitForEvent(
+        "ws_tester_persistence",
+        (data) => data?.phase === "after",
+        2000,
+      );
       this.appendLog("Post-reconnect event received.");
-      return { ok: received, label, error: received ? undefined : "Callback not triggered after reconnect" };
+      return {
+        ok: received,
+        label,
+        error: received ? undefined : "Callback not triggered after reconnect",
+      };
     } catch (error) {
       this.appendLog(`${label} failed: ${error.message || error}`);
       return { ok: false, label, error: error.message || error };
@@ -432,8 +495,14 @@ const model = {
             entry.results.length > 0,
         );
 
-      this.appendLog(`ws_tester_request_all response: ${JSON.stringify(response)}`);
-      return { ok, label, error: ok ? undefined : "Aggregation payload missing expected metadata" };
+      this.appendLog(
+        `ws_tester_request_all response: ${JSON.stringify(response)}`,
+      );
+      return {
+        ok,
+        label,
+        error: ok ? undefined : "Aggregation payload missing expected metadata",
+      };
     } catch (error) {
       this.appendLog(`${label} failed: ${error.message || error}`);
       return { ok: false, label, error: error.message || error };
@@ -441,11 +510,14 @@ const model = {
   },
 
   async testStateSyncNoPollHealthy() {
-    const label = "State sync (state_request/state_push + no poll when HEALTHY)";
+    const label =
+      "State sync (state_request/state_push + no poll when HEALTHY)";
     const originalPoll = globalThis.poll;
     let pollCalls = 0;
     try {
-      this.appendLog("Testing state_request/state_push contract and healthy-mode poll suppression...");
+      this.appendLog(
+        "Testing state_request/state_push contract and healthy-mode poll suppression...",
+      );
 
       if (typeof originalPoll === "function") {
         globalThis.poll = async (...args) => {
@@ -466,19 +538,29 @@ const model = {
           notifications_from: 0,
           timezone,
         },
-        { timeoutMs: 2000, correlationId: createCorrelationId("harness-state-request") },
+        {
+          timeoutMs: 2000,
+          correlationId: createCorrelationId("harness-state-request"),
+        },
       );
 
       const first = response?.results?.[0];
       const requestOk = Boolean(
         response?.correlationId &&
-          first?.ok === true &&
-          typeof first?.data?.runtime_epoch === "string" &&
-          typeof first?.data?.seq_base === "number",
+        first?.ok === true &&
+        typeof first?.data?.runtime_epoch === "string" &&
+        typeof first?.data?.seq_base === "number",
       );
       if (!requestOk) {
-        this.appendLog(`state_request response invalid: ${JSON.stringify(response)}`);
-        return { ok: false, label, error: "state_request did not return expected {runtime_epoch, seq_base}" };
+        this.appendLog(
+          `state_request response invalid: ${JSON.stringify(response)}`,
+        );
+        return {
+          ok: false,
+          label,
+          error:
+            "state_request did not return expected {runtime_epoch, seq_base}",
+        };
       }
       this.appendLog("state_request OK.");
 
@@ -504,19 +586,31 @@ const model = {
       }
 
       if (!pushOk) {
-        return { ok: false, label, error: "Did not observe state_push within 1s after handshake" };
+        return {
+          ok: false,
+          label,
+          error: "Did not observe state_push within 1s after handshake",
+        };
       }
       this.appendLog("state_push observed.");
 
       // The sync store applies snapshots asynchronously; give it a moment to
       // reach HEALTHY before asserting poll suppression.
       const startedHealthyWait = Date.now();
-      while (Date.now() - startedHealthyWait < 1000 && syncStore.mode !== "HEALTHY") {
+      while (
+        Date.now() - startedHealthyWait < 1000 &&
+        syncStore.mode !== "HEALTHY"
+      ) {
         await new Promise((resolve) => setTimeout(resolve, 25));
       }
       if (syncStore.mode !== "HEALTHY") {
-        const mode = typeof syncStore.mode === "string" ? syncStore.mode : "missing";
-        return { ok: false, label, error: `syncStore did not reach HEALTHY mode (mode=${mode})` };
+        const mode =
+          typeof syncStore.mode === "string" ? syncStore.mode : "missing";
+        return {
+          ok: false,
+          label,
+          error: `syncStore did not reach HEALTHY mode (mode=${mode})`,
+        };
       }
 
       // Reset count after the store is HEALTHY; then observe for >1 poll interval.
@@ -524,7 +618,11 @@ const model = {
       await new Promise((resolve) => setTimeout(resolve, 600));
       const noPoll = pollCalls === 0;
       if (!noPoll) {
-        return { ok: false, label, error: `poll() invoked ${pollCalls}x while HEALTHY` };
+        return {
+          ok: false,
+          label,
+          error: `poll() invoked ${pollCalls}x while HEALTHY`,
+        };
       }
 
       return { ok: true, label };
@@ -539,10 +637,16 @@ const model = {
   },
 
   async testContextSwitchNoLeak() {
-    const label = "Context switching (state_request updates active context, no stale pushes)";
-    const originalContext = typeof globalThis.getContext === "function" ? globalThis.getContext() : null;
+    const label =
+      "Context switching (state_request updates active context, no stale pushes)";
+    const originalContext =
+      typeof globalThis.getContext === "function"
+        ? globalThis.getContext()
+        : null;
     try {
-      this.appendLog("Testing context switching does not leak or keep pushing stale contexts...");
+      this.appendLog(
+        "Testing context switching does not leak or keep pushing stale contexts...",
+      );
       await this.ensureSubscribed("state_push", true);
 
       if (!Array.isArray(chatsStore.contexts)) {
@@ -554,16 +658,25 @@ const model = {
         .filter((id) => typeof id === "string" && id.length > 0);
       const unique = Array.from(new Set(ids));
       if (unique.length < 2) {
-        return { ok: false, label, error: "Need at least 2 chats to validate switching" };
+        return {
+          ok: false,
+          label,
+          error: "Need at least 2 chats to validate switching",
+        };
       }
 
-      const current = typeof originalContext === "string" ? originalContext : null;
+      const current =
+        typeof originalContext === "string" ? originalContext : null;
       let first = unique[0];
       let second = unique[1];
       if (current && unique.includes(current)) {
         const alternate = unique.find((id) => id !== current);
         if (!alternate) {
-          return { ok: false, label, error: "Need at least 2 distinct chats to validate switching" };
+          return {
+            ok: false,
+            label,
+            error: "Need at least 2 distinct chats to validate switching",
+          };
         }
         first = alternate;
         second = current;
@@ -593,7 +706,11 @@ const model = {
       await switchTo(first);
       const gotFirst = await waitFirst;
       if (!gotFirst) {
-        return { ok: false, label, error: "Did not observe state_push for first context after switch" };
+        return {
+          ok: false,
+          label,
+          error: "Did not observe state_push for first context after switch",
+        };
       }
 
       const switchedAt = Date.now();
@@ -601,7 +718,11 @@ const model = {
       await switchTo(second);
       const gotSecond = await waitSecond;
       if (!gotSecond) {
-        return { ok: false, label, error: "Did not observe state_push for second context after switch" };
+        return {
+          ok: false,
+          label,
+          error: "Did not observe state_push for second context after switch",
+        };
       }
 
       // After switching, we should not observe new pushes for the old context.
@@ -613,7 +734,11 @@ const model = {
         return entry?.payload?.data?.snapshot?.context === first;
       });
       if (stale) {
-        return { ok: false, label, error: "Observed state_push for previous context after switching" };
+        return {
+          ok: false,
+          label,
+          error: "Observed state_push for previous context after switching",
+        };
       }
 
       return { ok: true, label };
@@ -641,13 +766,21 @@ const model = {
     const originalRequest = stateSocket.request;
     try {
       if (typeof syncStore.sendStateRequest !== "function") {
-        return { ok: false, label, error: "syncStore.sendStateRequest not available" };
+        return {
+          ok: false,
+          label,
+          error: "syncStore.sendStateRequest not available",
+        };
       }
 
       // Ensure we start from a known-good state.
       await syncStore.sendStateRequest({ forceFull: true });
       if (syncStore.mode !== "HEALTHY") {
-        return { ok: false, label, error: `Expected HEALTHY before test, got ${syncStore.mode}` };
+        return {
+          ok: false,
+          label,
+          error: `Expected HEALTHY before test, got ${syncStore.mode}`,
+        };
       }
 
       // Stub poll to avoid network side-effects and track calls.
@@ -662,7 +795,12 @@ const model = {
         if (eventType === "state_request") {
           throw new Error("Request timeout");
         }
-        return await originalRequest.call(stateSocket, eventType, payload, options);
+        return await originalRequest.call(
+          stateSocket,
+          eventType,
+          payload,
+          options,
+        );
       };
 
       let threw = false;
@@ -672,31 +810,53 @@ const model = {
         threw = true;
       }
       if (!threw) {
-        return { ok: false, label, error: "Expected state_request failure but request succeeded" };
+        return {
+          ok: false,
+          label,
+          error: "Expected state_request failure but request succeeded",
+        };
       }
 
       if (syncStore.mode !== "DEGRADED") {
-        return { ok: false, label, error: `Expected DEGRADED after failure, got ${syncStore.mode}` };
+        return {
+          ok: false,
+          label,
+          error: `Expected DEGRADED after failure, got ${syncStore.mode}`,
+        };
       }
-      this.appendLog("Entered DEGRADED mode after simulated state_request failure.");
+      this.appendLog(
+        "Entered DEGRADED mode after simulated state_request failure.",
+      );
 
       // Poll fallback should kick in quickly (1Hz idle); wait long enough for at least one tick.
       await new Promise((resolve) => setTimeout(resolve, 1200));
       if (pollCalls < 1) {
-        return { ok: false, label, error: "poll() was not invoked while DEGRADED" };
+        return {
+          ok: false,
+          label,
+          error: "poll() was not invoked while DEGRADED",
+        };
       }
 
       // While DEGRADED, pushes should be ignored (single-writer arbitration).
-      const lastSeqBefore = typeof syncStore.lastSeq === "number" ? syncStore.lastSeq : 0;
+      const lastSeqBefore =
+        typeof syncStore.lastSeq === "number" ? syncStore.lastSeq : 0;
       await syncStore._handlePush({
         data: {
-          runtime_epoch: typeof syncStore.runtimeEpoch === "string" ? syncStore.runtimeEpoch : "test-epoch",
+          runtime_epoch:
+            typeof syncStore.runtimeEpoch === "string"
+              ? syncStore.runtimeEpoch
+              : "test-epoch",
           seq: lastSeqBefore + 1,
           snapshot: { ignored: true },
         },
       });
       if (syncStore.lastSeq !== lastSeqBefore) {
-        return { ok: false, label, error: "state_push advanced seq while DEGRADED (should be ignored)" };
+        return {
+          ok: false,
+          label,
+          error: "state_push advanced seq while DEGRADED (should be ignored)",
+        };
       }
       this.appendLog("Verified state_push ignored while DEGRADED.");
 
@@ -704,13 +864,21 @@ const model = {
       stateSocket.request = originalRequest;
       await syncStore.sendStateRequest({ forceFull: true });
       if (syncStore.mode !== "HEALTHY") {
-        return { ok: false, label, error: `Expected HEALTHY after recovery, got ${syncStore.mode}` };
+        return {
+          ok: false,
+          label,
+          error: `Expected HEALTHY after recovery, got ${syncStore.mode}`,
+        };
       }
 
       pollCalls = 0;
       await new Promise((resolve) => setTimeout(resolve, 600));
       if (pollCalls !== 0) {
-        return { ok: false, label, error: `poll() invoked ${pollCalls}x after recovery to HEALTHY` };
+        return {
+          ok: false,
+          label,
+          error: `poll() invoked ${pollCalls}x after recovery to HEALTHY`,
+        };
       }
 
       return { ok: true, label };
@@ -732,7 +900,11 @@ const model = {
     let calls = [];
     try {
       if (typeof originalSendStateRequest !== "function") {
-        return { ok: false, label, error: "syncStore.sendStateRequest not available" };
+        return {
+          ok: false,
+          label,
+          error: "syncStore.sendStateRequest not available",
+        };
       }
 
       syncStore.sendStateRequest = async (options = {}) => {
@@ -744,13 +916,24 @@ const model = {
       syncStore.mode = "HEALTHY";
       syncStore.runtimeEpoch = "epoch-a";
       syncStore.lastSeq = 10;
-      await syncStore._handlePush({ data: { runtime_epoch: "epoch-b", seq: 11 } });
-      const runtimeTriggered = calls.length === 1 && calls[0] && calls[0].forceFull === true;
+      await syncStore._handlePush({
+        data: { runtime_epoch: "epoch-b", seq: 11 },
+      });
+      const runtimeTriggered =
+        calls.length === 1 && calls[0] && calls[0].forceFull === true;
       if (!runtimeTriggered) {
-        return { ok: false, label, error: "runtime_epoch mismatch did not trigger state_request resync" };
+        return {
+          ok: false,
+          label,
+          error: "runtime_epoch mismatch did not trigger state_request resync",
+        };
       }
       if (syncStore.mode !== "HANDSHAKE_PENDING") {
-        return { ok: false, label, error: "runtime_epoch resync did not set HANDSHAKE_PENDING" };
+        return {
+          ok: false,
+          label,
+          error: "runtime_epoch resync did not set HANDSHAKE_PENDING",
+        };
       }
 
       // Case 2: seq gap should trigger resync.
@@ -758,13 +941,24 @@ const model = {
       syncStore.mode = "HEALTHY";
       syncStore.runtimeEpoch = "epoch-a";
       syncStore.lastSeq = 10;
-      await syncStore._handlePush({ data: { runtime_epoch: "epoch-a", seq: 12 } });
-      const seqTriggered = calls.length === 1 && calls[0] && calls[0].forceFull === true;
+      await syncStore._handlePush({
+        data: { runtime_epoch: "epoch-a", seq: 12 },
+      });
+      const seqTriggered =
+        calls.length === 1 && calls[0] && calls[0].forceFull === true;
       if (!seqTriggered) {
-        return { ok: false, label, error: "seq gap did not trigger state_request resync" };
+        return {
+          ok: false,
+          label,
+          error: "seq gap did not trigger state_request resync",
+        };
       }
       if (syncStore.mode !== "HANDSHAKE_PENDING") {
-        return { ok: false, label, error: "seq gap resync did not set HANDSHAKE_PENDING" };
+        return {
+          ok: false,
+          label,
+          error: "seq gap resync did not set HANDSHAKE_PENDING",
+        };
       }
 
       return { ok: true, label };
@@ -777,7 +971,10 @@ const model = {
   },
 
   async ensureSubscribed(eventType, reset = false) {
-    if (!this._subscriptionHandlers || typeof this._subscriptionHandlers !== "object") {
+    if (
+      !this._subscriptionHandlers ||
+      typeof this._subscriptionHandlers !== "object"
+    ) {
       this._subscriptionHandlers = {};
     }
 
@@ -806,7 +1003,9 @@ const model = {
           timestamp: now(),
         });
       } catch (error) {
-        this.appendLog(`Received invalid envelope for ${eventType}: ${error.message || error}`);
+        this.appendLog(
+          `Received invalid envelope for ${eventType}: ${error.message || error}`,
+        );
       }
     };
 
@@ -836,7 +1035,9 @@ const model = {
         try {
           envelope = validateServerEnvelope(data);
         } catch (error) {
-          this.appendLog(`Skipping invalid envelope for ${eventType}: ${error.message || error}`);
+          this.appendLog(
+            `Skipping invalid envelope for ${eventType}: ${error.message || error}`,
+          );
           return;
         }
 
@@ -848,7 +1049,9 @@ const model = {
       const onPromise = client.on(eventType, handler);
       if (onPromise && typeof onPromise.then === "function") {
         onPromise.catch((error) => {
-          this.appendLog(`Failed to subscribe to ${eventType}: ${error.message || error}`);
+          this.appendLog(
+            `Failed to subscribe to ${eventType}: ${error.message || error}`,
+          );
           finish(false);
         });
       }
@@ -892,7 +1095,9 @@ const model = {
   },
 
   async runManualResyncTriggers() {
-    await this.manualStep(this.testResyncTriggersRuntimeEpochAndSeqGap.bind(this));
+    await this.manualStep(
+      this.testResyncTriggersRuntimeEpochAndSeqGap.bind(this),
+    );
   },
 
   async triggerBroadcastDemo() {
@@ -908,9 +1113,17 @@ const model = {
         { requested_at: now() },
         options,
       );
-      await this._toast("info", "Broadcast demo triggered. Check log output.", "WebSocket Harness");
+      await this._toast(
+        "info",
+        "Broadcast demo triggered. Check log output.",
+        "WebSocket Harness",
+      );
     } catch (error) {
-      await this._toast("error", `Broadcast demo failed: ${error.message || error}`, "WebSocket Harness");
+      await this._toast(
+        "error",
+        `Broadcast demo failed: ${error.message || error}`,
+        "WebSocket Harness",
+      );
       this.appendLog(`Broadcast demo failed: ${error.message || error}`);
     }
   },

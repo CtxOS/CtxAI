@@ -13,7 +13,7 @@ const model = {
 
   _getDefaultSettings() {
     return {
-      "message": { minimized: false, maximized: false },
+      message: { minimized: false, maximized: false },
       "message-agent": { minimized: true, maximized: false },
       "message-agent-response": { minimized: false, maximized: true },
     };
@@ -31,7 +31,7 @@ const model = {
     this.settings[className] = setting;
     localStorage.setItem(
       "messageResizeSettings",
-      JSON.stringify(this.settings)
+      JSON.stringify(this.settings),
     );
   },
 
@@ -62,54 +62,56 @@ const model = {
     if (!event || !event.target) {
       return;
     }
-    
+
     // Store the element reference to avoid issues with event being modified
     const targetElement = event.target;
     const clickY = event.clientY;
-    
+
     // Use requestAnimationFrame for smoother timing with browser rendering
     // requestAnimationFrame(() => {
-        try {
-          // Get fresh measurements after potential re-renders
-          const rect = targetElement.getBoundingClientRect();
-          const viewHeight = window.innerHeight || document.documentElement.clientHeight;
-          
-          // Get chat history element
-          const chatHistory = document.getElementById('chat-history');
-          if (!chatHistory) {
-            return;
-          }
-          
-          // Get chat history position
-          const chatRect = chatHistory.getBoundingClientRect();
-          
-          // Calculate element's middle position relative to chat history
-          const elementHeight = rect.height;
-          const elementMiddle = rect.top + (elementHeight / 2);
-          const relativeMiddle = elementMiddle - chatRect.top;
-          
-          // Calculate target scroll position
-          let scrollTop;
-          
-          if (typeof clickY === 'number') {
-            // Calculate based on click position
-            const clickRelativeToChat = clickY - chatRect.top;
-            // Add current scroll position and adjust to keep element middle at click position
-            scrollTop = chatHistory.scrollTop + relativeMiddle - clickRelativeToChat;
-          } else {
-            // Position element middle at 50% from the top of chat history viewport (center)
-            const targetPosition = chatHistory.clientHeight * 0.5;
-            scrollTop = chatHistory.scrollTop + relativeMiddle - targetPosition;
-          }
-          
-          // Apply scroll with instant behavior
-          chatHistory.scrollTo({
-            top: scrollTop,
-            behavior: "auto"
-          });
-        } catch (e) {
-          // Silent error handling
-        }
+    try {
+      // Get fresh measurements after potential re-renders
+      const rect = targetElement.getBoundingClientRect();
+      const viewHeight =
+        window.innerHeight || document.documentElement.clientHeight;
+
+      // Get chat history element
+      const chatHistory = document.getElementById("chat-history");
+      if (!chatHistory) {
+        return;
+      }
+
+      // Get chat history position
+      const chatRect = chatHistory.getBoundingClientRect();
+
+      // Calculate element's middle position relative to chat history
+      const elementHeight = rect.height;
+      const elementMiddle = rect.top + elementHeight / 2;
+      const relativeMiddle = elementMiddle - chatRect.top;
+
+      // Calculate target scroll position
+      let scrollTop;
+
+      if (typeof clickY === "number") {
+        // Calculate based on click position
+        const clickRelativeToChat = clickY - chatRect.top;
+        // Add current scroll position and adjust to keep element middle at click position
+        scrollTop =
+          chatHistory.scrollTop + relativeMiddle - clickRelativeToChat;
+      } else {
+        // Position element middle at 50% from the top of chat history viewport (center)
+        const targetPosition = chatHistory.clientHeight * 0.5;
+        scrollTop = chatHistory.scrollTop + relativeMiddle - targetPosition;
+      }
+
+      // Apply scroll with instant behavior
+      chatHistory.scrollTo({
+        top: scrollTop,
+        behavior: "auto",
+      });
+    } catch (e) {
+      // Silent error handling
+    }
     // });
   },
 
@@ -117,17 +119,17 @@ const model = {
     toggleCssProperty(
       `.${className} .message-body`,
       "max-height",
-      setting.maximized ? "unset" : "30em"
+      setting.maximized ? "unset" : "30em",
     );
     toggleCssProperty(
       `.${className} .message-body`,
       "overflow-y",
-      setting.maximized ? "hidden" : "auto"
+      setting.maximized ? "hidden" : "auto",
     );
     toggleCssProperty(
       `.${className} .message-body`,
       "display",
-      setting.minimized ? "none" : "block"
+      setting.minimized ? "none" : "block",
     );
   },
 };

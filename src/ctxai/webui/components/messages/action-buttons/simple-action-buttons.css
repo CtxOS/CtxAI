@@ -48,7 +48,11 @@
   font-size: 0.85rem;
   line-height: 1;
   color: var(--color-message-text);
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 20;
   transition: color 0.15s ease;
 }
 
@@ -60,15 +64,23 @@
 /* Success state */
 .step-action-buttons .action-button.success .material-symbols-outlined,
 .action-button.success .material-symbols-outlined {
-  color: #4CAF50;
-  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20;
+  color: #4caf50;
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 500,
+    "GRAD" 0,
+    "opsz" 20;
 }
 
 /* Error state */
 .step-action-buttons .action-button.error .material-symbols-outlined,
 .action-button.error .material-symbols-outlined {
   color: var(--color-accent);
-  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20;
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 500,
+    "GRAD" 0,
+    "opsz" 20;
 }
 
 .show-more-btn,
@@ -76,7 +88,8 @@
   display: none;
 }
 
-.message.message-collapsible.has-overflow:not(.expanded) > .step-action-buttons {
+.message.message-collapsible.has-overflow:not(.expanded)
+  > .step-action-buttons {
   opacity: 1;
   pointer-events: auto;
 }
@@ -125,8 +138,6 @@
   justify-content: flex-end;
   width: 100%;
 }
-
-
 
 /* ===========================================
    Hover behavior - Pointer devices

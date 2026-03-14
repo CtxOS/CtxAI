@@ -27,22 +27,31 @@ const model = {
 
   copyLoginCode() {
     if (!this.microsoftLoginCode) return;
-    navigator.clipboard.writeText(this.microsoftLoginCode).then(() => {
-      this.codeCopied = true;
-      window.toastFrontendInfo("Login code copied to clipboard!", "Clipboard");
-      // Reset after 3 seconds
-      setTimeout(() => {
-        this.codeCopied = false;
-      }, 3000);
-    }).catch((err) => {
-      console.error("Failed to copy code: ", err);
-      window.toastFrontendError("Failed to copy login code", "Clipboard Error");
-    });
+    navigator.clipboard
+      .writeText(this.microsoftLoginCode)
+      .then(() => {
+        this.codeCopied = true;
+        window.toastFrontendInfo(
+          "Login code copied to clipboard!",
+          "Clipboard",
+        );
+        // Reset after 3 seconds
+        setTimeout(() => {
+          this.codeCopied = false;
+        }, 3000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy code: ", err);
+        window.toastFrontendError(
+          "Failed to copy login code",
+          "Clipboard Error",
+        );
+      });
   },
 
   processNotifications(notifications) {
     if (!notifications || !Array.isArray(notifications)) return;
-    
+
     for (const n of notifications) {
       switch (n.event) {
         case "downloading":
@@ -214,17 +223,18 @@ const model = {
     // Call generate but with a confirmation first
     if (
       confirm(
-        "Are you sure you want to generate a new tunnel URL? The old URL will no longer work."
+        "Are you sure you want to generate a new tunnel URL? The old URL will no longer work.",
       )
     ) {
-
       this.isLoading = true;
       this.hasError = false;
       this.clearMicrosoftLogin();
       this.loadingText = "Refreshing tunnel...";
 
       // Change refresh button appearance
-      const refreshButton = document.querySelector("#tunnel-settings-section .refresh-link-button");
+      const refreshButton = document.querySelector(
+        "#tunnel-settings-section .refresh-link-button",
+      );
       const originalContent = refreshButton.innerHTML;
       refreshButton.innerHTML =
         '<span class="icon material-symbols-outlined spin">progress_activity</span> Refreshing...';
@@ -286,7 +296,7 @@ const model = {
             "can access your Ctx AI instance.\n\n" +
             "It is recommended to set up authentication in the Settings > Authentication section " +
             "before creating a public tunnel.\n\n" +
-            "Do you want to proceed anyway?"
+            "Do you want to proceed anyway?",
         );
 
         if (!proceed) {
@@ -304,7 +314,9 @@ const model = {
     this.loadingText = "Starting tunnel...";
 
     // Change create button appearance
-    const createButton = document.querySelector("#tunnel-settings-section .tunnel-actions .btn-ok");
+    const createButton = document.querySelector(
+      "#tunnel-settings-section .tunnel-actions .btn-ok",
+    );
     if (createButton) {
       createButton.innerHTML =
         '<span class="icon material-symbols-outlined spin">progress_activity</span> Creating...';
@@ -358,7 +370,7 @@ const model = {
         // Show success message to confirm creation
         window.toastFrontendInfo(
           "Tunnel created successfully",
-          "Tunnel Status"
+          "Tunnel Status",
         );
       }
     } catch (error) {
@@ -371,7 +383,9 @@ const model = {
       this.clearMicrosoftLogin();
 
       // Reset create button if it's still in the DOM
-      const createButton = document.querySelector("#tunnel-settings-section .tunnel-actions .btn-ok");
+      const createButton = document.querySelector(
+        "#tunnel-settings-section .tunnel-actions .btn-ok",
+      );
       if (createButton) {
         createButton.innerHTML =
           '<span class="icon material-symbols-outlined">play_circle</span> Create Tunnel';
@@ -384,7 +398,7 @@ const model = {
   async stopTunnel() {
     if (
       confirm(
-        "Are you sure you want to stop the tunnel? The URL will no longer be accessible."
+        "Are you sure you want to stop the tunnel? The URL will no longer be accessible.",
       )
     ) {
       this.isLoading = true;
@@ -419,7 +433,7 @@ const model = {
 
           window.toastFrontendInfo(
             "Tunnel stopped successfully",
-            "Tunnel Status"
+            "Tunnel Status",
           );
         } else {
           window.toastFrontendError("Failed to stop tunnel", "Tunnel Error");
@@ -447,7 +461,9 @@ const model = {
   copyToClipboard() {
     if (!this.tunnelLink) return;
 
-    const copyButton = document.querySelector("#tunnel-settings-section .copy-link-button");
+    const copyButton = document.querySelector(
+      "#tunnel-settings-section .copy-link-button",
+    );
     const originalContent = copyButton.innerHTML;
 
     navigator.clipboard
@@ -461,7 +477,7 @@ const model = {
         // Show toast notification
         window.toastFrontendInfo(
           "Tunnel URL copied to clipboard!",
-          "Clipboard"
+          "Clipboard",
         );
 
         // Reset button after 2 seconds
@@ -474,7 +490,7 @@ const model = {
         console.error("Failed to copy URL: ", err);
         window.toastFrontendError(
           "Failed to copy tunnel URL",
-          "Clipboard Error"
+          "Clipboard Error",
         );
 
         // Show error state
