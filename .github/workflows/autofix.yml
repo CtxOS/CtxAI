@@ -27,12 +27,10 @@ jobs:
         run: uv sync
 
       - name: Run ruff check with auto-fix
-        run: |
-          uv run ruff check --fix src/ctxai/ tests/ || true
+        run: uv run ruff check --fix src/ctxai/ tests/ || true
 
       - name: Run ruff format
-        run: |
-          uv run ruff format src/ctxai/ tests/
+        run: uv run ruff format src/ctxai/ tests/
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
