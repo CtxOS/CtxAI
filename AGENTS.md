@@ -50,7 +50,7 @@ uv sync
 
 When running in Docker, Ctx AI uses two distinct Python runtimes to isolate the framework from the code being executed:
 
-### 1. Framework Runtime (/opt/venv-a0)
+### 1. Framework Runtime (/opt/venv-ctx)
 - Version: Python 3.12.4
 - Purpose: Runs the Ctx AI backend, API, and core logic.
 - Packages: Contains all dependencies from requirements.txt.

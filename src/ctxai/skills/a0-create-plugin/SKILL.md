@@ -238,7 +238,7 @@ Instead, explicitly switch targets in a subprocess:
 - activate the target virtualenv in the subprocess before running `pip`
 - run the relevant OS package manager from a subprocess configured for the intended environment
 
-In Docker, this usually means `hooks.py` affects `/opt/venv-a0` unless you intentionally target `/opt/venv` or another environment.
+In Docker, this usually means `hooks.py` affects `/opt/venv-ctx` unless you intentionally target `/opt/venv` or another environment.
 
 ---
 
