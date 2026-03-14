@@ -1040,7 +1040,7 @@ requires-dist = [
     { name = "python-socketio", specifier = ">=5.14.2" },
     { name = "pytz", specifier = "==2024.2" },
     { name = "pywinpty", marker = "sys_platform == 'win32'", specifier = "==3.0.2" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = "==0.9.9" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9.9" },
     { name = "sentence-transformers", specifier = "==3.0.1" },
     { name = "simpleeval", specifier = "==1.0.3" },
     { name = "soundfile", specifier = "==0.13.1" },
