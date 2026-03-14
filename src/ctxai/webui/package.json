@@ -1,0 +1,12 @@
+{
+  "name": "ctxai-webui",
+  "version": "1.0.0",
+  "description": "Ctx AI WebUI - Alpine.js frontend",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Static files - no build required'",
+    "build": "echo 'Static files - no build required'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
