@@ -21,13 +21,15 @@ export function createStore(name, initialState) {
       const store = globalThis.Alpine?.store(name);
       if (store) return store[prop];
       return target[prop];
-    }
+    },
   });
 
   if (globalThis.Alpine) {
     globalThis.Alpine.store(name, initialState);
   } else {
-    document.addEventListener("alpine:init", () => Alpine.store(name, initialState));
+    document.addEventListener("alpine:init", () =>
+      Alpine.store(name, initialState),
+    );
   }
 
   // Store the proxy
@@ -58,7 +60,8 @@ export function getStore(name) {
  */
 export function saveState(store, include = [], exclude = []) {
   const hasExclude = Array.isArray(exclude) && exclude.length > 0;
-  const hasInclude = !hasExclude && Array.isArray(include) && include.length > 0;
+  const hasInclude =
+    !hasExclude && Array.isArray(include) && include.length > 0;
 
   /** @type {Record<string, any>} */
   const snapshot = {};
@@ -75,7 +78,7 @@ export function saveState(store, include = [], exclude = []) {
 
     if (Array.isArray(value)) {
       snapshot[key] = value.map((item) =>
-        typeof item === "object" && item !== null ? { ...item } : item
+        typeof item === "object" && item !== null ? { ...item } : item,
       );
     } else if (typeof value === "object" && value !== null) {
       snapshot[key] = { ...value };
@@ -99,7 +102,8 @@ export function loadState(store, state, include = [], exclude = []) {
   if (!state) return;
 
   const hasExclude = Array.isArray(exclude) && exclude.length > 0;
-  const hasInclude = !hasExclude && Array.isArray(include) && include.length > 0;
+  const hasInclude =
+    !hasExclude && Array.isArray(include) && include.length > 0;
 
   for (const key of Object.keys(state)) {
     if (hasExclude) {
@@ -112,7 +116,7 @@ export function loadState(store, state, include = [], exclude = []) {
 
     if (Array.isArray(value)) {
       store[key] = value.map((item) =>
-        typeof item === "object" && item !== null ? { ...item } : item
+        typeof item === "object" && item !== null ? { ...item } : item,
       );
     } else if (typeof value === "object" && value !== null) {
       store[key] = { ...value };

@@ -7,8 +7,8 @@ const model = {
 
   // Centralized collapse state for all sidebar sections (persisted in localStorage)
   sectionStates: {
-    tasks: false,       // default: collapsed
-    preferences: false  // default: collapsed
+    tasks: false, // default: collapsed
+    preferences: false, // default: collapsed
   },
 
   // Initialize the store by setting up a resize listener
@@ -26,21 +26,24 @@ const model = {
   // Load section collapse states from localStorage
   loadSectionStates() {
     try {
-      const stored = localStorage.getItem('sidebarSections');
+      const stored = localStorage.getItem("sidebarSections");
       if (stored) {
         this.sectionStates = { ...this.sectionStates, ...JSON.parse(stored) };
       }
     } catch (e) {
-      console.error('Failed to load sidebar section states', e);
+      console.error("Failed to load sidebar section states", e);
     }
   },
 
   // Persist section states to localStorage
   persistSectionStates() {
     try {
-      localStorage.setItem('sidebarSections', JSON.stringify(this.sectionStates));
+      localStorage.setItem(
+        "sidebarSections",
+        JSON.stringify(this.sectionStates),
+      );
     } catch (e) {
-      console.error('Failed to persist section states', e);
+      console.error("Failed to persist section states", e);
     }
   },
 
@@ -89,14 +92,14 @@ const model = {
 
   // Dropdown positioning for quick-actions (fixed position to escape overflow:hidden)
   dropdownStyle: {},
-  
+
   updateDropdownPosition(triggerElement) {
     if (!triggerElement) return;
     const rect = triggerElement.getBoundingClientRect();
     this.dropdownStyle = {
       top: `${rect.bottom + 8}px`,
       left: `${rect.left}px`,
-      width: `${rect.width}px`
+      width: `${rect.width}px`,
     };
   },
 };

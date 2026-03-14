@@ -13,7 +13,7 @@ import threading
 
 class ApiMessage(ApiHandler):
     # Track chat lifetimes for cleanup
-    _chat_lifetimes = {}
+    _chat_lifetimes: dict[str, datetime] = {}
     _cleanup_lock = threading.Lock()
 
     @classmethod
@@ -48,7 +48,7 @@ class ApiMessage(ApiHandler):
         # Handle attachments (base64 encoded)
         attachment_paths = []
         if attachments:
-            upload_folder_int = "/a0/usr/uploads"
+            upload_folder_int = "/ctx/usr/uploads"
             upload_folder_ext = files.get_abs_path("usr/uploads")
             os.makedirs(upload_folder_ext, exist_ok=True)
 
@@ -80,7 +80,7 @@ class ApiMessage(ApiHandler):
             if not context:
                 return Response('{"error": "Context not found"}', status=404, mimetype="application/json")
 
-            # Validation: if agent profile is provided, it must match the exising
+            # Validation: if agent profile is provided, it must match the existing
             if agent_profile and context.agent0.config.profile != agent_profile:
                 return Response(
                     '{"error": "Cannot override agent profile on existing context"}',

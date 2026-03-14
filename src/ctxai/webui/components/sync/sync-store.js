@@ -40,7 +40,9 @@ function debug(...args) {
 function isRestartToastActive() {
   return (
     Array.isArray(notificationStore.toastStack) &&
-    notificationStore.toastStack.some((toast) => toast && toast.group === "restart")
+    notificationStore.toastStack.some(
+      (toast) => toast && toast.group === "restart",
+    )
   );
 }
 
@@ -77,7 +79,13 @@ const model = {
     const oldMode = this.mode;
     if (oldMode === newMode) return;
     this.mode = newMode;
-    debug("[syncStore] Mode transition:", oldMode, "→", newMode, reason ? `(${reason})` : "");
+    debug(
+      "[syncStore] Mode transition:",
+      oldMode,
+      "→",
+      newMode,
+      reason ? `(${reason})` : "",
+    );
 
     if (newMode !== SYNC_MODES.DEGRADED) {
       if (this._degradedToastTimer) {
@@ -106,7 +114,7 @@ const model = {
             5,
             "sync-mode",
             undefined,
-            true
+            true,
           )
           .catch((error) => {
             console.error("[syncStore] degraded toast failed:", error);
@@ -124,7 +132,7 @@ const model = {
             4,
             "sync-mode",
             undefined,
-            true
+            true,
           )
           .catch((error) => {
             console.error("[syncStore] recovery toast failed:", error);
@@ -148,7 +156,10 @@ const model = {
     if (!stateSocket.isConnected()) return;
 
     const attempt = Math.max(0, Number(this._handshakeRetryAttempt) || 0);
-    const delayMs = Math.min(this._handshakeRetryCapMs, this._handshakeRetryBaseMs * 2 ** attempt);
+    const delayMs = Math.min(
+      this._handshakeRetryCapMs,
+      this._handshakeRetryBaseMs * 2 ** attempt,
+    );
     this._handshakeRetryAttempt = attempt + 1;
 
     debug("[syncStore] scheduling handshake retry", {
@@ -249,7 +260,9 @@ const model = {
     try {
       stateSocket.onConnect((info) => {
         chatTopStore.connected = true;
-        debug("[syncStore] websocket connected", { needsHandshake: this.needsHandshake });
+        debug("[syncStore] websocket connected", {
+          needsHandshake: this.needsHandshake,
+        });
 
         const firstConnect = Boolean(info && info.firstConnect);
         this._lastConnectWasFirst = firstConnect;
@@ -257,7 +270,9 @@ const model = {
           this._seenFirstConnect = true;
         } else if (this._seenFirstConnect) {
           const runtimeChanged = Boolean(info && info.runtimeChanged);
-          this._pendingReconnectToast = runtimeChanged ? "restart" : "reconnect";
+          this._pendingReconnectToast = runtimeChanged
+            ? "restart"
+            : "reconnect";
         }
         this._clearHandshakeRetry();
         this._handshakeRetryAttempt = 0;
@@ -278,7 +293,9 @@ const model = {
         const restartToastActive = isRestartToastActive();
         this._setMode(
           SYNC_MODES.DISCONNECTED,
-          restartToastActive ? "ws disconnect (restart toast active)" : "ws disconnect",
+          restartToastActive
+            ? "ws disconnect (restart toast active)"
+            : "ws disconnect",
         );
         this.needsHandshake = true;
         this._clearHandshakeRetry();
@@ -291,7 +308,14 @@ const model = {
         this._suppressDisconnectToastOnce = false;
         if (this._seenFirstConnect && !restartToastActive && !suppressToast) {
           notificationStore
-            .frontendWarning("Disconnected", "Connection", 5, "reconnect", undefined, true)
+            .frontendWarning(
+              "Disconnected",
+              "Connection",
+              5,
+              "reconnect",
+              undefined,
+              true,
+            )
             .catch((error) => {
               console.error("[syncStore] disconnected toast failed:", error);
             });
@@ -346,7 +370,10 @@ const model = {
           (payload.log_from < inFlight.log_from ||
             payload.notifications_from < inFlight.notifications_from);
         if (!stronger) {
-          debug("[syncStore] state_request ignored (in-flight stronger/equal)", payload);
+          debug(
+            "[syncStore] state_request ignored (in-flight stronger/equal)",
+            payload,
+          );
           return await this.handshakePromise;
         }
       }
@@ -366,12 +393,16 @@ const model = {
       ) {
         // Keep the "strongest" request: smaller offsets (0) mean a more complete resync.
         const queuedStrongerOrEqual =
-          queued.log_from <= payload.log_from && queued.notifications_from <= payload.notifications_from;
+          queued.log_from <= payload.log_from &&
+          queued.notifications_from <= payload.notifications_from;
         if (!queuedStrongerOrEqual) {
           this._queuedPayload = payload;
         }
       }
-      debug("[syncStore] state_request coalesced (handshake in-flight)", payload);
+      debug(
+        "[syncStore] state_request coalesced (handshake in-flight)",
+        payload,
+      );
       return await this.handshakePromise;
     }
 
@@ -382,20 +413,27 @@ const model = {
       let response;
       try {
         debug("[syncStore] state_request sent", payload);
-        response = await stateSocket.request("state_request", payload, { timeoutMs: 2000 });
+        response = await stateSocket.request("state_request", payload, {
+          timeoutMs: 2000,
+        });
       } catch (error) {
         this.needsHandshake = true;
         // If the socket isn't connected, we are disconnected (poll may or may not work).
         // If the socket is connected but the request failed/timed out, treat as degraded (poll fallback).
         this._setMode(
-          stateSocket.isConnected() ? SYNC_MODES.DEGRADED : SYNC_MODES.DISCONNECTED,
+          stateSocket.isConnected()
+            ? SYNC_MODES.DEGRADED
+            : SYNC_MODES.DISCONNECTED,
           "state_request failed",
         );
         this._handleHandshakeFailure("state_request failed");
         throw error;
       }
 
-      const first = response && Array.isArray(response.results) ? response.results[0] : null;
+      const first =
+        response && Array.isArray(response.results)
+          ? response.results[0]
+          : null;
       if (!first || first.ok !== true || !first.data) {
         const code =
           first && first.error && typeof first.error.code === "string"

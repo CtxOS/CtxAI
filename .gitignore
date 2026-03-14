@@ -47,3 +47,4 @@ agent_history.gif
 
 .agent/**
 .claude/**
+node_modules/

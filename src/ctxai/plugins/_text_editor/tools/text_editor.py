@@ -155,9 +155,9 @@ class TextEditor(Tool):
 
         # Refresh file info after patch for updated mtime
         post_info = await runtime.call_development_function(file_info, expanded)
-        _apply_patch_post(self.agent, post_info, total_lines, ext_data["edits"])
+        _apply_patch_post(self.agent, post_info, total_lines, ext_data["edits"])  # type: ignore[arg-type]
 
-        patch_content = await _read_patch_region(expanded, ext_data["edits"], total_lines, _get_config(self.agent))
+        patch_content = await _read_patch_region(expanded, ext_data["edits"], total_lines, _get_config(self.agent))  # type: ignore[arg-type]
 
         msg = self.agent.read_prompt(
             "fw.text_editor.patch_ok.md",

@@ -22,4 +22,3 @@ const model = {
 };
 
 export const store = createStore("sidebarBottom", model);
-

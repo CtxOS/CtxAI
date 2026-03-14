@@ -1,5 +1,8 @@
 import { createStore } from "/js/AlpineStore.js";
-import { createActionButton, copyToClipboard } from "/components/messages/action-buttons/simple-action-buttons.js";
+import {
+  createActionButton,
+  copyToClipboard,
+} from "/components/messages/action-buttons/simple-action-buttons.js";
 import { store as notificationStore } from "/components/notifications/notification-store.js";
 
 // Step Detail Store - manages the step detail modal
@@ -24,11 +27,13 @@ const model = {
 
     [
       { segment: "heading", value: this.cleanHeading(step?.heading) },
-      { segment: "content", value: step?.content ?? "" }
+      { segment: "content", value: step?.content ?? "" },
     ].forEach(({ segment, value }) => {
-      document.querySelector(`[data-segment="${segment}"]`)?.replaceChildren(
-        createActionButton("copy", "", () => copyToClipboard(value))
-      );
+      document
+        .querySelector(`[data-segment="${segment}"]`)
+        ?.replaceChildren(
+          createActionButton("copy", "", () => copyToClipboard(value)),
+        );
     });
   },
 
@@ -36,7 +41,7 @@ const model = {
   renderKvpCopyButton(container, key, value) {
     const copyText = this.formatFlatValue(value);
     container?.replaceChildren(
-      createActionButton("copy", "", () => copyToClipboard(copyText))
+      createActionButton("copy", "", () => copyToClipboard(copyText)),
     );
   },
 
@@ -48,8 +53,16 @@ const model = {
 
   // Copy text to clipboard with toast feedback
   copyToClipboard(text) {
-    navigator.clipboard.writeText(text)
-      .then(() => notificationStore.addFrontendToastOnly("success", "Copied to clipboard!", "", 3))
+    navigator.clipboard
+      .writeText(text)
+      .then(() =>
+        notificationStore.addFrontendToastOnly(
+          "success",
+          "Copied to clipboard!",
+          "",
+          3,
+        ),
+      )
       .catch((err) => console.error("Clipboard copy failed:", err));
   },
 
@@ -119,7 +132,8 @@ const model = {
     this._rawEditor = editorInstance;
 
     const darkMode = window.localStorage?.getItem("darkMode");
-    const theme = darkMode !== "false" ? "ace/theme/github_dark" : "ace/theme/tomorrow";
+    const theme =
+      darkMode !== "false" ? "ace/theme/github_dark" : "ace/theme/tomorrow";
 
     this._rawEditor.setTheme(theme);
     this._rawEditor.session.setMode("ace/mode/json");
@@ -129,7 +143,7 @@ const model = {
     this._rawEditor.setOptions({
       showPrintMargin: false,
       highlightActiveLine: false,
-      highlightGutterLine: false
+      highlightGutterLine: false,
     });
   },
 
@@ -144,35 +158,38 @@ const model = {
   // Format step type for display
   formatStepType(type) {
     const typeMap = {
-      'agent': 'Generation',
-      'code_exe': 'Code Execution',
-      'tool': 'Tool Call',
-      'mcp': 'MCP Tool',
-      'browser': 'Browser',
-      'response': 'Response',
-      'info': 'Info',
-      'hint': 'Hint',
-      'warning': 'Warning',
-      'error': 'Error',
-      'util': 'Utility',
-      'progress': 'Progress'
+      agent: "Generation",
+      code_exe: "Code Execution",
+      tool: "Tool Call",
+      mcp: "MCP Tool",
+      browser: "Browser",
+      response: "Response",
+      info: "Info",
+      hint: "Hint",
+      warning: "Warning",
+      error: "Error",
+      util: "Utility",
+      progress: "Progress",
     };
-    return typeMap[type] || (type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Unknown');
+    return (
+      typeMap[type] ||
+      (type ? type.charAt(0).toUpperCase() + type.slice(1) : "Unknown")
+    );
   },
 
   // Format timestamp for display
   formatTimestamp(timestamp) {
-    if (!timestamp) return '';
+    if (!timestamp) return "";
     const date = new Date(parseFloat(timestamp) * 1000);
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
     return `${hours}:${minutes}:${seconds}`;
   },
 
   // Format duration for display
   formatDuration(ms) {
-    if (!ms) return '';
+    if (!ms) return "";
     if (ms < 1000) return `${ms}ms`;
     const seconds = Math.floor(ms / 1000);
     if (seconds < 60) return `${seconds}s`;
@@ -184,23 +201,30 @@ const model = {
   // Format value for display (handles objects)
   formatValue(value) {
     return value == null
-      ? ''
-      : (typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value));
+      ? ""
+      : typeof value === "object"
+        ? JSON.stringify(value, null, 2)
+        : String(value);
   },
 
   // Format key for display (title case)
   formatKey(key) {
-    return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   },
 
   // flatten nested kvps into top-level entries
   flattenKvps(kvps, parentKey = "") {
-    const isPlainObject = value => value && typeof value === "object" && !Array.isArray(value);
+    const isPlainObject = (value) =>
+      value && typeof value === "object" && !Array.isArray(value);
     return Object.entries(kvps || {}).reduce((acc, [key, value]) => {
-      const fullKey = [parentKey, this.formatKey(key)].filter(Boolean).join(" / ");
+      const fullKey = [parentKey, this.formatKey(key)]
+        .filter(Boolean)
+        .join(" / ");
       return {
         ...acc,
-        ...(isPlainObject(value) ? this.flattenKvps(value, fullKey) : { [fullKey]: value })
+        ...(isPlainObject(value)
+          ? this.flattenKvps(value, fullKey)
+          : { [fullKey]: value }),
       };
     }, {});
   },
@@ -209,9 +233,9 @@ const model = {
   formatFlatValue(value) {
     return Array.isArray(value)
       ? value
-        .map(item => this.formatValue(item))
-        .filter(item => item.trim())
-        .join('\n')
+          .map((item) => this.formatValue(item))
+          .filter((item) => item.trim())
+          .join("\n")
       : this.formatValue(value);
   },
 
@@ -228,7 +252,7 @@ const model = {
     return String(text)
       .replace(/icon:\/\/[a-zA-Z0-9_]+\s*/g, "")
       .trim();
-  }
+  },
 };
 
 export const store = createStore("stepDetail", model);

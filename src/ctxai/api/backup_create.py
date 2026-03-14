@@ -1,4 +1,5 @@
-from ctxai.helpers.api import ApiHandler, Request, Response, send_file
+from flask import send_file  # type: ignore[attr-defined]
+from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers.backup import BackupService
 from ctxai.helpers.persist_chat import save_tmp_chats
 

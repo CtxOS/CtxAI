@@ -15,12 +15,21 @@
           <div class="field">
             <div class="field-label">
               <div class="field-title">Embedding model provider</div>
-              <div class="field-description">Select provider for embedding model used by the framework</div>
+              <div class="field-description">
+                Select provider for embedding model used by the framework
+              </div>
             </div>
             <div class="field-control">
               <select x-model="$store.settings.settings.embed_model_provider">
-                <template x-for="option in $store.settings.additional?.embedding_providers" :key="option.value">
-                  <option :value="option.value" :selected="option.value === $store.settings.settings.embed_model_provider" x-text="option.label"></option>
+                <template
+                  x-for="option in $store.settings.additional?.embedding_providers"
+                  :key="option.value"
+                >
+                  <option
+                    :value="option.value"
+                    :selected="option.value === $store.settings.settings.embed_model_provider"
+                    x-text="option.label"
+                  ></option>
                 </template>
               </select>
             </div>
@@ -29,17 +38,24 @@
           <div class="field">
             <div class="field-label">
               <div class="field-title">Embedding model name</div>
-              <div class="field-description">Exact name of model from selected provider</div>
+              <div class="field-description">
+                Exact name of model from selected provider
+              </div>
             </div>
             <div class="field-control">
-              <input type="text" x-model="$store.settings.settings.embed_model_name" />
+              <input
+                type="text"
+                x-model="$store.settings.settings.embed_model_name"
+              />
             </div>
           </div>
 
           <div class="field">
             <div class="field-label">
               <div class="field-title">API key</div>
-              <div class="field-description">API key for the selected embedding model provider</div>
+              <div class="field-description">
+                API key for the selected embedding model provider
+              </div>
             </div>
             <div class="field-control">
               <input
@@ -54,11 +70,15 @@
             <div class="field-label">
               <div class="field-title">Embedding model API base URL</div>
               <div class="field-description">
-                API base URL for embedding model. Leave empty for default. Only relevant for Azure, local and custom (other) providers.
+                API base URL for embedding model. Leave empty for default. Only
+                relevant for Azure, local and custom (other) providers.
               </div>
             </div>
             <div class="field-control">
-              <input type="text" x-model="$store.settings.settings.embed_model_api_base" />
+              <input
+                type="text"
+                x-model="$store.settings.settings.embed_model_api_base"
+              />
             </div>
           </div>
 
@@ -66,11 +86,16 @@
             <div class="field-label">
               <div class="field-title">Requests per minute limit</div>
               <div class="field-description">
-                Limits the number of requests per minute to the embedding model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.
+                Limits the number of requests per minute to the embedding model.
+                Waits if the limit is exceeded. Set to 0 to disable rate
+                limiting.
               </div>
             </div>
             <div class="field-control">
-              <input type="number" x-model.number="$store.settings.settings.embed_model_rl_requests" />
+              <input
+                type="number"
+                x-model.number="$store.settings.settings.embed_model_rl_requests"
+              />
             </div>
           </div>
 
@@ -78,23 +103,38 @@
             <div class="field-label">
               <div class="field-title">Input tokens per minute limit</div>
               <div class="field-description">
-                Limits the number of input tokens per minute to the embedding model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.
+                Limits the number of input tokens per minute to the embedding
+                model. Waits if the limit is exceeded. Set to 0 to disable rate
+                limiting.
               </div>
             </div>
             <div class="field-control">
-              <input type="number" x-model.number="$store.settings.settings.embed_model_rl_input" />
+              <input
+                type="number"
+                x-model.number="$store.settings.settings.embed_model_rl_input"
+              />
             </div>
           </div>
 
           <div class="field field-full">
             <div class="field-label">
-              <div class="field-title">Embedding model additional parameters</div>
+              <div class="field-title">
+                Embedding model additional parameters
+              </div>
               <div class="field-description">
-                Any other parameters supported by <a href='https://docs.litellm.ai/docs/set_keys' target='_blank'>LiteLLM</a>. Format is KEY=VALUE on individual lines, like .env file. Value can also contain JSON objects - when unquoted, it is treated as object, number etc., when quoted, it is treated as string.
+                Any other parameters supported by
+                <a href="https://docs.litellm.ai/docs/set_keys" target="_blank"
+                  >LiteLLM</a
+                >. Format is KEY=VALUE on individual lines, like .env file.
+                Value can also contain JSON objects - when unquoted, it is
+                treated as object, number etc., when quoted, it is treated as
+                string.
               </div>
             </div>
             <div class="field-control">
-              <textarea x-model="$store.settings.settings.embed_model_kwargs"></textarea>
+              <textarea
+                x-model="$store.settings.settings.embed_model_kwargs"
+              ></textarea>
             </div>
           </div>
         </div>

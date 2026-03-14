@@ -2,9 +2,9 @@
 // First click arms, second click confirms, timeout resets.
 
 const CONFIRM_TIMEOUT = 2000;
-const CONFIRM_CLASS = 'confirming';
-const CONFIRM_ICON = 'check';
-const CONFIRM_TEXT = 'Confirm';
+const CONFIRM_CLASS = "confirming";
+const CONFIRM_ICON = "check";
+const CONFIRM_TEXT = "Confirm";
 
 const buttonStates = new WeakMap();
 
@@ -21,9 +21,12 @@ export function confirmClick(event, action) {
     buttonStates.delete(button);
     action();
   } else {
-    const iconEl = button.querySelector('.material-symbols-outlined, .material-icons-outlined');
-    const isIconButton = iconEl && button.textContent.trim() === iconEl.textContent.trim();
-    
+    const iconEl = button.querySelector(
+      ".material-symbols-outlined, .material-icons-outlined",
+    );
+    const isIconButton =
+      iconEl && button.textContent.trim() === iconEl.textContent.trim();
+
     const newState = {
       confirming: true,
       isIconButton,
@@ -32,21 +35,22 @@ export function confirmClick(event, action) {
       timeoutId: setTimeout(() => {
         resetButton(button, newState);
         buttonStates.delete(button);
-      }, CONFIRM_TIMEOUT)
+      }, CONFIRM_TIMEOUT),
     };
-    
+
     buttonStates.set(button, newState);
     button.classList.add(CONFIRM_CLASS);
-    
+
     if (isIconButton && iconEl) {
       // Icon-only button: just swap icon
       iconEl.textContent = CONFIRM_ICON;
     } else {
       // Text button: show icon + optional "Confirm" text
       const originalText = button.textContent.trim();
-      const confirmContent = originalText.length >= 4
-        ? `<span class="material-symbols-outlined">${CONFIRM_ICON}</span>${CONFIRM_TEXT}`
-        : `<span class="material-symbols-outlined">${CONFIRM_ICON}</span>`;
+      const confirmContent =
+        originalText.length >= 4
+          ? `<span class="material-symbols-outlined">${CONFIRM_ICON}</span>${CONFIRM_TEXT}`
+          : `<span class="material-symbols-outlined">${CONFIRM_ICON}</span>`;
       button.innerHTML = confirmContent;
     }
   }
@@ -56,7 +60,9 @@ export function confirmClick(event, action) {
 function resetButton(button, state) {
   button.classList.remove(CONFIRM_CLASS);
   if (state.isIconButton) {
-    const iconEl = button.querySelector('.material-symbols-outlined, .material-icons-outlined');
+    const iconEl = button.querySelector(
+      ".material-symbols-outlined, .material-icons-outlined",
+    );
     if (iconEl && state.originalIcon) {
       iconEl.textContent = state.originalIcon;
     }
@@ -68,7 +74,6 @@ function resetButton(button, state) {
 // Register Alpine magic helper
 export function registerAlpineMagic() {
   if (globalThis.Alpine) {
-    globalThis.Alpine.magic('confirmClick', () => confirmClick);
+    globalThis.Alpine.magic("confirmClick", () => confirmClick);
   }
 }
-

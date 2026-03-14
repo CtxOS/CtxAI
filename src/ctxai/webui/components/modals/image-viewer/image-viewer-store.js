@@ -11,12 +11,12 @@ const model = {
   refreshInterval: 0,
   activeIntervalId: null,
   closePromise: null,
-  
+
   // Image dimensions
   naturalWidth: 0,
   naturalHeight: 0,
   baseScale: 1,
-  
+
   // Pan state
   panX: 0,
   panY: 0,
@@ -38,9 +38,10 @@ const model = {
    */
   async open(imageUrl, refreshOrOptions) {
     // Parse options (backward compatibility)
-    const options = typeof refreshOrOptions === 'number' 
-      ? { refreshInterval: refreshOrOptions, name: null }
-      : refreshOrOptions || {};
+    const options =
+      typeof refreshOrOptions === "number"
+        ? { refreshInterval: refreshOrOptions, name: null }
+        : refreshOrOptions || {};
 
     // Reset state
     this.baseImageUrl = imageUrl;
@@ -51,16 +52,20 @@ const model = {
     this.zoomLevel = 1;
 
     // Add timestamp for cache-busting if refreshing
-    this.currentImageUrl = this.refreshInterval > 0 
-      ? this.addTimestamp(imageUrl) 
-      : imageUrl;
+    this.currentImageUrl =
+      this.refreshInterval > 0 ? this.addTimestamp(imageUrl) : imageUrl;
 
     try {
       // Open modal and track close promise for cleanup
-      this.closePromise = window.openModal('modals/image-viewer/image-viewer.html');
-      
+      this.closePromise = window.openModal(
+        "modals/image-viewer/image-viewer.html",
+      );
+
       // Setup cleanup on modal close
-      if (this.closePromise && typeof this.closePromise.finally === 'function') {
+      if (
+        this.closePromise &&
+        typeof this.closePromise.finally === "function"
+      ) {
         this.closePromise.finally(() => {
           this.stopRefresh();
           this.resetState();
@@ -92,7 +97,7 @@ const model = {
 
   async preloadNextImage() {
     const nextSrc = this.addTimestamp(this.baseImageUrl);
-    
+
     // Create a promise that resolves when the image is loaded
     const preloadPromise = new Promise((resolve, reject) => {
       const tempImg = new Image();
@@ -104,26 +109,26 @@ const model = {
     try {
       // Wait for preload to complete
       const loadedSrc = await preloadPromise;
-      
+
       // Check if modal is still visible before updating
       if (this.isModalVisible()) {
         this.currentImageUrl = loadedSrc;
         this.imageLoaded = false; // Trigger reload animation
       }
     } catch (err) {
-      console.error('Failed to preload image:', err);
+      console.error("Failed to preload image:", err);
     }
   },
 
   isModalVisible() {
-    const container = document.querySelector('#image-viewer-wrapper');
+    const container = document.querySelector("#image-viewer-wrapper");
     if (!container) return false;
-    
+
     // Check if element or any parent is hidden
     let element = container;
     while (element) {
       const styles = window.getComputedStyle(element);
-      if (styles.display === 'none' || styles.visibility === 'hidden') {
+      if (styles.display === "none" || styles.visibility === "hidden") {
         return false;
       }
       element = element.parentElement;
@@ -165,27 +170,32 @@ const model = {
     this.panX = 0;
     this.panY = 0;
     // Reset any previous transform
-    img.classList.remove('zoomed');
-    img.style.width = '';
-    img.style.height = '';
-    img.style.transform = '';
+    img.classList.remove("zoomed");
+    img.style.width = "";
+    img.style.height = "";
+    img.style.transform = "";
   },
 
   // Drag/pan methods
   startDrag(event) {
     // Pointer events: mouse (button 0) or touch/pen (button can be -1/undefined)
-    if (typeof event.button === 'number' && event.button !== 0) return;
+    if (typeof event.button === "number" && event.button !== 0) return;
     event.preventDefault();
 
     this.isDragging = true;
-    this.activePointerId = typeof event.pointerId === 'number' ? event.pointerId : null;
+    this.activePointerId =
+      typeof event.pointerId === "number" ? event.pointerId : null;
     this.dragStartX = event.clientX;
     this.dragStartY = event.clientY;
     this.dragStartPanX = this.panX;
     this.dragStartPanY = this.panY;
 
-    const canvas = document.querySelector('.image-canvas');
-    if (canvas && this.activePointerId !== null && typeof canvas.setPointerCapture === 'function') {
+    const canvas = document.querySelector(".image-canvas");
+    if (
+      canvas &&
+      this.activePointerId !== null &&
+      typeof canvas.setPointerCapture === "function"
+    ) {
       try {
         canvas.setPointerCapture(this.activePointerId);
       } catch (e) {
@@ -198,7 +208,11 @@ const model = {
 
   onDrag(event) {
     if (!this.isDragging) return;
-    if (this.activePointerId !== null && typeof event.pointerId === 'number' && event.pointerId !== this.activePointerId) {
+    if (
+      this.activePointerId !== null &&
+      typeof event.pointerId === "number" &&
+      event.pointerId !== this.activePointerId
+    ) {
       return;
     }
     event.preventDefault();
@@ -221,7 +235,8 @@ const model = {
     }
 
     // If image isn't ready, ignore.
-    if (!this.currentImageUrl || !this.naturalWidth || !this.naturalHeight) return;
+    if (!this.currentImageUrl || !this.naturalWidth || !this.naturalHeight)
+      return;
 
     event.preventDefault();
 
@@ -256,19 +271,25 @@ const model = {
     this.windowDragMoveHandler = (e) => this.onDrag(e);
     this.windowDragUpHandler = () => this.endDrag();
 
-    window.addEventListener('pointermove', this.windowDragMoveHandler, { passive: false });
-    window.addEventListener('pointerup', this.windowDragUpHandler, { passive: false });
-    window.addEventListener('pointercancel', this.windowDragUpHandler, { passive: false });
+    window.addEventListener("pointermove", this.windowDragMoveHandler, {
+      passive: false,
+    });
+    window.addEventListener("pointerup", this.windowDragUpHandler, {
+      passive: false,
+    });
+    window.addEventListener("pointercancel", this.windowDragUpHandler, {
+      passive: false,
+    });
   },
 
   removeWindowDragListeners() {
     if (this.windowDragMoveHandler) {
-      window.removeEventListener('pointermove', this.windowDragMoveHandler);
+      window.removeEventListener("pointermove", this.windowDragMoveHandler);
       this.windowDragMoveHandler = null;
     }
     if (this.windowDragUpHandler) {
-      window.removeEventListener('pointerup', this.windowDragUpHandler);
-      window.removeEventListener('pointercancel', this.windowDragUpHandler);
+      window.removeEventListener("pointerup", this.windowDragUpHandler);
+      window.removeEventListener("pointercancel", this.windowDragUpHandler);
       this.windowDragUpHandler = null;
     }
   },
@@ -311,27 +332,32 @@ const model = {
     this.zoomLevel = 1;
     this.panX = 0;
     this.panY = 0;
-    const img = document.querySelector('.modal-image');
+    const img = document.querySelector(".modal-image");
     if (img) {
-      img.classList.remove('zoomed');
-      img.style.width = '';
-      img.style.height = '';
-      img.style.transform = '';
+      img.classList.remove("zoomed");
+      img.style.width = "";
+      img.style.height = "";
+      img.style.transform = "";
     }
   },
 
   updateImageTransform() {
-    const img = document.querySelector('.modal-image');
-    const wrapper = document.querySelector('.image-canvas');
+    const img = document.querySelector(".modal-image");
+    const wrapper = document.querySelector(".image-canvas");
     if (!img || !wrapper || !this.naturalWidth || !this.naturalHeight) return;
 
     const containerWidth = wrapper.clientWidth;
     const containerHeight = wrapper.clientHeight;
 
     const displaySize = this.getDisplaySize(containerWidth, containerHeight);
-    this.clampPan(containerWidth, containerHeight, displaySize.width, displaySize.height);
+    this.clampPan(
+      containerWidth,
+      containerHeight,
+      displaySize.width,
+      displaySize.height,
+    );
 
-    img.classList.add('zoomed');
+    img.classList.add("zoomed");
     img.style.width = `${displaySize.width}px`;
     img.style.height = `${displaySize.height}px`;
     img.style.transform = `translate(${this.panX}px, ${this.panY}px)`;
@@ -345,7 +371,7 @@ const model = {
       return urlObj.toString();
     } catch (e) {
       // Fallback for invalid URLs
-      const separator = url.includes('?') ? '&' : '?';
+      const separator = url.includes("?") ? "&" : "?";
       return `${url}${separator}t=${Date.now()}`;
     }
   },
@@ -368,4 +394,3 @@ const model = {
 };
 
 export const store = createStore("imageViewer", model);
-

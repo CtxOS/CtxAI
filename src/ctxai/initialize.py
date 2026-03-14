@@ -1,3 +1,4 @@
+from typing import Any
 from ctxai.agent import AgentConfig
 import ctxai.models as models
 from ctxai.helpers import runtime, settings, defer, extension
@@ -11,7 +12,7 @@ def initialize_agent(override_settings: dict | None = None):
 
     def _normalize_model_kwargs(kwargs: dict) -> dict:
         # convert string values that represent valid Python numbers to numeric types
-        result = {}
+        result: dict[str, Any] = {}
         for key, value in kwargs.items():
             if isinstance(value, str):
                 # try to convert string to number if it's a valid Python number

@@ -216,7 +216,7 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
         # Check built-in python/api/<path>.py
         builtin_file = files.get_abs_path(f"api/{path}.py")
         if files.is_in_dir(builtin_file, files.get_abs_path("api")) and files.exists(builtin_file):
-            classes = load_classes_from_file(builtin_file, ApiHandler)
+            classes = load_classes_from_file(builtin_file, ApiHandler)  # type: ignore[type-abstract]
             if classes:
                 handler_cls = classes[0]
 
@@ -229,7 +229,7 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
                 if plugin_dir:
                     plugin_file = Path(plugin_dir) / "api" / f"{handler_name}.py"
                     if plugin_file.is_file():
-                        classes = load_classes_from_file(str(plugin_file), ApiHandler)
+                        classes = load_classes_from_file(str(plugin_file), ApiHandler)  # type: ignore[type-abstract]
                         if classes:
                             handler_cls = classes[0]
 

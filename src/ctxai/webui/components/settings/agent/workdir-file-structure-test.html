@@ -11,13 +11,15 @@
     <div x-data>
       <template x-if="$store.settings && $store.settings.settings">
         <div>
-          <h3>Workdir structure test - <span x-text="$store.settings.settings.workdir_path"></span></h3>
+          <h3>
+            Workdir structure test -
+            <span x-text="$store.settings.settings.workdir_path"></span>
+          </h3>
           <pre x-text="$store.settings.workdirFileStructureTestOutput"></pre>
         </div>
       </template>
     </div>
   </body>
 
-  <style>
-  </style>
+  <style></style>
 </html>

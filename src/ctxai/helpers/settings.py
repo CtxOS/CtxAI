@@ -310,15 +310,17 @@ def convert_out(settings: Settings) -> SettingsOutput:
 
     # mask API keys before sending to frontend
     if isinstance(out["settings"].get("api_keys"), dict):
-        for provider, value in list(out["settings"]["api_keys"].items()):
+        api_keys = out["settings"]["api_keys"]  # type: ignore[union-attr]
+        for provider, value in list(api_keys.items()):  # type: ignore[assignment]
             if value:
-                out["settings"]["api_keys"][provider] = API_KEY_PLACEHOLDER
+                api_keys[provider] = API_KEY_PLACEHOLDER  # type: ignore[index]
 
     # normalize certain fields
-    for key, value in list(out["settings"].items()):
+    settings_dict: dict[str, Any] = out["settings"]  # type: ignore[assignment]
+    for key, value in list(settings_dict.items()):
         # convert kwargs dicts to .env format
         if (key.endswith("_kwargs") or key == "browser_http_headers") and isinstance(value, dict):
-            out["settings"][key] = _dict_to_env(value)
+            settings_dict[key] = _dict_to_env(value)  # type: ignore[index]
     return out
 
 
@@ -339,10 +341,10 @@ def convert_in(settings: Settings) -> Settings:
     for key, value in settings.items():
         # Special handling for browser_http_headers and *_kwargs (stored as .env text)
         if (key == "browser_http_headers" or key.endswith("_kwargs")) and isinstance(value, str):
-            current[key] = _env_to_dict(value)
+            current[key] = _env_to_dict(value)  # type: ignore[literal-required]
             continue
 
-        current[key] = value
+        current[key] = value  # type: ignore[literal-required]
     return current
 
 
@@ -386,12 +388,12 @@ def set_settings_delta(delta: dict, apply: bool = True):
 
 def merge_settings(original: Settings, delta: dict) -> Settings:
     merged = original.copy()
-    merged.update(delta)
+    merged.update(delta)  # type: ignore[typeddict-item]
     return merged
 
 
 def normalize_settings(settings: Settings) -> Settings:
-    copy = settings.copy()
+    copy: dict[str, Any] = settings.copy()  # type: ignore[assignment]
     default = get_default_settings()
 
     # adjust settings values to match current version if needed
@@ -400,7 +402,7 @@ def normalize_settings(settings: Settings) -> Settings:
         copy["version"] = default["version"]  # sync version
 
     # remove keys that are not in default
-    keys_to_remove = [key for key in copy if key not in default]
+    keys_to_remove = [key for key in copy.keys() if key not in default]
     for key in keys_to_remove:
         del copy[key]
 
@@ -410,19 +412,19 @@ def normalize_settings(settings: Settings) -> Settings:
             copy[key] = value
         else:
             try:
-                copy[key] = type(value)(copy[key])  # type: ignore
+                copy[key] = type(value)(copy[key])  # type: ignore[assignment, call-arg]
                 if isinstance(copy[key], str):
-                    copy[key] = copy[key].strip()  # strip strings
+                    copy[key] = copy[key].strip()  # type: ignore[assignment]
             except (ValueError, TypeError):
-                copy[key] = value  # make default instead
+                copy[key] = value  # type: ignore[assignment]
 
     # mcp server token is set automatically
     copy["mcp_server_token"] = create_auth_token()
 
-    return copy
+    return copy  # type: ignore[return-value]
 
 
-def _adjust_to_version(settings: Settings, default: Settings):
+def _adjust_to_version(settings: dict[str, Any], default: Settings):
     # starting with 0.9, the default prompt subfolder for agent no. 0 is agent0
     # switch to agent0 if the old default is used from v0.8
     if "version" not in settings or settings["version"].startswith("v0.8"):
@@ -458,6 +460,7 @@ def _read_settings_file() -> Settings | None:
         content = files.read_file(SETTINGS_FILE)
         parsed = json.loads(content)
         return normalize_settings(parsed)
+    return None
 
 
 def _write_settings_file(settings: Settings):

@@ -99,7 +99,10 @@ const model = {
       // Load chat width preference
       try {
         const storedChatWidth = localStorage.getItem("chatWidth");
-        if (storedChatWidth && this.chatWidthOptions.some(opt => opt.value === storedChatWidth)) {
+        if (
+          storedChatWidth &&
+          this.chatWidthOptions.some((opt) => opt.value === storedChatWidth)
+        ) {
           this._chatWidth = storedChatWidth;
         }
       } catch {
@@ -109,7 +112,10 @@ const model = {
       // Load detail mode preference
       try {
         const storedDetailMode = localStorage.getItem("detailMode");
-        if (storedDetailMode && this.detailModeOptions.some(opt => opt.value === storedDetailMode)) {
+        if (
+          storedDetailMode &&
+          this.detailModeOptions.some((opt) => opt.value === storedDetailMode)
+        ) {
           this._detailMode = storedDetailMode;
         }
       } catch {
@@ -117,7 +123,7 @@ const model = {
       }
 
       // load utility messages preference
-      try{
+      try {
         const storedShowUtils = localStorage.getItem("showUtils");
         this._showUtils = storedShowUtils === "true";
       } catch {
@@ -156,13 +162,12 @@ const model = {
     if (!value) speechStore.stopAudio();
   },
 
-
   _applyShowUtils(value) {
     localStorage.setItem("showUtils", value);
     css.toggleCssProperty(
       ".process-step.message-util",
       "display",
-      value ? undefined : "none"
+      value ? undefined : "none",
     );
   },
 

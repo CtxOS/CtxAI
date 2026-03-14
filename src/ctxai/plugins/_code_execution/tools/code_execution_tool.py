@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import re
 import shlex
 import time
+from typing import Any
 
 from ctxai.helpers.tool import Tool, Response
 from ctxai.helpers import files, rfc_exchange, projects, runtime, settings
@@ -97,6 +98,7 @@ class CodeExecution(Tool):
         # initialize local or remote interactive shell interface for session if needed
         if session is not None and session not in shells:
             cwd = await self.ensure_cwd()
+            shell: Any
             if ssh_enabled:
                 ssh_pass = await _resolve_ssh_pass(cfg["ssh_pass"])
                 shell = SSHInteractiveSession(

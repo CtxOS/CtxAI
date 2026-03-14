@@ -1,6 +1,7 @@
 import base64
 import os
-from ctxai.helpers.api import ApiHandler, Request, Response, send_file
+from flask import send_file  # type: ignore[attr-defined]
+from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers import files, runtime
 import io
 from mimetypes import guess_type

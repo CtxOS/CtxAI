@@ -40,11 +40,12 @@ const model = {
     try {
       // Open modal FIRST (immediate UI feedback)
       this.closePromise = window.openModal(
-        "modals/file-browser/file-browser.html"
+        "modals/file-browser/file-browser.html",
       );
 
       // Use stored initial path or default
-      path = path || this.initialPath || this.browser.currentPath || "$WORK_DIR";
+      path =
+        path || this.initialPath || this.browser.currentPath || "$WORK_DIR";
       this.browser.currentPath = path;
 
       // Fetch files
@@ -53,7 +54,6 @@ const model = {
       // await modal close
       await this.closePromise;
       this.destroy();
-
     } catch (error) {
       console.error("File browser error:", error);
       this.error = error?.message || "Failed to load files";
@@ -86,13 +86,13 @@ const model = {
   saveScrollPosition() {
     // Find the file browser modal's scrollable container
     // We look for the modal containing .file-browser-root to target the correct modal
-    const fileBrowserRoot = document.querySelector('.file-browser-root');
+    const fileBrowserRoot = document.querySelector(".file-browser-root");
     if (fileBrowserRoot) {
-      const modalScroll = fileBrowserRoot.closest('.modal-scroll');
+      const modalScroll = fileBrowserRoot.closest(".modal-scroll");
       if (modalScroll) {
         return {
           scrollTop: modalScroll.scrollTop,
-          scrollLeft: modalScroll.scrollLeft
+          scrollLeft: modalScroll.scrollLeft,
         };
       }
     }
@@ -103,9 +103,9 @@ const model = {
     if (!scrollPos) return;
 
     const restore = () => {
-      const fileBrowserRoot = document.querySelector('.file-browser-root');
+      const fileBrowserRoot = document.querySelector(".file-browser-root");
       if (fileBrowserRoot) {
-        const modalScroll = fileBrowserRoot.closest('.modal-scroll');
+        const modalScroll = fileBrowserRoot.closest(".modal-scroll");
         if (modalScroll) {
           modalScroll.scrollTop = scrollPos.scrollTop;
           modalScroll.scrollLeft = scrollPos.scrollLeft;
@@ -188,7 +188,8 @@ const model = {
   // --- Dropdown Management -------------------------------------------------
   toggleDropdown(filePath) {
     // Toggle: if already open, close it; otherwise open this one (closing any other)
-    this.openDropdownPath = this.openDropdownPath === filePath ? null : filePath;
+    this.openDropdownPath =
+      this.openDropdownPath === filePath ? null : filePath;
   },
 
   isDropdownOpen(filePath) {
@@ -202,15 +203,15 @@ const model = {
   // --- Navigation ----------------------------------------------------------
   async fetchFiles(path = "") {
     this.isLoading = true;
-    
+
     // Preserve scroll position if refreshing the same path
-    const isSamePath = this.browser.currentPath === path || 
-                       (!path && !this.browser.currentPath);
+    const isSamePath =
+      this.browser.currentPath === path || (!path && !this.browser.currentPath);
     const scrollPos = isSamePath ? this.saveScrollPosition() : null;
-    
+
     try {
       const response = await fetchApi(
-        `/get_work_dir_files?path=${encodeURIComponent(path)}`
+        `/get_work_dir_files?path=${encodeURIComponent(path)}`,
       );
       const data = await response.json().catch(() => ({}));
 
@@ -218,10 +219,10 @@ const model = {
         this.browser.entries = data.data.entries;
         this.browser.currentPath = data.data.current_path;
         this.browser.parentPath = data.data.parent_path;
-        
+
         // Set isLoading to false BEFORE restoring scroll to avoid reactivity issues
         this.isLoading = false;
-        
+
         // Restore scroll position if on same path
         if (scrollPos) {
           this.restoreScrollPosition(scrollPos);
@@ -236,7 +237,7 @@ const model = {
     } catch (e) {
       window.toastFrontendError(
         "Error fetching files: " + e.message,
-        "File Browser Error"
+        "File Browser Error",
       );
       this.browser.entries = [];
       this.isLoading = false;
@@ -244,7 +245,7 @@ const model = {
   },
 
   async navigateToFolder(path) {
-    if(!path.startsWith("/")) path = "/" + path;
+    if (!path.startsWith("/")) path = "/" + path;
     if (this.browser.currentPath !== path)
       this.history.push(this.browser.currentPath);
     await this.fetchFiles(path);
@@ -305,7 +306,8 @@ const model = {
       if (!entry?.name) return false;
       if (entry.name !== newName) return false;
       // When renaming, allow keeping the same entry name
-      if (this.renameTarget?.path && entry.path === this.renameTarget.path) return false;
+      if (this.renameTarget?.path && entry.path === this.renameTarget.path)
+        return false;
       return true;
     });
     if (duplicate) {
@@ -368,10 +370,14 @@ const model = {
     const existingNames = (this.browser.entries || [])
       .map((e) => e?.name)
       .filter(Boolean);
-    await fileEditorStore.openNewFile(this.browser.currentPath, existingNames, async () => {
-      // Callback on successful save to refresh file list
-      await this.fetchFiles(this.browser.currentPath);
-    });
+    await fileEditorStore.openNewFile(
+      this.browser.currentPath,
+      existingNames,
+      async () => {
+        // Callback on successful save to refresh file list
+        await this.fetchFiles(this.browser.currentPath);
+      },
+    );
   },
 
   // --- File actions --------------------------------------------------------
@@ -388,16 +394,22 @@ const model = {
       const data = await resp.json().catch(() => ({}));
       if (resp.ok && !data.error) {
         this.browser.entries = this.browser.entries.filter(
-          (e) => e.path !== file.path
+          (e) => e.path !== file.path,
         );
-        window.toastFrontendSuccess("File deleted successfully", "File Deleted");
+        window.toastFrontendSuccess(
+          "File deleted successfully",
+          "File Deleted",
+        );
       } else {
-        window.toastFrontendError(data.error || "Error deleting file", "Delete Error");
+        window.toastFrontendError(
+          data.error || "Error deleting file",
+          "Delete Error",
+        );
       }
     } catch (e) {
       window.toastFrontendError(
         "Error deleting file: " + e.message,
-        "File Delete Error"
+        "File Delete Error",
       );
     }
   },
@@ -444,7 +456,7 @@ const model = {
     } catch (e) {
       window.toastFrontendError(
         "Error uploading files: " + e.message,
-        "File Upload Error"
+        "File Upload Error",
       );
     } finally {
       event.target.value = ""; // reset input so same file can be reselected
@@ -479,7 +491,7 @@ window.openFileLink = async function (path) {
   } catch (e) {
     window.toastFrontendError(
       "Error opening file: " + e.message,
-      "File Open Error"
+      "File Open Error",
     );
   }
 };

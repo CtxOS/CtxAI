@@ -139,7 +139,7 @@ def _get_rfc_url() -> str:
 
 def call_development_function_sync(func: Union[Callable[..., T], Callable[..., Awaitable[T]]], *args, **kwargs) -> T:
     # run async function in sync manner
-    result_queue = queue.Queue()
+    result_queue: queue.Queue[T | None] = queue.Queue()
 
     def run_in_thread():
         result = asyncio.run(call_development_function(func, *args, **kwargs))

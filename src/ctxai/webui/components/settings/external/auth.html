@@ -33,7 +33,11 @@
               <div class="field-description">Set user password for web UI</div>
             </div>
             <div class="field-control">
-              <input type="password" autocomplete="off" x-model="settings.auth_password" />
+              <input
+                type="password"
+                autocomplete="off"
+                x-model="settings.auth_password"
+              />
             </div>
           </div>
 
@@ -42,11 +46,17 @@
               <div class="field-label">
                 <div class="field-title">root Password</div>
                 <div class="field-description">
-                  Change linux root password in docker container. This password can be used for SSH access. Original password was randomly generated during setup.
+                  Change linux root password in docker container. This password
+                  can be used for SSH access. Original password was randomly
+                  generated during setup.
                 </div>
               </div>
               <div class="field-control">
-                <input type="password" autocomplete="off" x-model="settings.root_password" />
+                <input
+                  type="password"
+                  autocomplete="off"
+                  x-model="settings.root_password"
+                />
               </div>
             </div>
           </template>

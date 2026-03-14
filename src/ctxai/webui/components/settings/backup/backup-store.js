@@ -10,13 +10,13 @@ const fetchApi = globalThis.fetchApi;
 
 const model = {
   // State
-  mode: 'backup', // 'backup' or 'restore'
+  mode: "backup", // 'backup' or 'restore'
   loading: false,
-  loadingMessage: '',
-  error: '',
+  loadingMessage: "",
+  error: "",
 
   // File operations log (shared between backup and restore)
-  fileOperationsLog: '',
+  fileOperationsLog: "",
 
   // Backup state
   backupMetadataConfig: null,
@@ -25,11 +25,11 @@ const model = {
   backupEditor: null,
 
   // Enhanced file preview state
-  previewMode: 'grouped', // 'grouped' or 'flat'
+  previewMode: "grouped", // 'grouped' or 'flat'
   previewFiles: [],
   previewGroups: [],
   filteredPreviewFiles: [],
-  fileSearchFilter: '',
+  fileSearchFilter: "",
   expandedGroups: new Set(),
 
   // Progress state
@@ -39,33 +39,33 @@ const model = {
   // Restore state
   backupFile: null,
   backupMetadata: null,
-  restorePatterns: '',
-  overwritePolicy: 'overwrite',
+  restorePatterns: "",
+  overwritePolicy: "overwrite",
   cleanBeforeRestore: false,
   restoreEditor: null,
   restoreResult: null,
 
   // Initialization
   async initBackup() {
-    this.mode = 'backup';
+    this.mode = "backup";
     this.resetState();
     await this.initBackupEditor();
     await this.updatePreview();
   },
 
   async initRestore() {
-    this.mode = 'restore';
+    this.mode = "restore";
     this.resetState();
     await this.initRestoreEditor();
   },
 
   resetState() {
     this.loading = false;
-    this.error = '';
+    this.error = "";
     this.backupFile = null;
     this.backupMetadata = null;
     this.restoreResult = null;
-    this.fileOperationsLog = '';
+    this.fileOperationsLog = "";
   },
 
   // File operations logging
@@ -75,7 +75,9 @@ const model = {
 
     // Auto-scroll to bottom - use setTimeout since $nextTick is not available in stores
     setTimeout(() => {
-      const textarea = document.getElementById(this.mode === 'backup' ? 'backup-file-list' : 'restore-file-list');
+      const textarea = document.getElementById(
+        this.mode === "backup" ? "backup-file-list" : "restore-file-list",
+      );
       if (textarea) {
         textarea.scrollTop = textarea.scrollHeight;
       }
@@ -83,7 +85,7 @@ const model = {
   },
 
   clearFileOperations() {
-    this.fileOperationsLog = '';
+    this.fileOperationsLog = "";
   },
 
   // Cleanup method for modal close
@@ -119,12 +121,14 @@ const model = {
           exclude_patterns: exclude_patterns,
           backup_config: {
             compression_level: 6,
-            integrity_check: true
-          }
+            integrity_check: true,
+          },
         };
       }
     } catch (error) {
-      console.warn("Failed to get default patterns from backend, using fallback");
+      console.warn(
+        "Failed to get default patterns from backend, using fallback",
+      );
     }
 
     // Fallback patterns (will be overridden by backend on first use)
@@ -133,13 +137,13 @@ const model = {
       include_hidden: true,
       include_patterns: [
         // These will be replaced with resolved absolute paths by backend
-        "# Loading default patterns from backend..."
+        "# Loading default patterns from backend...",
       ],
       exclude_patterns: [],
       backup_config: {
         compression_level: 6,
-        integrity_check: true
-      }
+        integrity_check: true,
+      },
     };
   },
 
@@ -165,7 +169,7 @@ const model = {
 
       // Auto-update preview on changes (debounced)
       let timeout;
-      editor.on('change', () => {
+      editor.on("change", () => {
         clearTimeout(timeout);
         timeout = setTimeout(() => {
           this.updatePreview();
@@ -189,11 +193,11 @@ const model = {
       }
 
       editor.session.setMode("ace/mode/json");
-      editor.setValue('{}');
+      editor.setValue("{}");
       editor.clearSelection();
 
       // Auto-validate JSON on changes
-      editor.on('change', () => {
+      editor.on("change", () => {
         this.validateRestoreMetadata();
       });
 
@@ -203,13 +207,15 @@ const model = {
 
   // Unified editor value getter (following MCP servers pattern)
   getEditorValue() {
-    const editor = this.mode === 'backup' ? this.backupEditor : this.restoreEditor;
-    return editor ? editor.getValue() : '{}';
+    const editor =
+      this.mode === "backup" ? this.backupEditor : this.restoreEditor;
+    return editor ? editor.getValue() : "{}";
   },
 
   // Unified JSON formatting (following MCP servers pattern)
   formatJson() {
-    const editor = this.mode === 'backup' ? this.backupEditor : this.restoreEditor;
+    const editor =
+      this.mode === "backup" ? this.backupEditor : this.restoreEditor;
     if (!editor) return;
 
     try {
@@ -232,7 +238,10 @@ const model = {
       const metadataText = this.getEditorValue();
       const metadata = JSON.parse(metadataText);
 
-      if (!metadata.include_patterns || metadata.include_patterns.length === 0) {
+      if (
+        !metadata.include_patterns ||
+        metadata.include_patterns.length === 0
+      ) {
         this.previewStats = { total: 0, truncated: false };
         this.previewFiles = [];
         this.previewGroups = [];
@@ -240,14 +249,17 @@ const model = {
       }
 
       // Convert patterns arrays back to string format for API
-      const patternsString = this.convertPatternsToString(metadata.include_patterns, metadata.exclude_patterns);
+      const patternsString = this.convertPatternsToString(
+        metadata.include_patterns,
+        metadata.exclude_patterns,
+      );
 
       // Get grouped preview for better UX
       const response = await sendJsonData("backup_preview_grouped", {
         patterns: patternsString,
         include_hidden: metadata.include_hidden ?? true,
         max_depth: 3,
-        search_filter: this.fileSearchFilter
+        search_filter: this.fileSearchFilter,
       });
 
       if (response.success) {
@@ -256,7 +268,7 @@ const model = {
 
         // Flatten groups for flat view
         this.previewFiles = [];
-        response.groups.forEach(group => {
+        response.groups.forEach((group) => {
           this.previewFiles.push(...group.files);
         });
 
@@ -280,12 +292,12 @@ const model = {
 
     // Add exclude patterns with '!' prefix
     if (excludePatterns) {
-      excludePatterns.forEach(pattern => {
+      excludePatterns.forEach((pattern) => {
         patterns.push(`!${pattern}`);
       });
     }
 
-    return patterns.join('\n');
+    return patterns.join("\n");
   },
 
   // Validation for backup metadata
@@ -296,17 +308,17 @@ const model = {
 
       // Validate required fields
       if (!Array.isArray(metadata.include_patterns)) {
-        throw new Error('include_patterns must be an array');
+        throw new Error("include_patterns must be an array");
       }
       if (!Array.isArray(metadata.exclude_patterns)) {
-        throw new Error('exclude_patterns must be an array');
+        throw new Error("exclude_patterns must be an array");
       }
-      if (!metadata.backup_name || typeof metadata.backup_name !== 'string') {
-        throw new Error('backup_name must be a non-empty string');
+      if (!metadata.backup_name || typeof metadata.backup_name !== "string") {
+        throw new Error("backup_name must be a non-empty string");
       }
 
       this.backupMetadataConfig = metadata;
-      this.error = '';
+      this.error = "";
       return true;
     } catch (error) {
       this.error = `Invalid backup metadata: ${error.message}`;
@@ -316,14 +328,14 @@ const model = {
 
   // File Preview UI Management
   initFilePreview() {
-    this.fileSearchFilter = '';
+    this.fileSearchFilter = "";
     this.expandedGroups.clear();
-    this.previewMode = localStorage.getItem('backupPreviewMode') || 'grouped';
+    this.previewMode = localStorage.getItem("backupPreviewMode") || "grouped";
   },
 
   togglePreviewMode() {
-    this.previewMode = this.previewMode === 'grouped' ? 'flat' : 'grouped';
-    localStorage.setItem('backupPreviewMode', this.previewMode);
+    this.previewMode = this.previewMode === "grouped" ? "flat" : "grouped";
+    localStorage.setItem("backupPreviewMode", this.previewMode);
   },
 
   toggleGroup(groupPath) {
@@ -346,7 +358,7 @@ const model = {
   },
 
   clearFileSearch() {
-    this.fileSearchFilter = '';
+    this.fileSearchFilter = "";
     this.applyFileSearch();
   },
 
@@ -355,30 +367,33 @@ const model = {
       this.filteredPreviewFiles = this.previewFiles;
     } else {
       const search = this.fileSearchFilter.toLowerCase();
-      this.filteredPreviewFiles = this.previewFiles.filter(file =>
-        file.path.toLowerCase().includes(search)
+      this.filteredPreviewFiles = this.previewFiles.filter((file) =>
+        file.path.toLowerCase().includes(search),
       );
     }
   },
 
   async exportFileList() {
-    const fileList = this.previewFiles.map(f => f.path).join('\n');
-    const blob = new Blob([fileList], { type: 'text/plain' });
+    const fileList = this.previewFiles.map((f) => f.path).join("\n");
+    const blob = new Blob([fileList], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'backup-file-list.txt';
+    a.download = "backup-file-list.txt";
     a.click();
     URL.revokeObjectURL(url);
   },
 
   async copyFileListToClipboard() {
-    const fileList = this.previewFiles.map(f => f.path).join('\n');
+    const fileList = this.previewFiles.map((f) => f.path).join("\n");
     try {
       await navigator.clipboard.writeText(fileList);
-      window.toastFrontendInfo('File list copied to clipboard', 'Clipboard');
+      window.toastFrontendInfo("File list copied to clipboard", "Clipboard");
     } catch (error) {
-      window.toastFrontendError('Failed to copy to clipboard', 'Clipboard Error');
+      window.toastFrontendError(
+        "Failed to copy to clipboard",
+        "Clipboard Error",
+      );
     }
   },
 
@@ -391,49 +406,51 @@ const model = {
 
     try {
       this.loading = true;
-      this.loadingMessage = 'Creating backup...';
-      this.error = '';
+      this.loadingMessage = "Creating backup...";
+      this.error = "";
       this.clearFileOperations();
-      this.addFileOperation('Starting backup creation...');
+      this.addFileOperation("Starting backup creation...");
 
       const metadata = this.backupMetadataConfig;
 
       // Use fetch directly since backup_create returns a file download, not JSON
-      const response = await fetchApi('/backup_create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetchApi("/backup_create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           include_patterns: metadata.include_patterns,
           exclude_patterns: metadata.exclude_patterns,
           include_hidden: metadata.include_hidden ?? true,
-          backup_name: metadata.backup_name
-        })
+          backup_name: metadata.backup_name,
+        }),
       });
 
       if (response.ok) {
         // Handle file download
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = `${metadata.backup_name}.zip`;
         a.click();
         window.URL.revokeObjectURL(url);
 
-        this.addFileOperation('Backup created and downloaded successfully!');
-        window.toastFrontendInfo('Backup created and downloaded successfully', 'Backup Status');
+        this.addFileOperation("Backup created and downloaded successfully!");
+        window.toastFrontendInfo(
+          "Backup created and downloaded successfully",
+          "Backup Status",
+        );
       } else {
         // Try to parse error response
         const errorText = await response.text();
         try {
           const errorJson = JSON.parse(errorText);
-          this.error = errorJson.error || 'Backup creation failed';
+          this.error = errorJson.error || "Backup creation failed";
         } catch {
           this.error = `Backup creation failed: ${response.status} ${response.statusText}`;
         }
         this.addFileOperation(`Error: ${this.error}`);
       }
-
     } catch (error) {
       this.error = `Backup error: ${error.message}`;
       this.addFileOperation(`Error: ${error.message}`);
@@ -444,23 +461,23 @@ const model = {
 
   async downloadBackup(backupPath, backupName) {
     try {
-      const response = await fetchApi('/backup_download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ backup_path: backupPath })
+      const response = await fetchApi("/backup_download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ backup_path: backupPath }),
       });
 
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = `${backupName}.zip`;
         a.click();
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error('Download error:', error);
+      console.error("Download error:", error);
     }
   },
 
@@ -474,7 +491,7 @@ const model = {
   },
 
   resetToDefaults() {
-    this.getDefaultBackupMetadata().then(defaultMetadata => {
+    this.getDefaultBackupMetadata().then((defaultMetadata) => {
       if (this.backupEditor) {
         this.backupEditor.setValue(JSON.stringify(defaultMetadata, null, 2));
         this.backupEditor.clearSelection();
@@ -485,9 +502,9 @@ const model = {
 
   // Dry run functionality
   async dryRun() {
-    if (this.mode === 'backup') {
+    if (this.mode === "backup") {
       await this.dryRunBackup();
-    } else if (this.mode === 'restore') {
+    } else if (this.mode === "restore") {
       await this.dryRunRestore();
     }
   },
@@ -500,27 +517,36 @@ const model = {
 
     try {
       this.loading = true;
-      this.loadingMessage = 'Performing dry run...';
-      this.error = '';
+      this.loadingMessage = "Performing dry run...";
+      this.error = "";
       this.clearFileOperations();
-      this.addFileOperation('Starting backup dry run...');
+      this.addFileOperation("Starting backup dry run...");
 
       const metadata = this.backupMetadataConfig;
-      const patternsString = this.convertPatternsToString(metadata.include_patterns, metadata.exclude_patterns);
+      const patternsString = this.convertPatternsToString(
+        metadata.include_patterns,
+        metadata.exclude_patterns,
+      );
 
       const response = await sendJsonData("backup_test", {
         patterns: patternsString,
         include_hidden: metadata.include_hidden ?? true,
-        max_files: 10000
+        max_files: 10000,
       });
 
       if (response.success) {
-        this.addFileOperation(`Found ${response.files.length} files that would be backed up:`);
+        this.addFileOperation(
+          `Found ${response.files.length} files that would be backed up:`,
+        );
         response.files.forEach((file, index) => {
-          this.addFileOperation(`${index + 1}. ${file.path} (${this.formatFileSize(file.size)})`);
+          this.addFileOperation(
+            `${index + 1}. ${file.path} (${this.formatFileSize(file.size)})`,
+          );
         });
-        this.addFileOperation(`\nTotal: ${response.files.length} files, ${this.formatFileSize(response.files.reduce((sum, f) => sum + f.size, 0))}`);
-        this.addFileOperation('Dry run completed successfully.');
+        this.addFileOperation(
+          `\nTotal: ${response.files.length} files, ${this.formatFileSize(response.files.reduce((sum, f) => sum + f.size, 0))}`,
+        );
+        this.addFileOperation("Dry run completed successfully.");
       } else {
         this.error = response.error;
         this.addFileOperation(`Error: ${response.error}`);
@@ -535,27 +561,27 @@ const model = {
 
   async dryRunRestore() {
     if (!this.backupFile) {
-      this.error = 'Please select a backup file first';
+      this.error = "Please select a backup file first";
       return;
     }
 
     try {
       this.loading = true;
-      this.loadingMessage = 'Performing restore dry run...';
-      this.error = '';
+      this.loadingMessage = "Performing restore dry run...";
+      this.error = "";
       this.restoreResult = null;
       this.clearFileOperations();
-      this.addFileOperation('Starting restore dry run...');
+      this.addFileOperation("Starting restore dry run...");
 
       const formData = new FormData();
-      formData.append('backup_file', this.backupFile);
-      formData.append('metadata', this.getEditorValue());
-      formData.append('overwrite_policy', this.overwritePolicy);
-      formData.append('clean_before_restore', this.cleanBeforeRestore);
+      formData.append("backup_file", this.backupFile);
+      formData.append("metadata", this.getEditorValue());
+      formData.append("overwrite_policy", this.overwritePolicy);
+      formData.append("clean_before_restore", this.cleanBeforeRestore);
 
-      const response = await fetchApi('/backup_restore_preview', {
-        method: 'POST',
-        body: formData
+      const response = await fetchApi("/backup_restore_preview", {
+        method: "POST",
+        body: formData,
       });
 
       const result = await response.json();
@@ -563,26 +589,36 @@ const model = {
       if (result.success) {
         // Show delete operations if clean before restore is enabled
         if (result.files_to_delete && result.files_to_delete.length > 0) {
-          this.addFileOperation(`Clean before restore - ${result.files_to_delete.length} files would be deleted:`);
+          this.addFileOperation(
+            `Clean before restore - ${result.files_to_delete.length} files would be deleted:`,
+          );
           result.files_to_delete.forEach((file, index) => {
             this.addFileOperation(`${index + 1}. DELETE: ${file.path}`);
           });
-          this.addFileOperation('');
+          this.addFileOperation("");
         }
 
         // Show restore operations
         if (result.files_to_restore && result.files_to_restore.length > 0) {
-          this.addFileOperation(`${result.files_to_restore.length} files would be restored:`);
+          this.addFileOperation(
+            `${result.files_to_restore.length} files would be restored:`,
+          );
           result.files_to_restore.forEach((file, index) => {
-            this.addFileOperation(`${index + 1}. RESTORE: ${file.original_path} -> ${file.target_path}`);
+            this.addFileOperation(
+              `${index + 1}. RESTORE: ${file.original_path} -> ${file.target_path}`,
+            );
           });
         }
 
         // Show skipped files
         if (result.skipped_files && result.skipped_files.length > 0) {
-          this.addFileOperation(`\nSkipped ${result.skipped_files.length} files:`);
+          this.addFileOperation(
+            `\nSkipped ${result.skipped_files.length} files:`,
+          );
           result.skipped_files.forEach((file, index) => {
-            this.addFileOperation(`${index + 1}. ${file.original_path} (${file.reason})`);
+            this.addFileOperation(
+              `${index + 1}. ${file.original_path} (${file.reason})`,
+            );
           });
         }
 
@@ -590,8 +626,10 @@ const model = {
         const restoreCount = result.restore_count || 0;
         const skippedCount = result.skipped_files?.length || 0;
 
-        this.addFileOperation(`\nSummary: ${deleteCount} to delete, ${restoreCount} to restore, ${skippedCount} skipped`);
-        this.addFileOperation('Dry run completed successfully.');
+        this.addFileOperation(
+          `\nSummary: ${deleteCount} to delete, ${restoreCount} to restore, ${skippedCount} skipped`,
+        );
+        this.addFileOperation("Dry run completed successfully.");
       } else {
         this.error = result.error;
         this.addFileOperation(`Error: ${result.error}`);
@@ -610,19 +648,19 @@ const model = {
     if (!file) return;
 
     this.backupFile = file;
-    this.error = '';
+    this.error = "";
     this.restoreResult = null;
 
     try {
       this.loading = true;
-      this.loadingMessage = 'Inspecting backup archive...';
+      this.loadingMessage = "Inspecting backup archive...";
 
       const formData = new FormData();
-      formData.append('backup_file', file);
+      formData.append("backup_file", file);
 
-      const response = await fetchApi('/backup_inspect', {
-        method: 'POST',
-        body: formData
+      const response = await fetchApi("/backup_inspect", {
+        method: "POST",
+        body: formData,
       });
 
       const result = await response.json();
@@ -635,7 +673,9 @@ const model = {
 
         // Initialize restore editor with complete metadata JSON
         if (this.restoreEditor) {
-          this.restoreEditor.setValue(JSON.stringify(this.restoreMetadata, null, 2));
+          this.restoreEditor.setValue(
+            JSON.stringify(this.restoreMetadata, null, 2),
+          );
           this.restoreEditor.clearSelection();
         }
 
@@ -664,7 +704,9 @@ const model = {
     const currentVersion = globalThis.gitinfo.version; // Retrieved from git.get_git_info() on backend
 
     if (backupVersion !== currentVersion && backupVersion !== "development") {
-      warnings.push(`Backup created with Ctx AI ${backupVersion}, current version is ${currentVersion}`);
+      warnings.push(
+        `Backup created with Ctx AI ${backupVersion}, current version is ${currentVersion}`,
+      );
     }
 
     // Check backup age
@@ -682,33 +724,36 @@ const model = {
     }
 
     if (warnings.length > 0) {
-      window.toastFrontendWarning(`Compatibility warnings: ${warnings.join(', ')}`, 'Backup Compatibility');
+      window.toastFrontendWarning(
+        `Compatibility warnings: ${warnings.join(", ")}`,
+        "Backup Compatibility",
+      );
     }
   },
 
   async performRestore() {
     if (!this.backupFile) {
-      this.error = 'Please select a backup file';
+      this.error = "Please select a backup file";
       return;
     }
 
     try {
       this.loading = true;
-      this.loadingMessage = 'Restoring files...';
-      this.error = '';
+      this.loadingMessage = "Restoring files...";
+      this.error = "";
       this.restoreResult = null;
       this.clearFileOperations();
-      this.addFileOperation('Starting file restoration...');
+      this.addFileOperation("Starting file restoration...");
 
       const formData = new FormData();
-      formData.append('backup_file', this.backupFile);
-      formData.append('metadata', this.getEditorValue());
-      formData.append('overwrite_policy', this.overwritePolicy);
-      formData.append('clean_before_restore', this.cleanBeforeRestore);
+      formData.append("backup_file", this.backupFile);
+      formData.append("metadata", this.getEditorValue());
+      formData.append("overwrite_policy", this.overwritePolicy);
+      formData.append("clean_before_restore", this.cleanBeforeRestore);
 
-      const response = await fetchApi('/backup_restore', {
-        method: 'POST',
-        body: formData
+      const response = await fetchApi("/backup_restore", {
+        method: "POST",
+        body: formData,
       });
 
       const result = await response.json();
@@ -716,24 +761,34 @@ const model = {
       if (result.success) {
         // Log deleted files if clean before restore was enabled
         if (result.deleted_files && result.deleted_files.length > 0) {
-          this.addFileOperation(`Clean before restore - Successfully deleted ${result.deleted_files.length} files:`);
+          this.addFileOperation(
+            `Clean before restore - Successfully deleted ${result.deleted_files.length} files:`,
+          );
           result.deleted_files.forEach((file, index) => {
             this.addFileOperation(`${index + 1}. DELETED: ${file.path}`);
           });
-          this.addFileOperation('');
+          this.addFileOperation("");
         }
 
         // Log restored files
-        this.addFileOperation(`Successfully restored ${result.restored_files.length} files:`);
+        this.addFileOperation(
+          `Successfully restored ${result.restored_files.length} files:`,
+        );
         result.restored_files.forEach((file, index) => {
-          this.addFileOperation(`${index + 1}. RESTORED: ${file.archive_path} -> ${file.target_path}`);
+          this.addFileOperation(
+            `${index + 1}. RESTORED: ${file.archive_path} -> ${file.target_path}`,
+          );
         });
 
         // Log skipped files
         if (result.skipped_files && result.skipped_files.length > 0) {
-          this.addFileOperation(`\nSkipped ${result.skipped_files.length} files:`);
+          this.addFileOperation(
+            `\nSkipped ${result.skipped_files.length} files:`,
+          );
           result.skipped_files.forEach((file, index) => {
-            this.addFileOperation(`${index + 1}. ${file.original_path} (${file.reason})`);
+            this.addFileOperation(
+              `${index + 1}. ${file.original_path} (${file.reason})`,
+            );
           });
         }
 
@@ -741,7 +796,9 @@ const model = {
         if (result.errors && result.errors.length > 0) {
           this.addFileOperation(`\nErrors during restoration:`);
           result.errors.forEach((error, index) => {
-            this.addFileOperation(`${index + 1}. ${error.original_path}: ${error.error}`);
+            this.addFileOperation(
+              `${index + 1}. ${error.original_path}: ${error.error}`,
+            );
           });
         }
 
@@ -750,9 +807,14 @@ const model = {
         const skippedCount = result.skipped_files?.length || 0;
         const errorCount = result.errors?.length || 0;
 
-        this.addFileOperation(`\nRestore completed: ${deletedCount} deleted, ${restoredCount} restored, ${skippedCount} skipped, ${errorCount} errors`);
+        this.addFileOperation(
+          `\nRestore completed: ${deletedCount} deleted, ${restoredCount} restored, ${skippedCount} skipped, ${errorCount} errors`,
+        );
         this.restoreResult = result;
-        window.toastFrontendInfo('Restore completed successfully', 'Restore Status');
+        window.toastFrontendInfo(
+          "Restore completed successfully",
+          "Restore Status",
+        );
       } else {
         this.error = result.error;
         this.addFileOperation(`Error: ${result.error}`);
@@ -773,14 +835,14 @@ const model = {
 
       // Validate required fields
       if (!Array.isArray(metadata.include_patterns)) {
-        throw new Error('include_patterns must be an array');
+        throw new Error("include_patterns must be an array");
       }
       if (!Array.isArray(metadata.exclude_patterns)) {
-        throw new Error('exclude_patterns must be an array');
+        throw new Error("exclude_patterns must be an array");
       }
 
       this.restoreMetadata = metadata;
-      this.error = '';
+      this.error = "";
       return true;
     } catch (error) {
       this.error = `Invalid JSON metadata: ${error.message}`;
@@ -801,7 +863,9 @@ const model = {
       this.restoreMetadata = JSON.parse(JSON.stringify(this.backupMetadata)); // Deep copy
 
       if (this.restoreEditor) {
-        this.restoreEditor.setValue(JSON.stringify(this.restoreMetadata, null, 2));
+        this.restoreEditor.setValue(
+          JSON.stringify(this.restoreMetadata, null, 2),
+        );
         this.restoreEditor.clearSelection();
       }
     }
@@ -809,21 +873,21 @@ const model = {
 
   // Utility
   formatTimestamp(timestamp) {
-    if (!timestamp) return 'Unknown';
+    if (!timestamp) return "Unknown";
     return new Date(timestamp).toLocaleString();
   },
 
   formatFileSize(bytes) {
-    if (!bytes) return '0 B';
-    const sizes = ['B', 'KB', 'MB', 'GB'];
+    if (!bytes) return "0 B";
+    const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
   },
 
   formatDate(dateString) {
-    if (!dateString) return 'Unknown';
+    if (!dateString) return "Unknown";
     return new Date(dateString).toLocaleDateString();
-  }
+  },
 };
 
 const store = createStore("backupStore", model);

@@ -64,7 +64,9 @@
   border-width: 4px 0 4px 6px;
   border-color: transparent transparent transparent var(--color-text);
   opacity: 0.5;
-  transition: transform 0.2s ease, opacity 0.15s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.15s ease;
   flex-shrink: 0;
   font-size: 0; /* Hide any text content */
   margin-right: 2px;
@@ -236,7 +238,6 @@
   --step-accent: #c2410c;
 }
 
-
 /* ERR - error type (red) */
 .process-group .ERR {
   --step-accent: var(--color-error-text);
@@ -253,15 +254,13 @@
   --step-accent: #334155;
 }
 
-
-.process-group .step-badge{
+.process-group .step-badge {
   color: var(--step-accent);
 }
 
-.process-group .kvps-key{
+.process-group .kvps-key {
   color: var(--step-accent);
 }
-
 
 /* Completed process group styling */
 .process-group-completed {
@@ -314,7 +313,10 @@
   display: none;
 }
 
-.process-group-header .group-metrics .metric-notifications .material-symbols-outlined {
+.process-group-header
+  .group-metrics
+  .metric-notifications
+  .material-symbols-outlined {
   opacity: 0.85;
 }
 
@@ -345,11 +347,12 @@
   margin-top: 0;
   padding-top: 0;
   border-top: 1px solid transparent;
-  transition: grid-template-rows 0.25s ease-out, 
-              opacity 0.2s ease-out,
-              margin-top 0.25s ease-out,
-              padding-top 0.25s ease-out,
-              border-color 0.2s ease-out;
+  transition:
+    grid-template-rows 0.25s ease-out,
+    opacity 0.2s ease-out,
+    margin-top 0.25s ease-out,
+    padding-top 0.25s ease-out,
+    border-color 0.2s ease-out;
   overflow: hidden;
   color: var(--color-text-muted);
   max-width: 100%;
@@ -400,7 +403,6 @@
   background-color: rgba(255, 255, 255, 0.03);
 }
 
-
 .light-mode .process-step[data-type="util"]:hover,
 .light-mode .process-step[data-type="info"]:hover,
 .light-mode .process-step[data-type="hint"]:hover {
@@ -440,7 +442,9 @@
   border-width: 3px 0 3px 5px;
   border-color: transparent transparent transparent var(--color-text);
   opacity: 0.4;
-  transition: transform 0.2s ease, opacity 0.15s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.15s ease;
   flex-shrink: 0;
   font-size: 0; /* Hide any text content */
   margin-right: 2px;
@@ -461,12 +465,15 @@
   grid-template-rows: 0fr;
   opacity: 0;
   margin-top: 0;
-  transition: grid-template-rows 0.2s ease-out, opacity 0.15s ease-out, margin-top 0.2s ease-out;
+  transition:
+    grid-template-rows 0.2s ease-out,
+    opacity 0.15s ease-out,
+    margin-top 0.2s ease-out;
   overflow: hidden;
   max-width: 100%;
 }
 
-.process-step-detail-content{
+.process-step-detail-content {
   white-space: pre-wrap;
 }
 
@@ -487,7 +494,9 @@
   margin-top: 0;
 }
 
-.process-step:not(.expanded) > .process-step-detail > .process-step-detail-scroll {
+.process-step:not(.expanded)
+  > .process-step-detail
+  > .process-step-detail-scroll {
   padding: 0;
   margin-top: 0;
   max-height: 0;
@@ -516,21 +525,27 @@
   width: fit-content;
   box-sizing: content-box;
   border-radius: var(--border-radius-sm);
-  -webkit-overflow-scrolling: touch; 
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   -ms-overflow-style: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   /* overscroll-behavior: contain; */
 }
 
-.process-step.expanded > .process-step-detail > .process-step-detail-scroll > .process-step-detail-scroll {
+.process-step.expanded
+  > .process-step-detail
+  > .process-step-detail-scroll
+  > .process-step-detail-scroll {
   scrollbar-width: thin;
   -ms-overflow-style: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 .process-step-detail-scroll {
-  transition: max-height 0.2s ease-out, padding 0.2s ease-out, margin-top 0.2s ease-out;
+  transition:
+    max-height 0.2s ease-out,
+    padding 0.2s ease-out,
+    margin-top 0.2s ease-out;
   padding: var(--spacing-xs) 0;
   margin-top: var(--spacing-xxs);
   /* margin-left: 28px;  */
@@ -538,7 +553,7 @@
   font-size: var(--font-size-xs);
   line-height: 1.5;
   -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
-  overscroll-behavior-x: contain; 
+  overscroll-behavior-x: contain;
 }
 
 /* .process-step-detail-scroll pre {
@@ -594,7 +609,6 @@
   word-break: break-word;
   overflow-wrap: anywhere;
 }
-
 
 /* Tool arguments - CSS Grid for aligned columns */
 /* .process-step-detail-scroll .step-tool-args {
@@ -657,7 +671,6 @@
   opacity: 0.85;
 } */
 
-
 /* Terminal output - self-contained scrollable block */
 .process-step-detail .terminal-output {
   margin: var(--spacing-xs) 0 0 0;
@@ -707,7 +720,9 @@
   background: rgba(0, 0, 0, 0.15);
 }
 
-.light-mode .process-step-detail .terminal-output::-webkit-scrollbar-thumb:hover {
+.light-mode
+  .process-step-detail
+  .terminal-output::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
 }
 
@@ -726,27 +741,39 @@
   color: var(--color-text-muted);
 }
 
-
-
 /* Animation for loading state */
 @keyframes pulse-step {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
-.step-title.shiny-text { color: transparent !important; -webkit-background-clip: text; background-clip: text; animation: shine 1s linear infinite; }
-    @keyframes shine { to { background-position: -100% center; } }
+.step-title.shiny-text {
+  color: transparent !important;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shine 1s linear infinite;
+}
+@keyframes shine {
+  to {
+    background-position: -100% center;
+  }
+}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .process-group {
     padding: var(--spacing-xs) var(--spacing-sm);
   }
-  
+
   .process-step-header .step-title {
     font-size: var(--font-size-xs);
   }
-  
+
   .process-step-detail-scroll {
     margin-left: 0;
   }
@@ -776,7 +803,9 @@
   grid-template-rows: 0fr;
   opacity: 0;
   overflow: hidden;
-  transition: grid-template-rows 0.25s ease-out, opacity 0.2s ease-out;
+  transition:
+    grid-template-rows 0.25s ease-out,
+    opacity 0.2s ease-out;
   gap: 2px;
   max-width: 100%;
 }
@@ -844,7 +873,9 @@
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: box-shadow 0.2s ease, filter 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
   object-fit: contain;
 }
 
@@ -874,5 +905,3 @@
 .process-step:not(.expanded) > .process-step-detail > .step-detail-actions {
   display: none;
 }
-
-
