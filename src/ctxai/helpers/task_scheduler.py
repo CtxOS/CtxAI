@@ -780,7 +780,7 @@ class TaskScheduler:
         if not task.context_id:
             raise ValueError(f"Task {task.name} has no context ID")
 
-        config = initialize.initialize.initialize_agent()
+        config = initialize.initialize_agent()
         context: AgentContext = AgentContext(config, id=task.context_id, name=task.name)
         # context.id = task.context_id
         # initial name before renaming is same as task name

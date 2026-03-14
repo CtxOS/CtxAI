@@ -172,7 +172,7 @@ def _serialize_log(log: Log):
 
 
 def _deserialize_context(data):
-    config = initialize.initialize.initialize_agent()
+    config = initialize.initialize_agent()
     log = _deserialize_log(data.get("log", None))
 
     context = AgentContext(

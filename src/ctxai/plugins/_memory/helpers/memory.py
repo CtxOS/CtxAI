@@ -97,7 +97,7 @@ class Memory:
         if not Memory.index.get(memory_subdir):
             import ctxai.initialize as initialize
 
-            agent_config = initialize.initialize.initialize_agent()
+            agent_config = initialize.initialize_agent()
             model_config = agent_config.embeddings_model
             db, _created = Memory.initialize(
                 log_item=log_item,

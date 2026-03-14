@@ -93,13 +93,13 @@ class ApiHandler:
                 if first:
                     AgentContext.use(first.id)
                     return first
-                context = AgentContext(config=initialize.initialize.initialize_agent(), set_current=True)
+                context = AgentContext(config=initialize.initialize_agent(), set_current=True)
                 return context
             got = AgentContext.use(ctxid)
             if got:
                 return got
             if create_if_not_exists:
-                context = AgentContext(config=initialize.initialize.initialize_agent(), id=ctxid, set_current=True)
+                context = AgentContext(config=initialize.initialize_agent(), id=ctxid, set_current=True)
                 return context
             else:
                 raise Exception(f"Context {ctxid} not found")

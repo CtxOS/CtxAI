@@ -9,7 +9,7 @@ class Delegation(Tool):
         # create subordinate agent using the data object on this agent and set superior agent to his data object
         if self.agent.get_data(Agent.DATA_NAME_SUBORDINATE) is None or str(reset).lower().strip() == "true":
             # initialize default config
-            config = initialize.initialize.initialize_agent()
+            config = initialize.initialize_agent()
 
             # set subordinate prompt profile if provided, if not, keep original
             agent_profile = kwargs.get("profile", kwargs.get("agent_profile", ""))

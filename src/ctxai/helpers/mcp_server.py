@@ -145,7 +145,7 @@ async def send_message(
                         chat_id=chat_id,
                     )
     else:
-        config = initialize.initialize.initialize_agent()
+        config = initialize.initialize_agent()
         context = AgentContext(config=config, type=AgentContextType.BACKGROUND)
 
         # Activate project if specified in URL
