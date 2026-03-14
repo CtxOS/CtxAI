@@ -3,10 +3,10 @@ set -e
 
 # Paths
 SOURCE_DIR="/git/ctxai"
-TARGET_DIR="/a0"
+TARGET_DIR="/ctx"
 
-# Copy repository files if run_ui.py is missing in /a0 (if the volume is mounted)
-if [ ! -f "$TARGET_DIR/run_ui.py" ]; then
+# Copy repository files if run_ui.py is missing in /ctx (if the volume is mounted)
+if [ ! -f "$TARGET_DIR/src/ctxai/run_ui.py" ]; then
     echo "Copying files from $SOURCE_DIR to $TARGET_DIR..."
     cp -rn --no-preserve=ownership,mode "$SOURCE_DIR/." "$TARGET_DIR"
 fi

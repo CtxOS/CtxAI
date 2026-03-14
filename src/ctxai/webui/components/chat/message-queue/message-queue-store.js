@@ -237,7 +237,7 @@ const model = {
   },
 
   getAttachmentUrl(filename) {
-    return `/api/image_get?path=/ctx/usr/uploads/${encodeURIComponent(filename)}`;
+    return `/api/image_get?path=/ctx/src/ctxai/usr/uploads/${encodeURIComponent(filename)}`;
   },
 };
 

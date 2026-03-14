@@ -267,11 +267,11 @@ const model = {
 
   // Generate server-side API URL for file (for device sync)
   getServerImgUrl(filename) {
-    return `/api/image_get?path=/ctx/usr/uploads/${encodeURIComponent(filename)}`;
+    return `/api/image_get?path=/ctx/src/ctxai/usr/uploads/${encodeURIComponent(filename)}`;
   },
 
   getServerFileUrl(filename) {
-    return `/ctx/usr/uploads/${encodeURIComponent(filename)}`;
+    return `/ctx/src/ctxai/usr/uploads/${encodeURIComponent(filename)}`;
   },
 
   // Check if file is an image based on extension

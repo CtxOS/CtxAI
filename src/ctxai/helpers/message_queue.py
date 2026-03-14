@@ -9,7 +9,7 @@ from ctxai.helpers.print_style import PrintStyle
 
 QUEUE_KEY = "message_queue"
 QUEUE_SEQ_KEY = "message_queue_seq"
-UPLOAD_FOLDER = "/ctx/usr/uploads"
+UPLOAD_FOLDER = "/ctx/src/ctxai/usr/uploads"
 
 
 def get_queue(context: "AgentContext") -> list:
