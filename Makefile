@@ -17,8 +17,8 @@ docker-run-build:
 	docker build -f docker/run/Dockerfile -t ctxai:latest .
 
 docker-push:
-	docker tag ctxai:latest neopilotai/ctxai:latest
-	docker push neopilotai/ctxai:latest
+	docker tag ctxai:latest ctxos/ctxai:latest
+	docker push ctxos/ctxai:latest
 
 pypi-build:
 	uv build

@@ -5,7 +5,7 @@
     "ghcr.io/devcontainers/features/docker-in-docker:1": {}
   },
   "build": {
-    "cacheFrom": "neopilotai/ctxai:base"
+    "cacheFrom": "ctxos/ctxai:base"
   },
   "customizations": {
     "vscode": {
