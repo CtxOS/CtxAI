@@ -123,7 +123,7 @@ Examples of the right approach:
 - activate the target virtualenv in a subprocess shell command before invoking `pip`
 - run OS-level package installation from a subprocess prepared for the intended environment
 
-In Docker deployments, `hooks.py` normally affects the framework runtime at `/opt/venv-a0`, while the agent execution runtime is `/opt/venv`.
+In Docker deployments, `hooks.py` normally affects the framework runtime at `/opt/venv-ctx`, while the agent execution runtime is `/opt/venv`.
 
 ## Settings Resolution
 

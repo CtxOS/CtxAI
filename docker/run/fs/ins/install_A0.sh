@@ -20,6 +20,7 @@ if [ "$BRANCH" = "local" ]; then
 else
     # For other branches, clone from GitHub
     echo "Cloning repository from branch $BRANCH..."
+    rm -rf "/git/ctxai"
     git clone -b "$BRANCH" "https://github.com/CtxOS/CtxAI" "/git/ctxai" || {
         echo "CRITICAL ERROR: Failed to clone repository. Branch: $BRANCH"
         exit 1
