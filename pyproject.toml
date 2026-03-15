@@ -78,7 +78,6 @@ dependencies = [
     "psutil>=7.0.0",
     # Platform-specific
     "pywinpty==3.0.2; sys_platform == 'win32'",
-    "codetypo",
 ]
 
 [project.scripts]
@@ -114,9 +113,6 @@ override-dependencies = [
     "openai>=1.99.5",
     "numba<0.61.0; sys_platform == 'darwin' and platform_machine == 'x86_64'",
 ]
-
-[tool.uv.sources]
-codetypo = { git = "https://github.com/khulnasoft/codetypo" }
 
 
 [tool.hatch.build.targets.wheel]

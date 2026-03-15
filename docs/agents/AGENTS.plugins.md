@@ -94,10 +94,10 @@ If your plugin needs to install packages or binaries for the agent execution env
 
 In Docker deployments, this distinction is especially important:
 
-- Framework runtime: `/opt/venv-a0`
+- Framework runtime: `/opt/venv-ctx`
 - Agent execution runtime: `/opt/venv`
 
-So a `hooks.py` install step affects `/opt/venv-a0` unless you intentionally switch to `/opt/venv` (or another target) inside your subprocess.
+So a `hooks.py` install step affects `/opt/venv-ctx` unless you intentionally switch to `/opt/venv` (or another target) inside your subprocess.
 
 ---
 
