@@ -8,7 +8,7 @@ This tutorial will guide you through creating, configuring, and using projects e
 
 A project in Ctx AI is an isolated workspace that includes:
 
-- **Dedicated folder structure** under `/a0/usr/projects/<project_name>/`
+- **Dedicated folder structure** under `/ctx/usr/projects/<project_name>/`
 - **Custom instructions** automatically injected into the agent's system prompt
 - **Isolated or shared memory** to prevent context pollution
 - **Project-specific secrets and variables** for secure credential management

@@ -33,7 +33,7 @@ Located beneath the chat input box, Ctx AI provides a set of action buttons for 
 #### Knowledge and File Management
 * **Import Knowledge:** Import external files into the agent's knowledge base
   - Supports `.txt`, `.pdf`, `.csv`, `.html`, `.json`, and `.md` formats
-  - Files are stored in `/a0/knowledge/custom/main`
+  - Files are stored in `/ctx/knowledge/custom/main`
   - Success message confirms successful import
   - See [knowledge](../developer/architecture.md#knowledge) for more details
 
@@ -654,10 +654,10 @@ Use the Settings → **Secrets** and **Variables** fields to store credentials a
 You can reference these values in prompts by name. For example, store `MY_GMAIL` as a secret and instruct the agent to use it when prompted.
 
 > [!IMPORTANT]
-> Secrets are stored in `/a0/usr/secrets.env`.
+> Secrets are stored in `/ctx/usr/secrets.env`.
 
 > [!NOTE]
-> Project-scoped secrets and variables (when using Projects) live under `/a0/usr/projects/<project_name>/.a0proj/` (`secrets.env`, `variables.env`).
+> Project-scoped secrets and variables (when using Projects) live under `/ctx/usr/projects/<project_name>/.a0proj/` (`secrets.env`, `variables.env`).
 
 ## Remote Access via Tunneling
 
@@ -1000,7 +1000,7 @@ By default, Ctx AI backs up your most important data:
 * **Uploaded Files**: Documents and files you've worked with
 
 > [!NOTE]
-> Chat history is stored at `/a0/usr/chats/` inside the container.
+> Chat history is stored at `/ctx/usr/chats/` inside the container.
 
 #### Customizing Backup Content
 Before creating a backup, you can customize what to include:
@@ -1021,7 +1021,7 @@ Before creating a backup, you can customize what to include:
 
 > [!NOTE]
 > Backup creation may take a few minutes depending on the amount of data. You'll see progress updates during the process.
-> Secrets stored in `/a0/usr/secrets.env` are not always included in backup archives. Keep a manual copy if you rely on secrets.
+> Secrets stored in `/ctx/usr/secrets.env` are not always included in backup archives. Keep a manual copy if you rely on secrets.
 
 ### Restoring from Backup
 The restore process allows you to recover your Ctx AI setup from a previous backup:

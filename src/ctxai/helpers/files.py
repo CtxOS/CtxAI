@@ -1,16 +1,18 @@
-from abc import ABC, abstractmethod
-from fnmatch import fnmatch
+import base64
+import glob
 import json
+import mimetypes
 import os
 import re
-import base64
 import shutil
 import tempfile
-from typing import Any, Literal
 import zipfile
-import glob
-import mimetypes
+from abc import ABC, abstractmethod
+from fnmatch import fnmatch
+from typing import Any, Literal
+
 from simpleeval import simple_eval
+
 from ctxai.helpers import yaml
 
 AGENTS_DIR = "agents"
@@ -528,7 +530,7 @@ def get_abs_path_dockerized(*relative_paths):
 
     if runtime.is_dockerized():
         return abs
-    return normalize_a0_path(abs)
+    return normalize_ctx_path(abs)
 
 
 def get_abs_path_development(*relative_paths):
@@ -552,7 +554,7 @@ def fix_dev_path(path: str):
     return get_abs_path(path)
 
 
-def normalize_a0_path(path: str):
+def normalize_ctx_path(path: str):
     "Convert absolute paths into /ctx/... paths"
     if is_in_base_dir(path):
         deabs = deabsolute_path(path)

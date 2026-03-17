@@ -32,10 +32,27 @@ clean:
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
 
 lint:
-	uv run $(RUFF) check src/ tests/
+	uvx $(RUFF) check src/ tests/
 
 typecheck:
 	@echo "Skipping typecheck - run 'make lint' for linting"
 
 format:
-	uv run $(RUFF) format src/ tests/
+	uvx $(RUFF) format src/ tests/
+
+# --- CLI Shortcuts ---
+run-server:
+	uv run ctxai server --host 0.0.0.0 --port 8000
+
+These changes ensure that all references to the container's root directory are updated to `/ctx/`. Let me know if you have any other questions!
+
+<!--
+[PROMPT_SUGGESTION]How do I add a new tool to the framework?[/PROMPT_SUGGESTION]
+[PROMPT_SUGGESTION]Explain the purpose of the `uv.lock` file.[/PROMPT_SUGGESTION]
+-->
+
+run-agent:
+	uv run ctxai --debug agent --profile default --task "Analyze local log files"
+
+help:
+	uv run ctxai --help

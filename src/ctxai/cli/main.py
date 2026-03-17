@@ -1,74 +1,57 @@
 import argparse
-from ctxai import initialize
-from ctxai import agent
-from ctxai.helpers import runtime, dotenv
-from ctxai.helpers.print_style import PrintStyle
+import logging
+import sys
 
 
-def cmd_start(args):
-    """Start the Web UI."""
-    from ctxai import run_ui
-
-    runtime.initialize()
-    dotenv.load_dotenv()
-    run_ui.run()
+def setup_logging(level: int) -> None:
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
 
 
-def cmd_run(args):
-    """Run a single prompt in the terminal."""
-    runtime.initialize()
-    dotenv.load_dotenv()
-
-    config = initialize.initialize_agent()
-    context = agent.AgentContext(config=config, set_current=True)
-
-    PrintStyle().print(f"Agent initialized. Running prompt: {args.prompt}")
-
-    async def run_async():
-        response = await context.agent0.monologue()
-        PrintStyle().print(f"\nResponse: {response}")
-
-    import asyncio
-
-    asyncio.run(run_async())
+def start_server(args: argparse.Namespace) -> None:
+    """Start the CtxAI server."""
+    logging.info(f"Starting CtxAI server on {args.host}:{args.port}...")
+    # TODO: Import your ASGI/ASGI server module here and run it
+    # from ctxai.server import run_server
+    # run_server(host=args.host, port=args.port)
 
 
-def cmd_version(args):
-    """Print the version."""
-    from ctxai.helpers import git
+def run_agent(args: argparse.Namespace) -> None:
+    """Run a specific CtxAI agent."""
+    logging.info(f"Running agent '{args.profile}' with task: {args.task}")
+    # TODO: Import your core agent orchestration logic here
+    # from ctxai.core.agent import run
+    # run(profile=args.profile, task=args.task)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="CtxAI - Dynamic agentic AI framework CLI")
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+
+    subparsers = parser.add_subparsers(title="commands", dest="command", required=True)
+
+    # Server command
+    server_parser = subparsers.add_parser("server", help="Start the CtxAI API/Web server")
+    server_parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")
+    server_parser.add_argument("--port", type=int, default=8000, help="Port to bind to")
+    server_parser.set_defaults(func=start_server)
+
+    # Agent tasking command
+    agent_parser = subparsers.add_parser("agent", help="Run a CtxAI agent for a specific task")
+    agent_parser.add_argument("-p", "--profile", default="default", help="Agent profile to run")
+    agent_parser.add_argument("-t", "--task", required=True, help="Task description to process")
+    agent_parser.set_defaults(func=run_agent)
+
+    args = parser.parse_args()
+    setup_logging(logging.DEBUG if args.debug else logging.INFO)
 
     try:
-        info = git.get_git_info()
-        print(f"CtxAI version: {info.get('version', '0.1.0')}")
-    except Exception:
-        print("CtxAI version: 0.1.0 (dev)")
-
-
-def main():
-    parser = argparse.ArgumentParser(prog="ctxai", description="CtxAI CLI")
-    subparsers = parser.add_subparsers(dest="command", help="Commands")
-
-    # start
-    start_parser = subparsers.add_parser("start", help="Start Web UI")
-    start_parser.add_argument("--port", type=int, help="Port to run on")
-    start_parser.add_argument("--host", type=str, help="Host to run on")
-    start_parser.set_defaults(func=cmd_start)
-
-    # run
-    run_parser = subparsers.add_parser("run", help="Run a prompt")
-    run_parser.add_argument("prompt", type=str, help="Prompt to run")
-    run_parser.set_defaults(func=cmd_run)
-
-    # version
-    version_parser = subparsers.add_parser("version", help="Show version")
-    version_parser.set_defaults(func=cmd_version)
-
-    args = parser.parse_known_args()[0]
-
-    if args.command:
         args.func(args)
-    else:
-        parser.print_help()
+    except Exception as e:
+        logging.error(f"Execution failed: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
