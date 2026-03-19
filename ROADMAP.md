@@ -40,7 +40,7 @@
 | Compression | `Message.importance` field — high-importance messages skipped during eviction |
 | Budget eviction | `forget(policy="budget\|age\|importance\|expired")` |
 
-### 🏷️ CI/CD
+### 🏷️ CI/CD & Tooling
 - `.github/labeler.yml` — path-based PR labels (17 area/type labels)
 - `.github/workflows/labeler.yml` — auto-label PRs on open/sync
 - `.github/workflows/pre-commit.yml` — pre-commit hooks in CI
@@ -50,33 +50,62 @@
 
 ## 🔄 In Progress
 
-- [ ] Qdrant backend — embedding computation, vector search, multi-tenant collections
+### Memory Backends
+- [ ] Qdrant — embedding computation, vector search, multi-tenant collections
 - [ ] Chroma backend
 - [ ] Redis backend for high-concurrency short-term memory
-- [ ] Observability — Prometheus/OpenTelemetry metrics export
+
+### Observability
+- [ ] Structured metrics export (Prometheus/OpenTelemetry)
 - [ ] Dashboard — agent context pool, task queue depth, memory stats
+
+### Testing
+- [ ] Unit tests for `History.compress()` and `Topic.summarize()`
+- [ ] Integration tests for agent + tool loops with known inputs
+- [ ] Load tests for concurrent contexts
 
 ---
 
 ## 📋 Planned
 
-### High
+### Phase 2 — Stability
 - [ ] Streaming tool responses — async iterator for progressive output
 - [ ] Agent skill profiles in `agent.yaml` — auto-register with `TaskRouter`
 - [ ] Context-aware agent selection — map tasks to skill agents
 - [ ] Graceful degradation — fallback to simpler model on overload
+- [ ] Typed `ToolRequest` dataclass and centralized parser
+- [ ] Standardized error handling — exceptions → user-friendly error with retry policy
 
-### Medium
+### Phase 3 — Scaling
+- [ ] Distributed context store (Redis/DB + workers)
+- [ ] Persistent vector DB (Qdrant/Chroma optional plugin)
 - [ ] Multi-tenant isolation — per-user context pools and memory namespaces
+- [ ] Cluster orchestration for multi-host, with leader election
+- [ ] Backpressure and queue limits for new contexts
+
+### Phase 4 — Advanced AI
+- [ ] Self-improving learning loop — post-task evaluation + autoprompt refinement
+- [ ] Multi-agent collaboration graph — capability-based routing
 - [ ] Conversation branching — snapshot/restore context state
 - [ ] Knowledge graph integration — structured knowledge beyond vector similarity
 - [ ] Plugin sandboxing — restrict filesystem and network access
-
-### Low
+- [ ] Dynamic tool-function schema generation and safe-call enforcement
 - [ ] Agent personality — persistent persona traits learned from interactions
-- [ ] Collaborative memory — shared pool across agent instances
-- [ ] Webhook triggers — external events drive agent tasks
-- [ ] Mobile API — lightweight endpoints for mobile clients
+- [ ] Webhook triggers — external events drive agent tasks (email, git push, cron)
+
+---
+
+## Refactoring Priorities
+
+### Code quality
+- Break large functions (`Agent.monologue`, `History.compress`, `Agent.process_tools`)
+- Move history compression policy to configurable strategy classes
+- Remove dead/commented code in `handle_exception`
+
+### Dependencies
+- Split core runtime vs optional features (browser, speech, document, MCP)
+- Regularly run `pip-audit` and `safety` scans
+- CI step for dependency drift
 
 ---
 
