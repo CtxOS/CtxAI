@@ -1,0 +1,148 @@
+# .github/labeler.yml
+# Path-based labels for PRs — used by actions/labeler
+
+# ── Core framework ──────────────────────────────────────────────────
+
+"area:agent":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/agent.py
+          - src/ctxai/helpers/agent_orchestrator.py
+          - src/ctxai/helpers/orchestrator_agent.py
+
+"area:reasoning":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/helpers/reasoning_engine.py
+          - src/ctxai/helpers/event_bus.py
+
+"area:memory":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/helpers/memory_manager.py
+          - src/ctxai/helpers/history.py
+          - src/ctxai/helpers/vector_db.py
+          - src/ctxai/plugins/_memory/**
+
+"area:tools":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/helpers/tool.py
+          - src/ctxai/tools/**
+
+"area:plugins":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/plugins/**
+          - src/ctxai/helpers/plugins.py
+
+"area:extensions":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/helpers/extension.py
+          - src/ctxai/extensions/**
+          - src/ctxai/agents/*/extensions/**
+
+# ── API & WebUI ─────────────────────────────────────────────────────
+
+"area:api":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/helpers/api.py
+          - src/ctxai/api/**
+
+"area:webui":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/webui/**
+          - src/ctxai/run_ui.py
+
+"area:websocket":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/helpers/websocket*.py
+          - src/ctxai/helpers/websocket_manager.py
+          - src/ctxai/websocket_handlers/**
+
+# ── Configuration & settings ────────────────────────────────────────
+
+"area:config":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/conf/**
+          - src/ctxai/helpers/settings.py
+          - src/ctxai/helpers/dotenv.py
+          - src/ctxai/usr/.env
+          - src/ctxai/initialize.py
+
+"area:models":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/models.py
+          - src/ctxai/helpers/providers.py
+
+# ── Infrastructure ──────────────────────────────────────────────────
+
+"area:docker":
+  - changed-files:
+      - any-glob-to-any-file:
+          - docker/**
+          - Dockerfile*
+          - docker-compose*
+
+"area:ci":
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/**
+          - .github/labeler.yml
+
+"area:dependencies":
+  - changed-files:
+      - any-glob-to-any-file:
+          - pyproject.toml
+          - uv.lock
+          - requirements*.txt
+
+"area:tests":
+  - changed-files:
+      - any-glob-to-any-file:
+          - tests/**
+          - test_*.py
+          - conftest.py
+
+# ── Documentation ───────────────────────────────────────────────────
+
+"area:docs":
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/**
+          - README.md
+          - AGENTS.md
+          - CHANGELOG.md
+
+"area:prompts":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/prompts/**
+          - src/ctxai/agents/*/prompts/**
+
+# ── Change type ─────────────────────────────────────────────────────
+
+"type:new-feature":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/helpers/agent_orchestrator.py
+          - src/ctxai/helpers/orchestrator_agent.py
+          - src/ctxai/helpers/task_router.py
+          - src/ctxai/helpers/memory_manager.py
+          - src/ctxai/helpers/event_bus.py
+          - src/ctxai/helpers/safe_eval.py
+          - src/ctxai/helpers/reasoning_engine.py
+
+"type:security":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/ctxai/helpers/security.py
+          - src/ctxai/helpers/safe_eval.py
+          - src/ctxai/helpers/login.py
+          - src/ctxai/helpers/crypto.py
