@@ -43,9 +43,7 @@ for pr in repo.get_pulls(state="open"):
                 review_by_user[review.user.login] = review
         else:
             review_by_user[review.user.login] = review
-    approved_reviews = [
-        review for review in review_by_user.values() if review.state == "APPROVED"
-    ]
+    approved_reviews = [review for review in review_by_user.values() if review.state == "APPROVED"]
     config = settings.config or default_config
     for approved_label, conf in config.items():
         logging.debug(f"Processing config: {conf.model_dump_json()}")

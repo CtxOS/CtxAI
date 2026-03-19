@@ -65,7 +65,9 @@ def _write_template_files(plugin_dir: Path, name: str, description: str, author:
 
     plugin_dir.mkdir(parents=True, exist_ok=True)
     (plugin_dir / META_FILE_NAME).write_text(yaml_helper.dumps(plugin_yaml), encoding="utf-8")
-    (plugin_dir / "README.md").write_text(f"# {plugin_yaml['title']}\n\n{plugin_yaml['description']}\n", encoding="utf-8")
+    (plugin_dir / "README.md").write_text(
+        f"# {plugin_yaml['title']}\n\n{plugin_yaml['description']}\n", encoding="utf-8"
+    )
     (plugin_dir / "LICENSE").write_text("MIT License\n", encoding="utf-8")
     (plugin_dir / "default_config.yaml").write_text(config_text, encoding="utf-8")
     (plugin_dir / "hooks.py").write_text(

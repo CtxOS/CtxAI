@@ -7,6 +7,8 @@ import glob
 import time
 from pathlib import Path
 from typing import (
+    Any,
+    Callable,
     Iterator,
     List,
     Literal,
@@ -57,6 +59,10 @@ TOGGLE_FILE_PATTERN = ".toggle-[01]"
 HOOKS_SCRIPT = "hooks.py"
 HOOKS_CACHE_AREA = "plugin_hooks(plugins)"
 
+# Runtime plugin hook registry and event bus
+_PLUGIN_HOOK_REGISTRY: dict[str, dict[str, list[Callable[..., Any]]]] = {}
+_PLUGIN_EVENT_HANDLERS: dict[str, list[Callable[..., Any]]] = {}
+
 _last_frontend_reload_notification_at = 0.0
 
 
@@ -69,6 +75,9 @@ class PluginMetadata(BaseModel):
     per_project_config: bool = False
     per_agent_config: bool = False
     always_enabled: bool = False
+    framework_version: str = ""  # optional compatibility requirement (e.g. '>=1.0.0')
+    plugin_dependencies: List[str] = Field(default_factory=list)
+    optional_plugin_dependencies: List[str] = Field(default_factory=list)
 
 
 class PluginListItem(BaseModel):
@@ -87,6 +96,8 @@ class PluginListItem(BaseModel):
     has_readme: bool = False
     has_license: bool = False
     has_init_script: bool = False
+    is_compatible: bool = True
+    compatibility_issues: List[str] = Field(default_factory=list)
     toggle_state: ToggleState = "disabled"
     current_commit: str = ""
     current_commit_timestamp: str = ""
@@ -170,6 +181,7 @@ def get_enhanced_plugins_list(
                     if repo_info.is_git_repo and repo_info.head:
                         current_commit = repo_info.head.hash
                         current_commit_timestamp = repo_info.head.committed_at
+                compatible, issues = _check_plugin_compatibility(d.name)
                 results.append(
                     PluginListItem(
                         name=d.name,
@@ -187,6 +199,8 @@ def get_enhanced_plugins_list(
                         has_readme=has_readme,
                         has_license=has_license,
                         has_init_script=has_init_script,
+                        is_compatible=compatible,
+                        compatibility_issues=issues,
                         toggle_state=toggle_state,
                         current_commit=current_commit,
                         current_commit_timestamp=current_commit_timestamp,
@@ -249,6 +263,42 @@ def find_plugin_dir(plugin_name: str):
         return files.get_abs_path(files.PLUGINS_DIR, plugin_name)
 
     return None
+
+
+def _get_plugin_effective_enabled(plugin_name: str) -> bool:
+    state = get_toggle_state(plugin_name)
+    return state in ("enabled", "advanced")
+
+
+def _check_plugin_compatibility(plugin_name: str) -> tuple[bool, List[str]]:
+    issues: List[str] = []
+    meta = get_plugin_meta(plugin_name)
+    if not meta:
+        return False, ["Plugin metadata not found"]
+
+    # Check plugin dependencies first
+    for dep in meta.plugin_dependencies:
+        if not files.exists(files.get_abs_path(find_plugin_dir(dep) or "", META_FILE_NAME)):
+            issues.append(f"Requires plugin '{dep}' to be installed")
+            continue
+        if not _get_plugin_effective_enabled(dep):
+            issues.append(f"Requires plugin '{dep}' to be enabled")
+
+    # Optionally validate framework version requirement if provided
+    if meta.framework_version:
+        try:
+            from ctxai.helpers.git import get_version
+            from packaging import version
+
+            current = version.parse(get_version())
+            requested = version.parse(meta.framework_version.lstrip("v"))
+            if current < requested:
+                issues.append(f"Requires framework {meta.framework_version}+, current {get_version()}")
+        except Exception:
+            # ignore if version parsing is unavailable or malformed
+            pass
+
+    return (len(issues) == 0, issues)
 
 
 @extension.extensible
@@ -333,8 +383,15 @@ def get_enabled_plugins(agent: Agent | None):
         # go through paths in reverse order and determine the state
         enabled = determined_toggle_from_paths(enabled, reversed(plugin_paths))
 
-        if enabled:
-            active.append(plugin)
+        if not enabled:
+            continue
+
+        compatible, issues = _check_plugin_compatibility(plugin)
+        if not compatible:
+            print_style.PrintStyle.warning(f"Plugin '{plugin}' is disabled due to compatibility issues: {issues}")
+            continue
+
+        active.append(plugin)
 
     return active
 
@@ -663,6 +720,34 @@ def send_frontend_reload_notification(plugin_names: list[str] | None = None):
     DeferredTask().start_task(_send_later)
 
 
+def register_plugin_hook(plugin_name: str, hook_name: str, callback: Callable[..., Any]):
+    """Register a callback for a named plugin hook."""
+    global _PLUGIN_HOOK_REGISTRY
+    _PLUGIN_HOOK_REGISTRY.setdefault(plugin_name, {}).setdefault(hook_name, []).append(callback)
+
+
+def get_registered_plugin_hooks(plugin_name: str, hook_name: str) -> list[Callable[..., Any]]:
+    return _PLUGIN_HOOK_REGISTRY.get(plugin_name, {}).get(hook_name, [])
+
+
+def emit_plugin_event(event_name: str, payload: Any | None = None):
+    """Emit a global plugin event that all handlers can receive."""
+    handlers = _PLUGIN_EVENT_HANDLERS.get(event_name, [])
+    for handler in handlers:
+        try:
+            if asyncio.iscoroutinefunction(handler):
+                asyncio.run(handler(payload))
+            else:
+                handler(payload)
+        except Exception:
+            print_style.PrintStyle.error(f"Plugin event handler failed for event '{event_name}'")
+
+
+def on_plugin_event(event_name: str, handler: Callable[..., Any]):
+    """Subscribe to a global plugin event."""
+    _PLUGIN_EVENT_HANDLERS.setdefault(event_name, []).append(handler)
+
+
 def call_plugin_hook(plugin_name: str, hook_name: str, *args, **kwargs):
     hooks = None
 
@@ -674,14 +759,22 @@ def call_plugin_hook(plugin_name: str, hook_name: str, *args, **kwargs):
     else:
         hooks = cache.get(HOOKS_CACHE_AREA, plugin_name)
 
-    if not hooks:
-        return
+    result = None
+    if hooks:
+        hook = getattr(hooks, hook_name, None)
+        if hook:
+            if asyncio.iscoroutinefunction(hook):
+                result = asyncio.run(hook(*args, **kwargs))
+            else:
+                result = hook(*args, **kwargs)
 
-    hook = getattr(hooks, hook_name, None)
-    if not hook:
-        return
+    # run registered hooks after module hooks
+    for callback in get_registered_plugin_hooks(plugin_name, hook_name):
+        if asyncio.iscoroutinefunction(callback):
+            callback_result = asyncio.run(callback(*args, **kwargs))
+        else:
+            callback_result = callback(*args, **kwargs)
+        if callback_result is not None:
+            result = callback_result
 
-    if asyncio.iscoroutinefunction(hook):
-        return asyncio.run(hook(*args, **kwargs))
-
-    return hook(*args, **kwargs)
+    return result
