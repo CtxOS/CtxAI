@@ -66,6 +66,7 @@ class AgentContext:
         data: dict | None = None,
         output_data: dict | None = None,
         set_current: bool = False,
+        timeout: float = 0.0,
     ):
         # initialize context
         self.id = id or AgentContext.generate_id()
@@ -93,6 +94,7 @@ class AgentContext:
         self.task: DeferredTask | None = None
         self.created_at = created_at or datetime.now(timezone.utc)
         self.type = type
+        self.timeout = timeout  # per-context execution timeout in seconds (0 = no limit)
         AgentContext._counter += 1
         self.no = AgentContext._counter
         self.last_message = last_message or datetime.now(timezone.utc)
@@ -224,6 +226,7 @@ class AgentContext:
             ),
             "type": self.type.value,
             "running": self.is_running(),
+            "timeout": self.timeout,
             **self.output_data,
         }
 
@@ -297,7 +300,10 @@ class AgentContext:
         async def _guarded(*a: Any, **kw: Any) -> Any:
             AgentContext._task_semaphore.acquire()
             try:
-                return await func(*a, **kw)
+                coro = func(*a, **kw)
+                if self.timeout and self.timeout > 0:
+                    return await asyncio.wait_for(coro, timeout=self.timeout)
+                return await coro
             finally:
                 AgentContext._task_semaphore.release()
 
@@ -379,6 +385,9 @@ class Agent:
         self.last_user_message: history.Message | None = None
         self.intervention: UserMessage | None = None
         self.data: dict[str, Any] = {}  # free data object all the tools can use
+
+        # Agent memory context — short-lived observations + long-lived facts
+        self.memory: AgentMemory = AgentMemory()
 
         extension.call_extensions_sync("agent_init", self)
 
@@ -725,3 +734,95 @@ class Agent:
         from ctxai.helpers.reasoning_engine import resolve_tool
 
         return resolve_tool(self, name, method, args, message, loop_data)  # type: ignore[arg-type]
+
+
+# ---------------------------------------------------------------------------
+# Agent memory context
+# ---------------------------------------------------------------------------
+
+
+class AgentMemory:
+    """Per-agent memory with short-term observations and long-term facts.
+
+    ``observations``: transient notes from the current session
+      (cleared on reset).  Each entry is ``{key, value, timestamp}``.
+
+    ``facts``: persistent knowledge that survives resets.
+      Stored as a simple key→value map.
+
+    ``recent_tool_results``: rolling window of the last *N* tool outputs
+      so the agent can reference them without re-invoking.
+    """
+
+    MAX_RECENT_TOOLS = 20
+
+    def __init__(self) -> None:
+        self.observations: list[dict[str, Any]] = []
+        self.facts: dict[str, Any] = {}
+        self.recent_tool_results: list[dict[str, Any]] = []
+
+    # -- observations -------------------------------------------------------
+
+    def observe(self, key: str, value: Any) -> None:
+        """Record a short-lived observation."""
+        self.observations.append(
+            {
+                "key": key,
+                "value": value,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+
+    def get_observations(self, key: str | None = None) -> list[dict[str, Any]]:
+        if key is None:
+            return list(self.observations)
+        return [o for o in self.observations if o["key"] == key]
+
+    # -- facts --------------------------------------------------------------
+
+    def remember(self, key: str, value: Any) -> None:
+        """Store a persistent fact."""
+        self.facts[key] = value
+
+    def recall(self, key: str, default: Any = None) -> Any:
+        return self.facts.get(key, default)
+
+    def forget(self, key: str) -> None:
+        self.facts.pop(key, None)
+
+    # -- tool results -------------------------------------------------------
+
+    def record_tool_result(self, tool_name: str, result: str) -> None:
+        self.recent_tool_results.append(
+            {
+                "tool": tool_name,
+                "result": result[:500],  # truncate to avoid bloat
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+        if len(self.recent_tool_results) > self.MAX_RECENT_TOOLS:
+            self.recent_tool_results = self.recent_tool_results[-self.MAX_RECENT_TOOLS :]
+
+    def get_recent_tool_results(self, tool_name: str | None = None) -> list[dict[str, Any]]:
+        if tool_name is None:
+            return list(self.recent_tool_results)
+        return [r for r in self.recent_tool_results if r["tool"] == tool_name]
+
+    # -- lifecycle ----------------------------------------------------------
+
+    def reset(self) -> None:
+        """Clear observations and tool results (facts persist)."""
+        self.observations.clear()
+        self.recent_tool_results.clear()
+
+    def summary(self) -> str:
+        """Return a compact text summary of current memory state."""
+        parts: list[str] = []
+        if self.facts:
+            parts.append("Known facts: " + "; ".join(f"{k}={v}" for k, v in list(self.facts.items())[:10]))
+        if self.observations:
+            parts.append(f"Recent observations: {len(self.observations)} entries")
+        if self.recent_tool_results:
+            tools = [r["tool"] for r in self.recent_tool_results[-5:]]
+            parts.append("Recent tools: " + ", ".join(tools))
+        return "\n".join(parts) if parts else "(empty memory)"

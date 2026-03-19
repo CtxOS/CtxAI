@@ -64,6 +64,14 @@ class EventType(str, Enum):
     AGENT_INIT = "agent_init"
     CONTEXT_DELETED = "context_deleted"
 
+    # Context timeout
+    CONTEXT_TIMEOUT = "context_timeout"
+
+    # Task orchestration
+    TASK_SUBMITTED = "task_submitted"
+    TASK_COMPLETED = "task_completed"
+    TASK_FAILED = "task_failed"
+
     # Custom / extension-defined events
     CUSTOM = "__custom__"
 

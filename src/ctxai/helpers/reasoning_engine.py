@@ -184,7 +184,11 @@ def resolve_tool(
 
 
 async def execute_tool(agent: Agent, tool: "Tool", tool_args: dict, tool_name: str) -> "ToolResponse":
-    """Run the full tool lifecycle (before/execute/after) and return the response."""
+    """Run the full tool lifecycle (before/execute/after) and return the response.
+
+    This is the base single-attempt execution.  Use ``execute_tool_with_retry``
+    when retry/fallback semantics are needed.
+    """
 
     await tool.before_execution(**tool_args)
     await _check_intervention(agent)
@@ -209,7 +213,63 @@ async def execute_tool(agent: Agent, tool: "Tool", tool_args: dict, tool_name: s
     await tool.after_execution(response)
     await _check_intervention(agent)
 
+    # Record tool result in agent memory
+    agent.memory.record_tool_result(tool_name, response.message)
+
     return response
+
+
+async def execute_tool_with_retry(
+    agent: Agent,
+    tool: "Tool",
+    tool_args: dict,
+    tool_name: str,
+    max_retries: int = 2,
+    retry_delay: float = 1.0,
+    fallback_tool: "Tool | None" = None,
+) -> "ToolResponse":
+    """Execute a tool with retry logic and optional fallback.
+
+    On failure the tool is retried up to *max_retries* times with
+    exponential backoff (``retry_delay * attempt``).  If all retries
+    fail and *fallback_tool* is provided, it is executed once with the
+    same arguments.
+    """
+    import asyncio
+
+    last_error: Exception | None = None
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            return await execute_tool(agent, tool, tool_args, tool_name)
+        except Exception as e:
+            last_error = e
+            PrintStyle(font_color="orange", padding=True).print(
+                f"Tool '{tool_name}' attempt {attempt}/{max_retries} failed: {e}"
+            )
+            agent.context.log.log(
+                type="warning",
+                content=f"Tool '{tool_name}' attempt {attempt}/{max_retries} failed: {e}",
+            )
+            if attempt < max_retries:
+                await asyncio.sleep(retry_delay * attempt)
+
+    # All retries exhausted — try fallback
+    if fallback_tool is not None:
+        PrintStyle(font_color="yellow", padding=True).print(
+            f"Tool '{tool_name}' exhausted retries, trying fallback '{fallback_tool.name}'"
+        )
+        agent.context.log.log(
+            type="info",
+            content=f"Trying fallback tool '{fallback_tool.name}' for '{tool_name}'",
+        )
+        try:
+            return await execute_tool(agent, fallback_tool, tool_args, fallback_tool.name)
+        except Exception as fallback_error:
+            last_error = fallback_error
+
+    # No fallback or fallback also failed
+    raise last_error or RuntimeError(f"Tool '{tool_name}' failed after {max_retries} attempts")
 
 
 async def parse_tool_request(agent: Agent, msg: str) -> tuple[str | None, str | None, dict, "Tool | None", str | None]:
