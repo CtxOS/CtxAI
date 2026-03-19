@@ -73,7 +73,7 @@ format: ## format all code
 
 run-server: ## start the web UI server
 	@echo "$(GREEN)Starting server on $(HOST):$(PORT)...$(NC)"
-	uv run python run_ui.py
+	uv run python -m ctxai.run_ui
 
 run-agent: ## run agent with a demo task
 	@echo "$(GREEN)Starting agent...$(NC)"
