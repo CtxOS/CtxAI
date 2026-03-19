@@ -11,21 +11,15 @@ from enum import Enum
 import ctxai.models as models
 
 from ctxai.helpers import (
-    extract_tools,
     files,
     history,
-    tokens,
     context as context_helper,
-    dirty_json,
     subagents,
 )
 from ctxai.helpers import extension
 from ctxai.helpers.print_style import PrintStyle
 
-from langchain_core.prompts import (
-    ChatPromptTemplate,
-)
-from langchain_core.messages import SystemMessage, BaseMessage
+from langchain_core.messages import BaseMessage
 
 import ctxai.helpers.log as Log
 from ctxai.helpers.dirty_json import DirtyJson
@@ -313,24 +307,10 @@ class AgentContext:
     # this wrapper ensures that superior agents are called back if the chat was loaded from file and original callstack is gone
     @extension.extensible
     async def _process_chain(self, agent: "Agent", msg: "UserMessage|str", user=True):
+        from ctxai.helpers.agent_orchestrator import run_process_chain
+
         try:
-            msg_template = (
-                agent.hist_add_user_message(msg)  # type: ignore
-                if user
-                else agent.hist_add_tool_result(
-                    tool_name="call_subordinate",
-                    tool_result=msg,  # type: ignore
-                )
-            )
-            response = await agent.monologue()  # type: ignore
-            superior = agent.data.get(Agent.DATA_NAME_SUPERIOR, None)
-            if superior:
-                response = await self._process_chain(superior, response, False)  # type: ignore
-
-            # call end of process extensions
-            await extension.call_extensions_async("process_chain_end", agent=self.get_agent(), data={})
-
-            return response
+            return await run_process_chain(self, agent, msg, user=user)
         except Exception as e:
             await self.handle_exception("process_chain", e)
 
@@ -404,170 +384,27 @@ class Agent:
 
     @extension.extensible
     async def monologue(self):
+        """Run the agent's reasoning loop.
+
+        The outer layer (extension hooks, exception handling) stays here.
+        The inner message-loop iteration is delegated to
+        ``agent_orchestrator.run_monologue``.
+        """
+        from ctxai.helpers.agent_orchestrator import run_monologue
+
         while True:
             try:
-                # loop data dictionary to pass to extensions
-                self.loop_data = LoopData(user_message=self.last_user_message)
-                # call monologue_start extensions
-                await extension.call_extensions_async("monologue_start", self, loop_data=self.loop_data)
-
-                printer = PrintStyle(italic=True, font_color="#b3ffd9", padding=False)
-
-                # let the agent run message loop until he stops it with a response tool
-                while True:
-                    self.context.streaming_agent = self  # mark self as current streamer
-                    self.loop_data.iteration += 1
-                    self.loop_data.params_temporary = {}  # clear temporary params
-
-                    # call message_loop_start extensions
-                    await extension.call_extensions_async("message_loop_start", self, loop_data=self.loop_data)
-                    await self.handle_intervention()
-
-                    try:
-                        # prepare LLM chain (model, system, history)
-                        prompt = await self.prepare_prompt(loop_data=self.loop_data)
-
-                        # call before_main_llm_call extensions
-                        await extension.call_extensions_async("before_main_llm_call", self, loop_data=self.loop_data)
-                        await self.handle_intervention()
-
-                        async def reasoning_callback(chunk: str, full: str):
-                            await self.handle_intervention()
-                            if chunk == full:
-                                printer.print("Reasoning: ")  # start of reasoning
-                            # Pass chunk and full data to extensions for processing
-                            stream_data = {"chunk": chunk, "full": full}
-                            await extension.call_extensions_async(
-                                "reasoning_stream_chunk",
-                                self,
-                                loop_data=self.loop_data,
-                                stream_data=stream_data,
-                            )
-                            # Stream masked chunk after extensions processed it
-                            if stream_data.get("chunk"):
-                                printer.stream(stream_data["chunk"])
-                            # Use the potentially modified full text for downstream processing
-                            await self.handle_reasoning_stream(stream_data["full"])
-
-                        async def stream_callback(chunk: str, full: str):
-                            await self.handle_intervention()
-                            # output the agent response stream
-                            if chunk == full:
-                                printer.print("Response: ")  # start of response
-                            # Pass chunk and full data to extensions for processing
-                            stream_data = {"chunk": chunk, "full": full}
-                            await extension.call_extensions_async(
-                                "response_stream_chunk",
-                                self,
-                                loop_data=self.loop_data,
-                                stream_data=stream_data,
-                            )
-                            # Stream masked chunk after extensions processed it
-                            if stream_data.get("chunk"):
-                                printer.stream(stream_data["chunk"])
-                            # Use the potentially modified full text for downstream processing
-                            await self.handle_response_stream(stream_data["full"])
-
-                        # call main LLM
-                        agent_response, _reasoning = await self.call_chat_model(
-                            messages=prompt,
-                            response_callback=stream_callback,
-                            reasoning_callback=reasoning_callback,
-                        )
-                        await self.handle_intervention(agent_response)
-
-                        # Notify extensions to finalize their stream filters
-                        await extension.call_extensions_async("reasoning_stream_end", self, loop_data=self.loop_data)
-                        await self.handle_intervention(agent_response)
-
-                        await extension.call_extensions_async("response_stream_end", self, loop_data=self.loop_data)
-
-                        await self.handle_intervention(agent_response)
-
-                        if (
-                            self.loop_data.last_response == agent_response
-                        ):  # if assistant_response is the same as last message in history, let him know
-                            # Append the assistant's response to the history
-                            self.hist_add_ai_response(agent_response)
-                            # Append warning message to the history
-                            warning_msg = self.read_prompt("fw.msg_repeat.md")
-                            self.hist_add_warning(message=warning_msg)
-                            PrintStyle(font_color="orange", padding=True).print(warning_msg)
-                            self.context.log.log(type="warning", content=warning_msg)
-
-                        else:  # otherwise proceed with tool
-                            # Append the assistant's response to the history
-                            self.hist_add_ai_response(agent_response)
-                            # process tools requested in agent message
-                            tools_result = await self.process_tools(agent_response)
-                            if tools_result:  # final response of message loop available
-                                return tools_result  # break the execution if the task is done
-
-                    # exceptions inside message loop:
-                    except Exception as e:
-                        await self.handle_exception("message_loop", e)
-
-                    finally:
-                        # call message_loop_end extensions
-                        if self.context.task and self.context.task.is_alive():  # don't call extensions post mortem
-                            await extension.call_extensions_async("message_loop_end", self, loop_data=self.loop_data)
-
-            # exceptions outside message loop:
+                return await run_monologue(self)
             except Exception as e:
                 await self.handle_exception("monologue", e)
             finally:
-                self.context.streaming_agent = None  # unset current streamer
-                # call monologue_end extensions
-                if self.context.task and self.context.task.is_alive():  # don't call extensions post mortem
-                    await extension.call_extensions_async("monologue_end", self, loop_data=self.loop_data)  # type: ignore
+                self.context.streaming_agent = None
 
     @extension.extensible
     async def prepare_prompt(self, loop_data: LoopData) -> list[BaseMessage]:
-        self.context.log.set_progress("Building prompt")
+        from ctxai.helpers.reasoning_engine import build_prompt
 
-        # call extensions before setting prompts
-        await extension.call_extensions_async("message_loop_prompts_before", self, loop_data=loop_data)
-
-        # set system prompt and message history
-        loop_data.system = await self.get_system_prompt(self.loop_data)
-        loop_data.history_output = self.history.output()
-
-        # and allow extensions to edit them
-        await extension.call_extensions_async("message_loop_prompts_after", self, loop_data=loop_data)
-
-        # concatenate system prompt
-        system_text = "\n\n".join(loop_data.system)
-
-        # join extras
-        extras = history.Message(  # type: ignore[abstract]
-            False,
-            content=self.read_prompt(
-                "agent.context.extras.md",
-                extras=dirty_json.stringify({**loop_data.extras_persistent, **loop_data.extras_temporary}),
-            ),
-        ).output()
-        loop_data.extras_temporary.clear()
-
-        # convert history + extras to LLM format
-        history_langchain: list[BaseMessage] = history.output_langchain(loop_data.history_output + extras)
-
-        # build full prompt from system prompt, message history and extrS
-        full_prompt: list[BaseMessage] = [
-            SystemMessage(content=system_text),
-            *history_langchain,
-        ]
-        full_text = ChatPromptTemplate.from_messages(full_prompt).format()
-
-        # store as last context window content
-        self.set_data(
-            Agent.DATA_NAME_CTX_WINDOW,
-            {
-                "text": full_text,
-                "tokens": tokens.approximate_tokens(full_text),
-            },
-        )
-
-        return full_prompt
+        return await build_prompt(self, loop_data)
 
     @extension.extensible
     async def handle_exception(self, location: str, exception: Exception):
@@ -742,33 +579,9 @@ class Agent:
         callback: Callable[[str], Awaitable[None]] | None = None,
         background: bool = False,
     ):
-        model = self.get_utility_model()
+        from ctxai.helpers.reasoning_engine import call_utility_model
 
-        # call extensions
-        call_data = {
-            "model": model,
-            "system": system,
-            "message": message,
-            "callback": callback,
-            "background": background,
-        }
-        await extension.call_extensions_async("util_model_call_before", self, call_data=call_data)
-
-        # propagate stream to callback if set
-        async def stream_callback(chunk: str, total: str):
-            if call_data["callback"]:
-                await call_data["callback"](chunk)
-
-        response, _reasoning = await call_data["model"].unified_call(
-            system_message=call_data["system"],
-            user_message=call_data["message"],
-            response_callback=stream_callback if call_data["callback"] else None,
-            rate_limiter_callback=(self.rate_limiter_callback if not call_data["background"] else None),
-        )
-
-        await extension.call_extensions_async("util_model_call_after", self, call_data=call_data, response=response)
-
-        return response
+        return await call_utility_model(self, system, message, callback=callback, background=background)
 
     @extension.extensible
     async def call_chat_model(
@@ -779,21 +592,16 @@ class Agent:
         background: bool = False,
         explicit_caching: bool = True,
     ):
-        response = ""
+        from ctxai.helpers.reasoning_engine import call_chat_model
 
-        # model class
-        model = self.get_chat_model()
-
-        # call model
-        response, reasoning = await model.unified_call(
-            messages=messages,
-            reasoning_callback=reasoning_callback,
+        return await call_chat_model(
+            self,
+            messages,
             response_callback=response_callback,
-            rate_limiter_callback=(self.rate_limiter_callback if not background else None),
+            reasoning_callback=reasoning_callback,
+            background=background,
             explicit_caching=explicit_caching,
         )
-
-        return response, reasoning
 
     @extension.extensible
     async def rate_limiter_callback(self, message: str, key: str, total: int, limit: int):
@@ -826,92 +634,17 @@ class Agent:
 
     @extension.extensible
     async def process_tools(self, msg: str):
-        # search for tool usage requests in agent message
-        tool_request = extract_tools.json_parse_dirty(msg)
+        """Parse, resolve, and execute tool requests from an agent message.
 
-        # basic validation + extensions
-        await self.validate_tool_request(tool_request)
+        Delegates resolution and execution to ``reasoning_engine``.
+        """
+        from ctxai.helpers.reasoning_engine import parse_tool_request, execute_tool
+        from ctxai.helpers.tool import Response as ToolResponse
 
-        if tool_request is not None:
-            raw_tool_name = tool_request.get("tool_name", tool_request.get("tool", ""))  # Get the raw tool name
-            tool_args = tool_request.get("tool_args", tool_request.get("args", {}))
+        raw_tool_name, tool_name, tool_args, tool, error = await parse_tool_request(self, msg)
 
-            tool_name = raw_tool_name  # Initialize tool_name with raw_tool_name
-            tool_method = None  # Initialize tool_method
-
-            # Split raw_tool_name into tool_name and tool_method if applicable
-            if ":" in raw_tool_name:
-                tool_name, tool_method = raw_tool_name.split(":", 1)
-
-            tool = None  # Initialize tool to None
-
-            # Try getting tool from MCP first
-            try:
-                import ctxai.helpers.mcp_handler as mcp_helper
-
-                mcp_tool_candidate = mcp_helper.MCPConfig.get_instance().get_tool(self, tool_name)
-                if mcp_tool_candidate:
-                    tool = mcp_tool_candidate
-            except ImportError:
-                PrintStyle(background_color="black", font_color="yellow", padding=True).print(
-                    "MCP helper module not found. Skipping MCP tool lookup."
-                )
-            except Exception as e:
-                PrintStyle(background_color="black", font_color="red", padding=True).print(
-                    f"Failed to get MCP tool '{tool_name}': {e}"
-                )
-
-            # Fallback to local get_tool if MCP tool was not found or MCP lookup failed
-            if not tool:
-                tool = self.get_tool(
-                    name=tool_name,
-                    method=tool_method,
-                    args=tool_args,
-                    message=msg,
-                    loop_data=self.loop_data,
-                )
-
-            if tool:
-                self.loop_data.current_tool = tool  # type: ignore
-                try:
-                    await self.handle_intervention()
-
-                    # Call tool hooks for compatibility
-                    await tool.before_execution(**tool_args)
-                    await self.handle_intervention()
-
-                    # Allow extensions to preprocess tool arguments
-                    await extension.call_extensions_async(
-                        "tool_execute_before",
-                        self,
-                        tool_args=tool_args or {},
-                        tool_name=tool_name,
-                    )
-
-                    response = await tool.execute(**tool_args)
-                    await self.handle_intervention()
-
-                    # Allow extensions to postprocess tool response
-                    await extension.call_extensions_async(
-                        "tool_execute_after",
-                        self,
-                        response=response,
-                        tool_name=tool_name,
-                    )
-
-                    await tool.after_execution(response)
-                    await self.handle_intervention()
-
-                    if response.break_loop:
-                        return response.message
-                finally:
-                    self.loop_data.current_tool = None
-            else:
-                error_detail = f"Tool '{raw_tool_name}' not found or could not be initialized."
-                self.hist_add_warning(error_detail)
-                PrintStyle(font_color="red", padding=True).print(error_detail)
-                self.context.log.log(type="warning", content=f"{self.agent_name}: {error_detail}")
-        else:
+        # No valid tool request at all
+        if raw_tool_name is None and tool is None and error is None:
             warning_msg_misformat = self.read_prompt("fw.msg_misformat.md")
             self.hist_add_warning(warning_msg_misformat)
             PrintStyle(font_color="red", padding=True).print(warning_msg_misformat)
@@ -919,6 +652,29 @@ class Agent:
                 type="warning",
                 content=f"{self.agent_name}: Message misformat, no valid tool request found.",
             )
+            return None
+
+        if error:
+            self.hist_add_warning(error)
+            PrintStyle(font_color="red", padding=True).print(error)
+            self.context.log.log(type="warning", content=f"{self.agent_name}: {error}")
+            return None
+
+        if tool:
+            self.loop_data.current_tool = tool
+            try:
+                response: ToolResponse = await execute_tool(self, tool, tool_args, tool_name)
+                if response.break_loop:
+                    return response.message
+            finally:
+                self.loop_data.current_tool = None
+        else:
+            error_detail = f"Tool '{raw_tool_name}' not found or could not be initialized."
+            self.hist_add_warning(error_detail)
+            PrintStyle(font_color="red", padding=True).print(error_detail)
+            self.context.log.log(type="warning", content=f"{self.agent_name}: {error_detail}")
+
+        return None
 
     @extension.extensible
     async def validate_tool_request(self, tool_request: Any):
@@ -966,28 +722,6 @@ class Agent:
         loop_data: LoopData | None,
         **kwargs,
     ):
-        from ctxai.tools.unknown import Unknown
-        from ctxai.helpers.tool import Tool
+        from ctxai.helpers.reasoning_engine import resolve_tool
 
-        classes = []
-
-        # search for tools in agent's folder hierarchy
-        paths = subagents.get_paths(self, "tools", name + ".py")
-
-        for path in paths:
-            try:
-                classes = extract_tools.load_classes_from_file(path, Tool)  # type: ignore[type-abstract]
-                break
-            except Exception:
-                continue
-
-        tool_class = classes[0] if classes else Unknown
-        return tool_class(
-            agent=self,
-            name=name,
-            method=method,
-            args=args,
-            message=message,
-            loop_data=loop_data,
-            **kwargs,
-        )
+        return resolve_tool(self, name, method, args, message, loop_data)  # type: ignore[arg-type]
