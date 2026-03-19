@@ -79,11 +79,12 @@ class Record:
 
 
 class Message(Record):
-    def __init__(self, ai: bool, content: MessageContent, tokens: int = 0):
+    def __init__(self, ai: bool, content: MessageContent, tokens: int = 0, importance: float = 0.5):
         self.ai = ai
         self.content = content
         self.summary: str = ""
         self.tokens: int = tokens or self.calculate_tokens()
+        self.importance: float = importance  # 0.0 (trivial) → 1.0 (critical, never compress)
 
     def get_tokens(self) -> int:
         if not self.tokens:
@@ -120,12 +121,13 @@ class Message(Record):
             "content": self.content,
             "summary": self.summary,
             "tokens": self.tokens,
+            "importance": self.importance,
         }
 
     @staticmethod
     def from_dict(data: dict, history: "History"):
         content = data.get("content", "Content lost")
-        msg = Message(ai=data["ai"], content=content)  # type: ignore[abstract]
+        msg = Message(ai=data["ai"], content=content, importance=data.get("importance", 0.5))  # type: ignore[abstract]
         msg.summary = data.get("summary", "")
         msg.tokens = data.get("tokens", 0)
         return msg
@@ -159,6 +161,9 @@ class Topic(Record):
         self.summary = await self.summarize_messages(self.messages)
         return self.summary
 
+    # Messages with importance >= this threshold are never compressed
+    HIGH_IMPORTANCE_THRESHOLD = 0.8
+
     def compress_large_messages(
         self, message_ratio: float = CURRENT_TOPIC_RATIO * LARGE_MESSAGE_TO_CURRENT_TOPIC_RATIO
     ) -> bool:
@@ -166,14 +171,17 @@ class Topic(Record):
         msg_max_size = set["chat_model_ctx_length"] * set["chat_model_ctx_history"] * message_ratio
         large_msgs = []
         for m in (m for m in self.messages if not m.summary):
-            # TODO refactor this
+            # Skip high-importance messages — they should survive compression
+            if m.importance >= self.HIGH_IMPORTANCE_THRESHOLD:
+                continue
             out = m.output()
             text = output_text(out)
             tok = m.get_tokens()
             leng = len(text)
             if tok > msg_max_size:
                 large_msgs.append((m, tok, leng, out))
-        large_msgs.sort(key=lambda x: x[1], reverse=True)
+        # Compress lowest-importance large messages first
+        large_msgs.sort(key=lambda x: x[0].importance)
         for msg, tok, leng, out in large_msgs:
             trim_to_chars = leng * (msg_max_size / tok)
             # raw messages will be replaced as a whole, they would become invalid when truncated
@@ -200,17 +208,24 @@ class Topic(Record):
         return compress
 
     async def compress_attention(self, ratio: float = CURRENT_TOPIC_ATTENTION_COMPRESSION) -> bool:
-        middle = len(self.messages) - 2
-        if middle < 2:
+        # Build candidate list excluding high-importance messages
+        candidates = [m for m in self.messages[1:-1] if m.importance < self.HIGH_IMPORTANCE_THRESHOLD]
+        if len(candidates) < 2:
             return False
-        cnt_to_sum = middle - math.floor(middle * ratio)
+        cnt_to_sum = len(candidates) - math.floor(len(candidates) * ratio)
         if cnt_to_sum < 1:
             return False
-        msg_to_sum = self.messages[1 : cnt_to_sum + 1]
+        # Summarize the lowest-importance candidates first
+        candidates_sorted = sorted(candidates, key=lambda m: m.importance)
+        msg_to_sum = candidates_sorted[:cnt_to_sum]
+
         summary = await self.summarize_messages(msg_to_sum)
         sum_msg_content = self.history.agent.parse_prompt("fw.msg_summary.md", summary=summary)
-        sum_msg = Message(False, sum_msg_content)  # type: ignore[abstract]
-        self.messages[1 : cnt_to_sum + 1] = [sum_msg]
+        sum_msg = Message(False, sum_msg_content, importance=0.1)  # summary has low importance
+
+        # Replace summarized messages with the summary, preserving first and last
+        remaining = [m for m in self.messages if m not in msg_to_sum]
+        self.messages = [remaining[0], sum_msg] + remaining[1:]
         return True
 
     async def summarize_messages(self, messages: list[Message]):

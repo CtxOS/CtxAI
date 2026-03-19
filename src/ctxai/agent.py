@@ -742,35 +742,47 @@ class Agent:
 
 
 class AgentMemory:
-    """Per-agent memory with short-term observations and long-term facts.
+    """Per-agent memory backed by ``MemoryManager``.
 
-    ``observations``: transient notes from the current session
-      (cleared on reset).  Each entry is ``{key, value, timestamp}``.
-
-    ``facts``: persistent knowledge that survives resets.
-      Stored as a simple key→value map.
-
-    ``recent_tool_results``: rolling window of the last *N* tool outputs
-      so the agent can reference them without re-invoking.
+    Three memory tiers:
+      - ``observations``: transient session notes (cleared on reset)
+      - ``facts`` via MemoryManager: persistent knowledge with importance + TTL
+      - ``recent_tool_results``: rolling window of the last *N* tool outputs
     """
 
     MAX_RECENT_TOOLS = 20
 
-    def __init__(self) -> None:
+    def __init__(self, manager: Any = None) -> None:
         self.observations: list[dict[str, Any]] = []
-        self.facts: dict[str, Any] = {}
         self.recent_tool_results: list[dict[str, Any]] = []
+
+        # Lazy import to avoid circular deps at module load
+        from ctxai.helpers.memory_manager import MemoryManager
+
+        self._manager: Any = manager or MemoryManager()
+
+    @property
+    def manager(self) -> Any:
+        return self._manager
 
     # -- observations -------------------------------------------------------
 
-    def observe(self, key: str, value: Any) -> None:
-        """Record a short-lived observation."""
+    def observe(self, key: str, value: Any, importance: float = 0.3) -> None:
+        """Record a short-lived observation in both local list and manager."""
         self.observations.append(
             {
                 "key": key,
                 "value": value,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
+        )
+        self._manager.remember(
+            key=key,
+            value=value,
+            importance=importance,
+            memory_type="short",
+            source="observation",
+            ttl=3600,  # 1 hour default TTL for observations
         )
 
     def get_observations(self, key: str | None = None) -> list[dict[str, Any]]:
@@ -780,15 +792,31 @@ class AgentMemory:
 
     # -- facts --------------------------------------------------------------
 
-    def remember(self, key: str, value: Any) -> None:
-        """Store a persistent fact."""
-        self.facts[key] = value
+    def remember(self, key: str, value: Any, importance: float = 0.8, topic: str = "") -> None:
+        """Store a persistent fact with importance rating."""
+        self._manager.remember(
+            key=key,
+            value=value,
+            importance=importance,
+            memory_type="long",
+            topic=topic,
+            source="agent",
+        )
 
     def recall(self, key: str, default: Any = None) -> Any:
-        return self.facts.get(key, default)
+        entry = self._manager.get(key, memory_type="long")
+        if entry:
+            return entry.value
+        return default
 
-    def forget(self, key: str) -> None:
-        self.facts.pop(key, None)
+    def recall_by_query(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
+        """Search long-term memory by keyword."""
+        entries = self._manager.retrieve(query, top_k=top_k, memory_type="long")
+        return [{"key": e.key, "value": e.value, "importance": e.importance} for e in entries]
+
+    def forget(self, key: str | None = None, policy: str = "exact") -> int:
+        """Remove facts by key or policy (age/budget/importance/expired)."""
+        return self._manager.forget(key=key, policy=policy, memory_type="long")
 
     # -- tool results -------------------------------------------------------
 
@@ -811,17 +839,23 @@ class AgentMemory:
     # -- lifecycle ----------------------------------------------------------
 
     def reset(self) -> None:
-        """Clear observations and tool results (facts persist)."""
+        """Clear observations and tool results (facts persist via manager)."""
         self.observations.clear()
         self.recent_tool_results.clear()
+        self._manager.forget(policy="expired")
+
+    def enforce_budget(self, max_short: int = 200, max_long: int = 1000) -> None:
+        """Apply memory budget limits."""
+        self._manager.enforce_budget(max_short=max_short, max_long=max_long)
 
     def summary(self) -> str:
         """Return a compact text summary of current memory state."""
+        stats = self._manager.stats()
         parts: list[str] = []
-        if self.facts:
-            parts.append("Known facts: " + "; ".join(f"{k}={v}" for k, v in list(self.facts.items())[:10]))
-        if self.observations:
-            parts.append(f"Recent observations: {len(self.observations)} entries")
+        if stats["long_term_count"] > 0:
+            parts.append(f"Long-term: {stats['long_term_count']} entries")
+        if stats["short_term_count"] > 0:
+            parts.append(f"Short-term: {stats['short_term_count']} entries")
         if self.recent_tool_results:
             tools = [r["tool"] for r in self.recent_tool_results[-5:]]
             parts.append("Recent tools: " + ", ".join(tools))
