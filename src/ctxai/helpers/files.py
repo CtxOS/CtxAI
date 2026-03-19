@@ -11,9 +11,8 @@ from abc import ABC, abstractmethod
 from fnmatch import fnmatch
 from typing import Any, Literal
 
-from simpleeval import simple_eval
-
 from ctxai.helpers import yaml
+from ctxai.helpers.safe_eval import safe_eval_condition
 
 AGENTS_DIR = "agents"
 PLUGINS_DIR = "plugins"
@@ -180,7 +179,7 @@ def evaluate_text_conditions(_content: str, **kwargs):
         after = text[m.end() :]
 
         try:
-            result = simple_eval(condition, names=kwargs)
+            result = safe_eval_condition(condition, kwargs)
         except Exception:
             # On evaluation error, do not modify this block
             return text

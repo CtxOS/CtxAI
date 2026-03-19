@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, List, Sequence
+from typing import List, Sequence
 from langchain.storage import InMemoryByteStore, LocalFileStore
 from langchain.embeddings import CacheBackedEmbeddings
 from ctxai.helpers import guids
@@ -30,7 +30,8 @@ from enum import Enum
 from ctxai.agent import Agent, AgentContext
 import ctxai.models as models
 import logging
-from simpleeval import simple_eval
+
+from ctxai.helpers.safe_eval import make_comparator
 
 
 # Raise the log level so WARNING messages aren't shown
@@ -407,15 +408,7 @@ class Memory:
 
     @staticmethod
     def _get_comparator(condition: str):
-        def comparator(data: dict[str, Any]):
-            try:
-                result = simple_eval(condition, names=data)
-                return result
-            except Exception as e:
-                PrintStyle.error(f"Error evaluating condition: {e}")
-                return False
-
-        return comparator
+        return make_comparator(condition)
 
     @staticmethod
     def _score_normalizer(val: float) -> float:

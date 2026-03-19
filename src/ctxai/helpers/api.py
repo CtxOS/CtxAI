@@ -212,6 +212,7 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
         # Resolve file path for the handler
         # Try built-in api folder first, then plugin api folders
         handler_cls: type[ApiHandler] | None = None
+        is_plugin_handler = False
 
         # Check built-in python/api/<path>.py
         builtin_file = files.get_abs_path(f"api/{path}.py")
@@ -232,6 +233,7 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
                         classes = load_classes_from_file(str(plugin_file), ApiHandler)  # type: ignore[type-abstract]
                         if classes:
                             handler_cls = classes[0]
+                            is_plugin_handler = True
 
         if handler_cls is None:
             return Response(f"API endpoint not found: {path}", 404)
@@ -242,15 +244,17 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
 
         # Build handler call, wrapping with security decorators as required
         async def call_handler() -> BaseResponse:
-            instance = handler_cls(app, lock)
+            instance = handler_cls(app, lock)  # type: ignore[misc]
             return await instance.handle_request(request=request)
 
         handler_fn = call_handler
-        if handler_cls.requires_csrf():
+        # Plugin handlers MUST always require auth + CSRF regardless of
+        # what the handler class declares.  Only built-in handlers may opt out.
+        if is_plugin_handler or handler_cls.requires_csrf():
             handler_fn = csrf_protect(handler_fn)
-        if handler_cls.requires_api_key():
+        if is_plugin_handler or handler_cls.requires_api_key():
             handler_fn = requires_api_key(handler_fn)
-        if handler_cls.requires_auth():
+        if is_plugin_handler or handler_cls.requires_auth():
             handler_fn = requires_auth(handler_fn)
         if handler_cls.requires_loopback():
             handler_fn = requires_loopback(handler_fn)

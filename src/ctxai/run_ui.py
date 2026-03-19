@@ -20,6 +20,30 @@ from ctxai.helpers.api import register_api_route, requires_auth
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers import login
 import socketio  # type: ignore[import-untyped]
+
+# Simple in-memory rate limiter for login attempts
+_login_attempts: dict[str, list[float]] = {}
+_LOGIN_MAX_ATTEMPTS = 10
+_LOGIN_WINDOW_SECONDS = 300  # 5 minutes
+
+
+def _check_login_rate_limit(remote_addr: str) -> bool:
+    """Return True if the request is allowed, False if rate-limited."""
+    import time
+
+    now = time.monotonic()
+    window_start = now - _LOGIN_WINDOW_SECONDS
+    attempts = _login_attempts.get(remote_addr, [])
+    # Prune old entries
+    attempts = [t for t in attempts if t > window_start]
+    if len(attempts) >= _LOGIN_MAX_ATTEMPTS:
+        _login_attempts[remote_addr] = attempts
+        return False
+    attempts.append(now)
+    _login_attempts[remote_addr] = attempts
+    return True
+
+
 from socketio import ASGIApp, packet
 from starlette.applications import Starlette
 from starlette.routing import Mount
@@ -89,15 +113,20 @@ websocket_manager.set_server_restart_broadcast(_settings.get("websocket_server_r
 async def login_handler():
     error = None
     if request.method == "POST":
-        user = dotenv.get_dotenv_value("AUTH_LOGIN")
-        password = dotenv.get_dotenv_value("AUTH_PASSWORD")
-
-        if request.form["username"] == user and request.form["password"] == password:
-            session["authentication"] = login.get_credentials_hash()
-            return redirect(url_for("serve_index"))
+        remote_addr = request.remote_addr or "unknown"
+        if not _check_login_rate_limit(remote_addr):
+            await asyncio.sleep(2)
+            error = "Too many login attempts. Please wait before trying again."
         else:
-            await asyncio.sleep(1)
-            error = "Invalid Credentials. Please try again."
+            user = dotenv.get_dotenv_value("AUTH_LOGIN")
+            password = dotenv.get_dotenv_value("AUTH_PASSWORD")
+
+            if request.form["username"] == user and request.form["password"] == password:
+                session["authentication"] = login.get_credentials_hash()
+                return redirect(url_for("serve_index"))
+            else:
+                await asyncio.sleep(1)
+                error = "Invalid Credentials. Please try again."
 
     login_page_content = files.read_file("webui/login.html")
     return render_template_string(login_page_content, error=error)
@@ -360,6 +389,12 @@ def run():
 
     # migrate data before anything else
     initialize.initialize_migration()
+
+    # Warn if authentication is not configured
+    if not login.is_login_required():
+        PrintStyle(background_color="yellow", font_color="black", padding=True).print(
+            "WARNING: No authentication configured. Set AUTH_LOGIN and AUTH_PASSWORD in usr/.env to secure access."
+        )
 
     # # Suppress only request logs but keep the startup messages
     # from werkzeug.serving import WSGIRequestHandler

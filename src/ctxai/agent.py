@@ -41,11 +41,20 @@ class AgentContextType(Enum):
     BACKGROUND = "background"
 
 
+# Maximum number of concurrent agent contexts before eviction kicks in.
+# Oldest non-running contexts are evicted first.
+MAX_CONTEXTS = 64
+
+# Maximum concurrent agent execution threads.
+MAX_CONCURRENT_TASKS = 16
+
+
 class AgentContext:
-    _contexts: dict[str, "AgentContext"] = {}
+    _contexts: OrderedDict[str, "AgentContext"] = OrderedDict()
     _contexts_lock = threading.RLock()
     _counter: int = 0
     _notification_manager = None
+    _task_semaphore = threading.Semaphore(MAX_CONCURRENT_TASKS)
 
     @extension.extensible
     def __init__(
@@ -68,10 +77,10 @@ class AgentContext:
         self.id = id or AgentContext.generate_id()
         existing = None
         with AgentContext._contexts_lock:
-            existing = AgentContext._contexts.get(self.id, None)
-            if existing:
-                AgentContext._contexts.pop(self.id, None)
+            existing = AgentContext._contexts.pop(self.id, None)
             AgentContext._contexts[self.id] = self
+            # Evict oldest non-running contexts if over capacity
+            AgentContext._evict_overflow()
         if existing and existing.task:
             existing.task.kill()
         if set_current:
@@ -84,6 +93,7 @@ class AgentContext:
         self.output_data = output_data or {}
         self.log = log or Log.Log()
         self.log.context = self
+        self.trace_id = self.log.guid  # correlation ID for observability
         self.paused = paused
         self.streaming_agent = streaming_agent
         self.task: DeferredTask | None = None
@@ -144,6 +154,26 @@ class AgentContext:
                 if short_id not in AgentContext._contexts:
                     return short_id
 
+    @staticmethod
+    def _evict_overflow():
+        """Evict oldest non-running contexts when capacity is exceeded.
+
+        Must be called while holding ``_contexts_lock``.
+        """
+        while len(AgentContext._contexts) > MAX_CONTEXTS:
+            evicted = None
+            # Walk from oldest to newest; prefer evicting non-running contexts
+            for ctx_id, ctx in AgentContext._contexts.items():
+                if not ctx.is_running():
+                    evicted = ctx_id
+                    break
+            # If every context is running, evict the oldest regardless
+            if evicted is None:
+                evicted = next(iter(AgentContext._contexts))
+            context = AgentContext._contexts.pop(evicted, None)
+            if context and context.task:
+                context.task.kill()
+
     @classmethod
     def get_notification_manager(cls):
         if cls._notification_manager is None:
@@ -181,6 +211,7 @@ class AgentContext:
     def output(self):
         return {
             "id": self.id,
+            "trace_id": self.trace_id,
             "name": self.name,
             "created_at": (
                 Localization.get().serialize_datetime(self.created_at)
@@ -268,7 +299,15 @@ class AgentContext:
             self.task = DeferredTask(
                 thread_name=self.__class__.__name__,
             )
-        self.task.start_task(func, *args, **kwargs)
+
+        async def _guarded(*a: Any, **kw: Any) -> Any:
+            AgentContext._task_semaphore.acquire()
+            try:
+                return await func(*a, **kw)
+            finally:
+                AgentContext._task_semaphore.release()
+
+        self.task.start_task(_guarded, *args, **kwargs)
         return self.task
 
     # this wrapper ensures that superior agents are called back if the chat was loaded from file and original callstack is gone

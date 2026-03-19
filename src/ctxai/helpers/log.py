@@ -197,15 +197,19 @@ class LogItem:
             self.update(**{k: prev + v})
 
     def output(self):
+        trace_id = ""
+        if self.log and self.log.context:
+            trace_id = getattr(self.log.context, "trace_id", "") or ""
         return {
             "no": self.no,
-            "id": self.id,  # Include id in output
+            "id": self.id,
             "type": self.type,
             "heading": self.heading,
             "content": self.content,
             "kvps": self.kvps,
             "timestamp": self.timestamp,
             "agentno": self.agentno,
+            "trace_id": trace_id,
         }
 
 
