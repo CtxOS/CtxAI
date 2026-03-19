@@ -133,3 +133,8 @@ ignore = ["E402", "F841"]
 [tool.pre-commit]
 default_stages = ["pre-commit"]
 
+[dependency-groups]
+dev = [
+    "pytest-cov>=7.0.0",
+]
+
