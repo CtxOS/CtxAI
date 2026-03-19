@@ -117,6 +117,7 @@
       - any-glob-to-any-file:
           - docs/**
           - README.md
+          - ROADMAP.md
           - AGENTS.md
           - CHANGELOG.md
 
