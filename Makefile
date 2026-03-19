@@ -1,4 +1,4 @@
-.PHONY: build test docker-base-build docker-run-build docker-push pypi-build pypi-publish clean lint typecheck
+.PHONY: build test docker-base-build docker-run-build docker-push pypi-build pypi-publish clean lint typecheck format run-server run-agent help
 
 PYTHON := python
 PYTEST := pytest
@@ -43,13 +43,6 @@ format:
 # --- CLI Shortcuts ---
 run-server:
 	uv run ctxai server --host 0.0.0.0 --port 8000
-
-These changes ensure that all references to the container's root directory are updated to `/ctx/`. Let me know if you have any other questions!
-
-<!--
-[PROMPT_SUGGESTION]How do I add a new tool to the framework?[/PROMPT_SUGGESTION]
-[PROMPT_SUGGESTION]Explain the purpose of the `uv.lock` file.[/PROMPT_SUGGESTION]
--->
 
 run-agent:
 	uv run ctxai --debug agent --profile default --task "Analyze local log files"
