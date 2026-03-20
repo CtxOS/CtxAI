@@ -12,7 +12,7 @@ jobs:
   add-contributor:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Add contributor via script
         uses: peter-evans/create-or-update-comment@v4
         with:
