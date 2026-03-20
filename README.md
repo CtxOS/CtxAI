@@ -15,7 +15,8 @@
 [Installation](./docs/setup/installation.md) •
 [How to update](./docs/setup/installation.md#how-to-update-ctxai) <br>
 [Development Setup](./docs/setup/dev-setup.md) •
-[Usage](./docs/guides/usage.md)
+[Usage](./docs/guides/usage.md) •
+[Community](./docs/community.md)
 
 Or see DeepWiki generated documentation:
 
