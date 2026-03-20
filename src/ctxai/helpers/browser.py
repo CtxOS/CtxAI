@@ -39,7 +39,8 @@
 #             )
 #         if not self.context:
 #             self.context = await self.browser.new_context(
-#                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.141 Safari/537.36"
+#                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+#                 (KHTML, like Gecko) Chrome/125.0.6422.141 Safari/537.36"
 #             )
 #         self.page = await self.context.new_page()
 #         await self.page.set_viewport_size({"width": 1200, "height": 1200})
@@ -155,7 +156,8 @@
 #         # Replace iframe placeholders with actual content
 #         # for url, content in frame_contents.items():
 #         #     placeholder = f'<iframe src="{url}"'
-#         #     main_content = main_content.replace(placeholder, f'{placeholder}>\n<!-- IFrame Content Start -->\n{content}\n<!-- IFrame Content End -->\n</iframe')
+#         #                     main_content = main_content.replace(placeholder,
+#                     f'{placeholder}>\n<!-- IFrame Content Start -->\n{content}\n<!-- IFrame Content End -->\n</iframe')  # noqa: E501
 #         # return main_content + "".join(frame_contents.values())
 #         return "".join(frame_contents.values())
 #     def strip_html_dom(self, html_content: str) -> str:

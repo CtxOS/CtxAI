@@ -2,10 +2,10 @@ import asyncio
 import random
 import string
 import threading
+import time
 from collections import OrderedDict
 from collections.abc import Awaitable, Callable, Coroutine
 from dataclasses import dataclass, field
-import time
 from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
@@ -335,7 +335,7 @@ class AgentContext:
                     result = await coro
                 self.product_metrics["tasks_completed"] += 1
                 return result
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 self.product_metrics["tasks_timed_out"] += 1
                 raise
             except Exception:
@@ -348,13 +348,16 @@ class AgentContext:
                 self.product_metrics["total_task_duration_ms"] += duration_ms
                 completed = self.product_metrics["tasks_completed"]
                 if completed > 0:
-                    self.product_metrics["avg_task_duration_ms"] = self.product_metrics["total_task_duration_ms"] / completed
+                    self.product_metrics["avg_task_duration_ms"] = (
+                        self.product_metrics["total_task_duration_ms"] / completed
+                    )
                 await loop.run_in_executor(None, AgentContext._task_semaphore.release)
 
         self.task.start_task(_guarded, *args, **kwargs)
         return self.task
 
-    # this wrapper ensures that superior agents are called back if the chat was loaded from file and original callstack is gone
+    # this wrapper ensures that superior agents are called back if the chat was loaded from file
+    # and original callstack is gone
     @extension.extensible
     async def _process_chain(self, agent: "Agent", msg: "UserMessage|str", user=True):
         from ctxai.helpers.agent_orchestrator import run_process_chain

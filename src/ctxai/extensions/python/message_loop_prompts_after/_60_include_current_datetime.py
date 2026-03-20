@@ -6,7 +6,7 @@ from ctxai.helpers.localization import Localization
 
 
 class IncludeCurrentDatetime(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 

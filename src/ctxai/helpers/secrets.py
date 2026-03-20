@@ -214,7 +214,8 @@ class SecretsManager:
                     # If read fails and submitted contains masked values, abort to avoid losing values/comments
                     if self.MASK_VALUE in submitted_content:
                         raise RepairableException(
-                            "Saving secrets failed because existing secrets could not be read to preserve masked values and comments. Please retry.",
+                            "Saving secrets failed because existing secrets could not be read "
+                            "to preserve masked values and comments. Please retry.",
                         ) from e
                     # No masked values, safe to treat as new file
                     existing_text = ""

@@ -97,7 +97,7 @@ class SchedulerTaskCreate(ApiHandler):
                 try:
                     task_schedule = parse_task_schedule(schedule)
                 except ValueError as e:
-                    raise ValueError(str(e))
+                    raise ValueError(str(e)) from e
             else:
                 raise ValueError("Invalid schedule format. Must be string or object.")
 

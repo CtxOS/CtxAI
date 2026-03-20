@@ -6,7 +6,7 @@ DATA_NAME_TASK = "_organize_history_task"
 
 
 class OrganizeHistory(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 

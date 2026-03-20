@@ -8,7 +8,9 @@ from ctxai.helpers.settings import get_settings
 
 
 class SystemPrompt(Extension):
-    async def execute(self, system_prompt: list[str] = [], loop_data: LoopData = LoopData(), **kwargs: Any):
+    async def execute(self, system_prompt: list[str] = None, loop_data: LoopData | None = None, **kwargs: Any):
+        if system_prompt is None:
+            system_prompt = []
         if not self.agent:
             return
 

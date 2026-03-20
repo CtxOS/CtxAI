@@ -23,7 +23,11 @@ class GetCsrfToken(ApiHandler):
         if not origin_check["ok"]:
             return {
                 "ok": False,
-                "error": f"Origin {self.get_origin_from_request(request)} not allowed when login is disabled. Set login and password or add your URL to ALLOWED_ORIGINS env variable. Currently allowed origins: {','.join(origin_check['allowed_origins'])}",
+                "error": (
+                    f"Origin {self.get_origin_from_request(request)} not allowed when login is disabled. "
+                    "Set login and password or add your URL to ALLOWED_ORIGINS env variable. "
+                    f"Currently allowed origins: {','.join(origin_check['allowed_origins'])}"
+                ),
             }
 
         # generate a csrf token if it doesn't exist

@@ -7,7 +7,9 @@ from ctxai.plugins._memory.helpers import memory
 
 
 class BehaviourPrompt(Extension):
-    async def execute(self, system_prompt: list[str] = [], loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, system_prompt: list[str] = None, loop_data: LoopData | None = None, **kwargs):
+        if system_prompt is None:
+            system_prompt = []
         if not self.agent:
             return
 

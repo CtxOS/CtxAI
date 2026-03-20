@@ -5,9 +5,9 @@ import threading
 import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 from os.path import exists
-from typing import Annotated, Any, ClassVar, Literal, Optional, TypeVar, cast
+from typing import Annotated, Any, ClassVar, Literal, Optional, cast
 from urllib.parse import urlparse
 
 import nest_asyncio
@@ -33,14 +33,14 @@ SCHEDULER_FOLDER = "usr/scheduler"
 # ----------------------
 
 
-class TaskState(str, Enum):
+class TaskState(StrEnum):
     IDLE = "idle"
     RUNNING = "running"
     DISABLED = "disabled"
     ERROR = "error"
 
 
-class TaskType(str, Enum):
+class TaskType(StrEnum):
     AD_HOC = "adhoc"
     SCHEDULED = "scheduled"
     PLANNED = "planned"
@@ -64,7 +64,11 @@ class TaskPlan(BaseModel):
     done: list[datetime] = Field(default_factory=list)
 
     @classmethod
-    def create(cls, todo: list[datetime] = list(), in_progress: datetime | None = None, done: list[datetime] = list()):
+    def create(cls, todo: list[datetime] = None, in_progress: datetime | None = None, done: list[datetime] = None):
+        if done is None:
+            done = list()
+        if todo is None:
+            todo = list()
         if todo:
             for idx, dt in enumerate(todo):
                 if dt.tzinfo is None:
@@ -243,11 +247,13 @@ class AdHocTask(BaseTask):
         system_prompt: str,
         prompt: str,
         token: str,
-        attachments: list[str] = list(),
+        attachments: list[str] = None,
         context_id: str | None = None,
         project_name: str | None = None,
         project_color: str | None = None,
     ):
+        if attachments is None:
+            attachments = list()
         return cls(
             name=name,
             system_prompt=system_prompt,
@@ -297,13 +303,15 @@ class ScheduledTask(BaseTask):
         system_prompt: str,
         prompt: str,
         schedule: TaskSchedule,
-        attachments: list[str] = list(),
+        attachments: list[str] = None,
         context_id: str | None = None,
         timezone: str | None = None,
         project_name: str | None = None,
         project_color: str | None = None,
     ):
         # Set timezone in schedule if provided
+        if attachments is None:
+            attachments = list()
         if timezone is not None:
             schedule.timezone = timezone
         else:
@@ -385,11 +393,13 @@ class PlannedTask(BaseTask):
         system_prompt: str,
         prompt: str,
         plan: TaskPlan,
-        attachments: list[str] = list(),
+        attachments: list[str] = None,
         context_id: str | None = None,
         project_name: str | None = None,
         project_color: str | None = None,
     ):
+        if attachments is None:
+            attachments = list()
         return cls(
             name=name,
             system_prompt=system_prompt,
@@ -520,7 +530,8 @@ class SchedulerTaskList(BaseModel):
                 if isinstance(task, AdHocTask):
                     if task.token is None or task.token == "":
                         PrintStyle.warning(
-                            f"WARNING: AdHocTask {task.name} ({task.uuid}) has a null or empty token before saving: '{task.token}'",
+                            f"WARNING: AdHocTask {task.name} ({task.uuid}) has a null or empty token before saving: "
+                            f"'{task.token}'",
                         )
                         # Generate a new token to prevent errors
                         task.token = str(random.randint(1000000000000000000, 9999999999999999999))
@@ -689,7 +700,7 @@ class TaskScheduler:
 
     async def add_task(self, task: ScheduledTask | AdHocTask | PlannedTask) -> "TaskScheduler":
         await self._tasks.add_task(task)
-        ctx = await self._get_chat_context(task)  # invoke context creation
+        await self._get_chat_context(task)  # invoke context creation
         from ctxai.helpers.state_monitor_integration import mark_dirty_all
 
         mark_dirty_all(reason="task_scheduler.TaskScheduler.add_task")
@@ -1039,7 +1050,7 @@ def parse_datetime(dt_str: str | None) -> datetime | None:
         # Use the Localization singleton for consistent timezone handling
         return Localization.get().localtime_str_to_utc_dt(dt_str)
     except ValueError as e:
-        raise ValueError(f"Invalid datetime format: {dt_str}. Expected ISO format. Error: {e}")
+        raise ValueError(f"Invalid datetime format: {dt_str}. Expected ISO format. Error: {e}") from e
 
 
 def serialize_task_schedule(schedule: TaskSchedule) -> dict[str, str]:
@@ -1130,9 +1141,6 @@ def parse_task_plan(plan_data: dict[str, Any]) -> TaskPlan:
         return TaskPlan(todo=[], in_progress=None, done=[])
 
 
-T = TypeVar("T", bound=ScheduledTask | AdHocTask | PlannedTask)
-
-
 def serialize_task(task: ScheduledTask | AdHocTask | PlannedTask) -> dict[str, Any]:
     """
     Standardized serialization for task objects with proper handling of all complex types.
@@ -1183,7 +1191,7 @@ def serialize_tasks(tasks: list[ScheduledTask | AdHocTask | PlannedTask]) -> lis
     return [serialize_task(task) for task in tasks]
 
 
-def deserialize_task(task_data: dict[str, Any], task_class: type[T] | None = None) -> T:
+def deserialize_task[T: BaseModel](task_data: dict[str, Any], task_class: type[T] | None = None) -> T:
     """
     Deserialize dictionary into appropriate task object with validation.
     If task_class is provided, uses that type. Otherwise determines type from data.

@@ -119,7 +119,7 @@ class DeferredTask:
         try:
             return self._future.result(timeout)
         except TimeoutError:
-            raise TimeoutError("The task did not complete within the specified timeout.")
+            raise TimeoutError("The task did not complete within the specified timeout.") from None
 
     async def result(self, timeout: float | None = None) -> Any:
         if not self._future:

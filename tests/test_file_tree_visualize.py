@@ -8,7 +8,7 @@ from collections.abc import Callable, Iterable
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 try:
     import pytest  # type: ignore
@@ -45,7 +45,7 @@ class Config:
     params: dict[str, Any]
 
 
-SetupHook = Optional[Callable[[str], None]]
+SetupHook = Callable[[str], None] | None
 
 
 @dataclass(slots=True)

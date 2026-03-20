@@ -42,7 +42,8 @@ def validate_plugin_dir(path: str, plugin_name: str = "") -> PluginMetadata:
     model = PluginMetadata.model_validate(data)
     if plugin_name and plugin_name != model.name:
         raise ValueError(
-            f"Plugin name is incorrect: expected '{plugin_name}', got '{model.name}'. The author needs to correct this in the plugin.yaml file.",
+            f"Plugin name is incorrect: expected '{plugin_name}', got '{model.name}'. "
+            "The author needs to correct this in the plugin.yaml file.",
         )
     return model
 
@@ -57,7 +58,7 @@ def check_plugin_conflict(name: str) -> None:
 def _find_plugin_root(extracted_dir: str) -> str:
     """Walk extracted directory to find the parent of plugin.yaml.
     Returns absolute path to the plugin root directory."""
-    for root, dirs, dir_files in os.walk(extracted_dir):
+    for root, _dirs, dir_files in os.walk(extracted_dir):
         if META_FILE_NAME in dir_files:
             return root
     raise ValueError(f"No {META_FILE_NAME} found in the uploaded archive")

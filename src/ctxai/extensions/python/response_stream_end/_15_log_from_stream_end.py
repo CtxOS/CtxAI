@@ -5,12 +5,14 @@ from ctxai.helpers.extension import Extension
 class LogFromStream(Extension):
     async def execute(
         self,
-        loop_data: LoopData = LoopData(),
+        loop_data: LoopData | None = None,
         text: str = "",
-        parsed: dict = {},
+        parsed: dict = None,
         **kwargs,
     ):
         # get log item from loop data temporary params
+        if parsed is None:
+            parsed = {}
         log_item = loop_data.params_temporary["log_item_generating"]
         if log_item is None:
             return

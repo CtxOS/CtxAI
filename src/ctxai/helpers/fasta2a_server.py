@@ -220,7 +220,8 @@ class DynamicA2AProxy:
                 {  # type: ignore
                     "id": "general_assistance",
                     "name": "General AI Assistant",
-                    "description": "Provides general AI assistance including code execution, file management, web browsing, and problem solving",
+                    "description": "Provides general AI assistance including code execution, "
+                    "file management, web browsing, and problem solving",
                     "tags": ["ai", "assistant", "code", "files", "web", "automation"],
                     "examples": [
                         "Write and execute Python code",

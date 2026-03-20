@@ -10,7 +10,7 @@ from ctxai.plugins._memory.extensions.python.message_loop_prompts_after._50_reca
 
 
 class RecallWait(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 

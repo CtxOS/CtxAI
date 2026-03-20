@@ -17,7 +17,6 @@ class ImageGet(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
         # input data
         path = input.get("path", request.args.get("path", ""))
-        metadata = input.get("metadata", request.args.get("metadata", "false")).lower() == "true"
 
         if not path:
             raise ValueError("No path provided")

@@ -41,7 +41,8 @@ class StateSyncHandler(WebSocketHandler):
         if _ws_debug_enabled():
             PrintStyle.debug(
                 f"[StateSyncHandler] state_request sid={sid} context={request.context!r} "
-                f"log_from={request.log_from} notifications_from={request.notifications_from} timezone={request.timezone!r} "
+                f"log_from={request.log_from} notifications_from={request.notifications_from} "  # noqa: E501
+                f"timezone={request.timezone!r} "
                 f"correlation_id={correlation_id}",
             )
 

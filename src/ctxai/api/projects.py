@@ -70,7 +70,7 @@ class Projects(ApiHandler):
             raise Exception("Git URL is required")
 
         # Progress notification
-        notification = NotificationManager.send_notification(
+        NotificationManager.send_notification(
             NotificationType.PROGRESS,
             NotificationPriority.NORMAL,
             "Cloning repository...",

@@ -71,9 +71,11 @@ class AgentConnection:
                     except Exception:
                         pass  # swallow, will re-raise below
                 _PRINTER.print(
-                    f"[!] Could not connect to {self.agent_url}\n    → Ensure the server is running and reachable.\n    → Full error: {e}",
+                    f"[!] Could not connect to {self.agent_url}\n"
+                    f"    → Ensure the server is running and reachable.\n"
+                    f"    → Full error: {e}",
                 )
-                raise RuntimeError(f"Could not retrieve agent card: {e}")
+                raise RuntimeError(f"Could not retrieve agent card: {e}") from e
 
         return self._agent_card  # type: ignore
 
@@ -140,7 +142,7 @@ class AgentConnection:
             return response  # type: ignore
         except Exception as e:
             _PRINTER.print(f"Failed to get task {task_id}: {e}")
-            raise RuntimeError(f"Failed to get task: {e}")
+            raise RuntimeError(f"Failed to get task: {e}") from e
 
     async def wait_for_completion(self, task_id: str, poll_interval: int = 2, max_wait: int = 300) -> dict[str, Any]:
         """Wait for a task to complete and return the final result.

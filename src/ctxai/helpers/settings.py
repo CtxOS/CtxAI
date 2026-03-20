@@ -3,7 +3,7 @@ import hashlib
 import json
 import os
 import subprocess
-from typing import Any, Literal, TypedDict, TypeVar, cast
+from typing import Any, Literal, TypedDict, cast
 
 import ctxai.models as models
 from ctxai.helpers import defer, git, runtime, subagents, whisper
@@ -15,10 +15,8 @@ from ctxai.helpers.secrets import get_default_secrets_manager
 
 from . import dotenv, files
 
-T = TypeVar("T")
 
-
-def get_default_value(name: str, value: T) -> T:
+def get_default_value[T](name: str, value: T) -> T:
     """
     Load setting value from .env with A0_SET_ prefix, falling back to default.
 
@@ -210,10 +208,11 @@ SETTINGS_FILE = files.get_abs_path("usr/settings.json")
 _settings: Settings | None = None
 _runtime_settings_snapshot: Settings | None = None
 
-OptionT = TypeVar("OptionT", bound=FieldOption)
 
-
-def _ensure_option_present(options: list[OptionT] | None, current_value: str | None) -> list[OptionT]:
+def _ensure_option_present[OptionT: FieldOption](
+    options: list[OptionT] | None,
+    current_value: str | None,
+) -> list[OptionT]:
     """
     Ensure the currently selected value exists in a dropdown options list.
     If missing, inserts it at the front as {value: current_value, label: current_value}.
@@ -604,7 +603,7 @@ def _apply_settings(previous: Settings | None):
 
         # reload whisper model if necessary
         if not previous or _settings["stt_model_size"] != previous["stt_model_size"]:
-            task = defer.DeferredTask().start_task(
+            defer.DeferredTask().start_task(
                 whisper.preload,
                 _settings["stt_model_size"],
             )  # TODO overkill, replace with background task
@@ -663,7 +662,7 @@ def _apply_settings(previous: Settings | None):
                     group="settings-mcp",
                 )
 
-            task2 = defer.DeferredTask().start_task(
+            defer.DeferredTask().start_task(
                 update_mcp_settings,
                 config.mcp_servers,
             )  # TODO overkill, replace with background task
@@ -679,7 +678,7 @@ def _apply_settings(previous: Settings | None):
 
                 DynamicMcpProxy.get_instance().reconfigure(token=token)
 
-            task3 = defer.DeferredTask().start_task(
+            defer.DeferredTask().start_task(
                 update_mcp_token,
                 current_token,
             )  # TODO overkill, replace with background task
@@ -692,7 +691,7 @@ def _apply_settings(previous: Settings | None):
 
                 DynamicA2AProxy.get_instance().reconfigure(token=token)
 
-            task4 = defer.DeferredTask().start_task(
+            defer.DeferredTask().start_task(
                 update_a2a_token,
                 current_token,
             )  # TODO overkill, replace with background task
@@ -734,7 +733,7 @@ def _dict_to_env(data_dict):
             # Quote strings and escape internal quotes
             escaped_value = value.replace('"', '\\"')
             lines.append(f'{key}="{escaped_value}"')
-        elif isinstance(value, (dict, list, bool)) or value is None:
+        elif isinstance(value, dict | list | bool) or value is None:
             # Serialize as unquoted JSON
             lines.append(f"{key}={json.dumps(value, separators=(',', ':'))}")
         else:

@@ -8,7 +8,7 @@ from ctxai.helpers.extension import Extension
 class ProcessQueue(Extension):
     """Process queued messages after monologue ends."""
 
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 

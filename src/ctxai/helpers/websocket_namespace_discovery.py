@@ -126,7 +126,8 @@ def discover_websocket_namespaces(
 
             if not handler_classes:
                 PrintStyle.warning(
-                    f"WebSocket handlers folder entry '{entry_path}' is empty; treating namespace '{namespace}' as unregistered",
+                    f"WebSocket handlers folder entry '{entry_path}' is empty; "
+                    f"treating namespace '{namespace}' as unregistered",
                 )
                 continue
 

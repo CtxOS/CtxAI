@@ -93,7 +93,8 @@ async def send_message(
         Annotated[
             list[str],
             Field(
-                description="Optional: A list of attachments (file paths or web urls) to send to the remote Ctx AI Instance with the message. Default: Empty list",
+                description="Optional: A list of attachments (file paths or web urls) to send to the remote Ctx AI "
+                "Instance with the message. Default: Empty list",
                 title="attachments",
             ),
         ]
@@ -103,7 +104,8 @@ async def send_message(
         Annotated[
             str,
             Field(
-                description="Optional: ID of the chat. Used to continue a chat. This value is returned in response to sending previous message. Default: Empty string",
+                description="Optional: ID of the chat. Used to continue a chat. This value is returned in response "
+                "to sending previous message. Default: Empty string",
                 title="chat_id",
             ),
         ]
@@ -113,7 +115,8 @@ async def send_message(
         Annotated[
             bool,
             Field(
-                description="Optional: Whether to use a persistent chat. If true, the chat will be saved and can be continued later. Default: False.",
+                description="Optional: Whether to use a persistent chat. If true, the chat will be saved "
+                "and can be continued later. Default: False.",
                 title="persistent_chat",
             ),
         ]
@@ -172,7 +175,8 @@ async def send_message(
 
 FINISH_CHAT_DESCRIPTION = """
 Finish a chat with the remote Ctx AI Instance.
-This tool is used to finish a persistent chat (send_message with persistent_chat=True) with the remote Ctx AI Instance connected remotely via MCP.
+This tool is used to finish a persistent chat (send_message with persistent_chat=True) with the remote Ctx AI Instance
+connected remotely via MCP.
 If you want to continue the chat, use the send_message tool instead.
 Always use this tool to finish persistent chat conversations with remote Ctx AI.
 """
@@ -206,7 +210,8 @@ async def finish_chat(
     chat_id: Annotated[
         str,
         Field(
-            description="ID of the chat to be finished. This value is returned in response to sending previous message.",
+            description="ID of the chat to be finished. This value is returned "
+            "in response to sending previous message.",
             title="chat_id",
         ),
     ],

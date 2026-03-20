@@ -6,7 +6,7 @@ from ctxai.helpers.extension import Extension
 
 
 class LogFromStream(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), text: str = "", **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, text: str = "", **kwargs):
         if not self.agent:
             return
 

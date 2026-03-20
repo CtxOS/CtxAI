@@ -111,7 +111,7 @@ class SchedulerTool(Tool):
             return Response(message=f"Task not found: {task_uuid}", break_loop=False)
         await TaskScheduler.get().run_task_by_uuid(task_uuid, task_context)
         if task.context_id == self.agent.context.id:
-            break_loop = True  # break loop if task is running in the same context, otherwise it would start two conversations in one window
+            break_loop = True  # break if task is in same context
         else:
             break_loop = False
         return Response(message=f"Task started: {task_uuid}", break_loop=break_loop)
@@ -148,7 +148,8 @@ class SchedulerTool(Tool):
     async def create_scheduled_task(self, **kwargs) -> Response:
         # "name": "XXX",
         #   "system_prompt": "You are a software developer",
-        #   "prompt": "Send the user an email with a greeting using python and smtp. The user's address is: xxx@yyy.zzz",
+        #   "prompt": "Send the user an email with a greeting using python and smtp. "
+        #             "The user's address is: xxx@yyy.zzz",
         #   "attachments": [],
         #   "schedule": {
         #       "minute": "*/20",
@@ -286,6 +287,7 @@ class SchedulerTool(Tool):
                 done = True
 
         return Response(
-            message=f"*Task*: {task_uuid}\n*State*: {task.state}\n*Last run*: {serialize_datetime(task.last_run)}\n*Result*:\n{task.last_result}",
+            message=f"*Task*: {task_uuid}\n*State*: {task.state}\n"  # noqa: E501
+            f"*Last run*: {serialize_datetime(task.last_run)}\n*Result*:\n{task.last_result}",
             break_loop=False,
         )

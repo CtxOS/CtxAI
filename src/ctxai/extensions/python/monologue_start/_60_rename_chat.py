@@ -6,7 +6,7 @@ from ctxai.helpers.extension import Extension
 
 
 class RenameChat(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         asyncio.create_task(self.change_name())
 
     async def change_name(self):

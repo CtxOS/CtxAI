@@ -17,7 +17,7 @@ notification_cooldown_seconds = 60 * 60 * 24
 
 
 class UpdateCheck(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), text: str = "", **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, text: str = "", **kwargs):
         if not self.agent:
             return
 

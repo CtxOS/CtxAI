@@ -3,7 +3,7 @@ import json
 import math
 from abc import abstractmethod
 from collections.abc import Mapping
-from typing import TypedDict, Union, cast
+from typing import TypedDict, cast
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
@@ -29,14 +29,14 @@ class RawMessage(TypedDict):
     preview: str | None
 
 
-MessageContent = Union[
-    list["MessageContent"],
-    dict[str, "MessageContent"],
-    list[dict[str, "MessageContent"]],
-    str,
-    list[str],
-    RawMessage,
-]
+MessageContent = (
+    list["MessageContent"]
+    | dict[str, "MessageContent"]
+    | list[dict[str, "MessageContent"]]
+    | str
+    | list[str]
+    | RawMessage
+)
 
 
 class OutputMessage(TypedDict):
@@ -294,7 +294,7 @@ class Bulk(Record):
     def from_dict(data: dict, history: "History"):
         bulk = Bulk(history=history)
         bulk.summary = data["summary"]
-        cls = data["_cls"]
+        data["_cls"]
         bulk.records = [Record.from_dict(r, history=history) for r in data["records"]]
         return bulk
 

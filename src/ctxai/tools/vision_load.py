@@ -12,9 +12,10 @@ TOKENS_ESTIMATE = 1500
 
 
 class VisionLoad(Tool):
-    async def execute(self, paths: list[str] = [], **kwargs) -> Response:
+    async def execute(self, paths: list[str] = None, **kwargs) -> Response:
+        if paths is None:
+            paths = []
         self.images_dict: dict[str, str | None] = {}
-        template: list[dict[str, str]] = []  # type: ignore
 
         for path in paths:
             if not await runtime.call_development_function(files.exists, str(path)):

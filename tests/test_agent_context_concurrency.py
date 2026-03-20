@@ -1,7 +1,8 @@
 import asyncio
 
 import pytest
-from ctxai.agent import AgentContext, AgentConfig
+
+from ctxai.agent import AgentConfig, AgentContext
 from ctxai.models import ModelConfig, ModelType
 
 
@@ -9,8 +10,12 @@ def make_config():
     return AgentConfig(
         chat_model=ModelConfig(type=ModelType.CHAT, provider="huggingface", name="some-model"),
         utility_model=ModelConfig(type=ModelType.CHAT, provider="huggingface", name="some-model"),
-        embeddings_model=ModelConfig(type=ModelType.EMBEDDING, provider="sentence-transformers", name="all-MiniLM-L6-v2"),
-        browser_model=ModelConfig(type=ModelType.BROWSER, provider="huggingface", name="some-model"),
+        embeddings_model=ModelConfig(
+            type=ModelType.EMBEDDING,
+            provider="sentence-transformers",
+            name="all-MiniLM-L6-v2",
+        ),
+        browser_model=ModelConfig(type=ModelType.CHAT, provider="huggingface", name="some-model"),
         mcp_servers="",
     )
 
@@ -21,7 +26,7 @@ def test_agent_context_eviction_limits():
 
     AgentContext.set_max_contexts(1)
     config = make_config()
-    first = AgentContext(config=config, name="first")
+    AgentContext(config=config, name="first")
     second = AgentContext(config=config, name="second")
 
     assert len(AgentContext.all()) == 1

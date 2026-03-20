@@ -176,7 +176,7 @@ async def load_metrics(
             "throughput_per_sec": len(batch) / max(0.001, (end - start)),
         }
 
-        for idx, ctx in enumerate(processed_batch):
+        for _idx, ctx in enumerate(processed_batch):
             if include_metrics:
                 payload_metrics = ctx.get("metrics", {})
                 ctx["metrics"] = {**payload_metrics, **batch_metrics}
@@ -184,11 +184,13 @@ async def load_metrics(
 
     end_all = time.time()
     if options is not None and options.get("collect_aggregate_metrics"):
-        results.append({
-            "aggregate": True,
-            "total_payloads": len(payloads),
-            "wallclock_ms": int((end_all - start_all) * 1000),
-        })
+        results.append(
+            {
+                "aggregate": True,
+                "total_payloads": len(payloads),
+                "wallclock_ms": int((end_all - start_all) * 1000),
+            },
+        )
     return results
 
 

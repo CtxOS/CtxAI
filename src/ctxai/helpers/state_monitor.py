@@ -322,7 +322,8 @@ class StateMonitor:
             return
 
         _debug_log(
-            f"[StateMonitor] follow_up_push namespace={namespace} sid={sid} dirty={dirty_version} pushed={pushed_version}",
+            f"[StateMonitor] follow_up_push namespace={namespace} sid={sid} "
+            f"dirty={dirty_version} pushed={pushed_version}",
         )
         try:
             loop = self._dispatcher_loop or asyncio.get_running_loop()

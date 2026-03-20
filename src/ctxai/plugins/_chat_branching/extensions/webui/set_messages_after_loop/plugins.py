@@ -280,7 +280,7 @@ def get_toggle_state(plugin_name: str) -> ToggleState:
     state: ToggleState = "enabled" if determined_toggle_from_paths(True, reversed(plugin_paths)) else "disabled"
 
     # global toggles
-    usr_toggles = [
+    [
         files.find_existing_paths_by_pattern(files.get_abs_path(files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN)),
         files.find_existing_paths_by_pattern(
             files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN),
@@ -544,7 +544,10 @@ def send_frontend_reload_notification(plugin_names: list[str] | None = None):
             type=notification.NotificationType.INFO,
             priority=notification.NotificationPriority.NORMAL,
             title="Plugins with frontend extensions updated, page plugins/_plugin_scanmended",
-            message="""<button type="button" class="button confirm" onclick="window.location.reload()"><span class="icon material-symbols-outlined">refresh</span>Reload page</button>""",
+            message=(
+                '<button type="button" class="button confirm" onclick="window.location.reload()">'
+                '<span class="icon material-symbols-outlined">refresh</span>Reload page</button>'
+            ),
             detail="",
             display_time=display_time,
             group="plugins_changed",

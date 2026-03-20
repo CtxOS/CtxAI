@@ -266,7 +266,7 @@ def is_probably_binary_file(file_path: str, sample_size: int = 10 * 1024, thresh
         with open(file_path, "rb") as f:
             sample = f.read(sample_size)
     except (FileNotFoundError, PermissionError, OSError):
-        raise OSError(f"Unable to read file for binary detection: {file_path}")
+        raise OSError(f"Unable to read file for binary detection: {file_path}") from None
     return is_probably_binary_bytes(sample, threshold=threshold)
 
 
@@ -299,7 +299,7 @@ def replace_placeholders_dict(_content: dict, **kwargs):
                         replacement = kwargs[placeholder]
                         if value == f"{{{{{placeholder}}}}}":
                             return replacement
-                        elif isinstance(replacement, (dict, list)):
+                        elif isinstance(replacement, dict | list):
                             value = value.replace(f"{{{{{placeholder}}}}}", json.dumps(replacement))
                         else:
                             value = value.replace(f"{{{{{placeholder}}}}}", str(replacement))
@@ -688,7 +688,7 @@ def list_files_in_dir_recursively(relative_path: str) -> list[str]:
     if not os.path.exists(abs_path):
         return []
     result = []
-    for root, dirs, files in os.walk(abs_path):
+    for root, _dirs, files in os.walk(abs_path):
         for file in files:
             file_path = os.path.join(root, file)
             # Return relative path from the base directory

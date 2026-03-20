@@ -75,7 +75,8 @@ def _write_template_files(plugin_dir: Path, name: str, description: str, author:
         encoding="utf-8",
     )
     (plugin_dir / "initialize.py").write_text(
-        """def main():\n    print('Initialization script for plugin')\n    return 0\n\nif __name__ == '__main__':\n    import sys\n    sys.exit(main())\n""",
+        """def main():\n    print('Initialization script for plugin')\n    return 0\n\n"""
+        """if __name__ == '__main__':\n    import sys\n    sys.exit(main())\n""",
         encoding="utf-8",
     )
     webui_dir = plugin_dir / "webui"
@@ -110,7 +111,8 @@ def list_plugins():
     print("-" * 90)
     for item in plugins:
         print(
-            f"{item.name:<30} {item.version:<10} {item.toggle_state:<10} {str(item.is_compatible):<10} {item.description[:40]}",
+            f"{item.name:<30} {item.version:<10} {item.toggle_state:<10} "
+            f"{str(item.is_compatible):<10} {item.description[:40]}",
         )
 
 
@@ -145,7 +147,7 @@ def main():
     parser = argparse.ArgumentParser(description="Ctx AI Plugin CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    parser_list = subparsers.add_parser("list", help="List installed plugins")
+    subparsers.add_parser("list", help="List installed plugins")
 
     parser_create = subparsers.add_parser("create", help="Create a plugin template")
     parser_create.add_argument("name", help="Plugin directory name (lowercase, hyphen-separated)")

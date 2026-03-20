@@ -24,7 +24,7 @@ class ImportKnowledge(ApiHandler):
         try:
             os.makedirs(KNOWLEDGE_FOLDER, exist_ok=True)
         except (OSError, PermissionError) as e:
-            raise Exception(f"Failed to create knowledge folder {KNOWLEDGE_FOLDER}: {e}")
+            raise Exception(f"Failed to create knowledge folder {KNOWLEDGE_FOLDER}: {e}") from e
 
         # Verify the directory is accessible
         if not os.access(KNOWLEDGE_FOLDER, os.W_OK):

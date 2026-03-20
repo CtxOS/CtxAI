@@ -6,7 +6,11 @@ from ctxai.helpers.extension import Extension
 
 
 class SystemResourcesCheck(Extension):
-    async def execute(self, banners: list = [], frontend_context: dict = {}, **kwargs):
+    async def execute(self, banners: list = None, frontend_context: dict = None, **kwargs):
+        if frontend_context is None:
+            frontend_context = {}
+        if banners is None:
+            banners = []
         try:
             cpu_percent = psutil.cpu_percent(interval=0.1)
         except Exception:
@@ -76,30 +80,44 @@ class SystemResourcesCheck(Extension):
                     '<div style="display:flex;flex-direction:column;gap:12px;">'
                     '<div style="display:flex;flex-wrap:wrap;column-gap:12px;row-gap:10px;align-items:center;">'
                     '<div style="flex:0 1 140px;min-width:110px;display:flex;flex-direction:column;gap:6px;">'
-                    '<div style="font-size:12px;letter-spacing:.10em;text-transform:uppercase;opacity:.65;line-height:1.1">CPU</div>'
-                    f'<div style="font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1.1">{cpu_value}</div>'
+                    '<div style="font-size:12px;letter-spacing:.10em;text-transform:uppercase;'
+                    'opacity:.65;line-height:1.1">CPU</div>'
+                    '<div style="font-weight:750;font-variant-numeric:tabular-nums;'
+                    f'letter-spacing:.02em;line-height:1.1">{cpu_value}</div>'
                     "</div>"
                     f"{cpu_bar}"
                     "</div>"
                     '<div style="display:flex;flex-wrap:wrap;column-gap:12px;row-gap:10px;align-items:center;">'
                     '<div style="flex:0 1 140px;min-width:110px;display:flex;flex-direction:column;gap:6px;">'
-                    '<div style="font-size:12px;letter-spacing:.10em;text-transform:uppercase;opacity:.65;line-height:1.1">RAM</div>'
-                    f'<div style="font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1.1">{ram_value}</div>'
+                    '<div style="font-size:12px;letter-spacing:.10em;text-transform:uppercase;'
+                    'opacity:.65;line-height:1.1">RAM</div>'
+                    '<div style="font-weight:750;font-variant-numeric:tabular-nums;'
+                    f'letter-spacing:.02em;line-height:1.1">{ram_value}</div>'
                     "</div>"
                     f"{ram_bar}"
                     "</div>"
                     '<div style="display:flex;flex-wrap:wrap;column-gap:12px;row-gap:10px;align-items:center;">'
                     '<div style="flex:0 1 140px;min-width:110px;display:flex;flex-direction:column;gap:6px;">'
-                    '<div style="font-size:12px;letter-spacing:.10em;text-transform:uppercase;opacity:.65;line-height:1.1">Disk</div>'
-                    f'<div style="font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1.1">{disk_value}</div>'
+                    '<div style="font-size:12px;letter-spacing:.10em;text-transform:uppercase;'
+                    'opacity:.65;line-height:1.1">Disk</div>'
+                    '<div style="font-weight:750;font-variant-numeric:tabular-nums;'
+                    f'letter-spacing:.02em;line-height:1.1">{disk_value}</div>'
                     "</div>"
                     f"{disk_bar}"
                     "</div>"
                     "</div>"
                     '<div style="height:1px;background:rgba(255,255,255,.08);"></div>'
                     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;">'
-                    f"<div><div style=\"font-size:12px;letter-spacing:.10em;text-transform:uppercase;opacity:.65;margin-bottom:6px;\">Load (1/5/15)</div><div style=\"font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;opacity:.85;font-variant-numeric:tabular-nums\">{load_value}</div></div>"
-                    f"<div><div style=\"font-size:12px;letter-spacing:.10em;text-transform:uppercase;opacity:.65;margin-bottom:6px;\">Net (since boot)</div><div style=\"font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;opacity:.85;font-variant-numeric:tabular-nums\">{net_sent} sent / {net_recv} recv</div></div>"
+                    '<div><div style="font-size:12px;letter-spacing:.10em;'
+                    'text-transform:uppercase;opacity:.65;margin-bottom:6px;">Load (1/5/15)</div>'
+                    f'<div style="font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, '
+                    f"'Liberation Mono', 'Courier New', monospace;"
+                    f'opacity:.85;font-variant-numeric:tabular-nums">{load_value}</div></div>'
+                    '<div><div style="font-size:12px;letter-spacing:.10em;'
+                    'text-transform:uppercase;opacity:.65;margin-bottom:6px;">Net (since boot)</div>'
+                    f'<div style="font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, '
+                    f"'Liberation Mono', 'Courier New', monospace;"
+                    f'opacity:.85;font-variant-numeric:tabular-nums">{net_sent} sent / {net_recv} recv</div></div>'
                     "</div>"
                     "</div>"
                 ),

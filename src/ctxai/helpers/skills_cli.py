@@ -146,8 +146,8 @@ def validate_skill(skill: Skill) -> list[str]:
 
     # Check for associated files
     skill_dir = skill.path
-    has_scripts = (skill_dir / "scripts").exists()
-    has_docs = (skill_dir / "docs").exists()
+    (skill_dir / "scripts").exists()
+    (skill_dir / "docs").exists()
 
     return issues
 

@@ -398,7 +398,10 @@ class DocumentQueryHelper:
 
         if not selected_chunks:
             self.progress_callback("No relevant content found in the documents")
-            content = f"!!! No content found for documents: {json.dumps(document_uris)} matching queries: {json.dumps(questions)}"
+            content = (
+                f"!!! No content found for documents: {json.dumps(document_uris)} "
+                f"matching queries: {json.dumps(questions)}"
+            )
             return False, content
 
         self.progress_callback(f"Processing {len(questions)} questions in context of {len(selected_chunks)} chunks")
@@ -454,7 +457,8 @@ class DocumentQueryHelper:
 
                 if not response:
                     raise ValueError(
-                        f"DocumentQueryHelper::document_get_content: Document fetch error: {document_uri} ({last_error})",
+                        f"DocumentQueryHelper::document_get_content: Document fetch error: "
+                        f"{document_uri} ({last_error})",
                     )
 
                 mimetype = response.headers["content-type"]
@@ -571,7 +575,8 @@ class DocumentQueryHelper:
                 response = requests.get(document, timeout=10.0)
                 if response.status_code != 200:
                     raise ValueError(
-                        f"DocumentQueryHelper::handle_pdf_document: Failed to download PDF from {document}: {response.status_code}",
+                        f"DocumentQueryHelper::handle_pdf_document: Failed to download PDF from "
+                        f"{document}: {response.status_code}",
                     )
                 temp_file.write(response.content)
                 temp_file_path = temp_file.name

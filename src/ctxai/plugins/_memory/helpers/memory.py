@@ -363,7 +363,9 @@ class Memory:
             self._save_db()  # persist
         return rem_docs
 
-    async def insert_text(self, text, metadata: dict = {}):
+    async def insert_text(self, text, metadata: dict = None):
+        if metadata is None:
+            metadata = {}
         doc = Document(text, metadata=metadata)
         ids = await self.insert_documents([doc])
         return ids[0]

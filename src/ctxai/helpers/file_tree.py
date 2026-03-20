@@ -44,10 +44,11 @@ def file_tree(
             finishes rendering before deeper levels are skipped.
         folders_first: When True, folders render before files within each directory.
         max_folders: Optional per-directory cap (0 = unlimited) on rendered folder entries before adding a
-            ``# N more folders`` comment. When only a single folder exceeds the limit and ``max_folders`` is greater than zero, that folder is rendered
-            directly instead of emitting a summary comment.
-        max_files: Optional per-directory cap (0 = unlimited) on rendered file entries before adding a ``# N more files`` comment.
-            As with folders, a single excess file is rendered when ``max_files`` is greater than zero.
+            ``# N more folders`` comment. When only a single folder exceeds the limit and ``max_folders``
+            is greater than zero, that folder is rendered directly instead of emitting a summary comment.
+        max_files: Optional per-directory cap (0 = unlimited) on rendered file entries before adding a
+            ``# N more files`` comment. As with folders, a single excess file is rendered when
+            ``max_files`` is greater than zero.
         sort: Tuple of ``(key, direction)`` where key is one of :data:`SORT_BY_NAME`,
             :data:`SORT_BY_CREATED`, or :data:`SORT_BY_MODIFIED`; direction is :data:`SORT_ASC`
             or :data:`SORT_DESC`.

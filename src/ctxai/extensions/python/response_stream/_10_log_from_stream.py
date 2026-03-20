@@ -8,11 +8,13 @@ from ctxai.helpers.extension import Extension
 class LogFromStream(Extension):
     async def execute(
         self,
-        loop_data: LoopData = LoopData(),
+        loop_data: LoopData | None = None,
         text: str = "",
-        parsed: dict = {},
+        parsed: dict = None,
         **kwargs,
     ):
+        if parsed is None:
+            parsed = {}
         if not self.agent:
             return
 

@@ -277,7 +277,7 @@ def _safe_json_serialize(obj, **kwargs):
     def serializer(o):
         if isinstance(o, dict):
             return {k: v for k, v in o.items() if is_json_serializable(v)}
-        elif isinstance(o, (list, tuple)):
+        elif isinstance(o, list | tuple):
             return [item for item in o if is_json_serializable(item)]
         elif is_json_serializable(o):
             return o

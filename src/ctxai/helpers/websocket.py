@@ -180,7 +180,7 @@ class WebSocketResult:
             raise TypeError("Error payload must be a dictionary or None")
         if correlation_id is not None and not isinstance(correlation_id, str):
             raise TypeError("Correlation ID must be a string or None")
-        if duration_ms is not None and not isinstance(duration_ms, (int, float)):
+        if duration_ms is not None and not isinstance(duration_ms, int | float):
             raise TypeError("Duration must be a number or None")
 
         self._ok = bool(ok)

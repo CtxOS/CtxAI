@@ -154,7 +154,7 @@ class WebSocketManager:
         summary: dict[str, Any] = {}
         for key in list(payload.keys())[:5]:
             value = payload[key]
-            if isinstance(value, (str, int, float, bool)) or value is None:
+            if isinstance(value, str | int | float | bool) or value is None:
                 preview = value
             elif isinstance(value, dict):
                 preview = f"dict({len(value)})"
@@ -315,8 +315,11 @@ class WebSocketManager:
 
                 if _ws_debug_enabled():
                     PrintStyle.info(
-                        "Registered WebSocket handler %s namespace=%s for events: %s"
-                        % (handler.identifier, namespace, ", ".join(validated_events)),
+                        "Registered WebSocket handler {} namespace={} for events: {}".format(
+                            handler.identifier,
+                            namespace,
+                            ", ".join(validated_events),
+                        ),
                     )
                 for event_type in validated_events:
                     existing = self.handlers[namespace].get(event_type)
@@ -754,7 +757,8 @@ class WebSocketManager:
             ]
         if not active_sids:
             self._debug(
-                f"No active connections for requestAll namespace={namespace} '{event_type}' correlation={correlation_id}",
+                f"No active connections for requestAll namespace={namespace} "
+                f"'{event_type}' correlation={correlation_id}",
             )
             return []
 
@@ -868,8 +872,7 @@ class WebSocketManager:
 
         if connected:
             self._debug(
-                "Emit to namespace=%s sid=%s event=%s eventId=%s correlationId=%s handlerId=%s"
-                % (
+                "Emit to namespace={} sid={} event={} eventId={} correlationId={} handlerId={}".format(
                     namespace,
                     sid,
                     event_type,
@@ -1015,8 +1018,7 @@ class WebSocketManager:
                 correlation_id=event.correlation_id,
             )
             self._debug(
-                "Flush to sid=%s event=%s eventId=%s correlationId=%s handlerId=%s"
-                % (
+                "Flush to sid={} event={} eventId={} correlationId={} handlerId={}".format(
                     sid,
                     event.event_type,
                     envelope.get("eventId"),

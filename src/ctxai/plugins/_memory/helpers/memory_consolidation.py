@@ -172,7 +172,8 @@ class MemoryConsolidator:
                 deleted_count = len(similar_memories) - len(valid_similar_memories)
                 if log_item:
                     log_item.update(
-                        progress=f"Filtered out {deleted_count} deleted memories, {len(valid_similar_memories)} remain for analysis",
+                        progress=f"Filtered out {deleted_count} deleted memories, "  # noqa: E501
+                        f"{len(valid_similar_memories)} remain for analysis",
                         race_condition_detected=True,
                         deleted_similar_memories_count=deleted_count,
                     )

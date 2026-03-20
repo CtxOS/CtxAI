@@ -31,7 +31,7 @@ def load_knowledge(
     log_item: LogItem | None,
     knowledge_dir: str,
     index: dict[str, KnowledgeImport],
-    metadata: dict[str, Any] = {},
+    metadata: dict[str, Any] = None,
     filename_pattern: str = "**/*",
     recursive: bool = True,
 ) -> dict[str, KnowledgeImport]:
@@ -44,6 +44,8 @@ def load_knowledge(
 
     # Mapping file extensions to corresponding loader classes
     # Note: Using TextLoader for JSON and MD to avoid parsing issues with consolidation
+    if metadata is None:
+        metadata = {}
     file_types_loaders = {
         "txt": TextLoader,
         "pdf": PyPDFLoader,

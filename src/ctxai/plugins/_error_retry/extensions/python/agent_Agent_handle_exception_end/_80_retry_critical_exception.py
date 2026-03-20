@@ -4,13 +4,15 @@ from ctxai.helpers import errors
 from ctxai.helpers.errors import HandledException, RepairableException
 from ctxai.helpers.extension import Extension
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.plugins._error_retry.extensions.python.agent_Agent_monologue_start._10_reset_critical_exception_counter import (
+from ctxai.plugins._error_retry.extensions.python.agent_Agent_monologue_start._10_reset_critical_exception_counter import (  # noqa: E501
     DATA_NAME_COUNTER,
 )
 
 
 class RetryCriticalException(Extension):
-    async def execute(self, data: dict = {}, **kwargs):
+    async def execute(self, data: dict = None, **kwargs):
+        if data is None:
+            data = {}
         if not self.agent:
             return
 
@@ -18,7 +20,7 @@ class RetryCriticalException(Extension):
         if not exception:
             return
 
-        if isinstance(exception, (HandledException, RepairableException)):
+        if isinstance(exception, HandledException | RepairableException):
             return
 
         max_retries = 1

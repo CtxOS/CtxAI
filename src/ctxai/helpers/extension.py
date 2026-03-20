@@ -202,7 +202,7 @@ def get_webui_extensions(agent: "Agent | None", extension_point: str, filters: l
     effective_filters = filters or ["*"]
 
     base_dir = files.get_base_dir()
-    plugins_dir = files.get_abs_path(base_dir, "plugins")
+    files.get_abs_path(base_dir, "plugins")
 
     folders = get_plugin_paths("extensions/webui", extension_point)
 
