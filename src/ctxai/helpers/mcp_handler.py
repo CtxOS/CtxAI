@@ -31,6 +31,7 @@ from pydantic import BaseModel, Discriminator, Field, PrivateAttr, Tag
 from ctxai.helpers import dirty_json, errors, settings
 from ctxai.helpers.log import LogItem
 from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.runtime import safe_run_async
 from ctxai.helpers.tool import Response, Tool
 
 
@@ -586,7 +587,7 @@ class MCPConfig(BaseModel):
             async def _init_all():
                 await asyncio.gather(*[_init_server(s) for s in self.servers])
 
-            asyncio.run(_init_all())
+            safe_run_async(_init_all())
 
     def get_server_log(self, server_name: str) -> str:
         with self.__lock:

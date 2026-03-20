@@ -10,7 +10,6 @@ from os.path import exists
 from typing import Annotated, Any, ClassVar, Literal, Optional, cast
 from urllib.parse import urlparse
 
-import nest_asyncio
 import pytz  # type: ignore[import-untyped]
 from crontab import CronTab
 from pydantic import BaseModel, Field, PrivateAttr
@@ -23,8 +22,7 @@ from ctxai.helpers.files import get_abs_path, make_dirs, read_file, write_file
 from ctxai.helpers.localization import Localization
 from ctxai.helpers.persist_chat import save_tmp_chat
 from ctxai.helpers.print_style import PrintStyle
-
-nest_asyncio.apply()
+from ctxai.helpers.runtime import safe_run_async
 
 SCHEDULER_FOLDER = "usr/scheduler"
 
@@ -497,11 +495,11 @@ class SchedulerTaskList(BaseModel):
         if cls.__instance is None:
             if not exists(path):
                 make_dirs(path)
-                cls.__instance = asyncio.run(cls(tasks=[]).save())
+                cls.__instance = safe_run_async(cls(tasks=[]).save())
             else:
                 cls.__instance = cls.model_validate_json(read_file(path))
         else:
-            asyncio.run(cls.__instance.reload())
+            safe_run_async(cls.__instance.reload())
         return cls.__instance
 
     def __init__(self, *args, **kwargs):

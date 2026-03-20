@@ -6,14 +6,49 @@ import secrets
 import sys
 import threading
 from collections.abc import Awaitable, Callable
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, cast, overload
 
-import nest_asyncio
-
 from ctxai.helpers import dotenv, files, rfc, settings
 
-nest_asyncio.apply()
+# Thread pool for running async coroutines from sync contexts
+_async_thread_pool: ThreadPoolExecutor | None = None
+_async_thread_pool_lock = threading.Lock()
+
+
+def _get_async_thread_pool() -> ThreadPoolExecutor:
+    """Get or create a singleton thread pool for async bridging."""
+    global _async_thread_pool
+    if _async_thread_pool is None:
+        with _async_thread_pool_lock:
+            if _async_thread_pool is None:
+                _async_thread_pool = ThreadPoolExecutor(
+                    max_workers=4,
+                    thread_name_prefix="async-bridge",
+                )
+    return _async_thread_pool
+
+
+def safe_run_async[T](coro: Awaitable[T]) -> T:
+    """Run an async coroutine safely from a synchronous context.
+
+    Handles two cases:
+    1. No running loop: uses asyncio.run() directly (most efficient).
+    2. Running loop exists: delegates to a thread pool with its own event loop.
+
+    This replaces nest_asyncio.apply() with a thread-safe alternative.
+    """
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop — safe to use asyncio.run()
+        return asyncio.run(coro)
+    else:
+        # Running loop exists — delegate to thread pool
+        pool = _get_async_thread_pool()
+        future = pool.submit(asyncio.run, coro)
+        return future.result()
 
 
 parser = argparse.ArgumentParser()

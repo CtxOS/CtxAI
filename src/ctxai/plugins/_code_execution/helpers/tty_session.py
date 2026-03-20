@@ -4,6 +4,8 @@ import os
 import platform
 import sys
 
+from ctxai.helpers.runtime import safe_run_async
+
 _IS_WIN = platform.system() == "Windows"
 if _IS_WIN:
     import winpty  # pip install pywinpty # type: ignore
@@ -29,12 +31,9 @@ class TTYSession:
 
     def __del__(self):
         # Simple cleanup on object destruction
-        import nest_asyncio
-
-        nest_asyncio.apply()
         if hasattr(self, "close"):
             try:
-                asyncio.run(self.close())
+                safe_run_async(self.close())
             except Exception:
                 pass
 

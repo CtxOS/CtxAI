@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from ctxai.helpers import cache, extension, extract_tools, files, git, notification, print_style
 from ctxai.helpers import yaml as yaml_helper
 from ctxai.helpers.defer import DeferredTask
+from ctxai.helpers.runtime import safe_run_async
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
@@ -727,7 +728,7 @@ def emit_plugin_event(event_name: str, payload: Any | None = None):
     for handler in handlers:
         try:
             if asyncio.iscoroutinefunction(handler):
-                asyncio.run(handler(payload))
+                safe_run_async(handler(payload))
             else:
                 handler(payload)
         except Exception:
@@ -755,14 +756,14 @@ def call_plugin_hook(plugin_name: str, hook_name: str, *args, **kwargs):
         hook = getattr(hooks, hook_name, None)
         if hook:
             if asyncio.iscoroutinefunction(hook):
-                result = asyncio.run(hook(*args, **kwargs))
+                result = safe_run_async(hook(*args, **kwargs))
             else:
                 result = hook(*args, **kwargs)
 
     # run registered hooks after module hooks
     for callback in get_registered_plugin_hooks(plugin_name, hook_name):
         if asyncio.iscoroutinefunction(callback):
-            callback_result = asyncio.run(callback(*args, **kwargs))
+            callback_result = safe_run_async(callback(*args, **kwargs))
         else:
             callback_result = callback(*args, **kwargs)
         if callback_result is not None:

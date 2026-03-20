@@ -18,6 +18,7 @@ from ctxai.helpers.dotenv import load_dotenv
 from ctxai.helpers.providers import ModelType as ProviderModelType
 from ctxai.helpers.providers import get_provider_config
 from ctxai.helpers.rate_limiter import RateLimiter
+from ctxai.helpers.runtime import safe_run_async
 from ctxai.helpers.tokens import approximate_tokens
 
 
@@ -272,12 +273,7 @@ def apply_rate_limiter_sync(
 ):
     if not model_config:
         return
-    import asyncio
-
-    import nest_asyncio
-
-    nest_asyncio.apply()
-    return asyncio.run(apply_rate_limiter(model_config, input_text, rate_limiter_callback))
+    return safe_run_async(apply_rate_limiter(model_config, input_text, rate_limiter_callback))
 
 
 class LiteLLMChatWrapper(SimpleChatModel):

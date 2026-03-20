@@ -22,9 +22,9 @@
 ## 🟠 High — Runtime & Architecture
 
 ### Async Model (Biggest Single Win)
-- [ ] **Remove `nest_asyncio`**
+- [x] **Remove `nest_asyncio`**
   `src/ctxai/helpers/runtime.py:16`
-  `nest_asyncio.apply()` monkey-patches the global event loop and breaks asyncio isolation. Eliminate it by removing all sync-in-async call patterns that require it.
+  Replaced `nest_asyncio.apply()` with `safe_run_async()` helper that uses a thread pool for sync-to-async bridging. Updated all 5 files that used nest_asyncio: `plugins.py`, `task_scheduler.py`, `models.py`, `tty_session.py`, `mcp_handler.py`.
 
 - [ ] **Migrate from `Flask + WSGIMiddleware` to native FastAPI/Starlette**
   `src/ctxai/run_ui.py:429`
@@ -197,4 +197,4 @@
 
 ---
 
-*Last updated: 2026-03-20 (Critical items completed — DOMPurify sanitization + CSP headers)*
+*Last updated: 2026-03-20 (Critical + nest_asyncio removal complete)*
