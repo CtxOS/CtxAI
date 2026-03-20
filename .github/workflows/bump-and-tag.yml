@@ -1,0 +1,14 @@
+name: Bump and Tag
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version
+        run: |
+          current=$(python -c "import setuptools,sys; print('0.0.1')")
+          echo "Bump placeholder: $current"

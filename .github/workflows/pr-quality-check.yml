@@ -1,0 +1,15 @@
+name: PR Quality Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ruff
+        run: uv run ruff check src/ctxai tests
+      - name: Run pytest
+        run: uv run pytest -q tests/test_plugins_cli.py

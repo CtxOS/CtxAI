@@ -1,0 +1,8 @@
+{
+  "required": ["title", "body", "labels"],
+  "properties": {
+    "title": {"type": "string", "minLength": 5},
+    "body": {"type": "string", "minLength": 20},
+    "labels": {"type": "array", "items": {"type": "string"}}
+  }
+}
