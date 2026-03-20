@@ -59,9 +59,9 @@ LIFECYCLE_DISCONNECT_EVENT = "ws_lifecycle_disconnect"
 
 
 class WebSocketManager:
-    def __init__(self, socketio: socketio.AsyncServer, lock) -> None:
+    def __init__(self, socketio: socketio.AsyncServer, lock: asyncio.Lock | None = None) -> None:
         self.socketio = socketio
-        self.lock = lock
+        self.lock = lock or asyncio.Lock()
         self.handlers: defaultdict[str, defaultdict[str, list[WebSocketHandler]]] = defaultdict(
             lambda: defaultdict(list),
         )
@@ -123,26 +123,24 @@ class WebSocketManager:
     def _diagnostics_active(self) -> bool:
         if not self._diagnostics_enabled:
             return False
-        with self.lock:
-            return bool(self._diagnostic_watchers)
+        return bool(self._diagnostic_watchers)
 
     def _copy_diagnostic_watchers(self) -> list[ConnectionIdentity]:
-        with self.lock:
-            return list(self._diagnostic_watchers)
+        return list(self._diagnostic_watchers)
 
-    def register_diagnostic_watcher(self, namespace: str, sid: str) -> bool:
+    async def register_diagnostic_watcher(self, namespace: str, sid: str) -> bool:
         if not self._diagnostics_enabled:
             return False
         identity: ConnectionIdentity = (namespace, sid)
-        with self.lock:
+        async with self.lock:
             if identity not in self.connections:
                 return False
             self._diagnostic_watchers.add(identity)
         return True
 
-    def unregister_diagnostic_watcher(self, namespace: str, sid: str) -> None:
+    async def unregister_diagnostic_watcher(self, namespace: str, sid: str) -> None:
         identity: ConnectionIdentity = (namespace, sid)
-        with self.lock:
+        async with self.lock:
             self._diagnostic_watchers.discard(identity)
 
     def _timestamp(self) -> str:
@@ -357,7 +355,7 @@ class WebSocketManager:
         self._ensure_dispatcher_loop()
         user_bucket = user_id or "single_user"
         identity: ConnectionIdentity = (namespace, sid)
-        with self.lock:
+        async with self.lock:
             self.connections[identity] = ConnectionInfo(namespace=namespace, sid=sid)
             self._known_sids.add(identity)
             self.sid_to_user[identity] = user_bucket
@@ -399,7 +397,7 @@ class WebSocketManager:
     async def handle_disconnect(self, namespace: str, sid: str) -> None:
         self._ensure_dispatcher_loop()
         identity: ConnectionIdentity = (namespace, sid)
-        with self.lock:
+        async with self.lock:
             self.connections.pop(identity, None)
             # session tracking cleanup
             user_bucket = self.sid_to_user.pop(identity, None)
@@ -412,7 +410,7 @@ class WebSocketManager:
                 if not self.user_to_sids[user_bucket]:
                     self.user_to_sids.pop(user_bucket, None)
             connection_count = sum(1 for conn_identity in self.connections if conn_identity[0] == namespace)
-        self.unregister_diagnostic_watcher(namespace, sid)
+        await self.unregister_diagnostic_watcher(namespace, sid)
         PrintStyle.info(f"WebSocket disconnected: namespace={namespace} sid={sid}")
         await self._run_lifecycle(namespace, lambda h: h.on_disconnect(sid))
         lifecycle_payload = {
@@ -562,7 +560,7 @@ class WebSocketManager:
                 ack({"correlationId": correlation_id, "results": [error]})
             return {"correlationId": correlation_id, "results": [error]}
 
-        with self.lock:
+        async with self.lock:
             info = self.connections.get((namespace, sid))
             if info:
                 info.last_activity = _utcnow()
@@ -654,7 +652,7 @@ class WebSocketManager:
         payload = dict(data or {})
         correlation_id = self._resolve_correlation_id(payload)
 
-        with self.lock:
+        async with self.lock:
             connected = (namespace, sid) in self.connections
         if not connected:
             return {
@@ -751,7 +749,7 @@ class WebSocketManager:
 
         self._debug(f"Starting requestAll namespace={namespace} for '{event_type}' correlation={correlation_id}")
 
-        with self.lock:
+        async with self.lock:
             active_sids = [
                 conn_identity[1] for conn_identity in self.connections.keys() if conn_identity[0] == namespace
             ]
@@ -866,7 +864,7 @@ class WebSocketManager:
         buffered = False
         identity: ConnectionIdentity = (namespace, sid)
 
-        with self.lock:
+        async with self.lock:
             connected = identity in self.connections
             known = identity in self._known_sids or identity in self.buffers
 
@@ -886,7 +884,7 @@ class WebSocketManager:
         else:
             if not known:
                 raise ConnectionNotFoundError(sid, namespace=namespace)
-            with self.lock:
+            async with self.lock:
                 self._buffer_event(
                     identity,
                     event_type,
@@ -927,7 +925,7 @@ class WebSocketManager:
         excluded = self._normalize_sid_filter(exclude_sids)
 
         targets: list[str] = []
-        with self.lock:
+        async with self.lock:
             current_identities = list(self.connections.keys())
         for conn_identity in current_identities:
             if conn_identity[0] != namespace:
@@ -1060,15 +1058,15 @@ class WebSocketManager:
         return result
 
     # Session tracking helpers (single-user defaults)
-    def get_sids_for_user(self, user: str | None = None) -> list[str]:
+    async def get_sids_for_user(self, user: str | None = None) -> list[str]:
         """Return SIDs for a user; single-user default returns all active SIDs."""
-        with self.lock:
+        async with self.lock:
             bucket = self._ALL_USERS_BUCKET if user is None else user
             return list(self.user_to_sids.get(bucket, set()))  # type: ignore
 
-    def get_user_for_sid(self, sid: str) -> str | None:
+    async def get_user_for_sid(self, sid: str) -> str | None:
         """Return user identifier for a SID or None."""
-        with self.lock:
+        async with self.lock:
             return self.sid_to_user.get(sid)  # type: ignore
 
     def set_server_restart_broadcast(self, enabled: bool) -> None:

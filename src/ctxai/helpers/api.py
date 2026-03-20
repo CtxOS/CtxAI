@@ -1,3 +1,4 @@
+import asyncio
 import json
 import socket
 import struct
@@ -16,7 +17,7 @@ from ctxai.helpers import cache, files
 from ctxai.helpers.errors import format_error
 from ctxai.helpers.print_style import PrintStyle
 
-ThreadLockType = Union[threading.Lock, threading.RLock]  # noqa: UP007
+ThreadLockType = Union[threading.Lock, threading.RLock, asyncio.Lock]  # noqa: UP007
 
 CACHE_AREA = "api_handlers(api)(plugins)(extensions)"
 cache.toggle_area(CACHE_AREA, False)  # cache off for now

@@ -30,9 +30,9 @@
   `src/ctxai/run_ui.py:429`
   FastAPI is already a declared dependency. Replace the WSGI → ASGI bridge with a fully async handler chain to eliminate the thread-pool bottleneck on every HTTP request.
 
-- [ ] **Replace `threading.RLock` with `asyncio.Lock` for async paths**
+- [x] **Replace `threading.RLock` with `asyncio.Lock` for async paths**
   `src/ctxai/run_ui.py:90,103`
-  The shared `lock` passed to all WebSocket handlers is a single synchronous contention point. Separate sync (plugin loading) and async (event dispatch) locking.
+  Changed shared lock from `threading.RLock()` to `asyncio.Lock()`. Updated `websocket_manager.py` to use `async with self.lock:`. Made diagnostic watcher methods async. Updated type annotations in `api.py`, `websocket.py`.
 
 - [ ] **Wrap all blocking I/O in `run_in_executor`**
   FAISS index queries, file tree walks (`helpers/file_tree.py`), and large file reads block the event loop. Wrap with `asyncio.get_event_loop().run_in_executor(executor, ...)`.
@@ -197,4 +197,4 @@
 
 ---
 
-*Last updated: 2026-03-20 (Critical + nest_asyncio removal complete)*
+*Last updated: 2026-03-20 (Critical + nest_asyncio + asyncio.Lock complete)*

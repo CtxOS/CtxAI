@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import re
 import threading
 from abc import ABC, abstractmethod
@@ -278,7 +279,7 @@ class WebSocketHandler(ABC):
     _construction_tokens: dict[type[WebSocketHandler], bool] = {}
     _singleton_lock = threading.RLock()
 
-    def __init__(self, socketio: socketio.AsyncServer, lock: threading.RLock) -> None:
+    def __init__(self, socketio: socketio.AsyncServer, lock: threading.RLock | asyncio.Lock) -> None:
         """Create a handler bound to the shared Socket.IO instance."""
 
         cls = self.__class__
@@ -286,7 +287,7 @@ class WebSocketHandler(ABC):
             raise SingletonInstantiationError(f"{cls.__name__} must be instantiated via {cls.__name__}.get_instance()")
 
         self.socketio: socketio.AsyncServer = socketio
-        self.lock: threading.RLock = lock
+        self.lock: threading.RLock | asyncio.Lock = lock
         self._manager: WebSocketManager | None = None
         self._namespace: str | None = None
 
@@ -294,7 +295,7 @@ class WebSocketHandler(ABC):
     def get_instance(
         cls,
         socketio: socketio.AsyncServer | None = None,
-        lock: threading.RLock | None = None,
+        lock: threading.RLock | asyncio.Lock | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> WebSocketHandler:

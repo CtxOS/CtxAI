@@ -148,7 +148,7 @@ def add_security_headers(response: Response) -> Response:
     return response
 
 
-lock = threading.RLock()
+lock = asyncio.Lock()
 
 socketio_server = socketio.AsyncServer(
     async_mode="asgi",
@@ -286,7 +286,7 @@ async def _serve_plugin_asset(plugin_name, asset_path):
 
 def _build_websocket_handlers_by_namespace(
     socketio_server: socketio.AsyncServer,
-    lock: threading.RLock,
+    lock: threading.RLock | asyncio.Lock,
 ) -> dict[str, list[WebSocketHandler]]:
     discoveries = discover_websocket_namespaces(
         handlers_folder="python/websocket_handlers",
