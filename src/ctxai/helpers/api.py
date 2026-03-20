@@ -5,7 +5,7 @@ import threading
 from abc import abstractmethod
 from functools import wraps
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import Any, TypedDict, Union
 
 from flask import Flask, Request, Response, redirect, request, session, url_for
 from werkzeug.wrappers.response import Response as BaseResponse
@@ -16,13 +16,13 @@ from ctxai.helpers import cache, files
 from ctxai.helpers.errors import format_error
 from ctxai.helpers.print_style import PrintStyle
 
-ThreadLockType = threading.Lock | threading.RLock
+ThreadLockType = Union[threading.Lock, threading.RLock]  # noqa: UP007
 
 CACHE_AREA = "api_handlers(api)(plugins)(extensions)"
 cache.toggle_area(CACHE_AREA, False)  # cache off for now
 
 Input = dict
-Output = dict[str, Any] | Response | TypedDict  # type: ignore
+Output = Union[dict[str, Any], Response, TypedDict]  # type: ignore  # noqa: UP007
 
 
 class ApiHandler:
