@@ -562,6 +562,7 @@ export function drawProcessStep({
 function adjustStepContent(content) {
   content = escapeHTML(content);
   content = convertPathsToLinks(content);
+  content = sanitizeHTML(content);
   return content;
 }
 
@@ -715,6 +716,7 @@ export function _drawMessage({
       processedContent = marked.parse(processedContent, { breaks: true });
       processedContent = convertPathsToLinks(processedContent);
       processedContent = addBlankTargetsToLinks(processedContent);
+      processedContent = sanitizeHTML(processedContent);
 
       // do a smooth stream if requested
       if (smoothStream) smoothRender(contentDiv, processedContent);
@@ -750,7 +752,7 @@ export function _drawMessage({
       // }
 
       if (smoothStream) smoothRender(preElement, convertHTML(content));
-      else preElement.innerHTML = convertHTML(content);
+      else preElement.innerHTML = sanitizeHTML(convertHTML(content));
     }
   } else {
     // Remove content if it exists but content is empty
@@ -1735,6 +1737,37 @@ function escapeHTML(str) {
     '"': "&quot;",
   };
   return str.replace(/[&<>'"]/g, (char) => escapeChars[char]);
+}
+
+/**
+ * Sanitize HTML content to prevent XSS attacks using DOMPurify.
+ * @param {string} html - The HTML content to sanitize
+ * @returns {string} - The sanitized HTML content
+ */
+function sanitizeHTML(html) {
+  if (typeof html !== "string") return "";
+  if (typeof globalThis.DOMPurify !== "undefined") {
+    return globalThis.DOMPurify.sanitize(html, {
+      USE_PROFILES: { html: true },
+      ALLOWED_TAGS: [
+        "h1", "h2", "h3", "h4", "h5", "h6",
+        "p", "br", "hr", "pre", "code",
+        "ul", "ol", "li",
+        "table", "thead", "tbody", "tr", "th", "td",
+        "a", "img", "strong", "em", "b", "i", "u", "s",
+        "blockquote", "div", "span", "details", "summary",
+        "input", "latex",
+      ],
+      ALLOWED_ATTR: [
+        "href", "src", "alt", "title", "class", "id",
+        "target", "rel", "style", "type", "checked",
+        "onclick", "onchange",
+      ],
+      ALLOW_DATA_ATTR: false,
+    });
+  }
+  // Fallback: basic escaping if DOMPurify is not loaded
+  return escapeHTML(html);
 }
 
 function convertPathsToLinks(str) {

@@ -206,6 +206,13 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
     from ctxai.helpers.extract_tools import load_classes_from_file
 
     async def _dispatch(path: str) -> BaseResponse:
+        # Check API rate limit
+        from ctxai.run_ui import _check_api_rate_limit
+
+        remote_addr = request.remote_addr or "unknown"
+        if not _check_api_rate_limit(remote_addr):
+            return Response("Rate limit exceeded. Please slow down.", 429)
+
         # Return cached wrapped handler if available
         cached = cache.get(CACHE_AREA, path)
         if cached is not None:

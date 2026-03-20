@@ -227,8 +227,18 @@ async function updateUserTime() {
   const options = { year: "numeric", month: "short", day: "numeric" };
   const dateString = now.toLocaleDateString(undefined, options);
 
-  // Update the HTML
-  userTimeElement.innerHTML = `${timeString}<br><span id="user-date">${dateString}</span>`;
+  // Update the HTML - use safe DOM manipulation
+  const timeSpan = document.createElement("span");
+  timeSpan.textContent = timeString;
+
+  const dateSpan = document.createElement("span");
+  dateSpan.id = "user-date";
+  dateSpan.textContent = dateString;
+
+  userTimeElement.innerHTML = "";
+  userTimeElement.appendChild(timeSpan);
+  userTimeElement.appendChild(document.createElement("br"));
+  userTimeElement.appendChild(dateSpan);
 }
 
 updateUserTime();
@@ -502,9 +512,13 @@ function updateProgress(progress, active) {
   setProgressBarShine(progressBarEl, active);
 
   progress = msgs.convertIcons(progress);
+  // Sanitize progress content to prevent XSS
+  const sanitizedProgress = typeof DOMPurify !== "undefined"
+    ? DOMPurify.sanitize(progress, { USE_PROFILES: { html: true } })
+    : progress;
 
-  if (progressBarEl.innerHTML != progress) {
-    progressBarEl.innerHTML = progress;
+  if (progressBarEl.innerHTML != sanitizedProgress) {
+    progressBarEl.innerHTML = sanitizedProgress;
   }
 }
 

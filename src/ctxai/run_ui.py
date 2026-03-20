@@ -1,6 +1,7 @@
 import asyncio
 import os
 import secrets
+import sys
 import threading
 import time
 import urllib.request
@@ -26,6 +27,11 @@ _login_attempts: dict[str, list[float]] = {}
 _LOGIN_MAX_ATTEMPTS = 10
 _LOGIN_WINDOW_SECONDS = 300  # 5 minutes
 
+# General API rate limiter
+_api_attempts: dict[str, list[float]] = {}
+_API_MAX_ATTEMPTS = 100  # 100 requests per minute
+_API_WINDOW_SECONDS = 60  # 1 minute
+
 
 def _check_login_rate_limit(remote_addr: str) -> bool:
     """Return True if the request is allowed, False if rate-limited."""
@@ -41,6 +47,23 @@ def _check_login_rate_limit(remote_addr: str) -> bool:
         return False
     attempts.append(now)
     _login_attempts[remote_addr] = attempts
+    return True
+
+
+def _check_api_rate_limit(remote_addr: str) -> bool:
+    """Return True if the API request is allowed, False if rate-limited."""
+    import time
+
+    now = time.monotonic()
+    window_start = now - _API_WINDOW_SECONDS
+    attempts = _api_attempts.get(remote_addr, [])
+    # Prune old entries
+    attempts = [t for t in attempts if t > window_start]
+    if len(attempts) >= _API_MAX_ATTEMPTS:
+        _api_attempts[remote_addr] = attempts
+        return False
+    attempts.append(now)
+    _api_attempts[remote_addr] = attempts
     return True
 
 
@@ -86,6 +109,44 @@ webapp.config.update(
     MAX_CONTENT_LENGTH=int(os.getenv("FLASK_MAX_CONTENT_LENGTH", str(UPLOAD_LIMIT_BYTES))),
     MAX_FORM_MEMORY_SIZE=int(os.getenv("FLASK_MAX_FORM_MEMORY_SIZE", str(UPLOAD_LIMIT_BYTES))),
 )
+
+
+@webapp.after_request
+def add_security_headers(response: Response) -> Response:
+    """Add security headers to all Flask responses."""
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: blob:; "
+        "font-src 'self' data:; "
+        "connect-src 'self' ws: wss:; "
+        "frame-ancestors 'none';"
+    )
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+    # Add Cache-Control headers for static assets
+    path = request.path or ""
+    # Static assets (CSS, JS, images, fonts) get long cache
+    if any(
+        path.endswith(ext)
+        for ext in (".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".woff", ".woff2", ".ttf", ".eot")
+    ):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    # index.html should not be cached to ensure updates are picked up
+    elif path.endswith(".html") or path == "/":
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    # API responses should not be cached
+    elif path.startswith("/api/") or path.startswith("/poll") or path.startswith("/message"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+
+    # Set SESSION_COOKIE_SECURE when behind TLS
+    if os.environ.get("HTTPS") == "1" or request.headers.get("X-Forwarded-Proto") == "https":
+        webapp.config["SESSION_COOKIE_SECURE"] = True
+    return response
+
 
 lock = threading.RLock()
 
@@ -387,6 +448,15 @@ def configure_websocket_namespaces(
 
 
 def run():
+    # Use uvloop on Linux for 2-4x async throughput improvement
+    if sys.platform != "win32":
+        try:
+            import uvloop
+
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        except ImportError:
+            pass
+
     PrintStyle().print("Initializing framework...")
 
     # migrate data before anything else
