@@ -1,11 +1,20 @@
-from abc import abstractmethod
 import asyncio
-from collections.abc import Mapping
 import json
 import math
-from typing import TypedDict, cast, Union, Dict, List
-from ctxai.helpers import messages, tokens, settings
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from abc import abstractmethod
+from collections.abc import Mapping
+from typing import cast
+from typing import Dict
+from typing import List
+from typing import TypedDict
+from typing import Union
+
+from ctxai.helpers import messages
+from ctxai.helpers import settings
+from ctxai.helpers import tokens
+from langchain_core.messages import AIMessage
+from langchain_core.messages import BaseMessage
+from langchain_core.messages import HumanMessage
 
 BULK_MERGE_COUNT = 3
 TOPICS_MERGE_COUNT = 3
@@ -165,7 +174,8 @@ class Topic(Record):
     HIGH_IMPORTANCE_THRESHOLD = 0.8
 
     def compress_large_messages(
-        self, message_ratio: float = CURRENT_TOPIC_RATIO * LARGE_MESSAGE_TO_CURRENT_TOPIC_RATIO
+        self,
+        message_ratio: float = CURRENT_TOPIC_RATIO * LARGE_MESSAGE_TO_CURRENT_TOPIC_RATIO,
     ) -> bool:
         set = settings.get_settings()
         msg_max_size = set["chat_model_ctx_length"] * set["chat_model_ctx_history"] * message_ratio
@@ -449,7 +459,7 @@ class History(Record):
             return False
         # merge bulks in groups of count, even if there are fewer than count
         bulks = await asyncio.gather(
-            *[self.merge_bulks(self.bulks[i : i + count]) for i in range(0, len(self.bulks), count)]
+            *[self.merge_bulks(self.bulks[i : i + count]) for i in range(0, len(self.bulks), count)],
         )
         self.bulks = bulks
         return True

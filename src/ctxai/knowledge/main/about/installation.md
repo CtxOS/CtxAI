@@ -62,7 +62,7 @@ Once installed, launch Docker Desktop from your Start menu or desktop shortcut.
 
 <img src="../res/setup/image-11.png" alt="docker installed" height="100"/>
 
-✅ **Docker is now installed!** 
+✅ **Docker is now installed!**
 
 ### Continue to [Step 2: Run Ctx AI](#step-2-run-ctxai)
 
@@ -99,7 +99,7 @@ Open Docker Desktop from your Applications folder.
 
 ![docker socket macOS](../res/setup/macsocket.png)
 
-✅ **Docker is now installed!** 
+✅ **Docker is now installed!**
 
 ### Continue to [Step 2: Run Ctx AI](#step-2-run-ctxai)
 
@@ -138,7 +138,7 @@ docker login
 
 If you installed Docker Desktop, launch it from your applications menu.
 
-✅ **Docker is now installed!** 
+✅ **Docker is now installed!**
 
 > [!TIP]
 > **Deploying on a VPS/Server?** For production deployments with reverse proxy, SSL, and domain configuration, see the [VPS Deployment Guide](vps-deployment.md).
@@ -165,9 +165,9 @@ docker pull ctxos/ctxai
 
 ### 2.2. (Optional) Map Folders for Persistence
 
-Choose or create a folder on your computer where Ctx AI will save its data. 
+Choose or create a folder on your computer where Ctx AI will save its data.
 
-### Setting up persistence is needed only if you want your data and files to remain available even after you delete the container. 
+### Setting up persistence is needed only if you want your data and files to remain available even after you delete the container.
 
 You can pick any location you find convenient:
 
@@ -464,7 +464,7 @@ ollama rm <model-name>
 ```
 
 > [!TIP]
-> Experiment with different model combinations to find the balance of performance and cost that best suits your needs. E.g., faster and lower latency LLMs will help, and you can also use `faiss_gpu` instead of `faiss_cpu` for the memory. 
+> Experiment with different model combinations to find the balance of performance and cost that best suits your needs. E.g., faster and lower latency LLMs will help, and you can also use `faiss_gpu` instead of `faiss_cpu` for the memory.
 
 ---
 

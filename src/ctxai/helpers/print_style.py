@@ -1,10 +1,12 @@
-import os
-import webcolors
-import html
-import sys
 import atexit
-from datetime import datetime
+import html
+import os
+import sys
 from collections.abc import Mapping
+from datetime import datetime
+
+import webcolors
+
 from . import files
 
 _runtime_module = None

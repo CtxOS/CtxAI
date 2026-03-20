@@ -1,8 +1,7 @@
-from ctxai.helpers.extension import Extension
 from ctxai.agent import LoopData
-
-# Direct import - this extension lives inside the memory plugin
+from ctxai.helpers.extension import Extension
 from ctxai.plugins._memory.helpers import memory
+# Direct import - this extension lives inside the memory plugin
 
 
 class MemoryInit(Extension):

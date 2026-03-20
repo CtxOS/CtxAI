@@ -1,6 +1,7 @@
-from ctxai.helpers.extension import Extension
+from ctxai.helpers import errors
+from ctxai.helpers import extension
 from ctxai.helpers.errors import RepairableException
-from ctxai.helpers import errors, extension
+from ctxai.helpers.extension import Extension
 from ctxai.helpers.print_style import PrintStyle
 
 

@@ -1,9 +1,9 @@
+import asyncio
+import json
 import mimetypes
 import os
-import asyncio
-import aiohttp
-import json
 
+import aiohttp
 from ctxai.helpers.vector_db import VectorDB
 
 os.environ["USER_AGENT"] = "@mixedbread-ai/unstructured"  # noqa E402
@@ -119,7 +119,8 @@ class DocumentQueryStore:
 
         # Split text into chunks
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=self.DEFAULT_CHUNK_SIZE, chunk_overlap=self.DEFAULT_CHUNK_OVERLAP
+            chunk_size=self.DEFAULT_CHUNK_SIZE,
+            chunk_overlap=self.DEFAULT_CHUNK_OVERLAP,
         )
         chunks = text_splitter.split_text(text)
 
@@ -267,7 +268,11 @@ class DocumentQueryStore:
         return False
 
     async def search_documents(
-        self, query: str, limit: int = 10, threshold: float = 0.5, filter: str = ""
+        self,
+        query: str,
+        limit: int = 10,
+        threshold: float = 0.5,
+        filter: str = "",
     ) -> List[Document]:
         """
         Search for documents similar to the query across the entire store.
@@ -292,7 +297,10 @@ class DocumentQueryStore:
         # Perform search
         try:
             results = await self.vector_db.search_by_similarity_threshold(
-                query=query, limit=limit, threshold=threshold, filter=filter
+                query=query,
+                limit=limit,
+                threshold=threshold,
+                filter=filter,
             )
 
             PrintStyle.standard(f"Search '{query}' returned {len(results)} results")
@@ -302,7 +310,11 @@ class DocumentQueryStore:
             return []
 
     async def search_document(
-        self, document_uri: str, query: str, limit: int = 10, threshold: float = 0.5
+        self,
+        document_uri: str,
+        query: str,
+        limit: int = 10,
+        threshold: float = 0.5,
     ) -> List[Document]:
         """
         Search for content within a specific document.
@@ -441,7 +453,7 @@ class DocumentQueryHelper:
 
                 if not response:
                     raise ValueError(
-                        f"DocumentQueryHelper::document_get_content: Document fetch error: {document_uri} ({last_error})"
+                        f"DocumentQueryHelper::document_get_content: Document fetch error: {document_uri} ({last_error})",
                     )
 
                 mimetype = response.headers["content-type"]
@@ -449,7 +461,7 @@ class DocumentQueryHelper:
                     content_length = float(response.headers["content-length"]) / 1024 / 1024  # MB
                     if content_length > 50.0:
                         raise ValueError(
-                            f"Document content length exceeds max. 50MB: {content_length} MB ({document_uri})"
+                            f"Document content length exceeds max. 50MB: {content_length} MB ({document_uri})",
                         )
                 if mimetype and "; charset=" in mimetype:
                     mimetype = mimetype.split("; charset=")[0]
@@ -492,7 +504,7 @@ class DocumentQueryHelper:
                 if not success:
                     self.progress_callback("Failed to index document")
                     raise ValueError(
-                        f"DocumentQueryHelper::document_get_content: Failed to index document: {document_uri_norm}"
+                        f"DocumentQueryHelper::document_get_content: Failed to index document: {document_uri_norm}",
                     )
                 self.progress_callback(f"Indexed {len(ids)} chunks")
         else:
@@ -557,7 +569,7 @@ class DocumentQueryHelper:
                 response = requests.get(document, timeout=10.0)
                 if response.status_code != 200:
                     raise ValueError(
-                        f"DocumentQueryHelper::handle_pdf_document: Failed to download PDF from {document}: {response.status_code}"
+                        f"DocumentQueryHelper::handle_pdf_document: Failed to download PDF from {document}: {response.status_code}",
                     )
                 temp_file.write(response.content)
                 temp_file_path = temp_file.name
@@ -589,7 +601,7 @@ class DocumentQueryHelper:
                 import pytesseract
 
                 PrintStyle.debug(
-                    f"DocumentQueryHelper::handle_pdf_document: FALLBACK Converting PDF to images: {temp_file_path}"
+                    f"DocumentQueryHelper::handle_pdf_document: FALLBACK Converting PDF to images: {temp_file_path}",
                 )
 
                 # Convert PDF to images

@@ -1,7 +1,7 @@
-from ctxai.helpers.extension import Extension
 from ctxai.agent import LoopData
 from ctxai.extensions.python.message_loop_end._10_organize_history import DATA_NAME_TASK
 from ctxai.helpers.defer import DeferredTask
+from ctxai.helpers.extension import Extension
 
 
 class OrganizeHistoryWait(Extension):

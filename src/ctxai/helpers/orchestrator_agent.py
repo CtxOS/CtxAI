@@ -23,19 +23,21 @@ from __future__ import annotations
 import asyncio
 import logging
 import threading
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, TYPE_CHECKING
+from dataclasses import dataclass
+from dataclasses import field
+from datetime import datetime
+from datetime import timezone
+from typing import Any
+from typing import TYPE_CHECKING
 
-from ctxai.helpers.task_router import (
-    AgentSkillProfile,
-    Priority,
-    Task,
-    TaskQueue,
-    TaskRouter,
-)
-from ctxai.helpers.event_bus import EventBus, EventType
 from ctxai.helpers.defer import DeferredTask
+from ctxai.helpers.event_bus import EventBus
+from ctxai.helpers.event_bus import EventType
+from ctxai.helpers.task_router import AgentSkillProfile
+from ctxai.helpers.task_router import Priority
+from ctxai.helpers.task_router import Task
+from ctxai.helpers.task_router import TaskQueue
+from ctxai.helpers.task_router import TaskRouter
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent, AgentConfig

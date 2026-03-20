@@ -9,6 +9,7 @@ collect it without making real network calls.  To run the smoke test manually:
 """
 
 import asyncio
+
 import pytest
 
 

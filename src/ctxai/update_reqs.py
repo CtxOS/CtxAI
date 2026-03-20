@@ -8,7 +8,8 @@ def update_requirements():
     # Optional: Still sync requirements.txt for external tools that might need it
     print("Exporting to requirements.txt for compatibility...")
     subprocess.run(
-        ["uv", "export", "--format", "requirements-txt", "--output-file", "requirements.txt", "--no-hashes"], check=True
+        ["uv", "export", "--format", "requirements-txt", "--output-file", "requirements.txt", "--no-hashes"],
+        check=True,
     )
 
 

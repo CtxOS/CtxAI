@@ -1,7 +1,6 @@
 from ctxai.helpers.extension import Extension
-
-# Direct import - this extension lives inside the memory plugin
 from ctxai.plugins._memory.helpers.memory import reload as memory_reload
+# Direct import - this extension lives inside the memory plugin
 
 
 class MemoryReload(Extension):

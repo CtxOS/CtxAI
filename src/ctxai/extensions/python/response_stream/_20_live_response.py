@@ -1,5 +1,5 @@
-from ctxai.helpers.extension import Extension
 from ctxai.agent import LoopData
+from ctxai.helpers.extension import Extension
 
 
 class LiveResponse(Extension):

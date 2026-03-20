@@ -1,16 +1,20 @@
-import zipfile
+import datetime
 import json
 import os
-import tempfile
-import datetime
 import platform
-from typing import List, Dict, Any, Optional
+import tempfile
+import zipfile
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
+from ctxai.helpers import files
+from ctxai.helpers import git
+from ctxai.helpers import runtime
+from ctxai.helpers.print_style import PrintStyle
 from pathspec import PathSpec
 from pathspec.patterns.gitwildmatch import GitWildMatchPattern
-
-from ctxai.helpers import files, runtime, git
-from ctxai.helpers.print_style import PrintStyle
 
 
 class BackupService:
@@ -311,7 +315,7 @@ class BackupService:
                                         "size": stat.st_size,
                                         "modified": datetime.datetime.fromtimestamp(stat.st_mtime).isoformat(),
                                         "type": "file",
-                                    }
+                                    },
                                 )
                                 processed_count += 1
                             except (OSError, IOError):
@@ -489,7 +493,8 @@ class BackupService:
                     if restore_include_patterns:
                         # Translate patterns from backed up system to current system
                         translated_include_patterns = self._translate_patterns(
-                            restore_include_patterns, original_backup_metadata
+                            restore_include_patterns,
+                            original_backup_metadata,
                         )
                         for pattern in translated_include_patterns:
                             # Remove leading slash for pathspec matching
@@ -497,7 +502,8 @@ class BackupService:
                     if restore_exclude_patterns:
                         # Translate patterns from backed up system to current system
                         translated_exclude_patterns = self._translate_patterns(
-                            restore_exclude_patterns, original_backup_metadata
+                            restore_exclude_patterns,
+                            original_backup_metadata,
                         )
                         for pattern in translated_exclude_patterns:
                             # Remove leading slash for pathspec matching
@@ -529,7 +535,7 @@ class BackupService:
                                 "archive_path": archive_path,
                                 "original_path": original_path,
                                 "reason": "not_matched_by_pattern",
-                            }
+                            },
                         )
                         continue
 
@@ -541,7 +547,7 @@ class BackupService:
                                     "archive_path": archive_path,
                                     "original_path": original_path,
                                     "reason": "file_exists_skip_policy",
-                                }
+                                },
                             )
                             continue
 
@@ -552,7 +558,7 @@ class BackupService:
                             "original_path": original_path,
                             "target_path": target_path,
                             "action": "restore",
-                        }
+                        },
                     )
 
                 # Handle clean before restore if requested
@@ -560,7 +566,8 @@ class BackupService:
                 if clean_before_restore:
                     # Use user-edited metadata for clean operations so patterns from ACE editor are used
                     files_to_delete = await self._find_files_to_clean_with_user_metadata(
-                        backup_metadata, original_backup_metadata
+                        backup_metadata,
+                        original_backup_metadata,
                     )
 
                 # Combine delete and restore operations for preview
@@ -630,7 +637,8 @@ class BackupService:
                 if clean_before_restore:
                     # Use user-edited metadata for clean operations so patterns from ACE editor are used
                     files_to_delete = await self._find_files_to_clean_with_user_metadata(
-                        backup_metadata, original_backup_metadata
+                        backup_metadata,
+                        original_backup_metadata,
                     )
                     for delete_info in files_to_delete:
                         try:
@@ -643,7 +651,7 @@ class BackupService:
                                         "real_path": real_path,
                                         "action": "deleted",
                                         "reason": "clean_before_restore",
-                                    }
+                                    },
                                 )
                         except Exception as e:
                             errors.append(
@@ -651,7 +659,7 @@ class BackupService:
                                     "path": delete_info["path"],
                                     "real_path": delete_info.get("real_path", "unknown"),
                                     "error": f"Failed to delete: {str(e)}",
-                                }
+                                },
                             )
 
                 # Get files from archive (excluding metadata files)
@@ -664,7 +672,8 @@ class BackupService:
                     if restore_include_patterns:
                         # Translate patterns from backed up system to current system
                         translated_include_patterns = self._translate_patterns(
-                            restore_include_patterns, original_backup_metadata
+                            restore_include_patterns,
+                            original_backup_metadata,
                         )
                         for pattern in translated_include_patterns:
                             # Remove leading slash for pathspec matching
@@ -672,7 +681,8 @@ class BackupService:
                     if restore_exclude_patterns:
                         # Translate patterns from backed up system to current system
                         translated_exclude_patterns = self._translate_patterns(
-                            restore_exclude_patterns, original_backup_metadata
+                            restore_exclude_patterns,
+                            original_backup_metadata,
                         )
                         for pattern in translated_exclude_patterns:
                             # Remove leading slash for pathspec matching
@@ -704,7 +714,7 @@ class BackupService:
                                 "archive_path": archive_path,
                                 "original_path": original_path,
                                 "reason": "not_matched_by_pattern",
-                            }
+                            },
                         )
                         continue
 
@@ -717,7 +727,7 @@ class BackupService:
                                         "archive_path": archive_path,
                                         "original_path": original_path,
                                         "reason": "file_exists_skip_policy",
-                                    }
+                                    },
                                 )
                                 continue
                             elif overwrite_policy == "backup":
@@ -744,7 +754,7 @@ class BackupService:
                                 "original_path": original_path,
                                 "target_path": target_path,
                                 "status": "restored",
-                            }
+                            },
                         )
 
                     except Exception as e:
@@ -823,7 +833,9 @@ class BackupService:
             return absolute_archive_path
 
     async def _find_files_to_clean_with_user_metadata(
-        self, user_metadata: Dict[str, Any], original_metadata: Dict[str, Any]
+        self,
+        user_metadata: Dict[str, Any],
+        original_metadata: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
         """Find existing files that match patterns from user-edited metadata for clean operations"""
         # Use user-edited patterns for what to clean
@@ -860,7 +872,7 @@ class BackupService:
                             "real_path": file_info["real_path"],
                             "action": "delete",
                             "reason": "clean_before_restore",
-                        }
+                        },
                     )
 
             return files_to_delete

@@ -1,5 +1,7 @@
 import sys
-from inputimeout import inputimeout, TimeoutOccurred
+
+from inputimeout import inputimeout
+from inputimeout import TimeoutOccurred
 
 
 def timeout_input(prompt, timeout=10):

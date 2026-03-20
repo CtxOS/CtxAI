@@ -31,7 +31,7 @@ async def test_state_monitor_per_sid_isolation_independent_snapshots_seq_and_cur
                 "log_from": log_from,
                 "notifications_from": notifications_from,
                 "timezone": timezone,
-            }
+            },
         )
         # Return poll-shaped keys that StateMonitor expects to advance cursors from.
         return {
@@ -62,7 +62,7 @@ async def test_state_monitor_per_sid_isolation_independent_snapshots_seq_and_cur
                     "event_type": event_type,
                     "payload": payload,
                     "handler_id": handler_id,
-                }
+                },
             )
 
     monkeypatch.setattr(

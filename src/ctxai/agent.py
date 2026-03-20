@@ -2,31 +2,31 @@ import asyncio
 import random
 import string
 import threading
-
 from collections import OrderedDict
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Awaitable, Coroutine, Dict
+from dataclasses import dataclass
+from dataclasses import field
+from datetime import datetime
+from datetime import timezone
 from enum import Enum
-import ctxai.models as models
-
-from ctxai.helpers import (
-    files,
-    history,
-    context as context_helper,
-    subagents,
-)
-from ctxai.helpers import extension
-from ctxai.helpers.print_style import PrintStyle
-
-from langchain_core.messages import BaseMessage
+from typing import Any
+from typing import Awaitable
+from typing import Callable
+from typing import Coroutine
+from typing import Dict
 
 import ctxai.helpers.log as Log
-from ctxai.helpers.dirty_json import DirtyJson
+import ctxai.models as models
+from ctxai.helpers import context as context_helper
+from ctxai.helpers import extension
+from ctxai.helpers import files
+from ctxai.helpers import history
+from ctxai.helpers import subagents
 from ctxai.helpers.defer import DeferredTask
-from typing import Callable
-from ctxai.helpers.localization import Localization
+from ctxai.helpers.dirty_json import DirtyJson
 from ctxai.helpers.errors import InterventionException
+from ctxai.helpers.localization import Localization
+from ctxai.helpers.print_style import PrintStyle
+from langchain_core.messages import BaseMessage
 
 
 class AgentContextType(Enum):
@@ -774,7 +774,7 @@ class AgentMemory:
                 "key": key,
                 "value": value,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
-            }
+            },
         )
         self._manager.remember(
             key=key,
@@ -826,7 +826,7 @@ class AgentMemory:
                 "tool": tool_name,
                 "result": result[:500],  # truncate to avoid bloat
                 "timestamp": datetime.now(timezone.utc).isoformat(),
-            }
+            },
         )
         if len(self.recent_tool_results) > self.MAX_RECENT_TOOLS:
             self.recent_tool_results = self.recent_tool_results[-self.MAX_RECENT_TOOLS :]

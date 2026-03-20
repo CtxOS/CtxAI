@@ -1,10 +1,9 @@
 import asyncio
 
+from ctxai.helpers import errors
+from ctxai.helpers.errors import HandledException
 from ctxai.helpers.extension import Extension
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers import errors
-
-from ctxai.helpers.errors import HandledException
 
 
 class HandleCriticalException(Extension):
@@ -22,7 +21,7 @@ class HandleCriticalException(Extension):
         # asyncio cancel - chat is being terminated, print out and re-raise as handledException
         if isinstance(exception, asyncio.CancelledError):
             PrintStyle(font_color="white", background_color="red", padding=True).print(
-                f"Context {self.agent.context.id} terminated during message loop"
+                f"Context {self.agent.context.id} terminated during message loop",
             )
             data["exception"] = HandledException(exception)
             return

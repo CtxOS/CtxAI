@@ -1,8 +1,11 @@
-from datetime import datetime, timezone as dt_timezone, timedelta
-import pytz  # type: ignore
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone as dt_timezone
 
+import pytz  # type: ignore
+from ctxai.helpers.dotenv import get_dotenv_value
+from ctxai.helpers.dotenv import save_dotenv_value
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.dotenv import get_dotenv_value, save_dotenv_value
 
 
 class Localization:
@@ -80,7 +83,7 @@ class Localization:
                 prev_tz = getattr(self, "timezone", "None")
                 prev_off = getattr(self, "_offset_minutes", None)
                 PrintStyle.debug(
-                    f"Changing timezone from {prev_tz} (offset {prev_off}) to {timezone} (offset {new_offset})"
+                    f"Changing timezone from {prev_tz} (offset {prev_off}) to {timezone} (offset {new_offset})",
                 )
                 self._offset_minutes = new_offset
                 self.timezone = timezone
@@ -118,14 +121,14 @@ class Localization:
                 if local_datetime_obj.tzinfo is None:
                     # If no timezone info, assume fixed offset
                     local_datetime_obj = local_datetime_obj.replace(
-                        tzinfo=dt_timezone(timedelta(minutes=self._offset_minutes))
+                        tzinfo=dt_timezone(timedelta(minutes=self._offset_minutes)),
                     )
             except ValueError:
                 # If timezone parsing fails, try without timezone
                 base = localtime_str.split("Z")[0].split("+")[0]
                 local_datetime_obj = datetime.fromisoformat(base)
                 local_datetime_obj = local_datetime_obj.replace(
-                    tzinfo=dt_timezone(timedelta(minutes=self._offset_minutes))
+                    tzinfo=dt_timezone(timedelta(minutes=self._offset_minutes)),
                 )
 
             # Convert to UTC

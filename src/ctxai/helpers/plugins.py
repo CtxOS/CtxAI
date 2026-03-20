@@ -1,34 +1,30 @@
 from __future__ import annotations
 
 import asyncio
-import re
-import json
 import glob
+import json
+import re
 import time
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Iterator,
-    List,
-    Literal,
-    TYPE_CHECKING,
-    TypedDict,
-)
+from typing import Any
+from typing import Callable
+from typing import Iterator
+from typing import List
+from typing import Literal
+from typing import TYPE_CHECKING
+from typing import TypedDict
 
-from ctxai.helpers import (
-    files,
-    git,
-    notification,
-    print_style,
-    yaml as yaml_helper,
-    cache,
-    extension,
-    extract_tools,
-)
-from pydantic import BaseModel, Field
-
+from ctxai.helpers import cache
+from ctxai.helpers import extension
+from ctxai.helpers import extract_tools
+from ctxai.helpers import files
+from ctxai.helpers import git
+from ctxai.helpers import notification
+from ctxai.helpers import print_style
+from ctxai.helpers import yaml as yaml_helper
 from ctxai.helpers.defer import DeferredTask
+from pydantic import BaseModel
+from pydantic import Field
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
@@ -151,7 +147,9 @@ def get_plugins_list():
 
 
 def get_enhanced_plugins_list(
-    custom: bool = True, builtin: bool = True, plugin_names: list[str] | None = None
+    custom: bool = True,
+    builtin: bool = True,
+    plugin_names: list[str] | None = None,
 ) -> List[PluginListItem]:
     """Discover plugins by directory convention. First root wins on ID conflict."""
     results = []
@@ -204,7 +202,7 @@ def get_enhanced_plugins_list(
                         toggle_state=toggle_state,
                         current_commit=current_commit,
                         current_commit_timestamp=current_commit_timestamp,
-                    )
+                    ),
                 )
             except Exception as e:
                 print_style.PrintStyle.error(f"Failed to load plugin {d.name}: {e}")
@@ -235,7 +233,7 @@ def get_custom_plugins_updates(plugin_names: list[str] | None = None) -> List[Pl
                 is_git_repo=update.is_git_repo,
                 is_remote=update.is_remote,
                 error=update.error,
-            )
+            ),
         )
 
     return results
@@ -318,7 +316,7 @@ def delete_plugin(plugin_name: str):
     if not files.is_in_dir(plugin_dir, custom_plugins_dir):
         raise ValueError("Only custom plugins can be deleted")
     send_frontend_reload_notification(
-        [plugin_name]
+        [plugin_name],
     )  # send before deletion to properly check the extensions, second notification will be skipped automatically
     files.delete_dir(plugin_dir)
     after_plugin_change([plugin_name])
@@ -593,7 +591,7 @@ def find_plugin_assets(
                     "project_name": inferred_proj,
                     "agent_profile": inferred_prof,
                     "path": matched,
-                }
+                },
             )
             if only_first:
                 return True

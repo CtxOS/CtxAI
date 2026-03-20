@@ -1040,7 +1040,7 @@ input:checked + .slider:before {
     gap: 6px;
     padding: var(--spacing-xs);
   }
-  /* 
+  /*
   .preview-item,
   .attachment-item {
     width: 90px;

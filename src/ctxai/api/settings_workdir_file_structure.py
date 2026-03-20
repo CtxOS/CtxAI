@@ -1,6 +1,8 @@
-from ctxai.helpers.api import ApiHandler, Request, Response
-
-from ctxai.helpers import file_tree, files
+from ctxai.helpers import file_tree
+from ctxai.helpers import files
+from ctxai.helpers.api import ApiHandler
+from ctxai.helpers.api import Request
+from ctxai.helpers.api import Response
 
 
 class SettingsWorkdirFileStructure(ApiHandler):
@@ -19,7 +21,7 @@ class SettingsWorkdirFileStructure(ApiHandler):
                 max_lines=int(input.get("workdir_max_lines", 0) or 0),
                 ignore=input.get("workdir_gitignore", "") or "",
                 output_mode=file_tree.OUTPUT_MODE_STRING,
-            )
+            ),
         )
 
         if "\n" not in tree:

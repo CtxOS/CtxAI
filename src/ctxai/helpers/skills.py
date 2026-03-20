@@ -2,11 +2,20 @@ from __future__ import annotations
 
 import os
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import TYPE_CHECKING
 
-from ctxai.helpers import files, subagents, file_tree, runtime
+from ctxai.helpers import file_tree
+from ctxai.helpers import files
+from ctxai.helpers import runtime
+from ctxai.helpers import subagents
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
@@ -50,7 +59,7 @@ def get_skill_roots(
     else:
         # skill roots available globally
         project_agents = files.find_existing_paths_by_pattern(
-            "usr/projects/*/.a0proj/agents/*/skills"
+            "usr/projects/*/.a0proj/agents/*/skills",
         )  # agents in projects
         projects = files.find_existing_paths_by_pattern("usr/projects/*/.a0proj/skills")  # projects
         usr_agents = files.find_existing_paths_by_pattern("usr/agents/*/skills")  # agents
@@ -250,7 +259,7 @@ def skill_from_markdown(
     # - Claude Code leans on description (triggers may be embedded there)
     # - Some repos use triggers/trigger_patterns
     triggers = _coerce_list(
-        fm.get("triggers") or fm.get("trigger_patterns") or fm.get("trigger") or fm.get("activation")
+        fm.get("triggers") or fm.get("trigger_patterns") or fm.get("trigger") or fm.get("activation"),
     )
 
     tags = _coerce_list(fm.get("tags") or fm.get("tag"))
@@ -422,7 +431,7 @@ def _get_skill_files(skill_dir: Path) -> str:
             output_mode="string",
             max_lines=300,
             ignore=files.read_file("conf/skill.default.gitignore"),
-        )
+        ),
     )
 
     if tree and runtime.is_development():

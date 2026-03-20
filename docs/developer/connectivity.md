@@ -609,7 +609,7 @@ It provides two endpoint types:
 
 ### Example MCP Server Configuration
 
-Below is an example of a `mcp.json` configuration file that a client could use to connect to the Ctx AI MCP server. 
+Below is an example of a `mcp.json` configuration file that a client could use to connect to the Ctx AI MCP server.
 
 **Note:** You can find your personalized connection URLs under `Settings > MCP Server > MCP Server`.
 
@@ -661,7 +661,7 @@ Ctx AI's A2A Server enables communication with other agents using the FastA2A pr
 
 ### A2A Connection URL
 
-To connect another agent to your Ctx AI instance, use the following URL format. 
+To connect another agent to your Ctx AI instance, use the following URL format.
 
 **Note:** You can find your specific A2A connection URL under `Settings > External Services > A2A Connection`.
 

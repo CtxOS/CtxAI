@@ -1,6 +1,6 @@
 from ctxai.agent import AgentContext
-from ctxai.helpers.defer import DeferredTask
 from ctxai.api.message import Message
+from ctxai.helpers.defer import DeferredTask
 
 
 class MessageAsync(Message):

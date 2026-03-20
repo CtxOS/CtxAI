@@ -1,4 +1,5 @@
-from ctxai.helpers.tool import Tool, Response
+from ctxai.helpers.tool import Response
+from ctxai.helpers.tool import Tool
 
 # example of a tool redefinition
 # the original response tool is in python/tools/response.py

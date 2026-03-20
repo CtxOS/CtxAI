@@ -1,8 +1,11 @@
-from ctxai.agent import AgentContext
-from ctxai.helpers.api import ApiHandler, Request, Response
-from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers import persist_chat
 import json
+
+from ctxai.agent import AgentContext
+from ctxai.helpers import persist_chat
+from ctxai.helpers.api import ApiHandler
+from ctxai.helpers.api import Request
+from ctxai.helpers.api import Response
+from ctxai.helpers.print_style import PrintStyle
 
 
 class ApiResetChat(ApiHandler):
@@ -43,7 +46,7 @@ class ApiResetChat(ApiHandler):
 
             # Log the reset
             PrintStyle(background_color="#3498DB", font_color="white", bold=True, padding=True).print(
-                f"API Chat reset: {context_id}"
+                f"API Chat reset: {context_id}",
             )
 
             # Return success response
@@ -52,5 +55,7 @@ class ApiResetChat(ApiHandler):
         except Exception as e:
             PrintStyle.error(f"API reset chat error: {str(e)}")
             return Response(
-                json.dumps({"error": f"Internal server error: {str(e)}"}), status=500, mimetype="application/json"
+                json.dumps({"error": f"Internal server error: {str(e)}"}),
+                status=500,
+                mimetype="application/json",
             )

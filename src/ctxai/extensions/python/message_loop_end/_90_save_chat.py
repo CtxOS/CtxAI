@@ -1,6 +1,7 @@
-from ctxai.helpers.extension import Extension
-from ctxai.agent import LoopData, AgentContextType
+from ctxai.agent import AgentContextType
+from ctxai.agent import LoopData
 from ctxai.helpers import persist_chat
+from ctxai.helpers.extension import Extension
 
 
 class SaveChat(Extension):

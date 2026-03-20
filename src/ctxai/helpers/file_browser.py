@@ -1,14 +1,17 @@
-import os
-from pathlib import Path
-import shutil
 import base64
+import os
+import shutil
 import subprocess
-from typing import Dict, List, Tuple, Any
-from ctxai.helpers.security import safe_filename
 from datetime import datetime
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Tuple
 
 from ctxai.helpers import files
 from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.security import safe_filename
 
 
 class FileBrowser:
@@ -265,7 +268,7 @@ class FileBrowser:
 
                         if entry_path.is_file():
                             entry_data.update(
-                                {"type": self._get_file_type(filename), "size": stat_info.st_size, "is_dir": False}
+                                {"type": self._get_file_type(filename), "size": stat_info.st_size, "is_dir": False},
                             )
                             files.append(entry_data)
                         elif entry_path.is_dir():
@@ -274,7 +277,7 @@ class FileBrowser:
                                     "type": "folder",
                                     "size": 0,  # Directories show as 0 bytes
                                     "is_dir": True,
-                                }
+                                },
                             )
                             folders.append(entry_data)
 

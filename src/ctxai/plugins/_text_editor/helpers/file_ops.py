@@ -162,7 +162,7 @@ def read_file(
     if trimmed_by_total:
         actual_end = line_from + len(output_lines)
         warn_parts.append(
-            f"output trimmed at line {actual_end} due to token limit - use line_from/line_to for remaining"
+            f"output trimmed at line {actual_end} due to token limit - use line_from/line_to for remaining",
         )
 
     warn_str = ""
@@ -248,7 +248,7 @@ def validate_edits(edits: list | None) -> tuple[list[dict], str]:
                 "to": to,
                 "content": e.get("content", ""),
                 "insert": is_insert,
-            }
+            },
         )
 
     parsed.sort(key=lambda x: (x["from"], 0 if x["insert"] else 1))

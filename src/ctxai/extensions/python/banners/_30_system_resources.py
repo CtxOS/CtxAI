@@ -1,6 +1,7 @@
-from ctxai.helpers.extension import Extension
 import os
+
 import psutil
+from ctxai.helpers.extension import Extension
 
 
 class SystemResourcesCheck(Extension):
@@ -103,7 +104,7 @@ class SystemResourcesCheck(Extension):
                 ),
                 "dismissible": True,
                 "source": "backend",
-            }
+            },
         )
 
     def _bar_html(self, percent: float | None) -> str:

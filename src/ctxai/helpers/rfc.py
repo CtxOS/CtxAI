@@ -1,7 +1,9 @@
 import importlib
 import inspect
 import json
-from typing import Any, TypedDict
+from typing import Any
+from typing import TypedDict
+
 import aiohttp
 from ctxai.helpers import crypto
 

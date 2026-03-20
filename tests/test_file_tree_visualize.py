@@ -2,13 +2,18 @@ from __future__ import annotations
 
 import argparse
 import os
-from collections.abc import Iterable
-from contextlib import contextmanager
-from dataclasses import dataclass, field
-from pathlib import Path
 import sys
 import time
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Iterable
+from contextlib import contextmanager
+from dataclasses import dataclass
+from dataclasses import field
+from pathlib import Path
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
 
 try:
     import pytest  # type: ignore
@@ -237,7 +242,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     def setup_sorting(base_rel: str) -> None:
@@ -291,7 +296,7 @@ def build_scenarios() -> List[Scenario]:
                 ),
             ],
             setup=setup_sorting,
-        )
+        ),
     )
 
     scenarios.append(
@@ -344,7 +349,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -357,7 +362,7 @@ def build_scenarios() -> List[Scenario]:
                     "b.py": "",
                     "dir1": {},
                     "dir2": {},
-                }
+                },
             },
             configs=[
                 Config(
@@ -381,7 +386,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -393,7 +398,7 @@ def build_scenarios() -> List[Scenario]:
                     "dir_a": {},
                     "dir_b": {},
                     "file_a.txt": "",
-                }
+                },
             },
             configs=[
                 Config(
@@ -424,7 +429,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -436,15 +441,15 @@ def build_scenarios() -> List[Scenario]:
                     "layer2_a": {
                         "layer3_a": {
                             "layer4_a": {"layer5_a.txt": ""},
-                        }
-                    }
+                        },
+                    },
                 },
                 "layer1_b": {
                     "layer2_b": {
                         "layer3_b": {
                             "layer4_b": {"layer5_b.txt": ""},
-                        }
-                    }
+                        },
+                    },
                 },
                 "root_file.txt": "",
             },
@@ -467,7 +472,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -493,9 +498,9 @@ def build_scenarios() -> List[Scenario]:
                         "max_folders": 1,
                         "max_files": 1,
                     },
-                )
+                ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -528,9 +533,9 @@ def build_scenarios() -> List[Scenario]:
                         "sort": (SORT_BY_CREATED, SORT_DESC),
                         "max_lines": 4,
                     },
-                )
+                ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -553,9 +558,9 @@ def build_scenarios() -> List[Scenario]:
                         "max_folders": 1,
                         "max_files": 1,
                     },
-                )
+                ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -567,7 +572,7 @@ def build_scenarios() -> List[Scenario]:
                     "branch": {
                         "leaf_a.txt": "",
                         "leaf_b.txt": "",
-                    }
+                    },
                 },
                 "alpha.txt": "",
             },
@@ -591,9 +596,9 @@ def build_scenarios() -> List[Scenario]:
                         "sort": (SORT_BY_CREATED, SORT_ASC),
                         "max_depth": 2,
                     },
-                )
+                ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -639,7 +644,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     stress_structure = {
@@ -770,7 +775,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -813,7 +818,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     return scenarios

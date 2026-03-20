@@ -1,5 +1,6 @@
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime
+from datetime import timezone
 
 from ctxai.helpers.print_style import PrintStyle
 

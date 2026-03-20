@@ -1,5 +1,5 @@
-from ctxai.helpers.extension import Extension
 from ctxai.helpers.errors import InterventionException
+from ctxai.helpers.extension import Extension
 
 
 class HandleInterventionException(Extension):

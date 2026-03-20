@@ -1,6 +1,6 @@
-from ctxai.helpers.extension import Extension
-from ctxai.helpers import plugins
 from ctxai.agent import LoopData
+from ctxai.helpers import plugins
+from ctxai.helpers.extension import Extension
 
 
 class TextEditorPrompt(Extension):

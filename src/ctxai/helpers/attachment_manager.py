@@ -1,12 +1,14 @@
-import os
-import io
 import base64
-from PIL import Image
-from typing import Dict, Optional, Tuple
-from ctxai.helpers.security import safe_filename
-from werkzeug.datastructures import FileStorage
+import io
+import os
+from typing import Dict
+from typing import Optional
+from typing import Tuple
 
 from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.security import safe_filename
+from PIL import Image
+from werkzeug.datastructures import FileStorage
 
 
 class AttachmentManager:

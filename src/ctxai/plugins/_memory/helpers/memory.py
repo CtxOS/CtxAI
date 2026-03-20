@@ -1,37 +1,36 @@
+import json
+import logging
+import os
 from datetime import datetime
-from typing import List, Sequence
-from langchain.storage import InMemoryByteStore, LocalFileStore
-from langchain.embeddings import CacheBackedEmbeddings
-from ctxai.helpers import guids
+from enum import Enum
+from typing import List
+from typing import Sequence
 
-# from langchain_chroma import Chroma
-from langchain_community.vectorstores import FAISS
-
-# faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
+import ctxai.models as models
 import faiss
-
-
+import numpy as np
+from ctxai.agent import Agent
+from ctxai.agent import AgentContext
+from ctxai.helpers import files
+from ctxai.helpers import guids
+from ctxai.helpers import plugins
+from ctxai.helpers import projects
+from ctxai.helpers.log import LogItem
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.safe_eval import make_comparator
+from langchain.embeddings import CacheBackedEmbeddings
+from langchain.storage import InMemoryByteStore
+from langchain.storage import LocalFileStore
 from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import (
     DistanceStrategy,
 )
-
-import os
-import json
-
-import numpy as np
-
-from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers import files, plugins, projects
 from langchain_core.documents import Document
-from . import knowledge_import
-from ctxai.helpers.log import LogItem
-from enum import Enum
-from ctxai.agent import Agent, AgentContext
-import ctxai.models as models
-import logging
 
-from ctxai.helpers.safe_eval import make_comparator
+from . import knowledge_import
+# from langchain_chroma import Chroma
+# faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
 
 
 # Raise the log level so WARNING messages aren't shown
@@ -78,7 +77,8 @@ class Memory:
             Memory.index[memory_subdir] = db
             wrap = Memory(db, memory_subdir=memory_subdir)
             knowledge_subdirs = get_knowledge_subdirs_by_memory_subdir(
-                memory_subdir, agent.config.knowledge_subdirs or []
+                memory_subdir,
+                agent.config.knowledge_subdirs or [],
             )
             if knowledge_subdirs:
                 await wrap.preload_knowledge(log_item, knowledge_subdirs, memory_subdir)
@@ -109,7 +109,8 @@ class Memory:
             wrap = Memory(db, memory_subdir=memory_subdir)
             if preload_knowledge:
                 knowledge_subdirs = get_knowledge_subdirs_by_memory_subdir(
-                    memory_subdir, agent_config.knowledge_subdirs or []
+                    memory_subdir,
+                    agent_config.knowledge_subdirs or [],
                 )
                 if knowledge_subdirs:
                     await wrap.preload_knowledge(log_item, knowledge_subdirs, memory_subdir)
@@ -222,7 +223,7 @@ class Memory:
                     {
                         "model_provider": model_config.provider,
                         "model_name": model_config.name,
-                    }
+                    },
                 ),
             )
 
@@ -262,7 +263,8 @@ class Memory:
 
         for file in index:
             if index[file]["state"] in ["changed", "removed"] and index[file].get(
-                "ids", []
+                "ids",
+                [],
             ):  # for knowledge files that have been changed or removed and have IDs
                 await self.delete_documents_by_ids(index[file]["ids"])  # remove original version
             if index[file]["state"] == "changed":

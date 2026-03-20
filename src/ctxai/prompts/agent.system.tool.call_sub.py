@@ -1,6 +1,9 @@
-from typing import Any, TYPE_CHECKING
+from typing import Any
+from typing import TYPE_CHECKING
+
+from ctxai.helpers import projects
+from ctxai.helpers import subagents
 from ctxai.helpers.files import VariablesPlugin
-from ctxai.helpers import projects, subagents
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent

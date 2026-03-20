@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import re
 import threading
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
+from typing import Any
+from typing import Iterable
+from typing import Optional
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
-from typing import Any, Iterable, Optional, TYPE_CHECKING
 
 import socketio
 

@@ -3,19 +3,31 @@ from __future__ import annotations
 import asyncio
 import os
 import time
-from collections import defaultdict, deque
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Deque, Dict, Iterable, List, Optional, Set
+import uuid
+from collections import defaultdict
+from collections import deque
+from dataclasses import dataclass
+from dataclasses import field
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
+from typing import Any
+from typing import Callable
+from typing import Deque
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Set
 
 import socketio
-import uuid
-
+from ctxai.helpers import runtime
 from ctxai.helpers.defer import DeferredTask
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers import runtime
-from ctxai.helpers.websocket import ConnectionNotFoundError, WebSocketHandler, WebSocketResult
 from ctxai.helpers.state_monitor import _ws_debug_enabled
+from ctxai.helpers.websocket import ConnectionNotFoundError
+from ctxai.helpers.websocket import WebSocketHandler
+from ctxai.helpers.websocket import WebSocketResult
 
 BUFFER_MAX_SIZE = 100
 BUFFER_TTL = timedelta(hours=1)
@@ -62,7 +74,7 @@ class WebSocketManager:
         self.socketio = socketio
         self.lock = lock
         self.handlers: defaultdict[str, defaultdict[str, List[WebSocketHandler]]] = defaultdict(
-            lambda: defaultdict(list)
+            lambda: defaultdict(list),
         )
         self.connections: Dict[ConnectionIdentity, ConnectionInfo] = {}
         self.buffers: defaultdict[ConnectionIdentity, Deque[BufferedEvent]] = defaultdict(deque)
@@ -180,7 +192,7 @@ class WebSocketManager:
                     "ok": ok,
                     "errorCode": (result.get("error") or {}).get("code"),
                     "durationMs": result.get("durationMs"),
-                }
+                },
             )
         summary["handlerCount"] = len(summary["handlers"])
         return summary
@@ -272,13 +284,13 @@ class WebSocketManager:
             unknown = include - available_ids
             if unknown:
                 raise ValueError(
-                    f"Unknown handler(s) in includeHandlers for namespace '{namespace}': {', '.join(sorted(unknown))}"
+                    f"Unknown handler(s) in includeHandlers for namespace '{namespace}': {', '.join(sorted(unknown))}",
                 )
         if exclude is not None:
             unknown = exclude - available_ids
             if unknown:
                 raise ValueError(
-                    f"Unknown handler(s) in excludeHandlers for namespace '{namespace}': {', '.join(sorted(unknown))}"
+                    f"Unknown handler(s) in excludeHandlers for namespace '{namespace}': {', '.join(sorted(unknown))}",
                 )
 
         selected: list[WebSocketHandler] = []
@@ -315,13 +327,13 @@ class WebSocketManager:
                 if _ws_debug_enabled():
                     PrintStyle.info(
                         "Registered WebSocket handler %s namespace=%s for events: %s"
-                        % (handler.identifier, namespace, ", ".join(validated_events))
+                        % (handler.identifier, namespace, ", ".join(validated_events)),
                     )
                 for event_type in validated_events:
                     existing = self.handlers[namespace].get(event_type)
                     if existing:
                         PrintStyle.warning(
-                            f"Duplicate handler registration for namespace '{namespace}' event '{event_type}'"
+                            f"Duplicate handler registration for namespace '{namespace}' event '{event_type}'",
                         )
                     self.handlers[namespace][event_type].append(handler)
                     self._debug(f"Registered handler {handler.identifier} namespace={namespace} event='{event_type}'")
@@ -388,7 +400,7 @@ class WebSocketManager:
                 "kind": "lifecycle",
                 "event": "connect",
                 **lifecycle_payload,
-            }
+            },
         )
         self._schedule_lifecycle_broadcast(namespace, LIFECYCLE_CONNECT_EVENT, lifecycle_payload)
 
@@ -422,7 +434,7 @@ class WebSocketManager:
                 "kind": "lifecycle",
                 "event": "disconnect",
                 **lifecycle_payload,
-            }
+            },
         )
         self._schedule_lifecycle_broadcast(namespace, LIFECYCLE_DISCONNECT_EVENT, lifecycle_payload)
 
@@ -564,7 +576,7 @@ class WebSocketManager:
                 info.last_activity = _utcnow()
 
         executions = await asyncio.gather(
-            *[self._invoke_handler(handler, event_type, dict(handler_payload), sid) for handler in selected_handlers]
+            *[self._invoke_handler(handler, event_type, dict(handler_payload), sid) for handler in selected_handlers],
         )
 
         results: List[dict[str, Any]] = []
@@ -575,7 +587,7 @@ class WebSocketManager:
 
             if isinstance(value, Exception):  # pragma: no cover - defensive logging
                 PrintStyle.error(
-                    f"Error in handler {handler.identifier} for '{event_type}' (correlation {correlation_id}): {value}"
+                    f"Error in handler {handler.identifier} for '{event_type}' (correlation {correlation_id}): {value}",
                 )
                 results.append(
                     self._build_error_result(
@@ -585,7 +597,7 @@ class WebSocketManager:
                         details=str(value),
                         correlation_id=correlation_id,
                         duration_ms=duration_ms,
-                    )
+                    ),
                 )
                 continue
 
@@ -595,7 +607,7 @@ class WebSocketManager:
                         handler_id=handler.identifier,
                         fallback_correlation_id=correlation_id,
                         duration_ms=duration_ms,
-                    )
+                    ),
                 )
                 continue
 
@@ -611,7 +623,7 @@ class WebSocketManager:
                     handler_id=handler.identifier,
                     fallback_correlation_id=correlation_id,
                     duration_ms=duration_ms,
-                )
+                ),
             )
 
         await self._publish_diagnostic_event(
@@ -627,7 +639,7 @@ class WebSocketManager:
                 "durationMs": sum((exec.duration_ms or 0.0) for exec in executions),
                 "resultSummary": self._summarize_results(results),
                 "payloadSummary": self._summarize_payload(handler_payload),
-            }
+            },
         )
 
         response_payload = {"correlationId": correlation_id, "results": results}
@@ -661,7 +673,7 @@ class WebSocketManager:
                         code="CONNECTION_NOT_FOUND",
                         message=f"Connection '{sid}' not found in namespace '{namespace}'",
                         correlation_id=correlation_id,
-                    )
+                    ),
                 ],
             }
 
@@ -688,7 +700,7 @@ class WebSocketManager:
                             code="TIMEOUT",
                             message="Request timeout",
                             correlation_id=correlation_id,
-                        )
+                        ),
                     ],
                 }
         return await _invoke()
@@ -725,7 +737,7 @@ class WebSocketManager:
                         "sid": "__invalid__",
                         "correlationId": correlation_id,
                         "results": [error],
-                    }
+                    },
                 ]
 
             if exclude_combined is None:
@@ -742,7 +754,7 @@ class WebSocketManager:
                         "sid": "__invalid__",
                         "correlationId": correlation_id,
                         "results": [error],
-                    }
+                    },
                 ]
 
         self._debug(f"Starting requestAll namespace={namespace} for '{event_type}' correlation={correlation_id}")
@@ -753,7 +765,7 @@ class WebSocketManager:
             ]
         if not active_sids:
             self._debug(
-                f"No active connections for requestAll namespace={namespace} '{event_type}' correlation={correlation_id}"
+                f"No active connections for requestAll namespace={namespace} '{event_type}' correlation={correlation_id}",
             )
             return []
 
@@ -793,7 +805,7 @@ class WebSocketManager:
                             code="TIMEOUT",
                             message="Request timeout",
                             correlation_id=correlation_id,
-                        )
+                        ),
                     ],
                 }
 
@@ -808,7 +820,7 @@ class WebSocketManager:
                         "sid": sid,
                         "correlationId": result.get("correlationId", correlation_id),
                         "results": result.get("results", []),
-                    }
+                    },
                 )
             else:
                 aggregated.append(
@@ -816,7 +828,7 @@ class WebSocketManager:
                         "sid": sid,
                         "correlationId": correlation_id,
                         "results": result,
-                    }
+                    },
                 )
 
         self._debug(f"Completed requestAll namespace={namespace} for '{event_type}' correlation={correlation_id}")
@@ -875,7 +887,7 @@ class WebSocketManager:
                     envelope.get("eventId"),
                     envelope.get("correlationId"),
                     envelope.get("handlerId"),
-                )
+                ),
             )
             await self._run_on_dispatcher_loop(self.socketio.emit(event_type, envelope, to=sid, namespace=namespace))
             delivered = True
@@ -906,7 +918,7 @@ class WebSocketManager:
                     "delivered": delivered,
                     "buffered": buffered,
                     "payloadSummary": self._summarize_payload(data),
-                }
+                },
             )
 
     async def broadcast(
@@ -955,7 +967,7 @@ class WebSocketManager:
                     "handlerId": handler_id or self._identifier,
                     "timestamp": self._timestamp(),
                     "payloadSummary": self._summarize_payload(data),
-                }
+                },
             )
 
     async def _run_lifecycle(self, namespace: str, fn: Callable[[WebSocketHandler], Any]) -> None:
@@ -986,12 +998,12 @@ class WebSocketManager:
                 data=data,
                 handler_id=handler_id,
                 correlation_id=correlation_id,
-            )
+            ),
         )
         while len(buffer) > BUFFER_MAX_SIZE:
             dropped = buffer.popleft()
             PrintStyle.warning(
-                f"Dropping buffered event '{dropped.event_type}' for namespace={namespace} sid={sid} (overflow)"
+                f"Dropping buffered event '{dropped.event_type}' for namespace={namespace} sid={sid} (overflow)",
             )
         self._debug(f"Buffered event namespace={namespace} '{event_type}' sid={sid} (queue length={len(buffer)})")
 
@@ -1021,10 +1033,10 @@ class WebSocketManager:
                     envelope.get("eventId"),
                     envelope.get("correlationId"),
                     envelope.get("handlerId"),
-                )
+                ),
             )
             await self._run_on_dispatcher_loop(
-                self.socketio.emit(event.event_type, envelope, to=sid, namespace=namespace)
+                self.socketio.emit(event.event_type, envelope, to=sid, namespace=namespace),
             )
             delivered += 1
         if identity in self.buffers:

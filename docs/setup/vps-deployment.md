@@ -1,8 +1,8 @@
 # Ctx AI Installation Guide
 
-> **Purpose:** Step-by-step guide for deploying Ctx AI instances on VPS/dedicated servers  
-> **Author:** Auto-generated from deployment experience  
-> **Last Updated:** December 21 2025  
+> **Purpose:** Step-by-step guide for deploying Ctx AI instances on VPS/dedicated servers
+> **Author:** Auto-generated from deployment experience
+> **Last Updated:** December 21 2025
 > **Compatibility:** Docker-capable Linux servers (AlmaLinux, CentOS, Rocky, Ubuntu, Debian)
 
 ---
@@ -690,7 +690,7 @@ docker restart a0-instance
 docker logs a0-instance
 docker exec -it a0-instance bash
 
-# Apache Management  
+# Apache Management
 systemctl restart httpd    # RHEL/AlmaLinux
 systemctl restart apache2  # Debian/Ubuntu
 httpd -t                   # Test config
@@ -748,7 +748,7 @@ For running multiple A0 instances on the same server:
 mkdir -p /opt/a0-primary
 # ... create .env, run container on port 50080
 
-# Instance 2: a0-dev on port 50081  
+# Instance 2: a0-dev on port 50081
 mkdir -p /opt/a0-dev
 # ... create .env, run container on port 50081
 

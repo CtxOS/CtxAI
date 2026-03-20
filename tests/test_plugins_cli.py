@@ -1,8 +1,7 @@
 import os
-from pathlib import Path
 
-from ctxai.helpers import files
-from ctxai.helpers.plugins_cli import create_plugin, validate_plugin
+from ctxai.helpers.plugins_cli import create_plugin
+from ctxai.helpers.plugins_cli import validate_plugin
 
 
 def test_create_and_validate_plugin(tmp_path):

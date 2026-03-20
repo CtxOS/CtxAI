@@ -1,6 +1,6 @@
-from ctxai.helpers.extension import Extension
-from ctxai.helpers import settings as settings_helper
 import ctxai.models as models
+from ctxai.helpers import settings as settings_helper
+from ctxai.helpers.extension import Extension
 
 
 class MissingApiKeyCheck(Extension):
@@ -42,7 +42,7 @@ class MissingApiKeyCheck(Extension):
                     {
                         "model_type": self.MODEL_TYPE_NAMES.get(model_type, model_type),
                         "provider": provider,
-                    }
+                    },
                 )
 
         if not missing_providers:
@@ -62,5 +62,5 @@ class MissingApiKeyCheck(Extension):
                      Add your API key</a> in Settings → External Services → API Keys.""",
                 "dismissible": False,
                 "source": "backend",
-            }
+            },
         )

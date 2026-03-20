@@ -1,13 +1,15 @@
-import re
-import json
-import time
 import asyncio
+import json
+import re
+import time
 from typing import TYPE_CHECKING
 
-from ctxai.helpers import plugins
 from ctxai.helpers import history as history_helpers
+from ctxai.helpers import plugins
 from ctxai.helpers.errors import HandledException
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage
+from langchain_core.messages import HumanMessage
+from langchain_core.messages import SystemMessage
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
@@ -290,7 +292,9 @@ class InfectionChecker:
 
             # Feed agent's response back to the check model
             self._check_msgs.append(
-                HumanMessage(content=(f"The agent responded:\n\n{agent_resp}\n\nRe-evaluate and provide your verdict."))
+                HumanMessage(
+                    content=(f"The agent responded:\n\n{agent_resp}\n\nRe-evaluate and provide your verdict."),
+                ),
             )
 
             async def _check_cb(chunk: str, full: str):

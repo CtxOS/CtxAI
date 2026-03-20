@@ -1,4 +1,6 @@
-from ctxai.helpers.api import ApiHandler, Request, session
+from ctxai.helpers.api import ApiHandler
+from ctxai.helpers.api import Request
+from ctxai.helpers.api import session
 
 
 class ApiLogout(ApiHandler):

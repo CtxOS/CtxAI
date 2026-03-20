@@ -10,20 +10,21 @@ testable and keeps the Agent class as a thin coordinator.
 
 from __future__ import annotations
 
-from typing import Any, Awaitable, Callable, TYPE_CHECKING
+from typing import Any
+from typing import Awaitable
+from typing import Callable
+from typing import TYPE_CHECKING
 
-from langchain_core.messages import BaseMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate
-
-from ctxai.helpers import (
-    dirty_json,
-    extract_tools,
-    history,
-    subagents,
-    tokens,
-)
+from ctxai.helpers import dirty_json
 from ctxai.helpers import extension
+from ctxai.helpers import extract_tools
+from ctxai.helpers import history
+from ctxai.helpers import subagents
+from ctxai.helpers import tokens
 from ctxai.helpers.print_style import PrintStyle
+from langchain_core.messages import BaseMessage
+from langchain_core.messages import SystemMessage
+from langchain_core.prompts import ChatPromptTemplate
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent, LoopData
@@ -156,7 +157,12 @@ async def call_utility_model(
 
 
 def resolve_tool(
-    agent: Agent, name: str, method: str | None, args: dict, message: str, loop_data: "LoopData"
+    agent: Agent,
+    name: str,
+    method: str | None,
+    args: dict,
+    message: str,
+    loop_data: "LoopData",
 ) -> "Tool":
     """Locate and instantiate a tool by name from the agent's path hierarchy."""
     from ctxai.tools.unknown import Unknown
@@ -245,7 +251,7 @@ async def execute_tool_with_retry(
         except Exception as e:
             last_error = e
             PrintStyle(font_color="orange", padding=True).print(
-                f"Tool '{tool_name}' attempt {attempt}/{max_retries} failed: {e}"
+                f"Tool '{tool_name}' attempt {attempt}/{max_retries} failed: {e}",
             )
             agent.context.log.log(
                 type="warning",
@@ -257,7 +263,7 @@ async def execute_tool_with_retry(
     # All retries exhausted — try fallback
     if fallback_tool is not None:
         PrintStyle(font_color="yellow", padding=True).print(
-            f"Tool '{tool_name}' exhausted retries, trying fallback '{fallback_tool.name}'"
+            f"Tool '{tool_name}' exhausted retries, trying fallback '{fallback_tool.name}'",
         )
         agent.context.log.log(
             type="info",
@@ -304,11 +310,11 @@ async def parse_tool_request(agent: Agent, msg: str) -> tuple[str | None, str | 
             tool = mcp_tool_candidate
     except ImportError:
         PrintStyle(background_color="black", font_color="yellow", padding=True).print(
-            "MCP helper module not found. Skipping MCP tool lookup."
+            "MCP helper module not found. Skipping MCP tool lookup.",
         )
     except Exception as e:
         PrintStyle(background_color="black", font_color="red", padding=True).print(
-            f"Failed to get MCP tool '{tool_name}': {e}"
+            f"Failed to get MCP tool '{tool_name}': {e}",
         )
 
     # Fallback to local tools

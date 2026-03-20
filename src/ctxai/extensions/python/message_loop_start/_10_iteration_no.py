@@ -1,5 +1,6 @@
+from ctxai.agent import Agent
+from ctxai.agent import LoopData
 from ctxai.helpers.extension import Extension
-from ctxai.agent import Agent, LoopData
 
 DATA_NAME_ITER_NO = "iteration_no"
 

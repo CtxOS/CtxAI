@@ -1,23 +1,25 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import json
 import os
 import time
 import urllib.request
 import uuid
 import zipfile
+from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 from typing import Any
 
-from ctxai.helpers import files, print_style, plugins, git
+from ctxai.helpers import files
+from ctxai.helpers import git
+from ctxai.helpers import plugins
+from ctxai.helpers import print_style
 from ctxai.helpers import yaml as yaml_helper
-from ctxai.helpers.plugins import (
-    META_FILE_NAME,
-    PluginMetadata,
-    get_plugins_list,
-    after_plugin_change,
-)
+from ctxai.helpers.plugins import after_plugin_change
+from ctxai.helpers.plugins import get_plugins_list
+from ctxai.helpers.plugins import META_FILE_NAME
+from ctxai.helpers.plugins import PluginMetadata
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
@@ -46,7 +48,7 @@ def validate_plugin_dir(path: str, plugin_name: str = "") -> PluginMetadata:
     model = PluginMetadata.model_validate(data)
     if plugin_name and plugin_name != model.name:
         raise ValueError(
-            f"Plugin name is incorrect: expected '{plugin_name}', got '{model.name}'. The author needs to correct this in the plugin.yaml file."
+            f"Plugin name is incorrect: expected '{plugin_name}', got '{model.name}'. The author needs to correct this in the plugin.yaml file.",
         )
     return model
 
@@ -225,7 +227,7 @@ def update_from_git(plugin_name: str) -> dict:
         "path": files.deabsolute_path(plugin_dir),
         "current_commit": head.hexsha,
         "current_commit_timestamp": datetime.fromtimestamp(head.committed_date, timezone.utc).strftime(
-            "%Y-%m-%d %H:%M:%S"
+            "%Y-%m-%d %H:%M:%S",
         ),
         "version": getattr(meta, "version", "") or "",
         "branch": repo.active_branch.name if not repo.head.is_detached else "",

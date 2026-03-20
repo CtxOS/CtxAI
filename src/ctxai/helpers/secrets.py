@@ -1,12 +1,20 @@
 import re
 import threading
-from io import StringIO
 from dataclasses import dataclass
-from typing import Dict, Optional, List, Literal, Set, Callable, Tuple, TYPE_CHECKING
-from dotenv.parser import parse_stream
-from ctxai.helpers.errors import RepairableException
+from io import StringIO
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Literal
+from typing import Optional
+from typing import Set
+from typing import Tuple
+from typing import TYPE_CHECKING
+
 from ctxai.helpers import files
+from ctxai.helpers.errors import RepairableException
 from ctxai.helpers.extension import extensible
+from dotenv.parser import parse_stream
 
 if TYPE_CHECKING:
     from ctxai.agent import AgentContext
@@ -211,7 +219,7 @@ class SecretsManager:
                     # If read fails and submitted contains masked values, abort to avoid losing values/comments
                     if self.MASK_VALUE in submitted_content:
                         raise RepairableException(
-                            "Saving secrets failed because existing secrets could not be read to preserve masked values and comments. Please retry."
+                            "Saving secrets failed because existing secrets could not be read to preserve masked values and comments. Please retry.",
                         ) from e
                     # No masked values, safe to treat as new file
                     existing_text = ""
@@ -387,7 +395,7 @@ class SecretsManager:
                         key=binding.key,
                         value=binding.value or "",
                         inline_comment=inline_comment,
-                    )
+                    ),
                 )
             else:
                 # Comment, blank, or other lines
@@ -467,7 +475,7 @@ class SecretsManager:
                         key=key,
                         value=existing_val,
                         inline_comment=sub.inline_comment,
-                    )
+                    ),
                 )
             elif key not in existing_pairs and submitted_val == self.MASK_VALUE:
                 # Masked-only new key -> ignore

@@ -1,12 +1,15 @@
-from git import Git, Repo
-from giturlparse import parse
-from datetime import datetime
-from dataclasses import dataclass
+import base64
 import os
 import subprocess
-import base64
-from urllib.parse import urlparse, urlunparse
+from dataclasses import dataclass
+from datetime import datetime
+from urllib.parse import urlparse
+from urllib.parse import urlunparse
+
 from ctxai.helpers import files
+from git import Git
+from git import Repo
+from giturlparse import parse
 
 
 def strip_auth_from_url(url: str) -> str:
@@ -155,7 +158,7 @@ def get_remote_releases(author: str, repo: str) -> GitRemoteReleasesResult:
                     commit_hash=commit_hash,
                     short_commit_hash=commit_hash[:7],
                     released_at="",
-                )
+                ),
             )
 
         releases.sort(key=lambda release: release.tag, reverse=True)

@@ -1,10 +1,13 @@
 import asyncio
-from ctxai.helpers.extension import Extension
-from ctxai.agent import LoopData
-from ctxai.helpers import dirty_json, errors, log, plugins
 
-# Direct import - this extension lives inside the memory plugin
+from ctxai.agent import LoopData
+from ctxai.helpers import dirty_json
+from ctxai.helpers import errors
+from ctxai.helpers import log
+from ctxai.helpers import plugins
+from ctxai.helpers.extension import Extension
 from ctxai.plugins._memory.helpers.memory import Memory
+# Direct import - this extension lives inside the memory plugin
 
 
 DATA_NAME_TASK = "_recall_memories_task"
@@ -45,7 +48,7 @@ class RecallMemories(Extension):
                 asyncio.wait_for(
                     self.search_memories(loop_data=loop_data, log_item=log_item, **kwargs),
                     timeout=SEARCH_TIMEOUT,
-                )
+                ),
             )
         else:
             task = None

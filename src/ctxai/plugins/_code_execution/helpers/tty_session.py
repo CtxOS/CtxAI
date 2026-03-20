@@ -1,8 +1,8 @@
 import asyncio
-import os
-import sys
-import platform
 import errno
+import os
+import platform
+import sys
 
 _IS_WIN = platform.system() == "Windows"
 if _IS_WIN:

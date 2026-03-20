@@ -1,9 +1,13 @@
 import threading
-from flask import Flask, request
-from ctxai.helpers import runtime, dotenv, process
-from ctxai.helpers.print_style import PrintStyle
 
-from ctxai.api.tunnel import Tunnel, stop
+from ctxai.api.tunnel import stop
+from ctxai.api.tunnel import Tunnel
+from ctxai.helpers import dotenv
+from ctxai.helpers import process
+from ctxai.helpers import runtime
+from ctxai.helpers.print_style import PrintStyle
+from flask import Flask
+from flask import request
 
 # initialize the internal Flask server
 app = Flask("app")

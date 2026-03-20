@@ -1,13 +1,18 @@
+import json
+import uuid
 from collections import OrderedDict
 from datetime import datetime
 from typing import Any
-import uuid
-from ctxai.agent import Agent, AgentConfig, AgentContext, AgentContextType
-from ctxai.helpers import files, history
-import json
-from ctxai import initialize
 
-from ctxai.helpers.log import Log, LogItem
+from ctxai import initialize
+from ctxai.agent import Agent
+from ctxai.agent import AgentConfig
+from ctxai.agent import AgentContext
+from ctxai.agent import AgentContextType
+from ctxai.helpers import files
+from ctxai.helpers import history
+from ctxai.helpers.log import Log
+from ctxai.helpers.log import LogItem
 
 CHATS_FOLDER = "usr/chats"
 LOG_SIZE = 1000
@@ -182,7 +187,7 @@ def _deserialize_context(data):
         created_at=(
             datetime.fromisoformat(
                 # older chats may not have created_at - backcompat
-                data.get("created_at", datetime.fromtimestamp(0).isoformat())
+                data.get("created_at", datetime.fromtimestamp(0).isoformat()),
             )
         ),
         type=AgentContextType(data.get("type", AgentContextType.USER.value)),
@@ -265,7 +270,7 @@ def _deserialize_log(data: dict[str, Any]) -> "Log":
                 timestamp=item_data.get("timestamp", 0.0),
                 agentno=agentno,
                 id=item_data.get("id"),
-            )
+            ),
         )
         log.updates.append(i)
         i += 1

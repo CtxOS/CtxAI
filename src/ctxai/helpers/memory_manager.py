@@ -23,9 +23,12 @@ from __future__ import annotations
 import logging
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from enum import Enum
-from typing import Any, Protocol, runtime_checkable
+from typing import Any
+from typing import Protocol
+from typing import runtime_checkable
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +87,11 @@ class MemoryBackend(Protocol):
     def get(self, entry_id: str) -> MemoryEntry | None: ...
     def get_by_key(self, key: str, memory_type: MemoryType | None = None) -> MemoryEntry | None: ...
     def search(
-        self, query: str, top_k: int = 5, memory_type: MemoryType | None = None, min_importance: float = 0.0
+        self,
+        query: str,
+        top_k: int = 5,
+        memory_type: MemoryType | None = None,
+        min_importance: float = 0.0,
     ) -> list[MemoryEntry]: ...
     def list_all(self, memory_type: MemoryType | None = None) -> list[MemoryEntry]: ...
     def delete(self, entry_id: str) -> bool: ...
@@ -229,7 +236,11 @@ class QdrantBackend:
         return None
 
     def search(
-        self, query: str, top_k: int = 5, memory_type: MemoryType | None = None, min_importance: float = 0.0
+        self,
+        query: str,
+        top_k: int = 5,
+        memory_type: MemoryType | None = None,
+        min_importance: float = 0.0,
     ) -> list[MemoryEntry]:
         if self._delegated():
             return self._fallback.search(query, top_k, memory_type, min_importance)  # type: ignore

@@ -1,7 +1,9 @@
-from ctxai.helpers import persist_chat, tokens
-from ctxai.helpers.extension import Extension
-from ctxai.agent import LoopData
 import asyncio
+
+from ctxai.agent import LoopData
+from ctxai.helpers import persist_chat
+from ctxai.helpers import tokens
+from ctxai.helpers.extension import Extension
 
 
 class RenameChat(Extension):

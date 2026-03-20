@@ -1,24 +1,25 @@
 import asyncio
-from datetime import datetime
 import json
 import random
 import re
-from ctxai.helpers.tool import Tool, Response
-from ctxai.helpers.task_scheduler import (
-    TaskScheduler,
-    ScheduledTask,
-    AdHocTask,
-    PlannedTask,
-    serialize_task,
-    TaskState,
-    TaskSchedule,
-    TaskPlan,
-    parse_datetime,
-    serialize_datetime,
-)
+from datetime import datetime
+
 from ctxai.agent import AgentContext
 from ctxai.helpers import persist_chat
-from ctxai.helpers.projects import get_context_project_name, load_basic_project_data
+from ctxai.helpers.projects import get_context_project_name
+from ctxai.helpers.projects import load_basic_project_data
+from ctxai.helpers.task_scheduler import AdHocTask
+from ctxai.helpers.task_scheduler import parse_datetime
+from ctxai.helpers.task_scheduler import PlannedTask
+from ctxai.helpers.task_scheduler import ScheduledTask
+from ctxai.helpers.task_scheduler import serialize_datetime
+from ctxai.helpers.task_scheduler import serialize_task
+from ctxai.helpers.task_scheduler import TaskPlan
+from ctxai.helpers.task_scheduler import TaskSchedule
+from ctxai.helpers.task_scheduler import TaskScheduler
+from ctxai.helpers.task_scheduler import TaskState
+from ctxai.helpers.tool import Response
+from ctxai.helpers.tool import Tool
 
 DEFAULT_WAIT_TIMEOUT = 300
 
@@ -261,7 +262,8 @@ class SchedulerTool(Tool):
 
         if task.context_id == self.agent.context.id:
             return Response(
-                message="You can only wait for tasks running in their own dedicated context.", break_loop=False
+                message="You can only wait for tasks running in their own dedicated context.",
+                break_loop=False,
             )
 
         done = False
@@ -277,7 +279,8 @@ class SchedulerTool(Tool):
                 elapsed += 1
                 if elapsed > DEFAULT_WAIT_TIMEOUT:
                     return Response(
-                        message=f"Task wait timeout ({DEFAULT_WAIT_TIMEOUT} seconds): {task_uuid}", break_loop=False
+                        message=f"Task wait timeout ({DEFAULT_WAIT_TIMEOUT} seconds): {task_uuid}",
+                        break_loop=False,
                     )
             else:
                 done = True

@@ -1,20 +1,19 @@
-from typing import List, Sequence
-from langchain_community.vectorstores import FAISS
+from typing import List
+from typing import Sequence
 
-# faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
 import faiss
-
-
-from langchain_core.documents import Document
-from langchain.storage import InMemoryByteStore
-from langchain_community.docstore.in_memory import InMemoryDocstore
-from langchain_community.vectorstores.utils import (
-    DistanceStrategy,
-)
-from langchain.embeddings import CacheBackedEmbeddings
 from ctxai.agent import Agent
 from ctxai.helpers import guids
 from ctxai.helpers.safe_eval import make_comparator
+from langchain.embeddings import CacheBackedEmbeddings
+from langchain.storage import InMemoryByteStore
+from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores.utils import (
+    DistanceStrategy,
+)
+from langchain_core.documents import Document
+# faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
 
 
 class MyFaiss(FAISS):

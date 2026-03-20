@@ -1,9 +1,10 @@
+import base64
+import fnmatch
 import os
 import shutil
-import fnmatch
-import base64
 import tempfile
 import zipfile
+
 from ctxai.helpers import runtime
 
 
@@ -213,7 +214,9 @@ def folder_exists(relative_path: str) -> bool:
 
 
 def get_subdirectories(
-    relative_path: str, include: str | list[str] = "*", exclude: str | list[str] | None = None
+    relative_path: str,
+    include: str | list[str] = "*",
+    exclude: str | list[str] | None = None,
 ) -> list[str]:
     """
     Get subdirectories in a directory.

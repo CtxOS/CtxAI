@@ -20,9 +20,9 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 ## Environment
-- CtxAI version: 
-- OS: 
-- Python version: 
+- CtxAI version:
+- OS:
+- Python version:
 
 ## Additional context
 Add any other context about the problem here.

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from ctxai.helpers import runtime
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.websocket import WebSocketHandler, WebSocketResult
-from ctxai.helpers.state_monitor import get_state_monitor, _ws_debug_enabled
-from ctxai.helpers.state_snapshot import (
-    StateRequestValidationError,
-    parse_state_request_payload,
-)
+from ctxai.helpers.state_monitor import _ws_debug_enabled
+from ctxai.helpers.state_monitor import get_state_monitor
+from ctxai.helpers.state_snapshot import parse_state_request_payload
+from ctxai.helpers.state_snapshot import StateRequestValidationError
+from ctxai.helpers.websocket import WebSocketHandler
+from ctxai.helpers.websocket import WebSocketResult
 
 
 class StateSyncHandler(WebSocketHandler):
@@ -33,7 +33,7 @@ class StateSyncHandler(WebSocketHandler):
             request = parse_state_request_payload(data)
         except StateRequestValidationError as exc:
             PrintStyle.warning(
-                f"[StateSyncHandler] INVALID_REQUEST sid={sid} reason={exc.reason} details={exc.details!r}"
+                f"[StateSyncHandler] INVALID_REQUEST sid={sid} reason={exc.reason} details={exc.details!r}",
             )
             return self.result_error(
                 code="INVALID_REQUEST",
@@ -45,7 +45,7 @@ class StateSyncHandler(WebSocketHandler):
             PrintStyle.debug(
                 f"[StateSyncHandler] state_request sid={sid} context={request.context!r} "
                 f"log_from={request.log_from} notifications_from={request.notifications_from} timezone={request.timezone!r} "
-                f"correlation_id={correlation_id}"
+                f"correlation_id={correlation_id}",
             )
 
         # Baseline sequence must be reset on every state_request (new sync period).

@@ -1,9 +1,12 @@
-from openai import OpenAI
 import ctxai.models as models
+from openai import OpenAI
 
 
 def perplexity_search(
-    query: str, model_name="llama-3.1-sonar-large-128k-online", api_key=None, base_url="https://api.perplexity.ai"
+    query: str,
+    model_name="llama-3.1-sonar-large-128k-online",
+    api_key=None,
+    base_url="https://api.perplexity.ai",
 ):
     api_key = api_key or models.get_api_key("perplexity")
 

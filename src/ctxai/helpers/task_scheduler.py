@@ -1,28 +1,45 @@
 import asyncio
-from datetime import datetime, timezone, timedelta
 import os
 import random
 import threading
-from urllib.parse import urlparse
 import uuid
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 from enum import Enum
 from os.path import exists
-from typing import Any, Callable, Dict, Literal, Optional, Type, TypeVar, Union, cast, ClassVar, Annotated
+from typing import Annotated
+from typing import Any
+from typing import Callable
+from typing import cast
+from typing import ClassVar
+from typing import Dict
+from typing import Literal
+from typing import Optional
+from typing import Type
+from typing import TypeVar
+from typing import Union
+from urllib.parse import urlparse
 
 import nest_asyncio
-
 import pytz  # type: ignore[import-untyped]
 from crontab import CronTab
-from pydantic import BaseModel, Field, PrivateAttr
-
-from ctxai.agent import AgentContext, UserMessage
 from ctxai import initialize
+from ctxai.agent import AgentContext
+from ctxai.agent import UserMessage
+from ctxai.helpers import guids
+from ctxai.helpers import projects
+from ctxai.helpers.defer import DeferredTask
+from ctxai.helpers.files import get_abs_path
+from ctxai.helpers.files import make_dirs
+from ctxai.helpers.files import read_file
+from ctxai.helpers.files import write_file
+from ctxai.helpers.localization import Localization
 from ctxai.helpers.persist_chat import save_tmp_chat
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.defer import DeferredTask
-from ctxai.helpers.files import get_abs_path, make_dirs, read_file, write_file
-from ctxai.helpers.localization import Localization
-from ctxai.helpers import projects, guids
+from pydantic import BaseModel
+from pydantic import Field
+from pydantic import PrivateAttr
 
 nest_asyncio.apply()
 
@@ -208,7 +225,10 @@ class BaseTask(BaseModel):
         scheduler = TaskScheduler.get()
         await scheduler.reload()  # Ensure we have the latest state
         updated_task = await scheduler.update_task(
-            self.uuid, state=TaskState.ERROR, last_run=datetime.now(timezone.utc), last_result=f"ERROR: {error}"
+            self.uuid,
+            state=TaskState.ERROR,
+            last_run=datetime.now(timezone.utc),
+            last_result=f"ERROR: {error}",
         )
         if not updated_task:
             PrintStyle.error(f"Failed to update task {self.uuid} state to ERROR after error: {error}")
@@ -219,7 +239,10 @@ class BaseTask(BaseModel):
         scheduler = TaskScheduler.get()
         await scheduler.reload()  # Ensure we have the latest state
         updated_task = await scheduler.update_task(
-            self.uuid, state=TaskState.IDLE, last_run=datetime.now(timezone.utc), last_result=result
+            self.uuid,
+            state=TaskState.IDLE,
+            last_run=datetime.now(timezone.utc),
+            last_result=result,
         )
         if not updated_task:
             PrintStyle.error(f"Failed to update task {self.uuid} state to IDLE after success")
@@ -353,7 +376,8 @@ class ScheduledTask(BaseTask):
 
             # Get next run time as seconds until next execution
             next_run_seconds: Optional[float] = crontab.next(  # type: ignore
-                now=reference_time, return_datetime=False
+                now=reference_time,
+                return_datetime=False,
             )  # type: ignore
 
             if next_run_seconds is None:
@@ -467,7 +491,7 @@ class PlannedTask(BaseTask):
 
 class SchedulerTaskList(BaseModel):
     tasks: list[Annotated[Union[ScheduledTask, AdHocTask, PlannedTask], Field(discriminator="type")]] = Field(
-        default_factory=list
+        default_factory=list,
     )
     # Singleton instance
     __instance: ClassVar[Optional["SchedulerTaskList"]] = PrivateAttr(default=None)
@@ -513,7 +537,7 @@ class SchedulerTaskList(BaseModel):
                 if isinstance(task, AdHocTask):
                     if task.token is None or task.token == "":
                         PrintStyle.warning(
-                            f"WARNING: AdHocTask {task.name} ({task.uuid}) has a null or empty token before saving: '{task.token}'"
+                            f"WARNING: AdHocTask {task.name} ({task.uuid}) has a null or empty token before saving: '{task.token}'",
                         )
                         # Generate a new token to prevent errors
                         task.token = str(random.randint(1000000000000000000, 9999999999999999999))
@@ -576,7 +600,9 @@ class SchedulerTaskList(BaseModel):
             return self.tasks
 
     def get_tasks_by_context_id(
-        self, context_id: str, only_running: bool = False
+        self,
+        context_id: str,
+        only_running: bool = False,
     ) -> list[Union[ScheduledTask, AdHocTask, PlannedTask]]:
         with self._lock:
             return [
@@ -672,7 +698,9 @@ class TaskScheduler:
         return self._tasks.get_tasks()
 
     def get_tasks_by_context_id(
-        self, context_id: str, only_running: bool = False
+        self,
+        context_id: str,
+        only_running: bool = False,
     ) -> list[Union[ScheduledTask, AdHocTask, PlannedTask]]:
         return self._tasks.get_tasks_by_context_id(context_id, only_running)
 
@@ -809,7 +837,7 @@ class TaskScheduler:
     async def _persist_chat(self, task: Union[ScheduledTask, AdHocTask, PlannedTask], context: AgentContext):
         if context.id != task.context_id:
             raise ValueError(
-                f"Context ID mismatch for task {task.name}: context {context.id} != task {task.context_id}"
+                f"Context ID mismatch for task {task.name}: context {context.id} != task {task.context_id}",
             )
         save_tmp_chat(context)
 
@@ -828,7 +856,9 @@ class TaskScheduler:
 
             # Atomically fetch and check the task's current state
             current_task = await self.update_task_checked(
-                task_uuid, lambda task: task.state != TaskState.RUNNING, state=TaskState.RUNNING
+                task_uuid,
+                lambda task: task.state != TaskState.RUNNING,
+                state=TaskState.RUNNING,
             )
             if not current_task:
                 PrintStyle.error(f"Scheduler Task with UUID '{task_uuid}' not found or updated by another process")
@@ -900,7 +930,7 @@ class TaskScheduler:
                         message=task_prompt,
                         system_message=[current_task.system_prompt],
                         attachments=attachment_filenames,
-                    )
+                    ),
                 )
 
                 # Persist after setting up the context but before running the agent
@@ -919,7 +949,7 @@ class TaskScheduler:
                 updated_task = self.get_task_by_uuid(task_uuid)
                 if updated_task and updated_task.state != TaskState.IDLE:
                     PrintStyle.warning(
-                        f"Fixing task state consistency: '{current_task.name}' state is not IDLE after success"
+                        f"Fixing task state consistency: '{current_task.name}' state is not IDLE after success",
                     )
                     await self.update_task(task_uuid, state=TaskState.IDLE)
 
@@ -940,7 +970,7 @@ class TaskScheduler:
                 updated_task = self.get_task_by_uuid(task_uuid)
                 if updated_task and updated_task.state != TaskState.ERROR:
                     PrintStyle.warning(
-                        f"Fixing task state consistency: '{current_task.name}' state is not ERROR after failure"
+                        f"Fixing task state consistency: '{current_task.name}' state is not ERROR after failure",
                     )
                     await self.update_task(task_uuid, state=TaskState.ERROR)
 

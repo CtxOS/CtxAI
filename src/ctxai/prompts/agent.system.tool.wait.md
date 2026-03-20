@@ -12,9 +12,9 @@ usage:
     ],
     "headline": "...",
     "tool_name": "wait",
-    "tool_args": { 
-        "minutes": 1, 
-        "seconds": 30 
+    "tool_args": {
+        "minutes": 1,
+        "seconds": 30
     }
 }
 ~~~
@@ -27,8 +27,8 @@ usage:
     ],
     "headline": "...",
     "tool_name": "wait",
-    "tool_args": { 
-        "until": "2025-10-20T10:00:00Z" 
+    "tool_args": {
+        "until": "2025-10-20T10:00:00Z"
     }
 }
 ~~~

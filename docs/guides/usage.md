@@ -243,7 +243,7 @@ Choose how project memory is managed:
 - **Own memory** (recommended): Project has isolated memory under `vector_db/projects/<project_name>/`
   - Prevents context bleed between projects
   - Ideal for client work, sensitive projects, or distinct domains
-  
+
 - **Global memory**: Project shares the default memory pool
   - Useful when projects need shared knowledge
   - Better for closely related projects
@@ -404,7 +404,7 @@ The scheduler shows:
 Ask the agent to create tasks programmatically:
 
 ```
-Create a scheduled task that checks my email inbox every morning at 8 AM 
+Create a scheduled task that checks my email inbox every morning at 8 AM
 and summarizes new messages from the last 24 hours.
 ```
 

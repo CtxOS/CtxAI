@@ -1,19 +1,22 @@
 # noqa: D401 (docstrings) – internal helper
 import asyncio
-import uuid
 import atexit
-from typing import Any, List
 import contextlib
 import threading
+import uuid
+from typing import Any
+from typing import List
 
-from ctxai.helpers import settings, projects
-from starlette.requests import Request
-
-# Local imports
-from ctxai.helpers.print_style import PrintStyle
-from ctxai.agent import AgentContext, UserMessage, AgentContextType
 from ctxai import initialize
+from ctxai.agent import AgentContext
+from ctxai.agent import AgentContextType
+from ctxai.agent import UserMessage
+from ctxai.helpers import projects
+from ctxai.helpers import settings
 from ctxai.helpers.persist_chat import remove_chat
+from ctxai.helpers.print_style import PrintStyle
+from starlette.requests import Request
+# Local imports
 
 # Import FastA2A
 try:
@@ -114,7 +117,9 @@ class AgentZeroWorker(Worker):  # type: ignore[misc]
             }
 
             await self.storage.update_task(  # type: ignore[attr-defined]
-                task_id=task_id, state="completed", new_messages=[response_message]
+                task_id=task_id,
+                state="completed",
+                new_messages=[response_message],
             )
 
             # Clean up context like non-persistent MCP chats
@@ -228,7 +233,7 @@ class DynamicA2AProxy:
                     ],
                     "input_modes": ["text/plain", "application/octet-stream"],
                     "output_modes": ["text/plain", "application/json"],
-                }
+                },
             ]
 
             provider: AgentProvider = {  # type: ignore
@@ -347,13 +352,13 @@ class DynamicA2AProxy:
                     "type": "http.response.start",
                     "status": 503,
                     "headers": [[b"content-type", b"text/plain"]],
-                }
+                },
             )
             await send(
                 {
                     "type": "http.response.body",
                     "body": response,
-                }
+                },
             )
             return
 
@@ -367,13 +372,13 @@ class DynamicA2AProxy:
                     "type": "http.response.start",
                     "status": 403,
                     "headers": [[b"content-type", b"text/plain"]],
-                }
+                },
             )
             await send(
                 {
                     "type": "http.response.body",
                     "body": response,
-                }
+                },
             )
             return
 
@@ -389,13 +394,13 @@ class DynamicA2AProxy:
                         "type": "http.response.start",
                         "status": 503,
                         "headers": [[b"content-type", b"text/plain"]],
-                    }
+                    },
                 )
                 await send(
                     {
                         "type": "http.response.body",
                         "body": b"FastA2A reconfiguration failed",
-                    }
+                    },
                 )
                 return
 
@@ -407,13 +412,13 @@ class DynamicA2AProxy:
                     "type": "http.response.start",
                     "status": 503,
                     "headers": [[b"content-type", b"text/plain"]],
-                }
+                },
             )
             await send(
                 {
                     "type": "http.response.body",
                     "body": response,
-                }
+                },
             )
             return
 
@@ -430,13 +435,13 @@ class DynamicA2AProxy:
                         "type": "http.response.start",
                         "status": 503,
                         "headers": [[b"content-type", b"text/plain"]],
-                    }
+                    },
                 )
                 await send(
                     {
                         "type": "http.response.body",
                         "body": b"FastA2A startup failed",
-                    }
+                    },
                 )
                 return
 
@@ -480,13 +485,13 @@ class DynamicA2AProxy:
                         "type": "http.response.start",
                         "status": 401,
                         "headers": [[b"content-type", b"text/plain"]],
-                    }
+                    },
                 )
                 await send(
                     {
                         "type": "http.response.body",
                         "body": b"Unauthorized",
-                    }
+                    },
                 )
                 return
 
@@ -562,13 +567,13 @@ class DynamicA2AProxy:
                             "type": "http.response.start",
                             "status": 401,
                             "headers": [[b"content-type", b"text/plain"]],
-                        }
+                        },
                     )
                     await send(
                         {
                             "type": "http.response.body",
                             "body": b"Unauthorized",
-                        }
+                        },
                     )
                     return
             else:
@@ -586,13 +591,13 @@ class DynamicA2AProxy:
                     "type": "http.response.start",
                     "status": 503,
                     "headers": [[b"content-type", b"text/plain"]],
-                }
+                },
             )
             await send(
                 {
                     "type": "http.response.body",
                     "body": b"FastA2A app not configured",
-                }
+                },
             )
             return
 

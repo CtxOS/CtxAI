@@ -1,7 +1,9 @@
-from flask import send_file  # type: ignore[attr-defined]
-from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler
+from ctxai.helpers.api import Request
+from ctxai.helpers.api import Response
 from ctxai.helpers.backup import BackupService
 from ctxai.helpers.persist_chat import save_tmp_chats
+from flask import send_file  # type: ignore[attr-defined]
 
 
 class BackupCreate(ApiHandler):
@@ -50,7 +52,10 @@ class BackupCreate(ApiHandler):
 
             # Return file for download
             return send_file(
-                zip_path, as_attachment=True, download_name=f"{backup_name}.zip", mimetype="application/zip"
+                zip_path,
+                as_attachment=True,
+                download_name=f"{backup_name}.zip",
+                mimetype="application/zip",
             )
 
         except Exception as e:

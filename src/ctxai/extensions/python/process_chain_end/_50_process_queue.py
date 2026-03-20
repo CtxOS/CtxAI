@@ -1,7 +1,9 @@
 import asyncio
-from ctxai.helpers.extension import Extension
+
+from ctxai.agent import AgentContext
+from ctxai.agent import LoopData
 from ctxai.helpers import message_queue as mq
-from ctxai.agent import AgentContext, LoopData
+from ctxai.helpers.extension import Extension
 
 
 class ProcessQueue(Extension):

@@ -29,9 +29,9 @@ Or see DeepWiki generated documentation:
 
 > ### 🚨 **CTXAI SKILLS** 🚨
 > **Skills System** - portable, structured agent capabilities using the open `SKILL.md` standard (compatible with Claude Code, Codex and more).
-> 
+>
 > **Plus:** Git-based Projects with authentication for public/private repositories - clone codebases directly into isolated workspaces.
-> 
+>
 > See [Usage Guide](./docs/guides/usage.md) and [Projects Tutorial](./docs/guides/projects.md) to get started.
 </div>
 
@@ -211,7 +211,7 @@ docker run -p 50001:80 ctxos/ctxai
 - Projects management
     - Support for custom instructions
     - Integration with memory, knowledge, files
-    - Project specific secrets 
+    - Project specific secrets
 - New Welcome screen/Dashboard
 - New Wait tool
 - Subordinate agent configuration override support

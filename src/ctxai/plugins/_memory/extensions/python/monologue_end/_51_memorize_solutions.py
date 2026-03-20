@@ -1,13 +1,14 @@
-from ctxai.helpers import errors, plugins
-from ctxai.helpers.extension import Extension
-from ctxai.helpers.dirty_json import DirtyJson
 from ctxai.agent import LoopData
+from ctxai.helpers import errors
+from ctxai.helpers import plugins
+from ctxai.helpers.defer import DeferredTask
+from ctxai.helpers.defer import THREAD_BACKGROUND
+from ctxai.helpers.dirty_json import DirtyJson
+from ctxai.helpers.extension import Extension
 from ctxai.helpers.log import LogItem
-from ctxai.helpers.defer import DeferredTask, THREAD_BACKGROUND
-
-# Direct import - this extension lives inside the memory plugin
 from ctxai.plugins._memory.helpers.memory import Memory
 from ctxai.plugins._memory.tools.memory_load import DEFAULT_THRESHOLD as DEFAULT_MEMORY_THRESHOLD
+# Direct import - this extension lives inside the memory plugin
 
 
 class MemorizeSolutions(Extension):

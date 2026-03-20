@@ -4,16 +4,16 @@ import asyncio
 import os
 import threading
 import time
-from dataclasses import dataclass, field
-from typing import Any, TYPE_CHECKING
+from dataclasses import dataclass
+from dataclasses import field
+from typing import Any
+from typing import TYPE_CHECKING
 
 from ctxai.helpers import runtime
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.state_snapshot import (
-    StateRequestV1,
-    advance_state_request_after_snapshot,
-    build_snapshot_from_request,
-)
+from ctxai.helpers.state_snapshot import advance_state_request_after_snapshot
+from ctxai.helpers.state_snapshot import build_snapshot_from_request
+from ctxai.helpers.state_snapshot import StateRequestV1
 from ctxai.helpers.websocket import ConnectionNotFoundError
 
 if TYPE_CHECKING:  # pragma: no cover - hints only
@@ -139,7 +139,7 @@ class StateMonitor:
         _debug_log(
             f"[StateMonitor] update_projection namespace={namespace} sid={sid} context={request.context!r} "
             f"log_from={request.log_from} notifications_from={request.notifications_from} "
-            f"timezone={request.timezone!r} seq_base={seq_base}"
+            f"timezone={request.timezone!r} seq_base={seq_base}",
         )
 
     def mark_dirty(
@@ -213,7 +213,7 @@ class StateMonitor:
                 f"[StateMonitor] schedule_push namespace={projection.namespace} sid={projection.sid} "
                 f"delay_s={self.debounce_seconds} "
                 f"dirty={projection.dirty_version} pushed={projection.pushed_version} "
-                f"reason={projection.dirty_reason!r} wave={projection.dirty_wave_id!r}"
+                f"reason={projection.dirty_reason!r} wave={projection.dirty_wave_id!r}",
             )
 
     def _on_debounce_fire(self, identity: ConnectionIdentity) -> None:
@@ -285,7 +285,7 @@ class StateMonitor:
                 _debug_log(
                     f"[StateMonitor] emit state_push namespace={namespace} sid={sid} seq={seq} "
                     f"context={request.context!r} logs_len={logs_len} "
-                    f"reason={dirty_reason!r} wave={dirty_wave_id!r}"
+                    f"reason={dirty_reason!r} wave={dirty_wave_id!r}",
                 )
                 await manager.emit_to(
                     namespace,
@@ -322,7 +322,7 @@ class StateMonitor:
             return
 
         _debug_log(
-            f"[StateMonitor] follow_up_push namespace={namespace} sid={sid} dirty={dirty_version} pushed={pushed_version}"
+            f"[StateMonitor] follow_up_push namespace={namespace} sid={sid} dirty={dirty_version} pushed={pushed_version}",
         )
         try:
             loop = self._dispatcher_loop or asyncio.get_running_loop()

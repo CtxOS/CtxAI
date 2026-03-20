@@ -1,10 +1,10 @@
-from ctxai.helpers.extension import Extension
 from ctxai.agent import LoopData
-from ctxai.helpers import projects
-from ctxai.helpers import settings
-from ctxai.helpers import runtime
 from ctxai.helpers import file_tree
 from ctxai.helpers import files
+from ctxai.helpers import projects
+from ctxai.helpers import runtime
+from ctxai.helpers import settings
+from ctxai.helpers.extension import Extension
 
 
 class IncludeWorkdirExtras(Extension):
@@ -65,7 +65,7 @@ class IncludeWorkdirExtras(Extension):
                     max_lines=max_lines,
                     ignore=gitignore_raw,
                     output_mode=file_tree.OUTPUT_MODE_STRING,
-                )
+                ),
             )
 
         gitignore = cleanup_gitignore(gitignore_raw)

@@ -1,7 +1,9 @@
-from dataclasses import dataclass
-import uuid
 import threading
-from datetime import datetime, timezone, timedelta
+import uuid
+from dataclasses import dataclass
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 from enum import Enum
 
 
@@ -82,7 +84,14 @@ class NotificationManager:
         from ctxai.agent import AgentContext
 
         return AgentContext.get_notification_manager().add_notification(
-            type, priority, message, title, detail, display_time, group, id
+            type,
+            priority,
+            message,
+            title,
+            detail,
+            display_time,
+            group,
+            id,
         )
 
     def add_notification(

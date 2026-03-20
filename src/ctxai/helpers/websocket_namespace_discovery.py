@@ -119,14 +119,14 @@ def discover_websocket_namespaces(
                 if len(discovered) > 1:
                     raise RuntimeError(
                         f"WebSocket handler module {child_path} defines multiple WebSocketHandler subclasses: "
-                        f"{', '.join(sorted(cls.__name__ for cls in discovered))}"
+                        f"{', '.join(sorted(cls.__name__ for cls in discovered))}",
                     )
                 handler_classes.append(discovered[0])
                 source_files.append(child_path)
 
             if not handler_classes:
                 PrintStyle.warning(
-                    f"WebSocket handlers folder entry '{entry_path}' is empty; treating namespace '{namespace}' as unregistered"
+                    f"WebSocket handlers folder entry '{entry_path}' is empty; treating namespace '{namespace}' as unregistered",
                 )
                 continue
 
@@ -135,7 +135,7 @@ def discover_websocket_namespaces(
                     namespace=namespace,
                     handler_classes=tuple(handler_classes),
                     source_files=tuple(source_files),
-                )
+                ),
             )
             continue
 
@@ -164,7 +164,7 @@ def discover_websocket_namespaces(
         if len(handler_classes) > 1:
             raise RuntimeError(
                 f"WebSocket handler module {module_path} defines multiple WebSocketHandler subclasses: "
-                f"{', '.join(sorted(cls.__name__ for cls in handler_classes))}"
+                f"{', '.join(sorted(cls.__name__ for cls in handler_classes))}",
             )
 
         entries.append(
@@ -172,7 +172,7 @@ def discover_websocket_namespaces(
                 namespace=namespace,
                 handler_classes=(handler_classes[0],),
                 source_files=(module_path,),
-            )
+            ),
         )
 
     return entries

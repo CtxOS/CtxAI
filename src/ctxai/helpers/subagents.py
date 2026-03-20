@@ -1,10 +1,13 @@
-from ctxai.helpers import files, plugins
-from ctxai.helpers import yaml as yaml_helper
-from typing import TYPE_CHECKING
-from pydantic import BaseModel, model_validator
 import json
-from typing import Literal
 import os
+from typing import Literal
+from typing import TYPE_CHECKING
+
+from ctxai.helpers import files
+from ctxai.helpers import plugins
+from ctxai.helpers import yaml as yaml_helper
+from pydantic import BaseModel
+from pydantic import model_validator
 
 GLOBAL_DIR = "."
 USER_DIR = "usr"
@@ -355,7 +358,7 @@ def get_paths(
         # usr/agents/<profile>/...
         path = files.get_abs_path(USER_AGENTS_DIR, profile_name, *subpaths)
         if (not must_exist_completely) or files.exists(
-            files.get_abs_path(USER_AGENTS_DIR, profile_name, *check_subpaths)
+            files.get_abs_path(USER_AGENTS_DIR, profile_name, *check_subpaths),
         ):
             paths.append(path)
 
@@ -370,7 +373,7 @@ def get_paths(
         # agents/<profile>/...
         path = files.get_abs_path(DEFAULT_AGENTS_DIR, profile_name, *subpaths)
         if (not must_exist_completely) or files.exists(
-            files.get_abs_path(DEFAULT_AGENTS_DIR, profile_name, *check_subpaths)
+            files.get_abs_path(DEFAULT_AGENTS_DIR, profile_name, *check_subpaths),
         ):
             paths.append(path)
 

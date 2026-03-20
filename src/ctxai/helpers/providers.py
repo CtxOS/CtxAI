@@ -1,6 +1,12 @@
+from typing import Dict
+from typing import List
+from typing import Literal
+from typing import Optional
+from typing import TypedDict
+
 import yaml  # type: ignore[import-untyped]
-from ctxai.helpers import files, cache
-from typing import List, Dict, Optional, TypedDict, Literal
+from ctxai.helpers import cache
+from ctxai.helpers import files
 
 ModelType = Literal["chat", "embedding"]
 
@@ -92,7 +98,7 @@ class ProviderManager:
                 key=lambda p: (
                     p.get("id") == "other",  # False (0) first, True (1) last
                     (p.get("name") or p.get("id") or "").lower(),
-                )
+                ),
             )
             normalised[p_type] = items
 

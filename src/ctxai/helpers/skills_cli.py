@@ -11,12 +11,15 @@ Usage:
 """
 
 import argparse
-import sys
-import yaml  # type: ignore[import-untyped]
 import re
+import sys
+from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
-from typing import Optional, List
-from dataclasses import dataclass, field
+from typing import List
+from typing import Optional
+
+import yaml  # type: ignore[import-untyped]
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))

@@ -1,7 +1,12 @@
 import os
-from typing import TypedDict, TYPE_CHECKING, cast
+from typing import cast
+from typing import TYPE_CHECKING
+from typing import TypedDict
 
-from ctxai.helpers import files, dirty_json, persist_chat, file_tree
+from ctxai.helpers import dirty_json
+from ctxai.helpers import file_tree
+from ctxai.helpers import files
+from ctxai.helpers import persist_chat
 from ctxai.helpers.print_style import PrintStyle
 
 
@@ -282,7 +287,7 @@ def _get_projects_list(parent_dir):
                         "title": project_data.get("title", ""),
                         "description": project_data.get("description", ""),
                         "color": project_data.get("color", ""),
-                    }
+                    },
                 )
         except Exception as e:
             PrintStyle.error(f"Error loading project {name}: {str(e)}")
@@ -477,7 +482,7 @@ def get_file_structure(name: str, basic_data: BasicProjectData | None = None) ->
             max_lines=basic_data["file_structure"]["max_lines"],
             ignore=basic_data["file_structure"]["gitignore"],
             output_mode=file_tree.OUTPUT_MODE_STRING,
-        )
+        ),
     )
 
     # empty?

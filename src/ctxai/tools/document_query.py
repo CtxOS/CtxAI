@@ -1,7 +1,8 @@
 import asyncio
 
-from ctxai.helpers.tool import Tool, Response
 from ctxai.helpers.document_query import DocumentQueryHelper
+from ctxai.helpers.tool import Response
+from ctxai.helpers.tool import Tool
 
 
 class DocumentQueryTool(Tool):

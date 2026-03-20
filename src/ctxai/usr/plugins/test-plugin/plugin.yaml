@@ -1,0 +1,10 @@
+name: test-plugin
+title: Test Plugin
+description: A test plugin.
+version: 0.1.0
+settings_sections: []
+per_project_config: false
+per_agent_config: false
+always_enabled: false
+framework_version: '>=0.1.0'
+plugin_dependencies: []

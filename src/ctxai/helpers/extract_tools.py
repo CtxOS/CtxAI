@@ -1,14 +1,17 @@
-import re
-import os
-import importlib
 import importlib.util
 import inspect
+import os
+import re
+from fnmatch import fnmatch
 from types import ModuleType
-from typing import Any, Type, TypeVar
+from typing import Any
+from typing import Type
+from typing import TypeVar
+
+import regex
+
 from .dirty_json import DirtyJson
 from .files import get_abs_path
-import regex
-from fnmatch import fnmatch
 
 
 def json_parse_dirty(json: str) -> dict[str, Any] | None:
@@ -87,7 +90,10 @@ def import_module(file_path: str) -> ModuleType:
 
 
 def load_classes_from_folder(
-    folder: str, name_pattern: str, base_class: Type[T], one_per_file: bool = True
+    folder: str,
+    name_pattern: str,
+    base_class: Type[T],
+    one_per_file: bool = True,
 ) -> list[Type[T]]:
     classes = []
     abs_folder = get_abs_path(folder)
@@ -98,7 +104,7 @@ def load_classes_from_folder(
             file_name
             for file_name in os.listdir(abs_folder)
             if fnmatch(file_name, name_pattern) and file_name.endswith(".py")
-        ]
+        ],
     )
 
     # Iterate through the sorted list of files

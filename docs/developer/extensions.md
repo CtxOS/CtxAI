@@ -155,14 +155,14 @@ class Tools(VariablesPlugin):
         folders = [folder]
         if backup_dirs:
             folders.extend([files.get_abs_path(d) for d in backup_dirs])
-        
+
         prompt_files = files.get_unique_filenames_in_dirs(folders, "agent.system.tool.*.md")
-        
+
         tools = []
         for prompt_file in prompt_files:
             tool = files.read_file(prompt_file)
             tools.append(tool)
-        
+
         return {"tools": "\n\n".join(tools)}
 ```
 

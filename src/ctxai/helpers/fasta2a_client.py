@@ -1,5 +1,9 @@
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+
 from ctxai.helpers.print_style import PrintStyle
 
 try:
@@ -70,7 +74,7 @@ class AgentConnection:
                     except Exception:
                         pass  # swallow, will re-raise below
                 _PRINTER.print(
-                    f"[!] Could not connect to {self.agent_url}\n    → Ensure the server is running and reachable.\n    → Full error: {e}"
+                    f"[!] Could not connect to {self.agent_url}\n    → Ensure the server is running and reachable.\n    → Full error: {e}",
                 )
                 raise RuntimeError(f"Could not retrieve agent card: {e}")
 

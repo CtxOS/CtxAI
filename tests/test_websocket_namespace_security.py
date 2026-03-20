@@ -4,7 +4,8 @@ import socket
 import sys
 import threading
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
+from typing import AsyncIterator
 
 import pytest
 

@@ -1,25 +1,40 @@
-from datetime import timedelta
-from typing import Iterable, cast
+import asyncio
 import os
 import secrets
-import time
 import threading
-import asyncio
-
+import time
 import urllib.request
-import uvicorn
-from flask import Flask, request, Response, session, redirect, url_for, render_template_string
-from werkzeug.wrappers.request import Request as WerkzeugRequest
+from datetime import timedelta
+from typing import cast
+from typing import Iterable
 
 import ctxai.initialize as initialize
-from ctxai.helpers import files, git, mcp_server, fasta2a_server, settings as settings_helper, extension
-from ctxai.helpers.files import get_abs_path
-from ctxai.helpers import runtime, dotenv, process
-from ctxai.helpers.websocket import WebSocketHandler, validate_ws_origin
-from ctxai.helpers.api import register_api_route, requires_auth
-from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers import login
 import socketio  # type: ignore[import-untyped]
+import uvicorn
+from ctxai.helpers import dotenv
+from ctxai.helpers import extension
+from ctxai.helpers import fasta2a_server
+from ctxai.helpers import files
+from ctxai.helpers import git
+from ctxai.helpers import login
+from ctxai.helpers import mcp_server
+from ctxai.helpers import process
+from ctxai.helpers import runtime
+from ctxai.helpers import settings as settings_helper
+from ctxai.helpers.api import register_api_route
+from ctxai.helpers.api import requires_auth
+from ctxai.helpers.files import get_abs_path
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.websocket import validate_ws_origin
+from ctxai.helpers.websocket import WebSocketHandler
+from flask import Flask
+from flask import redirect
+from flask import render_template_string
+from flask import request
+from flask import Response
+from flask import session
+from flask import url_for
+from werkzeug.wrappers.request import Request as WerkzeugRequest
 
 # Simple in-memory rate limiter for login attempts
 _login_attempts: dict[str, list[float]] = {}
@@ -208,7 +223,8 @@ async def _serve_plugin_asset(plugin_name, asset_path):
 
         # Security: ensure the resolved path is within the plugin webui directory
         if not files.is_in_dir(str(asset_file), str(webui_dir)) and not files.is_in_dir(
-            str(asset_file), str(webui_extensions_dir)
+            str(asset_file),
+            str(webui_extensions_dir),
         ):
             return Response("Access denied", 403)
 
@@ -290,7 +306,7 @@ def configure_websocket_namespaces(
             for handler in namespace_handlers[1:]:
                 if bool(handler.requires_auth()) != auth_required or bool(handler.requires_csrf()) != csrf_required:
                     raise ValueError(
-                        f"WebSocket namespace {namespace!r} has mixed auth/csrf requirements across handlers"
+                        f"WebSocket namespace {namespace!r} has mixed auth/csrf requirements across handlers",
                     )
 
         @socketio_server.on("connect", namespace=namespace)
@@ -306,7 +322,7 @@ def configure_websocket_namespaces(
                 origin_ok, origin_reason = validate_ws_origin(environ)
                 if not origin_ok:
                     PrintStyle.warning(
-                        f"WebSocket origin validation failed for {_namespace} {sid}: {origin_reason or 'invalid'}"
+                        f"WebSocket origin validation failed for {_namespace} {sid}: {origin_reason or 'invalid'}",
                     )
                     return False
 
@@ -315,7 +331,7 @@ def configure_websocket_namespaces(
                     if credentials_hash:
                         if session.get("authentication") != credentials_hash:
                             PrintStyle.warning(
-                                f"WebSocket authentication failed for {_namespace} {sid}: session not valid"
+                                f"WebSocket authentication failed for {_namespace} {sid}: session not valid",
                             )
                             return False
                     else:
@@ -325,7 +341,7 @@ def configure_websocket_namespaces(
                     expected_token = session.get("csrf_token")
                     if not isinstance(expected_token, str) or not expected_token:
                         PrintStyle.warning(
-                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf_token not initialized"
+                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf_token not initialized",
                         )
                         return False
 
@@ -334,12 +350,12 @@ def configure_websocket_namespaces(
                         auth_token = _auth.get("csrf_token") or _auth.get("csrfToken")
                     if not isinstance(auth_token, str) or not auth_token:
                         PrintStyle.warning(
-                            f"WebSocket CSRF validation failed for {_namespace} {sid}: missing csrf_token in auth"
+                            f"WebSocket CSRF validation failed for {_namespace} {sid}: missing csrf_token in auth",
                         )
                         return False
                     if auth_token != expected_token:
                         PrintStyle.warning(
-                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf_token mismatch"
+                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf_token mismatch",
                         )
                         return False
 
@@ -347,7 +363,7 @@ def configure_websocket_namespaces(
                     cookie_token = request.cookies.get(cookie_name)
                     if cookie_token != expected_token:
                         PrintStyle.warning(
-                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf cookie mismatch"
+                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf cookie mismatch",
                         )
                         return False
 
@@ -393,7 +409,7 @@ def run():
     # Warn if authentication is not configured
     if not login.is_login_required():
         PrintStyle(background_color="yellow", font_color="black", padding=True).print(
-            "WARNING: No authentication configured. Set AUTH_LOGIN and AUTH_PASSWORD in usr/.env to secure access."
+            "WARNING: No authentication configured. Set AUTH_LOGIN and AUTH_PASSWORD in usr/.env to secure access.",
         )
 
     # # Suppress only request logs but keep the startup messages
@@ -430,7 +446,7 @@ def run():
             Mount("/mcp", app=mcp_server.DynamicMcpProxy.get_instance()),
             Mount("/a2a", app=fasta2a_server.DynamicA2AProxy.get_instance()),
             Mount("/", app=wsgi_app),
-        ]
+        ],
     )
 
     asgi_app = ASGIApp(socketio_server, other_asgi_app=starlette_app)

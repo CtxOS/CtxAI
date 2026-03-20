@@ -1,18 +1,22 @@
 import asyncio
 import json
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from dataclasses import field
+from datetime import datetime
+from datetime import timezone
 from enum import Enum
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
-from langchain_core.documents import Document
-
-from ctxai.plugins._memory.helpers.memory import Memory
+from ctxai.agent import Agent
 from ctxai.helpers.dirty_json import DirtyJson
 from ctxai.helpers.log import LogItem
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.agent import Agent
+from ctxai.plugins._memory.helpers.memory import Memory
 from ctxai.plugins._memory.tools.memory_load import DEFAULT_THRESHOLD as DEFAULT_MEMORY_THRESHOLD
+from langchain_core.documents import Document
 
 
 class ConsolidationAction(Enum):
@@ -75,7 +79,11 @@ class MemoryConsolidator:
         self.config = config or ConsolidationConfig()
 
     async def process_new_memory(
-        self, new_memory: str, area: str, metadata: Dict[str, Any], log_item: Optional[LogItem] = None
+        self,
+        new_memory: str,
+        area: str,
+        metadata: Dict[str, Any],
+        log_item: Optional[LogItem] = None,
     ) -> dict:
         """
         Process a new memory through the intelligent consolidation pipeline.
@@ -92,7 +100,7 @@ class MemoryConsolidator:
         try:
             # Start processing with timeout
             processing_task = asyncio.create_task(
-                self._process_memory_with_consolidation(new_memory, area, metadata, log_item)
+                self._process_memory_with_consolidation(new_memory, area, metadata, log_item),
             )
 
             result = await asyncio.wait_for(processing_task, timeout=self.config.processing_timeout_seconds)
@@ -107,7 +115,11 @@ class MemoryConsolidator:
             return {"success": False, "memory_ids": []}
 
     async def _process_memory_with_consolidation(
-        self, new_memory: str, area: str, metadata: Dict[str, Any], log_item: Optional[LogItem] = None
+        self,
+        new_memory: str,
+        area: str,
+        metadata: Dict[str, Any],
+        log_item: Optional[LogItem] = None,
     ) -> dict:
         """Execute the full consolidation pipeline."""
 
@@ -256,7 +268,10 @@ class MemoryConsolidator:
         return {"success": bool(memory_ids), "memory_ids": memory_ids or []}
 
     async def _gather_consolidated_metadata(
-        self, db: Memory, result: ConsolidationResult, original_metadata: Dict[str, Any]
+        self,
+        db: Memory,
+        result: ConsolidationResult,
+        original_metadata: Dict[str, Any],
     ) -> Dict[str, Any]:
         """
         Gather and merge metadata from memories being consolidated to preserve important fields.
@@ -314,7 +329,10 @@ class MemoryConsolidator:
             return original_metadata
 
     async def _find_similar_memories(
-        self, new_memory: str, area: str, log_item: Optional[LogItem] = None
+        self,
+        new_memory: str,
+        area: str,
+        log_item: Optional[LogItem] = None,
     ) -> List[Document]:
         """
         Find similar memories using both semantic similarity and keyword matching.
@@ -407,12 +425,15 @@ class MemoryConsolidator:
             )
 
             message_prompt = self.agent.read_prompt(
-                self.config.keyword_extraction_msg_prompt, memory_content=new_memory
+                self.config.keyword_extraction_msg_prompt,
+                memory_content=new_memory,
             )
 
             # Call utility LLM to extract search queries
             keywords_response = await self.agent.call_utility_model(
-                system=system_prompt, message=message_prompt, background=True
+                system=system_prompt,
+                message=message_prompt,
+                background=True,
             )
 
             # Parse the response - expect JSON array of strings
@@ -437,7 +458,9 @@ class MemoryConsolidator:
             return [fallback_content.strip()]
 
     async def _analyze_memory_consolidation(
-        self, context: MemoryAnalysisContext, log_item: Optional[LogItem] = None
+        self,
+        context: MemoryAnalysisContext,
+        log_item: Optional[LogItem] = None,
     ) -> ConsolidationResult:
         """Use LLM to analyze memory consolidation options."""
 
@@ -465,7 +488,10 @@ class MemoryConsolidator:
             )
 
             analysis_response = await self.agent.call_utility_model(
-                system=system_prompt, message=message_prompt, callback=None, background=True
+                system=system_prompt,
+                message=message_prompt,
+                callback=None,
+                background=True,
             )
 
             # Parse LLM response
@@ -629,14 +655,14 @@ class MemoryConsolidator:
                             "id": memory.metadata.get("id"),
                             "similarity": similarity,
                             "content_preview": memory.page_content[:100],
-                        }
+                        },
                     )
 
             # If we have unsafe replacements, either block them or require explicit confirmation
             if unsafe_replacements:
                 PrintStyle().warning(
                     f"REPLACE blocked: {len(unsafe_replacements)} memories below "
-                    f"similarity threshold {self.config.replace_similarity_threshold}, converting to KEEP_SEPARATE"
+                    f"similarity threshold {self.config.replace_similarity_threshold}, converting to KEEP_SEPARATE",
                 )
 
                 # Instead of replace, just insert the new memory (keep separate)

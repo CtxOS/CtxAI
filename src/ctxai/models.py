@@ -1,42 +1,38 @@
-from dataclasses import dataclass, field
-from enum import Enum
 import logging
 import os
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    List,
-    Optional,
-    Iterator,
-    AsyncIterator,
-    Tuple,
-    TypedDict,
-)
+from dataclasses import dataclass
+from dataclasses import field
+from enum import Enum
+from typing import Any
+from typing import AsyncIterator
+from typing import Awaitable
+from typing import Callable
+from typing import Iterator
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import TypedDict
 
-from browser_use.llm import ChatOpenRouter, ChatGoogle
-
+from browser_use.llm import ChatGoogle
+from browser_use.llm import ChatOpenRouter
+from ctxai.helpers import browser_use_monkeypatch
+from ctxai.helpers import dirty_json
 from ctxai.helpers import dotenv
-from ctxai.helpers import settings, dirty_json
+from ctxai.helpers import settings
 from ctxai.helpers.dotenv import load_dotenv
-from ctxai.helpers.providers import ModelType as ProviderModelType, get_provider_config
+from ctxai.helpers.providers import get_provider_config
+from ctxai.helpers.providers import ModelType as ProviderModelType
 from ctxai.helpers.rate_limiter import RateLimiter
 from ctxai.helpers.tokens import approximate_tokens
-from ctxai.helpers import browser_use_monkeypatch
-
-from langchain_core.language_models.chat_models import SimpleChatModel
-from langchain_core.outputs.chat_generation import ChatGenerationChunk
-from langchain_core.callbacks.manager import (
-    CallbackManagerForLLMRun,
-    AsyncCallbackManagerForLLMRun,
-)
-from langchain_core.messages import (
-    BaseMessage,
-    AIMessageChunk,
-    HumanMessage,
-    SystemMessage,
-)
 from langchain.embeddings.base import Embeddings
+from langchain_core.callbacks.manager import AsyncCallbackManagerForLLMRun
+from langchain_core.callbacks.manager import CallbackManagerForLLMRun
+from langchain_core.language_models.chat_models import SimpleChatModel
+from langchain_core.messages import AIMessageChunk
+from langchain_core.messages import BaseMessage
+from langchain_core.messages import HumanMessage
+from langchain_core.messages import SystemMessage
+from langchain_core.outputs.chat_generation import ChatGenerationChunk
 from pydantic import ConfigDict
 
 
@@ -122,7 +118,8 @@ class ChatGenerationResult:
         # if native reasoning detection works, there's no need to worry about thinking tags
         if self.native_reasoning:
             processed_chunk = ChatChunk(
-                response_delta=chunk["response_delta"], reasoning_delta=chunk["reasoning_delta"]
+                response_delta=chunk["response_delta"],
+                reasoning_delta=chunk["reasoning_delta"],
             )
         else:
             # if the model outputs thinking tags, we need to parse them manually as reasoning
@@ -360,7 +357,7 @@ class LiteLLMChatWrapper(SimpleChatModel):
                                 "name": tool_call["name"],
                                 "arguments": args_str,
                             },
-                        }
+                        },
                     )
                 message_dict["tool_calls"] = new_tool_calls
 
@@ -644,7 +641,7 @@ class BrowserCompatibleChatWrapper(ChatOpenRouter):
             # hack from browser-use to fix json schema for gemini (additionalProperties, $defs, $ref)
             if "response_format" in kwrgs and "json_schema" in kwrgs["response_format"] and model.startswith("gemini/"):
                 kwrgs["response_format"]["json_schema"] = ChatGoogle("")._fix_gemini_schema(
-                    kwrgs["response_format"]["json_schema"]
+                    kwrgs["response_format"]["json_schema"],
                 )
 
             _ensure_litellm_configured()
@@ -860,7 +857,9 @@ def _adjust_call_args(provider_name: str, model_name: str, kwargs: dict):
 
 
 def _merge_provider_defaults(
-    provider_type: ProviderModelType, original_provider: str, kwargs: dict
+    provider_type: ProviderModelType,
+    original_provider: str,
+    kwargs: dict,
 ) -> tuple[str, dict]:
     # Normalize .env-style numeric strings (e.g., "timeout=30") into ints/floats for LiteLLM
     def _normalize_values(values: dict) -> dict:
@@ -908,7 +907,10 @@ def _merge_provider_defaults(
 
 
 def get_chat_model(
-    provider: str, name: str, model_config: Optional[ModelConfig] = None, **kwargs: Any
+    provider: str,
+    name: str,
+    model_config: Optional[ModelConfig] = None,
+    **kwargs: Any,
 ) -> LiteLLMChatWrapper:
     orig = provider.lower()
     provider_name, kwargs = _merge_provider_defaults("chat", orig, kwargs)
@@ -916,7 +918,10 @@ def get_chat_model(
 
 
 def get_browser_model(
-    provider: str, name: str, model_config: Optional[ModelConfig] = None, **kwargs: Any
+    provider: str,
+    name: str,
+    model_config: Optional[ModelConfig] = None,
+    **kwargs: Any,
 ) -> BrowserCompatibleChatWrapper:
     orig = provider.lower()
     provider_name, kwargs = _merge_provider_defaults("chat", orig, kwargs)
@@ -924,7 +929,10 @@ def get_browser_model(
 
 
 def get_embedding_model(
-    provider: str, name: str, model_config: Optional[ModelConfig] = None, **kwargs: Any
+    provider: str,
+    name: str,
+    model_config: Optional[ModelConfig] = None,
+    **kwargs: Any,
 ) -> LiteLLMEmbeddingWrapper | LocalSentenceTransformerWrapper:
     orig = provider.lower()
     provider_name, kwargs = _merge_provider_defaults("embedding", orig, kwargs)

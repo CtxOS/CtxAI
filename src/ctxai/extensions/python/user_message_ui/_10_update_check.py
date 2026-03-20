@@ -1,8 +1,10 @@
-from ctxai.helpers import notification
-from ctxai.helpers.extension import Extension
-from ctxai.agent import LoopData
-from ctxai.helpers import settings, update_check
 import datetime
+
+from ctxai.agent import LoopData
+from ctxai.helpers import notification
+from ctxai.helpers import settings
+from ctxai.helpers import update_check
+from ctxai.helpers.extension import Extension
 
 
 # check for newer versions of A0 available and send notification
@@ -59,7 +61,8 @@ class UpdateCheck(Extension):
         notifs.send_notification(
             title=notif.get("title", "Newer version available"),
             message=notif.get(
-                "message", "A newer version of Ctx AI is available. Please update to the latest version."
+                "message",
+                "A newer version of Ctx AI is available. Please update to the latest version.",
             ),
             type=notif.get("type", "info"),
             detail=notif.get("detail", ""),

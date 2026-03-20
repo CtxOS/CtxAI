@@ -1,7 +1,9 @@
 import json
 import os
+
+from helpers import files
+from helpers import plugins
 from helpers.extension import Extension
-from helpers import files, plugins
 from helpers.print_style import PrintStyle
 
 
@@ -119,5 +121,5 @@ class MigrateModelConfig(Extension):
         # Save as global plugin config
         plugins.save_plugin_config("_model_config", "", "", plugin_config)
         PrintStyle(background_color="#6734C3", font_color="white", padding=True).print(
-            "Migrated legacy model settings to _model_config plugin config."
+            "Migrated legacy model settings to _model_config plugin config.",
         )

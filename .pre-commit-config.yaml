@@ -25,11 +25,5 @@ repos:
     hooks:
       - id: add-trailing-comma
 
-  - repo: https://github.com/asottile/reorder-python-imports
-    rev: v3.16.0
-    hooks:
-      - id: reorder-python-imports
-        args: [--force-single-line]
-
 default_language_version:
   python: python3.12

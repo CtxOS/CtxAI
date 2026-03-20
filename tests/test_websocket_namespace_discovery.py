@@ -3,7 +3,8 @@ import contextlib
 import socket
 import sys
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
+from typing import AsyncIterator
 
 import pytest
 
@@ -73,7 +74,7 @@ def _write_handler_module(path: Path, class_name: str, event_type: str) -> None:
                 "    async def process_event(self, event_type: str, data: dict[str, Any], sid: str):",
                 "        return {'ok': True}",
                 "",
-            ]
+            ],
         ),
         encoding="utf-8",
     )
@@ -211,7 +212,7 @@ def test_discovery_invalid_modules_fail_fast_with_descriptive_errors(tmp_path: P
                 "    def get_event_types(cls): return ['two_b']",
                 "    async def process_event(self, event_type, data, sid): return {'ok': True}",
                 "",
-            ]
+            ],
         ),
         encoding="utf-8",
     )

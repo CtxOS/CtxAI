@@ -1,10 +1,10 @@
+import asyncio
 import sys
 import threading
+import time
 from pathlib import Path
 
 import pytest
-import asyncio
-import time
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:

@@ -1,4 +1,5 @@
 import json
+
 from ctxai.agent import LoopData
 from ctxai.helpers.extension import Extension
 

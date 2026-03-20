@@ -14,7 +14,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ctxai.helpers import extension
-from ctxai.helpers.event_bus import EventBus, EventType
+from ctxai.helpers.event_bus import EventBus
+from ctxai.helpers.event_bus import EventType
 from ctxai.helpers.print_style import PrintStyle
 
 if TYPE_CHECKING:
@@ -121,7 +122,10 @@ async def run_monologue(agent: "Agent") -> str:
                         stream_data=stream_data,
                     )
                     bus.emit(
-                        EventType.REASONING_CHUNK, agent=agent, chunk=stream_data["chunk"], full=stream_data["full"]
+                        EventType.REASONING_CHUNK,
+                        agent=agent,
+                        chunk=stream_data["chunk"],
+                        full=stream_data["full"],
                     )
                     if stream_data.get("chunk"):
                         printer.stream(stream_data["chunk"])
@@ -139,7 +143,10 @@ async def run_monologue(agent: "Agent") -> str:
                         stream_data=stream_data,
                     )
                     bus.emit(
-                        EventType.RESPONSE_CHUNK, agent=agent, chunk=stream_data["chunk"], full=stream_data["full"]
+                        EventType.RESPONSE_CHUNK,
+                        agent=agent,
+                        chunk=stream_data["chunk"],
+                        full=stream_data["full"],
                     )
                     if stream_data.get("chunk"):
                         printer.stream(stream_data["chunk"])

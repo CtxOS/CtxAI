@@ -1,8 +1,13 @@
 import asyncio
-from dataclasses import dataclass
 import threading
 from concurrent.futures import Future
-from typing import Any, Callable, Optional, Coroutine, TypeVar, Awaitable
+from dataclasses import dataclass
+from typing import Any
+from typing import Awaitable
+from typing import Callable
+from typing import Coroutine
+from typing import Optional
+from typing import TypeVar
 
 T = TypeVar("T")
 
@@ -146,7 +151,8 @@ class DeferredTask:
             if self.event_loop_thread.loop.is_running():
                 try:
                     cleanup_future = asyncio.run_coroutine_threadsafe(
-                        self._drain_event_loop_tasks(), self.event_loop_thread.loop
+                        self._drain_event_loop_tasks(),
+                        self.event_loop_thread.loop,
                     )
                     cleanup_future.result()
                 except Exception:

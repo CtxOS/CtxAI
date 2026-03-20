@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from ctxai.helpers.websocket import WebSocketHandler, WebSocketResult
+from ctxai.helpers.websocket import WebSocketHandler
+from ctxai.helpers.websocket import WebSocketResult
 
 
 class RootDefaultHandler(WebSocketHandler):
@@ -26,6 +27,9 @@ class RootDefaultHandler(WebSocketHandler):
         return ["ws_root_echo"]
 
     async def process_event(
-        self, event_type: str, data: dict[str, Any], sid: str
+        self,
+        event_type: str,
+        data: dict[str, Any],
+        sid: str,
     ) -> dict[str, Any] | WebSocketResult | None:
         return {"ok": True, "namespace": self.namespace, "sid": sid, "echo": data}

@@ -1,15 +1,17 @@
 import glob
-import os
 import hashlib
-from typing import Any, Dict, Literal, TypedDict
-from langchain_community.document_loaders import (
-    CSVLoader,
-    PyPDFLoader,
-    TextLoader,
-    UnstructuredHTMLLoader,
-)
+import os
+from typing import Any
+from typing import Dict
+from typing import Literal
+from typing import TypedDict
+
 from ctxai.helpers.log import LogItem
 from ctxai.helpers.print_style import PrintStyle
+from langchain_community.document_loaders import CSVLoader
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import UnstructuredHTMLLoader
 
 text_loader_kwargs = {"autodetect_encoding": True}
 
@@ -131,7 +133,8 @@ def load_knowledge(
 
             # Load existing data from the index or create a new entry
             file_data: KnowledgeImport = index.get(
-                file_key, {"file": file_key, "checksum": "", "ids": [], "state": "changed", "documents": []}
+                file_key,
+                {"file": file_key, "checksum": "", "ids": [], "state": "changed", "documents": []},
             )
 
             # Check if file has changed

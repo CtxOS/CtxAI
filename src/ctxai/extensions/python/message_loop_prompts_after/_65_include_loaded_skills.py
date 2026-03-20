@@ -1,7 +1,7 @@
-from ctxai.helpers.extension import Extension
-from ctxai.helpers import skills
-from ctxai.tools.skills_tool import DATA_NAME_LOADED_SKILLS
 from ctxai.agent import LoopData
+from ctxai.helpers import skills
+from ctxai.helpers.extension import Extension
+from ctxai.tools.skills_tool import DATA_NAME_LOADED_SKILLS
 
 
 class IncludeLoadedSkills(Extension):

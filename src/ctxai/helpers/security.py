@@ -1,7 +1,8 @@
 import re
 import unicodedata
 from pathlib import Path
-from typing import Final, Optional
+from typing import Final
+from typing import Optional
 
 # Forbidden characters:
 # Linux/Unix: / and NULL byte
@@ -36,7 +37,7 @@ WINDOWS_RESERVED: Final = frozenset(
         "LPT7",
         "LPT8",
         "LPT9",
-    }
+    },
 )
 
 FILENAME_MAX_LENGTH: Final = 255

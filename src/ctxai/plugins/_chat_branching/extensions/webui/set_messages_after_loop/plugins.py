@@ -1,23 +1,25 @@
 from __future__ import annotations
 
 import asyncio
-import re
-import json
 import glob
+import json
+import re
 import time
 from pathlib import Path
-from typing import (
-    Iterator,
-    List,
-    Literal,
-    TYPE_CHECKING,
-    TypedDict,
-)
+from typing import Iterator
+from typing import List
+from typing import Literal
+from typing import TYPE_CHECKING
+from typing import TypedDict
 
-from ctxai.helpers import files, notification, print_style, yaml as yaml_helper, cache
-from pydantic import BaseModel, Field
-
+from ctxai.helpers import cache
+from ctxai.helpers import files
+from ctxai.helpers import notification
+from ctxai.helpers import print_style
+from ctxai.helpers import yaml as yaml_helper
 from ctxai.helpers.defer import DeferredTask
+from pydantic import BaseModel
+from pydantic import Field
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
@@ -146,7 +148,7 @@ def get_enhanced_plugins_list(custom: bool = True, builtin: bool = True) -> List
                         has_license=has_license,
                         has_init_script=has_init_script,
                         toggle_state=toggle_state,
-                    )
+                    ),
                 )
             except Exception as e:
                 print_style.PrintStyle.error(f"Failed to load plugin {d.name}: {e}")
@@ -191,7 +193,7 @@ def delete_plugin(plugin_name: str):
     if not files.is_in_dir(plugin_dir, custom_plugins_dir):
         raise ValueError("Only custom plugins can be deleted")
     send_frontend_reload_notification(
-        [plugin_name]
+        [plugin_name],
     )  # send before deletion to properly check the extensions, second notification will be skipped automatically
     files.delete_dir(plugin_dir)
     after_plugin_change([plugin_name])
@@ -287,7 +289,7 @@ def get_toggle_state(plugin_name: str) -> ToggleState:
     usr_toggles = [
         files.find_existing_paths_by_pattern(files.get_abs_path(files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN)),
         files.find_existing_paths_by_pattern(
-            files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN)
+            files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN),
         ),
     ]
 
@@ -431,7 +433,7 @@ def find_plugin_assets(
                     "project_name": inferred_proj,
                     "agent_profile": inferred_prof,
                     "path": matched,
-                }
+                },
             )
             if only_first:
                 return True

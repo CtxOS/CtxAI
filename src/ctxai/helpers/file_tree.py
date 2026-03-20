@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+import os
 from collections import deque
 from dataclasses import dataclass
-from datetime import datetime, timezone
-import os
-from typing import Any, Iterable, Literal, Optional, Sequence
-
-from pathspec import PathSpec
+from datetime import datetime
+from datetime import timezone
+from typing import Any
+from typing import Iterable
+from typing import Literal
+from typing import Optional
+from typing import Sequence
 
 from ctxai.helpers import files as files_helper
+from pathspec import PathSpec
 
 SORT_BY_NAME = "name"
 SORT_BY_CREATED = "created"
@@ -125,7 +129,10 @@ def file_tree(
     visibility_cache: dict[str, bool] = {}
 
     def make_entry(
-        entry: os.DirEntry, parent: _TreeEntry, level: int, item_type: Literal["file", "folder"]
+        entry: os.DirEntry,
+        parent: _TreeEntry,
+        level: int,
+        item_type: Literal["file", "folder"],
     ) -> _TreeEntry:
         stat = entry.stat(follow_symlinks=False)
         rel_path = os.path.relpath(entry.path, abs_root)
@@ -421,7 +428,7 @@ def _create_folder_unprocessed_comment(
                 parent=folder_node,
                 items=None,
                 rel_path=os.path.join(folder_node.rel_path, entry.name),
-            )
+            ),
         )
     for entry in files:
         stat = entry.stat(follow_symlinks=False)
@@ -435,7 +442,7 @@ def _create_folder_unprocessed_comment(
                 parent=folder_node,
                 items=None,
                 rel_path=os.path.join(folder_node.rel_path, entry.name),
-            )
+            ),
         )
 
     if not hidden_entries:
@@ -597,7 +604,7 @@ def _apply_sorting_and_limits(
                 directory_node,
                 noun,
                 len(overflow),
-            )
+            ),
         )
 
     if folders_first:
