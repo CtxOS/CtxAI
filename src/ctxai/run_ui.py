@@ -424,7 +424,7 @@ def run():
         handlers_by_namespace=handlers_by_namespace,
     )
 
-    init_a0()
+    init_ctx()
 
     wsgi_app = WSGIMiddleware(webapp)
     starlette_app = Starlette(
@@ -497,7 +497,7 @@ def wait_for_health(host: str, port: int):
 
 
 @extension.extensible
-def init_a0():
+def init_ctx():
     # initialize contexts and MCP
     init_chats = initialize.initialize_chats()
     # only wait for init chats, otherwise they would seem to disappear for a while on restart

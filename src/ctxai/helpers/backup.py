@@ -513,7 +513,7 @@ class BackupService:
 
                 # Process each file in archive
                 for archive_path in archive_files:
-                    # Archive path is already the correct relative path (e.g., "a0/tmp/settings.json")
+                    # Archive path is already the correct relative path (e.g., "ctx/tmp/settings.json")
                     original_path = archive_path
 
                     # Translate path from backed up system to current system
@@ -692,7 +692,7 @@ class BackupService:
 
                 # Process each file in archive
                 for archive_path in archive_files:
-                    # Archive path is already the correct relative path (e.g., "a0/tmp/settings.json")
+                    # Archive path is already the correct relative path (e.g., "ctx/tmp/settings.json")
                     original_path = archive_path
 
                     # Translate path from backed up system to current system
