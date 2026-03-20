@@ -1,7 +1,6 @@
 import argparse
 import asyncio
 import inspect
-import queue
 import secrets
 import sys
 import threading
@@ -174,22 +173,13 @@ def _get_rfc_url() -> str:
 
 
 def call_development_function_sync[T](func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs) -> T:
-    # run async function in sync manner
-    result_queue: queue.Queue[T | None] = queue.Queue()
-
-    def run_in_thread():
-        result = asyncio.run(call_development_function(func, *args, **kwargs))
-        result_queue.put(result)
-
-    thread = threading.Thread(target=run_in_thread)
-    thread.start()
-    thread.join(timeout=30)  # wait for thread with timeout
-
-    if thread.is_alive():
-        raise TimeoutError("Function call timed out after 30 seconds")
-
-    result = result_queue.get_nowait()
-    return cast(T, result)
+    # run async function in sync manner using thread pool to avoid thread explosion
+    pool = _get_async_thread_pool()
+    future = pool.submit(asyncio.run, call_development_function(func, *args, **kwargs))
+    try:
+        return cast(T, future.result(timeout=30))
+    except TimeoutError as err:
+        raise TimeoutError("Function call timed out after 30 seconds") from err
 
 
 def get_web_ui_port():

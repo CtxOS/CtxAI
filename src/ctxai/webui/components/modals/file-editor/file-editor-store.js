@@ -1,5 +1,6 @@
 import { createStore } from "/js/AlpineStore.js";
 import { fetchApi } from "/js/api.js";
+import { ensureAce } from "/js/ace-loader.js";
 
 const model = {
   // --- State ---------------------------------------------------------------
@@ -284,7 +285,7 @@ const model = {
     });
   },
 
-  initEditor() {
+  async initEditor() {
     const container = document.getElementById("file-editor-container");
     if (!container) {
       // It's possible the modal hasn't fully rendered yet
@@ -296,11 +297,7 @@ const model = {
       this.editor.destroy();
     }
 
-    if (!window.ace?.edit) {
-      console.error("ACE editor not available");
-      this.editError = "Editor library not loaded";
-      return;
-    }
+    await ensureAce();
 
     const editorInstance = window.ace.edit("file-editor-container");
     if (!editorInstance) {

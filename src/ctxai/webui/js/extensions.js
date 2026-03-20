@@ -168,7 +168,10 @@ export async function importHtmlExtensions(extensionPoint, targetElement) {
   try {
     const cachedHtml = cache.get(HTML_CACHE_AREA, extensionPoint, null);
     if (cachedHtml != null) {
-      targetElement.innerHTML = cachedHtml;
+      targetElement.innerHTML =
+        typeof DOMPurify !== "undefined"
+          ? DOMPurify.sanitize(cachedHtml)
+          : cachedHtml;
       return;
     }
 
@@ -179,7 +182,7 @@ export async function importHtmlExtensions(extensionPoint, targetElement) {
     });
     let combinedHTML = "";
     for (const extension of response.extensions) {
-      const path = normalizePath(extension);
+      const path = normalizePath(extension).replace(/"/g, "&quot;");
       combinedHTML += `<x-component path="${path}"></x-component>`;
     }
     cache.add(HTML_CACHE_AREA, extensionPoint, combinedHTML);

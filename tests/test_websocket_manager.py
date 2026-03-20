@@ -818,7 +818,7 @@ async def test_diagnostic_event_emitted_for_inbound():
     manager.register_handlers({NAMESPACE: [handler]})
 
     await manager.handle_connect(NAMESPACE, "observer")
-    assert manager.register_diagnostic_watcher(NAMESPACE, "observer") is True
+    assert await manager.register_diagnostic_watcher(NAMESPACE, "observer") is True
     await manager.handle_connect(NAMESPACE, "sid-client")
 
     await manager.route_event(NAMESPACE, "dummy", {"payload": "value"}, "sid-client")

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import os
 import secrets
@@ -15,7 +17,7 @@ from flask import Flask, Response, redirect, render_template_string, request, se
 from werkzeug.wrappers.request import Request as WerkzeugRequest
 
 import ctxai.initialize as initialize
-from ctxai.helpers import dotenv, extension, fasta2a_server, files, git, login, mcp_server, process, runtime
+from ctxai.helpers import cache, dotenv, extension, fasta2a_server, files, git, login, mcp_server, process, runtime
 from ctxai.helpers import settings as settings_helper
 from ctxai.helpers.api import register_api_route, requires_auth
 from ctxai.helpers.files import get_abs_path
@@ -461,6 +463,9 @@ def run():
 
     # migrate data before anything else
     initialize.initialize_migration()
+
+    # Configure in-memory cache: 500 entries per area, 1-hour TTL
+    cache.configure(max_size=500, ttl_seconds=3600)
 
     # Warn if authentication is not configured
     if not login.is_login_required():

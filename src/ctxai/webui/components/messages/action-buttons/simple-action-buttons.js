@@ -78,7 +78,10 @@ export function createActionButton(icon, text = "", handler = null) {
   }
 
   if (iconName) {
-    button.innerHTML = `<span class="material-symbols-outlined">${iconName}</span>`;
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "material-symbols-outlined";
+    iconSpan.textContent = iconName;
+    button.appendChild(iconSpan);
   } else if (text) {
     button.textContent = text;
   }

@@ -1609,8 +1609,10 @@ function drawKvpsIncremental(container, kvps, latex) {
         th = row.insertCell(0);
         th.classList.add("kvps-key");
       }
-      const convertedKey = convertIcons(String(key), "");
-      if (convertedKey !== String(key)) {
+      const rawKey = String(key);
+      const escapedKey = escapeHTML(rawKey);
+      const convertedKey = convertIcons(escapedKey, "");
+      if (convertedKey !== escapedKey) {
         th.innerHTML = convertedKey;
       } else {
         th.textContent = convertToTitleCase(key);

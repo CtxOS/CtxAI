@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import _thread
 import asyncio
 import os
 import time
@@ -58,10 +59,29 @@ LIFECYCLE_CONNECT_EVENT = "ws_lifecycle_connect"
 LIFECYCLE_DISCONNECT_EVENT = "ws_lifecycle_disconnect"
 
 
+class _SyncLockAsyncWrapper:
+    """Wrap a threading lock so it can be used with ``async with``."""
+
+    def __init__(self, lock: _thread.RLock) -> None:
+        self._lock = lock
+
+    async def __aenter__(self):
+        self._lock.acquire()
+        return self
+
+    async def __aexit__(self, *_exc: object) -> None:
+        self._lock.release()
+
+
 class WebSocketManager:
-    def __init__(self, socketio: socketio.AsyncServer, lock: asyncio.Lock | None = None) -> None:
+    def __init__(self, socketio: socketio.AsyncServer, lock: asyncio.Lock | _thread.RLock | None = None) -> None:
         self.socketio = socketio
-        self.lock = lock or asyncio.Lock()
+        if lock is None:
+            self.lock: asyncio.Lock | _SyncLockAsyncWrapper = asyncio.Lock()
+        elif isinstance(lock, _thread.RLock):
+            self.lock = _SyncLockAsyncWrapper(lock)
+        else:
+            self.lock = lock
         self.handlers: defaultdict[str, defaultdict[str, list[WebSocketHandler]]] = defaultdict(
             lambda: defaultdict(list),
         )

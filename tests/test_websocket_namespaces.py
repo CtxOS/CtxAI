@@ -246,7 +246,7 @@ async def test_diagnostics_include_source_namespace_and_deliver_on_dev_namespace
 
     await manager.handle_connect(ns_dev, "sid-watcher")
     await manager.handle_connect(ns_state, "sid-client")
-    assert manager.register_diagnostic_watcher(ns_dev, "sid-watcher") is True
+    assert await manager.register_diagnostic_watcher(ns_dev, "sid-watcher") is True
 
     socketio.emit.reset_mock()
 
