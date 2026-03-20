@@ -6,16 +6,16 @@
 
 ---
 
-## 🔴 Critical — Fix Before Any Production Traffic
+## 🔴 Critical — Fix Before Any Production Traffic ✅ COMPLETE
 
 ### Security
-- [ ] **Sanitize agent HTML output before `innerHTML` assignment**
-  `src/ctxai/webui/js/messages.js` + `index.js`
-  Add DOMPurify (or equivalent) to all paths that write agent-generated content into the DOM. Current raw `chatHistory.innerHTML = ...` is an XSS vector.
+- [x] **Sanitize agent HTML output before `innerHTML` assignment**
+  `src/ctxai/webui/js/messages.js` + `index.js` + `modals.js`
+  Added DOMPurify to all paths that write agent-generated content into the DOM. Removed dangerous `onclick`/`onchange` attributes from ALLOWED_ATTR. Sanitized modal titles and error messages.
 
-- [ ] **Add Content-Security-Policy headers to Flask responses**
-  `src/ctxai/run_ui.py`
-  Emit `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options` via a `@webapp.after_request` hook.
+- [x] **Add Content-Security-Policy headers to Flask responses**
+  `src/ctxai/run_ui.py:114-148`
+  `@webapp.after_request` hook emits `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Cache-Control`, and conditional `SESSION_COOKIE_SECURE`.
 
 ---
 
@@ -197,4 +197,4 @@
 
 ---
 
-*Last updated: 2026-03-20*
+*Last updated: 2026-03-20 (Critical items completed — DOMPurify sanitization + CSP headers)*

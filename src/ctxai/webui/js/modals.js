@@ -136,8 +136,11 @@ export async function openModal(modalPath, beforeClose = null) {
       // Use importComponent which now returns the parsed document
       importComponent(componentPath, modal.body)
         .then((doc) => {
-          // Set the title from the document
-          modal.title.innerHTML = doc.title || modalPath;
+          // Set the title from the document (sanitized via DOMPurify)
+          const rawTitle = doc.title || modalPath;
+          modal.title.innerHTML = typeof DOMPurify !== "undefined"
+            ? DOMPurify.sanitize(rawTitle)
+            : rawTitle.replace(/[&<>'"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
           if (doc.html && doc.html.classList) {
             const inner = modal.element.querySelector(".modal-inner");
             if (inner) inner.classList.add(...doc.html.classList);
@@ -162,7 +165,10 @@ export async function openModal(modalPath, beforeClose = null) {
         })
         .catch((error) => {
           console.error("Error loading modal content:", error);
-          modal.body.innerHTML = `<div class="error">Failed to load modal content: ${error.message}</div>`;
+          const errorMsg = typeof DOMPurify !== "undefined"
+            ? DOMPurify.sanitize(error.message)
+            : String(error.message).replace(/[&<>'"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
+          modal.body.innerHTML = `<div class="error">Failed to load modal content: ${errorMsg}</div>`;
         });
 
       // Add modal to stack and show it

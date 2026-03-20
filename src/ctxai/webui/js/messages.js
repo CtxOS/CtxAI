@@ -1761,7 +1761,6 @@ function sanitizeHTML(html) {
       ALLOWED_ATTR: [
         "href", "src", "alt", "title", "class", "id",
         "target", "rel", "style", "type", "checked",
-        "onclick", "onchange",
       ],
       ALLOW_DATA_ATTR: false,
     });
