@@ -1,9 +1,7 @@
+from flask import Request, Response
+
 from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.notification import NotificationManager
-from ctxai.helpers.notification import NotificationPriority
-from ctxai.helpers.notification import NotificationType
-from flask import Request
-from flask import Response
+from ctxai.helpers.notification import NotificationManager, NotificationPriority, NotificationType
 
 
 class NotificationCreate(ApiHandler):

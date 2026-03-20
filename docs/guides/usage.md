@@ -60,7 +60,7 @@ Located beneath the chat input box, Ctx AI provides a set of action buttons for 
 Access the chat history in JSON format
   - View the conversation as processed by the LLM
   - Useful for debugging and understanding agent behavior
-  - Files are stored under `/a0/usr/chats/` inside the container
+  - Files are stored under `/ctx/usr/chats/` inside the container
 
 ![History](../res/usage/ui-history1.png)
 
@@ -159,7 +159,7 @@ Projects are isolated workspaces that provide dedicated context, instructions, m
 
 Each project includes:
 
-- **Isolated workspace** under `/a0/usr/projects/<project_name>/`
+- **Isolated workspace** under `/ctx/usr/projects/<project_name>/`
 - **Custom instructions** automatically injected into system prompts
 - **Dedicated or shared memory** to control context isolation
 - **Project-scoped secrets and variables** for secure credential management
@@ -305,7 +305,7 @@ Once activated, the agent:
 ### Project Directory Structure
 
 ```
-/a0/usr/projects/<project_name>/
+/ctx/usr/projects/<project_name>/
 ├── .a0proj/                    # Project metadata (managed by A0)
 │   ├── project.json            # Main configuration
 │   ├── variables.env           # Non-sensitive config
@@ -812,7 +812,7 @@ Ctx AI provides a powerful file browser interface for managing your workspace:
   - Current path always visible for context
 
 > [!NOTE]
-> The file browser lets you navigate the Ctx AI filesystem. For file-based work, keep your working files in `/a0/usr` (or inside a Project workspace).
+> The file browser lets you navigate the Ctx AI filesystem. For file-based work, keep your working files in `/ctx/usr` (or inside a Project workspace).
 >
 - **File Operations**:
   - Create new files and directories
@@ -1068,7 +1068,7 @@ Optionally clean up existing files before restoring:
 * **Test Restores**: Occasionally test restoring backups to ensure they work
 
 #### Security Considerations
-* **Secrets**: Backups do **not** reliably include `/a0/usr/secrets.env`. Copy it manually when migrating.
+* **Secrets**: Backups do **not** reliably include `/ctx/usr/secrets.env`. Copy it manually when migrating.
 * **Secure Storage**: Store backup files securely and don't share them
 * **Clean Systems**: When restoring on new systems, verify all configurations
 

@@ -1,7 +1,6 @@
 import asyncio
 import time
-from typing import Awaitable
-from typing import Callable
+from collections.abc import Awaitable, Callable
 
 
 class RateLimiter:

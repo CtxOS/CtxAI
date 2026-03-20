@@ -1,8 +1,7 @@
 import math
 
 from ctxai.agent import LoopData
-from ctxai.extensions.python.before_main_llm_call._10_log_for_stream import build_default_heading
-from ctxai.extensions.python.before_main_llm_call._10_log_for_stream import build_heading
+from ctxai.extensions.python.before_main_llm_call._10_log_for_stream import build_default_heading, build_heading
 from ctxai.helpers.extension import Extension
 
 

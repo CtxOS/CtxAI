@@ -10,8 +10,8 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from ctxai.agent import AgentContext
-from ctxai.initialize import initialize_agent
 from ctxai.api.poll import Poll
+from ctxai.initialize import initialize_agent
 
 
 @pytest.mark.asyncio

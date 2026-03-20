@@ -1,11 +1,12 @@
 import asyncio
 import re
 import time
-from typing import Tuple
 
 import paramiko  # type: ignore[import-untyped]
+
 from ctxai.helpers.log import Log
 from ctxai.helpers.print_style import PrintStyle
+
 # from ctxai.helpers.strings import calculate_valid_match_lengths
 
 
@@ -103,7 +104,7 @@ class SSHInteractiveSession:
         self.trimmed_command_length = 0
         self.shell.send(self.last_command)
 
-    async def read_output(self, timeout: float = 0, reset_full_output: bool = False) -> Tuple[str, str]:
+    async def read_output(self, timeout: float = 0, reset_full_output: bool = False) -> tuple[str, str]:
         if not self.shell:
             raise Exception("Shell not connected")
 

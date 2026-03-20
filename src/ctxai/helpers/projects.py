@@ -1,14 +1,8 @@
 import os
-from typing import cast
-from typing import TYPE_CHECKING
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict, cast
 
-from ctxai.helpers import dirty_json
-from ctxai.helpers import file_tree
-from ctxai.helpers import files
-from ctxai.helpers import persist_chat
+from ctxai.helpers import dirty_json, file_tree, files, persist_chat
 from ctxai.helpers.print_style import PrintStyle
-
 
 if TYPE_CHECKING:
     from ctxai.agent import AgentContext

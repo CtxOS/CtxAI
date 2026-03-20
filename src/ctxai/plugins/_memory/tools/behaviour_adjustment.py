@@ -1,8 +1,7 @@
 from ctxai.agent import Agent
 from ctxai.helpers import files
 from ctxai.helpers.log import LogItem
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
+from ctxai.helpers.tool import Response, Tool
 from ctxai.plugins._memory.helpers import memory
 
 

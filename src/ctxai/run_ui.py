@@ -4,37 +4,22 @@ import secrets
 import threading
 import time
 import urllib.request
+from collections.abc import Iterable
 from datetime import timedelta
 from typing import cast
-from typing import Iterable
 
-import ctxai.initialize as initialize
 import socketio  # type: ignore[import-untyped]
 import uvicorn
-from ctxai.helpers import dotenv
-from ctxai.helpers import extension
-from ctxai.helpers import fasta2a_server
-from ctxai.helpers import files
-from ctxai.helpers import git
-from ctxai.helpers import login
-from ctxai.helpers import mcp_server
-from ctxai.helpers import process
-from ctxai.helpers import runtime
+from flask import Flask, Response, redirect, render_template_string, request, session, url_for
+from werkzeug.wrappers.request import Request as WerkzeugRequest
+
+import ctxai.initialize as initialize
+from ctxai.helpers import dotenv, extension, fasta2a_server, files, git, login, mcp_server, process, runtime
 from ctxai.helpers import settings as settings_helper
-from ctxai.helpers.api import register_api_route
-from ctxai.helpers.api import requires_auth
+from ctxai.helpers.api import register_api_route, requires_auth
 from ctxai.helpers.files import get_abs_path
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.websocket import validate_ws_origin
-from ctxai.helpers.websocket import WebSocketHandler
-from flask import Flask
-from flask import redirect
-from flask import render_template_string
-from flask import request
-from flask import Response
-from flask import session
-from flask import url_for
-from werkzeug.wrappers.request import Request as WerkzeugRequest
+from ctxai.helpers.websocket import WebSocketHandler, validate_ws_origin
 
 # Simple in-memory rate limiter for login attempts
 _login_attempts: dict[str, list[float]] = {}
@@ -59,16 +44,17 @@ def _check_login_rate_limit(remote_addr: str) -> bool:
     return True
 
 
+# disable logging
+import logging
+
+from flask import send_file
 from socketio import ASGIApp, packet
 from starlette.applications import Starlette
 from starlette.routing import Mount
 from uvicorn.middleware.wsgi import WSGIMiddleware
+
 from ctxai.helpers.websocket_manager import WebSocketManager
 from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
-from flask import send_file
-
-# disable logging
-import logging
 
 logging.getLogger().setLevel(logging.WARNING)
 

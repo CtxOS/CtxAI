@@ -4,12 +4,11 @@ import re
 import time
 from typing import TYPE_CHECKING
 
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+
 from ctxai.helpers import history as history_helpers
 from ctxai.helpers import plugins
 from ctxai.helpers.errors import HandledException
-from langchain_core.messages import AIMessage
-from langchain_core.messages import HumanMessage
-from langchain_core.messages import SystemMessage
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
@@ -46,7 +45,7 @@ def get_checker(agent: "Agent") -> "InfectionChecker":
         agent.set_data(DATA_KEY_PASSED, False)
         agent.set_data(DATA_KEY, None)  # discard stale checker from previous monologue
 
-    checker: "InfectionChecker | None" = agent.get_data(DATA_KEY)
+    checker: InfectionChecker | None = agent.get_data(DATA_KEY)
     if checker is None or checker.iteration != iteration:
         checker = InfectionChecker(config=get_config(agent), iteration=iteration)
         agent.set_data(DATA_KEY, checker)
@@ -336,8 +335,8 @@ class InfectionChecker:
         # Desktop notification
         from ctxai.helpers.notification import (
             NotificationManager,
-            NotificationType,
             NotificationPriority,
+            NotificationType,
         )
 
         NotificationManager.send_notification(

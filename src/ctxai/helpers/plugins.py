@@ -5,26 +5,15 @@ import glob
 import json
 import re
 import time
+from collections.abc import Callable, Iterator
 from pathlib import Path
-from typing import Any
-from typing import Callable
-from typing import Iterator
-from typing import List
-from typing import Literal
-from typing import TYPE_CHECKING
-from typing import TypedDict
+from typing import TYPE_CHECKING, Any, Literal, TypedDict
 
-from ctxai.helpers import cache
-from ctxai.helpers import extension
-from ctxai.helpers import extract_tools
-from ctxai.helpers import files
-from ctxai.helpers import git
-from ctxai.helpers import notification
-from ctxai.helpers import print_style
+from pydantic import BaseModel, Field
+
+from ctxai.helpers import cache, extension, extract_tools, files, git, notification, print_style
 from ctxai.helpers import yaml as yaml_helper
 from ctxai.helpers.defer import DeferredTask
-from pydantic import BaseModel
-from pydantic import Field
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
@@ -67,13 +56,13 @@ class PluginMetadata(BaseModel):
     title: str = ""
     description: str = ""
     version: str = ""
-    settings_sections: List[str] = Field(default_factory=list)
+    settings_sections: list[str] = Field(default_factory=list)
     per_project_config: bool = False
     per_agent_config: bool = False
     always_enabled: bool = False
     framework_version: str = ""  # optional compatibility requirement (e.g. '>=1.0.0')
-    plugin_dependencies: List[str] = Field(default_factory=list)
-    optional_plugin_dependencies: List[str] = Field(default_factory=list)
+    plugin_dependencies: list[str] = Field(default_factory=list)
+    optional_plugin_dependencies: list[str] = Field(default_factory=list)
 
 
 class PluginListItem(BaseModel):
@@ -82,7 +71,7 @@ class PluginListItem(BaseModel):
     display_name: str = ""
     description: str = ""
     version: str = ""
-    settings_sections: List[str] = Field(default_factory=list)
+    settings_sections: list[str] = Field(default_factory=list)
     per_project_config: bool = False
     per_agent_config: bool = False
     always_enabled: bool = False
@@ -93,7 +82,7 @@ class PluginListItem(BaseModel):
     has_license: bool = False
     has_init_script: bool = False
     is_compatible: bool = True
-    compatibility_issues: List[str] = Field(default_factory=list)
+    compatibility_issues: list[str] = Field(default_factory=list)
     toggle_state: ToggleState = "disabled"
     current_commit: str = ""
     current_commit_timestamp: str = ""
@@ -122,7 +111,7 @@ def clear_plugin_cache():
     cache.clear("*(plugins)*")
 
 
-def get_plugin_roots(plugin_name: str = "") -> List[str]:
+def get_plugin_roots(plugin_name: str = "") -> list[str]:
     """Plugin root directories, ordered by priority (user first)."""
     return [
         files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR, plugin_name),
@@ -150,7 +139,7 @@ def get_enhanced_plugins_list(
     custom: bool = True,
     builtin: bool = True,
     plugin_names: list[str] | None = None,
-) -> List[PluginListItem]:
+) -> list[PluginListItem]:
     """Discover plugins by directory convention. First root wins on ID conflict."""
     results = []
     allowed_names = set(plugin_names) if plugin_names else None
@@ -215,7 +204,7 @@ def get_enhanced_plugins_list(
     return results
 
 
-def get_custom_plugins_updates(plugin_names: list[str] | None = None) -> List[PluginUpdateInfo]:
+def get_custom_plugins_updates(plugin_names: list[str] | None = None) -> list[PluginUpdateInfo]:
     plugins = get_enhanced_plugins_list(custom=True, builtin=False, plugin_names=plugin_names)
     results: list[PluginUpdateInfo] = []
 
@@ -268,8 +257,8 @@ def _get_plugin_effective_enabled(plugin_name: str) -> bool:
     return state in ("enabled", "advanced")
 
 
-def _check_plugin_compatibility(plugin_name: str) -> tuple[bool, List[str]]:
-    issues: List[str] = []
+def _check_plugin_compatibility(plugin_name: str) -> tuple[bool, list[str]]:
+    issues: list[str] = []
     meta = get_plugin_meta(plugin_name)
     if not meta:
         return False, ["Plugin metadata not found"]
@@ -285,8 +274,9 @@ def _check_plugin_compatibility(plugin_name: str) -> tuple[bool, List[str]]:
     # Optionally validate framework version requirement if provided
     if meta.framework_version:
         try:
-            from ctxai.helpers.git import get_version
             from packaging import version
+
+            from ctxai.helpers.git import get_version
 
             current = version.parse(get_version())
             requested = version.parse(meta.framework_version.lstrip("v"))
@@ -322,15 +312,15 @@ def delete_plugin(plugin_name: str):
     after_plugin_change([plugin_name])
 
 
-def get_plugin_paths(*subpaths: str) -> List[str]:
+def get_plugin_paths(*subpaths: str) -> list[str]:
     sub = "*/" + "/".join(subpaths) if subpaths else "*"
-    paths: List[str] = []
+    paths: list[str] = []
     for root in get_plugin_roots():
         paths.extend(files.find_existing_paths_by_pattern(files.get_abs_path(root, sub)))
     return paths
 
 
-def get_enabled_plugin_paths(agent: Agent | None, *subpaths: str) -> List[str]:
+def get_enabled_plugin_paths(agent: Agent | None, *subpaths: str) -> list[str]:
     enabled = get_enabled_plugins(agent)
     paths: list[str] = []
 

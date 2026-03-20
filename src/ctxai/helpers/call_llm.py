@@ -1,6 +1,5 @@
-from typing import Callable
-from typing import TYPE_CHECKING
-from typing import TypedDict
+from collections.abc import Callable
+from typing import TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
     from langchain_core.language_models.chat_models import BaseChatModel

@@ -3,13 +3,12 @@ import os
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
-from urllib.parse import urlparse
-from urllib.parse import urlunparse
+from urllib.parse import urlparse, urlunparse
+
+from git import Git, Repo
+from giturlparse import parse
 
 from ctxai.helpers import files
-from git import Git
-from git import Repo
-from giturlparse import parse
 
 
 def strip_auth_from_url(url: str) -> str:

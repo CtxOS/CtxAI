@@ -23,21 +23,13 @@ from __future__ import annotations
 import asyncio
 import logging
 import threading
-from dataclasses import dataclass
-from dataclasses import field
-from datetime import datetime
-from datetime import timezone
-from typing import Any
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, Any
 
 from ctxai.helpers.defer import DeferredTask
-from ctxai.helpers.event_bus import EventBus
-from ctxai.helpers.event_bus import EventType
-from ctxai.helpers.task_router import AgentSkillProfile
-from ctxai.helpers.task_router import Priority
-from ctxai.helpers.task_router import Task
-from ctxai.helpers.task_router import TaskQueue
-from ctxai.helpers.task_router import TaskRouter
+from ctxai.helpers.event_bus import EventBus, EventType
+from ctxai.helpers.task_router import AgentSkillProfile, Priority, Task, TaskQueue, TaskRouter
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent, AgentConfig
@@ -72,7 +64,7 @@ class OrchestratorAgent:
 
     def __init__(
         self,
-        config: "AgentConfig",
+        config: AgentConfig,
         max_workers: int = 4,
         queue_size: int = 256,
         default_timeout: float = 300.0,
@@ -100,7 +92,7 @@ class OrchestratorAgent:
         agent_name: str,
         skills: set[str] | None = None,
         max_concurrent: int = 1,
-        agent: "Agent | None" = None,
+        agent: Agent | None = None,
     ) -> None:
         """Register a worker agent with the router."""
         profile = AgentSkillProfile(
@@ -113,7 +105,7 @@ class OrchestratorAgent:
         if agent:
             self._worker_agents[agent_name] = agent
 
-    _worker_agents: dict[str, "Agent"] = field(default_factory=dict)  # type: ignore[misc]
+    _worker_agents: dict[str, Agent] = field(default_factory=dict)  # type: ignore[misc]
 
     def unregister_worker(self, agent_name: str) -> None:
         self.router.unregister(agent_name)
@@ -234,7 +226,7 @@ class OrchestratorAgent:
                 self.router.release_load(agent_name)
                 return
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 last_error = f"Timeout after {task.timeout}s (attempt {attempt})"
                 task.status = "timeout"
                 self.router.release_load(agent_name)
@@ -312,7 +304,7 @@ class OrchestratorAgent:
                 attempts=task.attempts,
                 agent_name=agent_name,
                 started_at=task.created_at,
-                finished_at=datetime.now(timezone.utc),
+                finished_at=datetime.now(UTC),
             )
 
     # -- stats --------------------------------------------------------------

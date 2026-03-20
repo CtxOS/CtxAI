@@ -103,7 +103,7 @@ class TTYSession:
         # Return any decoded text the child produced, or None on timeout
         try:
             return await asyncio.wait_for(self._buf.get(), timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return None
 
     # backward-compat alias:
@@ -142,9 +142,9 @@ class TTYSession:
 
 
 async def _spawn_posix_pty(cmd, cwd, env, echo):
-    import pty
     import asyncio
     import os
+    import pty
     import termios
 
     master, slave = pty.openpty()

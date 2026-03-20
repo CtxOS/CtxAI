@@ -10,25 +10,19 @@ testable and keeps the Agent class as a thin coordinator.
 
 from __future__ import annotations
 
-from typing import Any
-from typing import Awaitable
-from typing import Callable
-from typing import TYPE_CHECKING
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING, Any
 
-from ctxai.helpers import dirty_json
-from ctxai.helpers import extension
-from ctxai.helpers import extract_tools
-from ctxai.helpers import history
-from ctxai.helpers import subagents
-from ctxai.helpers import tokens
-from ctxai.helpers.print_style import PrintStyle
-from langchain_core.messages import BaseMessage
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
+
+from ctxai.helpers import dirty_json, extension, extract_tools, history, subagents, tokens
+from ctxai.helpers.print_style import PrintStyle
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent, LoopData
-    from ctxai.helpers.tool import Response as ToolResponse, Tool
+    from ctxai.helpers.tool import Response as ToolResponse
+    from ctxai.helpers.tool import Tool
 
 
 # ---------------------------------------------------------------------------
@@ -36,7 +30,7 @@ if TYPE_CHECKING:
 # ---------------------------------------------------------------------------
 
 
-async def build_prompt(agent: Agent, loop_data: "LoopData") -> list[BaseMessage]:
+async def build_prompt(agent: Agent, loop_data: LoopData) -> list[BaseMessage]:
     """Assemble the full prompt list (system + history + extras).
 
     Mirrors the original ``Agent.prepare_prompt`` logic but lives in the
@@ -85,7 +79,7 @@ async def build_prompt(agent: Agent, loop_data: "LoopData") -> list[BaseMessage]
     return full_prompt
 
 
-async def _get_system_prompt(agent: Agent, loop_data: "LoopData") -> list[str]:
+async def _get_system_prompt(agent: Agent, loop_data: LoopData) -> list[str]:
     """Collect system prompt fragments via extension hook."""
     system_prompt: list[str] = []
     await extension.call_extensions_async("system_prompt", agent, system_prompt=system_prompt, loop_data=loop_data)
@@ -162,11 +156,11 @@ def resolve_tool(
     method: str | None,
     args: dict,
     message: str,
-    loop_data: "LoopData",
-) -> "Tool":
+    loop_data: LoopData,
+) -> Tool:
     """Locate and instantiate a tool by name from the agent's path hierarchy."""
-    from ctxai.tools.unknown import Unknown
     from ctxai.helpers.tool import Tool
+    from ctxai.tools.unknown import Unknown
 
     classes: list[type] = []
     paths = subagents.get_paths(agent, "tools", name + ".py")
@@ -189,7 +183,7 @@ def resolve_tool(
     )
 
 
-async def execute_tool(agent: Agent, tool: "Tool", tool_args: dict, tool_name: str) -> "ToolResponse":
+async def execute_tool(agent: Agent, tool: Tool, tool_args: dict, tool_name: str) -> ToolResponse:
     """Run the full tool lifecycle (before/execute/after) and return the response.
 
     This is the base single-attempt execution.  Use ``execute_tool_with_retry``
@@ -227,13 +221,13 @@ async def execute_tool(agent: Agent, tool: "Tool", tool_args: dict, tool_name: s
 
 async def execute_tool_with_retry(
     agent: Agent,
-    tool: "Tool",
+    tool: Tool,
     tool_args: dict,
     tool_name: str,
     max_retries: int = 2,
     retry_delay: float = 1.0,
-    fallback_tool: "Tool | None" = None,
-) -> "ToolResponse":
+    fallback_tool: Tool | None = None,
+) -> ToolResponse:
     """Execute a tool with retry logic and optional fallback.
 
     On failure the tool is retried up to *max_retries* times with
@@ -278,7 +272,7 @@ async def execute_tool_with_retry(
     raise last_error or RuntimeError(f"Tool '{tool_name}' failed after {max_retries} attempts")
 
 
-async def parse_tool_request(agent: Agent, msg: str) -> tuple[str | None, str | None, dict, "Tool | None", str | None]:
+async def parse_tool_request(agent: Agent, msg: str) -> tuple[str | None, str | None, dict, Tool | None, str | None]:
     """Parse tool invocation from an agent message.
 
     Returns ``(raw_tool_name, tool_name, tool_args, tool_instance, error_message)``.

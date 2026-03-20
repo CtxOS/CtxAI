@@ -1,11 +1,9 @@
 import asyncio
 import time
 
-from ctxai.helpers import errors
-from ctxai.helpers import runtime
+from ctxai.helpers import errors, runtime
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.task_scheduler import TaskScheduler
-
 
 SLEEP_TIME = 60
 

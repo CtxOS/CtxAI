@@ -3,30 +3,23 @@ import random
 import string
 import threading
 from collections import OrderedDict
-from dataclasses import dataclass
-from dataclasses import field
-from datetime import datetime
-from datetime import timezone
+from collections.abc import Awaitable, Callable, Coroutine
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
-from typing import Awaitable
-from typing import Callable
-from typing import Coroutine
-from typing import Dict
+
+from langchain_core.messages import BaseMessage
 
 import ctxai.helpers.log as Log
 import ctxai.models as models
 from ctxai.helpers import context as context_helper
-from ctxai.helpers import extension
-from ctxai.helpers import files
-from ctxai.helpers import history
-from ctxai.helpers import subagents
+from ctxai.helpers import extension, files, history, subagents
 from ctxai.helpers.defer import DeferredTask
 from ctxai.helpers.dirty_json import DirtyJson
 from ctxai.helpers.errors import InterventionException
 from ctxai.helpers.localization import Localization
 from ctxai.helpers.print_style import PrintStyle
-from langchain_core.messages import BaseMessage
 
 
 class AgentContextType(Enum):
@@ -92,12 +85,12 @@ class AgentContext:
         self.paused = paused
         self.streaming_agent = streaming_agent
         self.task: DeferredTask | None = None
-        self.created_at = created_at or datetime.now(timezone.utc)
+        self.created_at = created_at or datetime.now(UTC)
         self.type = type
         self.timeout = timeout  # per-context execution timeout in seconds (0 = no limit)
         AgentContext._counter += 1
         self.no = AgentContext._counter
-        self.last_message = last_message or datetime.now(timezone.utc)
+        self.last_message = last_message or datetime.now(UTC)
 
         # initialize agent at last (context is complete now)
         self.agent0 = agent0 or Agent(0, self.config, self)
@@ -336,7 +329,7 @@ class AgentConfig:
     profile: str = ""
     knowledge_subdirs: list[str] = field(default_factory=lambda: ["default", "custom"])
     browser_http_headers: dict[str, str] = field(default_factory=dict)  # Custom HTTP headers for browser requests
-    additional: Dict[str, Any] = field(default_factory=dict)
+    additional: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -485,7 +478,7 @@ class Agent:
 
     @extension.extensible
     def hist_add_message(self, ai: bool, content: history.MessageContent, tokens: int = 0):
-        self.last_message = datetime.now(timezone.utc)
+        self.last_message = datetime.now(UTC)
         # Allow extensions to process content before adding to history
         content_data = {"content": content}
         extension.call_extensions_sync("hist_add_before", self, content_data=content_data, ai=ai)
@@ -647,7 +640,7 @@ class Agent:
 
         Delegates resolution and execution to ``reasoning_engine``.
         """
-        from ctxai.helpers.reasoning_engine import parse_tool_request, execute_tool
+        from ctxai.helpers.reasoning_engine import execute_tool, parse_tool_request
         from ctxai.helpers.tool import Response as ToolResponse
 
         raw_tool_name, tool_name, tool_args, tool, error = await parse_tool_request(self, msg)
@@ -773,7 +766,7 @@ class AgentMemory:
             {
                 "key": key,
                 "value": value,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             },
         )
         self._manager.remember(
@@ -825,7 +818,7 @@ class AgentMemory:
             {
                 "tool": tool_name,
                 "result": result[:500],  # truncate to avoid bloat
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             },
         )
         if len(self.recent_tool_results) > self.MAX_RECENT_TOOLS:

@@ -1,7 +1,7 @@
+from flask import Request, Response
+
 from ctxai.agent import AgentContext
 from ctxai.helpers.api import ApiHandler
-from flask import Request
-from flask import Response
 
 
 class NotificationsHistory(ApiHandler):

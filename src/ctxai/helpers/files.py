@@ -7,11 +7,9 @@ import re
 import shutil
 import tempfile
 import zipfile
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from fnmatch import fnmatch
-from typing import Any
-from typing import Literal
+from typing import Any, Literal
 
 from ctxai.helpers import yaml
 from ctxai.helpers.safe_eval import safe_eval_condition
@@ -89,7 +87,7 @@ def parse_file(_filename: str, _directories: list[str] | None = None, _encoding=
     absolute_path = find_file_in_dirs(_filename, _directories)
 
     # Read the file content
-    with open(absolute_path, "r", encoding=_encoding) as f:
+    with open(absolute_path, encoding=_encoding) as f:
         # content = remove_code_fences(f.read())
         content = f.read()
 
@@ -128,7 +126,7 @@ def read_prompt_file(_file: str, _directories: list[str] | None = None, _encodin
     absolute_path = find_file_in_dirs(_file, _directories)
 
     # Read the file content
-    with open(absolute_path, "r", encoding=_encoding) as f:
+    with open(absolute_path, encoding=_encoding) as f:
         # content = remove_code_fences(f.read())
         content = f.read()
 
@@ -204,7 +202,7 @@ def read_file(relative_path: str, encoding="utf-8"):
     absolute_path = get_abs_path(relative_path)
 
     # Read the file content
-    with open(absolute_path, "r", encoding=encoding) as f:
+    with open(absolute_path, encoding=encoding) as f:
         return f.read()
 
 
@@ -213,14 +211,14 @@ def read_file_json(relative_path: str, encoding="utf-8"):
     absolute_path = get_abs_path(relative_path)
 
     # Read the file content
-    with open(absolute_path, "r", encoding=encoding) as f:
+    with open(absolute_path, encoding=encoding) as f:
         return json.load(f)
 
 
 def read_file_yaml(relative_path: str, encoding="utf-8"):
     absolute_path = get_abs_path(relative_path)
 
-    with open(absolute_path, "r", encoding=encoding) as f:
+    with open(absolute_path, encoding=encoding) as f:
         return yaml.loads(f.read())
 
 

@@ -1,11 +1,8 @@
 import datetime
 
 from ctxai.agent import LoopData
-from ctxai.helpers import notification
-from ctxai.helpers import settings
-from ctxai.helpers import update_check
+from ctxai.helpers import notification, settings, update_check
 from ctxai.helpers.extension import Extension
-
 
 # check for newer versions of A0 available and send notification
 # check after user message is sent from UI, not API, MCP etc. (user is active and can see the notification)

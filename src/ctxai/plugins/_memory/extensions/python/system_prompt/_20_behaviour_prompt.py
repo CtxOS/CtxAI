@@ -1,8 +1,8 @@
-from ctxai.agent import Agent
-from ctxai.agent import LoopData
+from ctxai.agent import Agent, LoopData
 from ctxai.helpers import files
 from ctxai.helpers.extension import Extension
 from ctxai.plugins._memory.helpers import memory
+
 # Direct import - this extension lives inside the memory plugin
 
 

@@ -1,9 +1,5 @@
 from ctxai.agent import LoopData
-from ctxai.helpers import file_tree
-from ctxai.helpers import files
-from ctxai.helpers import projects
-from ctxai.helpers import runtime
-from ctxai.helpers import settings
+from ctxai.helpers import file_tree, files, projects, runtime, settings
 from ctxai.helpers.extension import Extension
 
 

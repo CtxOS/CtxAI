@@ -1,5 +1,4 @@
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
+from ctxai.helpers.tool import Response, Tool
 
 
 class ResponseTool(Tool):

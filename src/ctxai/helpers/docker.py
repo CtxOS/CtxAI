@@ -1,11 +1,9 @@
 import time
-from typing import Optional
 
+import docker
 from ctxai.helpers.errors import format_error
 from ctxai.helpers.log import Log
 from ctxai.helpers.print_style import PrintStyle
-
-import docker
 
 
 class DockerContainerManager:
@@ -13,8 +11,8 @@ class DockerContainerManager:
         self,
         image: str,
         name: str,
-        ports: Optional[dict[str, int]] = None,
-        volumes: Optional[dict[str, dict[str, str]]] = None,
+        ports: dict[str, int] | None = None,
+        volumes: dict[str, dict[str, str]] | None = None,
         logger: Log | None = None,
     ):
         self.logger = logger

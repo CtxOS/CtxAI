@@ -1,5 +1,4 @@
-from datetime import datetime
-from datetime import timezone
+from datetime import UTC, datetime
 
 from ctxai.agent import LoopData
 from ctxai.helpers.extension import Extension
@@ -13,7 +12,7 @@ class IncludeCurrentDatetime(Extension):
 
         # get current datetime
         current_datetime = Localization.get().utc_dt_to_localtime_str(
-            datetime.now(timezone.utc),
+            datetime.now(UTC),
             sep=" ",
             timespec="seconds",
         )

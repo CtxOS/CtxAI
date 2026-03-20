@@ -4,14 +4,11 @@ import os
 from io import BytesIO
 from urllib.parse import quote
 
-from ctxai.api import file_info
-from ctxai.helpers import files
-from ctxai.helpers import runtime
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Input
-from ctxai.helpers.api import Output
-from ctxai.helpers.api import Request
 from flask import Response
+
+from ctxai.api import file_info
+from ctxai.helpers import files, runtime
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
 
 
 def stream_file_download(file_source, download_name, chunk_size=8192):

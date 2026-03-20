@@ -4,9 +4,7 @@ import os
 import re
 from fnmatch import fnmatch
 from types import ModuleType
-from typing import Any
-from typing import Type
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import regex
 
@@ -92,9 +90,9 @@ def import_module(file_path: str) -> ModuleType:
 def load_classes_from_folder(
     folder: str,
     name_pattern: str,
-    base_class: Type[T],
+    base_class: type[T],
     one_per_file: bool = True,
-) -> list[Type[T]]:
+) -> list[type[T]]:
     classes = []
     abs_folder = get_abs_path(folder)
 

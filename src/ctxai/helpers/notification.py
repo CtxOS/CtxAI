@@ -1,9 +1,7 @@
 import threading
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
-from datetime import timedelta
-from datetime import timezone
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 
 
@@ -116,7 +114,7 @@ class NotificationManager:
                 existing.title = title
                 existing.message = message
                 existing.detail = detail
-                existing.timestamp = datetime.now(timezone.utc)
+                existing.timestamp = datetime.now(UTC)
                 existing.display_time = display_time
                 existing.group = group
                 existing.read = False
@@ -132,7 +130,7 @@ class NotificationManager:
                     title=title,
                     message=message,
                     detail=detail,
-                    timestamp=datetime.now(timezone.utc),
+                    timestamp=datetime.now(UTC),
                     display_time=display_time,
                     id=id,
                     group=group,
@@ -160,7 +158,7 @@ class NotificationManager:
                 self.updates = [no - to_remove for no in self.updates if no >= to_remove]
 
     def get_recent_notifications(self, seconds: int = 30) -> list[NotificationItem]:
-        cutoff = datetime.now(timezone.utc) - timedelta(seconds=seconds)
+        cutoff = datetime.now(UTC) - timedelta(seconds=seconds)
         with self._lock:
             return [n for n in self.notifications if n.timestamp >= cutoff]
 

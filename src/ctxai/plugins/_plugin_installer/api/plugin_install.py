@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Input
-from ctxai.helpers.api import Output
-from ctxai.helpers.api import Request
-from ctxai.plugins._plugin_installer.helpers.install import get_marketplace_index
-from ctxai.plugins._plugin_installer.helpers.install import install_from_git
-from ctxai.plugins._plugin_installer.helpers.install import install_uploaded_zip
-from ctxai.plugins._plugin_installer.helpers.install import update_from_git
 from werkzeug.datastructures import FileStorage
+
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
+from ctxai.plugins._plugin_installer.helpers.install import (
+    get_marketplace_index,
+    install_from_git,
+    install_uploaded_zip,
+    update_from_git,
+)
 
 
 class PluginInstall(ApiHandler):

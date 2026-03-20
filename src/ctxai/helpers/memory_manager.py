@@ -23,12 +23,9 @@ from __future__ import annotations
 import logging
 import time
 import uuid
-from dataclasses import dataclass
-from dataclasses import field
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
-from typing import Protocol
-from typing import runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 logger = logging.getLogger(__name__)
 
@@ -195,7 +192,7 @@ class QdrantBackend:
     def __init__(self, url: str = "http://localhost:6333", collection: str = "ctxai_memory"):
         try:
             from qdrant_client import QdrantClient  # type: ignore[import-untyped]
-            from qdrant_client.models import VectorParams, Distance  # type: ignore[import-untyped]
+            from qdrant_client.models import Distance, VectorParams  # type: ignore[import-untyped]
         except ImportError:
             logger.warning("qdrant-client not installed, falling back to InMemoryBackend")
             self._fallback = InMemoryBackend()

@@ -2,23 +2,18 @@ import asyncio
 import time
 from pathlib import Path
 from typing import cast
-from typing import Optional
 
-from ctxai.agent import Agent
-from ctxai.agent import InterventionException
+from pydantic import BaseModel
+
+from ctxai.agent import Agent, InterventionException
 from ctxai.extensions.python.message_loop_start._10_iteration_no import get_iter_no
-from ctxai.helpers import defer
-from ctxai.helpers import files
-from ctxai.helpers import persist_chat
-from ctxai.helpers import strings
+from ctxai.helpers import defer, files, persist_chat, strings
 from ctxai.helpers.browser_use import browser_use  # type: ignore[attr-defined]
 from ctxai.helpers.dirty_json import DirtyJson
 from ctxai.helpers.playwright import ensure_playwright_binary
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.secrets import get_secrets_manager
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
-from pydantic import BaseModel
+from ctxai.helpers.tool import Response, Tool
 
 
 class State:
@@ -29,10 +24,10 @@ class State:
 
     def __init__(self, agent: Agent):
         self.agent = agent
-        self.browser_session: Optional[browser_use.BrowserSession] = None
-        self.task: Optional[defer.DeferredTask] = None
-        self.use_agent: Optional[browser_use.Agent] = None
-        self.secrets_dict: Optional[dict[str, str]] = None
+        self.browser_session: browser_use.BrowserSession | None = None
+        self.task: defer.DeferredTask | None = None
+        self.use_agent: browser_use.Agent | None = None
+        self.secrets_dict: dict[str, str] | None = None
         self.iter_no = 0
 
     def __del__(self):
@@ -236,7 +231,7 @@ class BrowserAgent(Tool):
                 try:
                     update = await asyncio.wait_for(self.get_update(), timeout=10)
                     fail_counter = 0  # reset on success
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     fail_counter += 1
                     PrintStyle().warning(self._mask(f"browser_agent.get_update timed out ({fail_counter}/3)"))
                     if fail_counter >= 3:

@@ -12,7 +12,6 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import List
 
 # Add parent directory to path for imports (same pattern as skills_cli)
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -21,9 +20,9 @@ from ctxai.helpers import files, print_style
 from ctxai.helpers import yaml as yaml_helper
 from ctxai.helpers.plugins import (
     META_FILE_NAME,
+    find_plugin_dir,
     get_enhanced_plugins_list,
     get_plugin_meta,
-    find_plugin_dir,
 )
 from ctxai.plugins._plugin_installer.helpers.install import validate_plugin_dir
 
@@ -32,7 +31,7 @@ def _get_user_plugins_dir() -> Path:
     return Path(files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR))
 
 
-def _validate_plugin_name(name: str) -> List[str]:
+def _validate_plugin_name(name: str) -> list[str]:
     issues = []
     if not name:
         issues.append("Plugin name cannot be empty")

@@ -5,20 +5,13 @@ import queue
 import secrets
 import sys
 import threading
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Any
-from typing import Awaitable
-from typing import Callable
-from typing import cast
-from typing import overload
-from typing import TypeVar
-from typing import Union
+from typing import Any, TypeVar, cast, overload
 
 import nest_asyncio
-from ctxai.helpers import dotenv
-from ctxai.helpers import files
-from ctxai.helpers import rfc
-from ctxai.helpers import settings
+
+from ctxai.helpers import dotenv, files, rfc, settings
 
 nest_asyncio.apply()
 
@@ -101,7 +94,7 @@ async def call_development_function(func: Callable[..., Awaitable[T]], *args, **
 async def call_development_function(func: Callable[..., T], *args, **kwargs) -> T: ...
 
 
-async def call_development_function(func: Union[Callable[..., T], Callable[..., Awaitable[T]]], *args, **kwargs) -> T:
+async def call_development_function(func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs) -> T:
     if is_development():
         url = _get_rfc_url()
         password = _get_rfc_password()
@@ -147,7 +140,7 @@ def _get_rfc_url() -> str:
     return url
 
 
-def call_development_function_sync(func: Union[Callable[..., T], Callable[..., Awaitable[T]]], *args, **kwargs) -> T:
+def call_development_function_sync(func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs) -> T:
     # run async function in sync manner
     result_queue: queue.Queue[T | None] = queue.Queue()
 

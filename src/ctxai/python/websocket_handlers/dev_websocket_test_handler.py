@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any
-from typing import Dict
 
 from ctxai.helpers import runtime
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.websocket import WebSocketHandler
-from ctxai.helpers.websocket import WebSocketResult
+from ctxai.helpers.websocket import WebSocketHandler, WebSocketResult
 
 
 class DevWebsocketTestHandler(WebSocketHandler):
@@ -29,7 +27,7 @@ class DevWebsocketTestHandler(WebSocketHandler):
     async def process_event(
         self,
         event_type: str,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         sid: str,
     ) -> dict[str, Any] | WebSocketResult | None:
         if event_type == "ws_event_console_subscribe":

@@ -2,17 +2,14 @@ from __future__ import annotations
 
 import os
 from collections import deque
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from datetime import datetime
-from datetime import timezone
-from typing import Any
-from typing import Iterable
-from typing import Literal
-from typing import Optional
-from typing import Sequence
+from datetime import UTC, datetime
+from typing import Any, Literal
+
+from pathspec import PathSpec
 
 from ctxai.helpers import files as files_helper
-from pathspec import PathSpec
 
 SORT_BY_NAME = "name"
 SORT_BY_CREATED = "created"
@@ -115,8 +112,8 @@ def file_tree(
         name=root_name,
         level=0,
         item_type="folder",
-        created=datetime.fromtimestamp(root_stat.st_ctime, tz=timezone.utc),
-        modified=datetime.fromtimestamp(root_stat.st_mtime, tz=timezone.utc),
+        created=datetime.fromtimestamp(root_stat.st_ctime, tz=UTC),
+        modified=datetime.fromtimestamp(root_stat.st_mtime, tz=UTC),
         parent=None,
         items=[],
         rel_path="",
@@ -141,8 +138,8 @@ def file_tree(
             name=entry.name,
             level=level,
             item_type=item_type,
-            created=datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc),
-            modified=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
+            created=datetime.fromtimestamp(stat.st_ctime, tz=UTC),
+            modified=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
             parent=parent,
             items=[] if item_type == "folder" else None,
             rel_path=rel_posix,
@@ -275,8 +272,8 @@ class _TreeEntry:
     item_type: Literal["file", "folder", "comment"]
     created: datetime
     modified: datetime
-    parent: Optional["_TreeEntry"] = None
-    items: Optional[list["_TreeEntry"]] = None
+    parent: _TreeEntry | None = None
+    items: list[_TreeEntry] | None = None
     is_last: bool = False
     rel_path: str = ""
     text: str = ""
@@ -402,8 +399,8 @@ def _create_folder_unprocessed_comment(
     folder_node: _TreeEntry,
     folder_path: str,
     abs_root: str,
-    ignore_spec: Optional[PathSpec],
-) -> Optional[_TreeEntry]:
+    ignore_spec: PathSpec | None,
+) -> _TreeEntry | None:
     try:
         folders, files = _list_directory_children(
             folder_path,
@@ -423,8 +420,8 @@ def _create_folder_unprocessed_comment(
                 name=entry.name,
                 level=folder_node.level + 1,
                 item_type="folder",
-                created=datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc),
-                modified=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
+                created=datetime.fromtimestamp(stat.st_ctime, tz=UTC),
+                modified=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
                 parent=folder_node,
                 items=None,
                 rel_path=os.path.join(folder_node.rel_path, entry.name),
@@ -437,8 +434,8 @@ def _create_folder_unprocessed_comment(
                 name=entry.name,
                 level=folder_node.level + 1,
                 item_type="file",
-                created=datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc),
-                modified=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
+                created=datetime.fromtimestamp(stat.st_ctime, tz=UTC),
+                modified=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
                 parent=folder_node,
                 items=None,
                 rel_path=os.path.join(folder_node.rel_path, entry.name),
@@ -479,7 +476,7 @@ def _refresh_render_metadata(node: _TreeEntry) -> None:
         _refresh_render_metadata(child)
 
 
-def _resolve_ignore_patterns(ignore: str | None, root_abs_path: str) -> Optional[PathSpec]:
+def _resolve_ignore_patterns(ignore: str | None, root_abs_path: str) -> PathSpec | None:
     if ignore is None:
         return None
 
@@ -496,7 +493,7 @@ def _resolve_ignore_patterns(ignore: str | None, root_abs_path: str) -> Optional
             reference_path = os.path.join(root_abs_path, reference)
 
         try:
-            with open(reference_path, "r", encoding="utf-8") as handle:
+            with open(reference_path, encoding="utf-8") as handle:
                 content = handle.read()
         except FileNotFoundError as exc:
             raise FileNotFoundError(f"Ignore file not found: {reference_path}") from exc
@@ -514,7 +511,7 @@ def _resolve_ignore_patterns(ignore: str | None, root_abs_path: str) -> Optional
 def _list_directory_children(
     directory: str,
     root_abs_path: str,
-    ignore_spec: Optional[PathSpec],
+    ignore_spec: PathSpec | None,
     *,
     max_depth_remaining: int,
     cache: dict[str, bool],

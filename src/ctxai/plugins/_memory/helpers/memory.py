@@ -1,26 +1,14 @@
 import json
 import logging
 import os
+from collections.abc import Sequence
 from datetime import datetime
 from enum import Enum
-from typing import List
-from typing import Sequence
 
-import ctxai.models as models
 import faiss
 import numpy as np
-from ctxai.agent import Agent
-from ctxai.agent import AgentContext
-from ctxai.helpers import files
-from ctxai.helpers import guids
-from ctxai.helpers import plugins
-from ctxai.helpers import projects
-from ctxai.helpers.log import LogItem
-from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.safe_eval import make_comparator
 from langchain.embeddings import CacheBackedEmbeddings
-from langchain.storage import InMemoryByteStore
-from langchain.storage import LocalFileStore
+from langchain.storage import InMemoryByteStore, LocalFileStore
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import (
@@ -28,7 +16,15 @@ from langchain_community.vectorstores.utils import (
 )
 from langchain_core.documents import Document
 
+import ctxai.models as models
+from ctxai.agent import Agent, AgentContext
+from ctxai.helpers import files, guids, plugins, projects
+from ctxai.helpers.log import LogItem
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.safe_eval import make_comparator
+
 from . import knowledge_import
+
 # from langchain_chroma import Chroma
 # faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
 
@@ -39,13 +35,13 @@ logging.getLogger("langchain_core.vectorstores.base").setLevel(logging.ERROR)
 
 class MyFaiss(FAISS):
     # override aget_by_ids
-    def get_by_ids(self, ids: Sequence[str], /) -> List[Document]:
+    def get_by_ids(self, ids: Sequence[str], /) -> list[Document]:
         # return all self.docstore._dict[id] in ids
         return [
             self.docstore._dict[id] for id in (ids if isinstance(ids, list) else [ids]) if id in self.docstore._dict
         ]  # type: ignore
 
-    async def aget_by_ids(self, ids: Sequence[str], /) -> List[Document]:
+    async def aget_by_ids(self, ids: Sequence[str], /) -> list[Document]:
         return self.get_by_ids(ids)
 
     def get_all_docs(self):
@@ -255,7 +251,7 @@ class Memory:
 
         index: dict[str, knowledge_import.KnowledgeImport] = {}
         if os.path.exists(index_path):
-            with open(index_path, "r") as f:
+            with open(index_path) as f:
                 index = json.load(f)
 
         # preload knowledge folders
@@ -377,7 +373,7 @@ class Memory:
         timestamp = self.get_timestamp()
 
         if ids:
-            for doc, id in zip(docs, ids):
+            for doc, id in zip(docs, ids, strict=False):
                 doc.metadata["id"] = id  # add ids to documents metadata
                 doc.metadata["timestamp"] = timestamp  # add timestamp
                 if not doc.metadata.get("area", ""):

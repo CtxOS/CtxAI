@@ -2,15 +2,10 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime
-from datetime import timezone
+from datetime import UTC, datetime
 
-from ctxai.helpers import extension
-from ctxai.helpers import files
-from ctxai.helpers import plugins
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import Response
+from ctxai.helpers import extension, files, plugins
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class Plugins(ApiHandler):
@@ -283,7 +278,7 @@ class Plugins(ApiHandler):
         if not files.exists(init_script):
             return Response(status=404, response="initialize.py not found")
 
-        executed_at = datetime.now(timezone.utc).isoformat()
+        executed_at = datetime.now(UTC).isoformat()
         try:
             result = subprocess.run(
                 [sys.executable, init_script],

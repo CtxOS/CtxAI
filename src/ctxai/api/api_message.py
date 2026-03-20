@@ -1,18 +1,12 @@
 import base64
 import os
 import threading
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from ctxai import initialize
-from ctxai.agent import AgentContext
-from ctxai.agent import AgentContextType
-from ctxai.agent import UserMessage
-from ctxai.helpers import files
-from ctxai.helpers import projects
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import Response
+from ctxai.agent import AgentContext, AgentContextType, UserMessage
+from ctxai.helpers import files, projects
+from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.projects import activate_project
 from ctxai.helpers.security import safe_filename

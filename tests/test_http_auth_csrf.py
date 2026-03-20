@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from flask import Flask, Response
+
 from ctxai.helpers import runtime
-from flask import Flask
-from flask import Response
 
 
 def _make_app() -> Flask:

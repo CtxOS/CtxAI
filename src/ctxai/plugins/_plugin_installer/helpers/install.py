@@ -6,22 +6,16 @@ import time
 import urllib.request
 import uuid
 import zipfile
-from datetime import datetime
-from datetime import timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from ctxai.helpers import files
-from ctxai.helpers import git
-from ctxai.helpers import plugins
-from ctxai.helpers import print_style
-from ctxai.helpers import yaml as yaml_helper
-from ctxai.helpers.plugins import after_plugin_change
-from ctxai.helpers.plugins import get_plugins_list
-from ctxai.helpers.plugins import META_FILE_NAME
-from ctxai.helpers.plugins import PluginMetadata
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+
+from ctxai.helpers import files, git, plugins, print_style
+from ctxai.helpers import yaml as yaml_helper
+from ctxai.helpers.plugins import META_FILE_NAME, PluginMetadata, after_plugin_change, get_plugins_list
 
 
 def _get_user_plugins_dir() -> str:
@@ -42,7 +36,7 @@ def validate_plugin_dir(path: str, plugin_name: str = "") -> PluginMetadata:
     meta_path = os.path.join(path, META_FILE_NAME)
     if not os.path.isfile(meta_path):
         raise ValueError(f"No {META_FILE_NAME} found in {os.path.basename(path)}")
-    with open(meta_path, "r", encoding="utf-8") as f:
+    with open(meta_path, encoding="utf-8") as f:
         content = f.read()
     data = yaml_helper.loads(content)
     model = PluginMetadata.model_validate(data)
@@ -226,7 +220,7 @@ def update_from_git(plugin_name: str) -> dict:
         "title": meta.title if meta else plugin_name,
         "path": files.deabsolute_path(plugin_dir),
         "current_commit": head.hexsha,
-        "current_commit_timestamp": datetime.fromtimestamp(head.committed_date, timezone.utc).strftime(
+        "current_commit_timestamp": datetime.fromtimestamp(head.committed_date, UTC).strftime(
             "%Y-%m-%d %H:%M:%S",
         ),
         "version": getattr(meta, "version", "") or "",

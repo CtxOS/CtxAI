@@ -1,5 +1,4 @@
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
+from ctxai.helpers.tool import Response, Tool
 
 # this is an example tool class
 # don't forget to include instructions in the system prompt by creating

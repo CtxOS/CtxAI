@@ -1,8 +1,8 @@
 import asyncio
 import contextlib
 import socket
+from collections.abc import AsyncIterator
 from typing import Any
-from typing import AsyncIterator
 
 import pytest
 

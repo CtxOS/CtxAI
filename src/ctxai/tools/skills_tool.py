@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-from typing import List
-
 from ctxai.helpers import skills as skills_helper
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
-
+from ctxai.helpers.tool import Response, Tool
 
 DATA_NAME_LOADED_SKILLS = "loaded_skills"
 
@@ -60,7 +56,7 @@ class SkillsTool(Tool):
         # Stable output: sort by name
         skills_sorted = sorted(skills, key=lambda s: s.name.lower())
 
-        lines: List[str] = []
+        lines: list[str] = []
         lines.append(f"Available skills ({len(skills_sorted)}):")
         for s in skills_sorted:
             tags = f" tags={','.join(s.tags)}" if s.tags else ""

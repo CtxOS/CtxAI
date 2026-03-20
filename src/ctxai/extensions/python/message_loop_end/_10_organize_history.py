@@ -1,6 +1,5 @@
 from ctxai.agent import LoopData
-from ctxai.helpers.defer import DeferredTask
-from ctxai.helpers.defer import THREAD_BACKGROUND
+from ctxai.helpers.defer import THREAD_BACKGROUND, DeferredTask
 from ctxai.helpers.extension import Extension
 
 DATA_NAME_TASK = "_organize_history_task"

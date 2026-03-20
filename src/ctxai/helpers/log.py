@@ -5,16 +5,10 @@ import time
 import uuid
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any
-from typing import cast
-from typing import Literal
-from typing import Optional
-from typing import TYPE_CHECKING
-from typing import TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 
 from ctxai.helpers.secrets import get_secrets_manager
 from ctxai.helpers.strings import truncate_text_by_ratio
-
 
 if TYPE_CHECKING:
     from ctxai.agent import AgentContext
@@ -155,9 +149,9 @@ class LogItem:
     type: Type
     heading: str = ""
     content: str = ""
-    update_progress: Optional[ProgressUpdate] = "persistent"
-    kvps: Optional[OrderedDict] = None  # Use OrderedDict for kvps
-    id: Optional[str] = None  # Add id field
+    update_progress: ProgressUpdate | None = "persistent"
+    kvps: OrderedDict | None = None  # Use OrderedDict for kvps
+    id: str | None = None  # Add id field
     guid: str = ""
     timestamp: float = 0.0
     agentno: int = 0
@@ -228,7 +222,7 @@ class LogOutput:
 class Log:
     def __init__(self):
         self._lock = threading.RLock()
-        self.context: "AgentContext|None" = None  # set from outside
+        self.context: AgentContext | None = None  # set from outside
         self.guid: str = str(uuid.uuid4())
         self.updates: list[int] = []
         self.logs: list[LogItem] = []
@@ -244,7 +238,7 @@ class Log:
         content: str | None = None,
         kvps: dict | None = None,
         update_progress: ProgressUpdate | None = None,
-        id: Optional[str] = None,
+        id: str | None = None,
         **kwargs,
     ) -> LogItem:
         with self._lock:
@@ -288,7 +282,7 @@ class Log:
         content: str | None = None,
         kvps: dict | None = None,
         update_progress: ProgressUpdate | None = None,
-        id: Optional[str] = None,
+        id: str | None = None,
         notify_state_monitor: bool = True,
         **kwargs,
     ):

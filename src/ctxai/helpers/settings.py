@@ -3,29 +3,17 @@ import hashlib
 import json
 import os
 import subprocess
-from typing import Any
-from typing import cast
-from typing import Literal
-from typing import TypedDict
-from typing import TypeVar
+from typing import Any, Literal, TypedDict, TypeVar, cast
 
 import ctxai.models as models
-from ctxai.helpers import defer
-from ctxai.helpers import git
-from ctxai.helpers import runtime
-from ctxai.helpers import subagents
-from ctxai.helpers import whisper
-from ctxai.helpers.notification import NotificationManager
-from ctxai.helpers.notification import NotificationPriority
-from ctxai.helpers.notification import NotificationType
+from ctxai.helpers import defer, git, runtime, subagents, whisper
+from ctxai.helpers.notification import NotificationManager, NotificationPriority, NotificationType
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.providers import FieldOption as ProvidersFO
 from ctxai.helpers.providers import get_providers
 from ctxai.helpers.secrets import get_default_secrets_manager
 
-from . import dotenv
-from . import files
-
+from . import dotenv, files
 
 T = TypeVar("T")
 
@@ -602,8 +590,8 @@ def get_default_settings() -> Settings:
 def _apply_settings(previous: Settings | None):
     global _settings
     if _settings:
-        from ctxai.agent import AgentContext
         from ctxai import initialize
+        from ctxai.agent import AgentContext
 
         config = initialize.initialize_agent()
         for ctx in AgentContext.all():

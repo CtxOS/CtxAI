@@ -1,16 +1,19 @@
 import threading
 from collections import deque
 
+from flaredantic import (
+    FlareConfig,
+    FlareTunnel,
+    MicrosoftConfig,
+    MicrosoftTunnel,
+    NotifyData,
+    NotifyEvent,
+    ServeoConfig,
+    ServeoTunnel,
+    notifier,
+)
+
 from ctxai.helpers.print_style import PrintStyle
-from flaredantic import FlareConfig
-from flaredantic import FlareTunnel
-from flaredantic import MicrosoftConfig
-from flaredantic import MicrosoftTunnel
-from flaredantic import notifier
-from flaredantic import NotifyData
-from flaredantic import NotifyEvent
-from flaredantic import ServeoConfig
-from flaredantic import ServeoTunnel
 
 
 # Singleton to manage the tunnel instance

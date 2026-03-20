@@ -5,25 +5,16 @@ import threading
 from abc import abstractmethod
 from functools import wraps
 from pathlib import Path
-from typing import Any
-from typing import Dict
-from typing import TypedDict
-from typing import Union
+from typing import Any, TypedDict, Union
+
+from flask import Flask, Request, Response, redirect, request, session, url_for
+from werkzeug.wrappers.response import Response as BaseResponse
 
 from ctxai import initialize
 from ctxai.agent import AgentContext
-from ctxai.helpers import cache
-from ctxai.helpers import files
+from ctxai.helpers import cache, files
 from ctxai.helpers.errors import format_error
 from ctxai.helpers.print_style import PrintStyle
-from flask import Flask
-from flask import redirect
-from flask import Request
-from flask import request
-from flask import Response
-from flask import session
-from flask import url_for
-from werkzeug.wrappers.response import Response as BaseResponse
 
 ThreadLockType = Union[threading.Lock, threading.RLock]
 
@@ -31,7 +22,7 @@ CACHE_AREA = "api_handlers(api)(plugins)(extensions)"
 cache.toggle_area(CACHE_AREA, False)  # cache off for now
 
 Input = dict
-Output = Union[Dict[str, Any], Response, TypedDict]  # type: ignore
+Output = Union[dict[str, Any], Response, TypedDict]  # type: ignore
 
 
 class ApiHandler:
@@ -125,11 +116,11 @@ def is_loopback_address(address: str) -> bool:
     try:
         socket.inet_pton(socket.AF_INET6, address)
         address_type = "ipv6"
-    except socket.error:
+    except OSError:
         try:
             socket.inet_pton(socket.AF_INET, address)
             address_type = "ipv4"
-        except socket.error:
+        except OSError:
             address_type = "hostname"
 
     if address_type == "ipv4":
@@ -211,8 +202,8 @@ def csrf_protect(f):
 
 
 def register_api_route(app: Flask, lock: ThreadLockType) -> None:
-    from ctxai.helpers.extract_tools import load_classes_from_file
     from ctxai.helpers import plugins
+    from ctxai.helpers.extract_tools import load_classes_from_file
 
     async def _dispatch(path: str) -> BaseResponse:
         # Return cached wrapped handler if available

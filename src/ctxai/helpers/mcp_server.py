@@ -1,24 +1,12 @@
 import contextvars
 import os
 import threading
-from typing import Annotated
-from typing import Literal
-from typing import Union
+from typing import Annotated, Literal
 from urllib.parse import urlparse
 
 import fastmcp
-from ctxai import initialize
-from ctxai.agent import AgentContext
-from ctxai.agent import AgentContextType
-from ctxai.agent import UserMessage
-from ctxai.helpers import projects
-from ctxai.helpers import settings
-from ctxai.helpers.persist_chat import remove_chat
-from ctxai.helpers.print_style import PrintStyle
 from fastmcp import FastMCP
-from fastmcp.server.http import build_resource_metadata_url
-from fastmcp.server.http import create_base_app
-from fastmcp.server.http import create_sse_app
+from fastmcp.server.http import build_resource_metadata_url, create_base_app, create_sse_app
 from openai import BaseModel
 from pydantic import Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -26,10 +14,13 @@ from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.routing import Mount  # type: ignore
-from starlette.types import ASGIApp
-from starlette.types import Receive
-from starlette.types import Scope
-from starlette.types import Send
+from starlette.types import ASGIApp, Receive, Scope, Send
+
+from ctxai import initialize
+from ctxai.agent import AgentContext, AgentContextType, UserMessage
+from ctxai.helpers import projects, settings
+from ctxai.helpers.persist_chat import remove_chat
+from ctxai.helpers.print_style import PrintStyle
 
 _PRINTER = PrintStyle(italic=True, font_color="green", padding=False)
 
@@ -129,7 +120,7 @@ async def send_message(
         | None
     ) = None,
 ) -> Annotated[
-    Union[ToolResponse, ToolError],
+    ToolResponse | ToolError,
     Field(description="The response from the remote Ctx AI Instance", title="response"),
 ]:
     # Get project name from context variable (set in proxy __call__)
@@ -220,7 +211,7 @@ async def finish_chat(
         ),
     ],
 ) -> Annotated[
-    Union[ToolResponse, ToolError],
+    ToolResponse | ToolError,
     Field(description="The response from the remote Ctx AI Instance", title="response"),
 ]:
     if not chat_id:
@@ -341,9 +332,9 @@ class DynamicMcpProxy:
     ) -> ASGIApp:
         """Create a Streamable HTTP app with manual session manager lifecycle."""
 
-        from mcp.server.streamable_http_manager import StreamableHTTPSessionManager  # type: ignore
-        from mcp.server.auth.middleware.bearer_auth import RequireAuthMiddleware  # type: ignore
         import anyio
+        from mcp.server.auth.middleware.bearer_auth import RequireAuthMiddleware  # type: ignore
+        from mcp.server.streamable_http_manager import StreamableHTTPSessionManager  # type: ignore
 
         server_routes = []
         server_middleware = []

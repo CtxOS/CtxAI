@@ -1,5 +1,6 @@
-import ctxai.models as models
 from openai import OpenAI
+
+import ctxai.models as models
 
 
 def perplexity_search(

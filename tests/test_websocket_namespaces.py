@@ -3,9 +3,9 @@ import contextlib
 import socket
 import sys
 import threading
+from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Any
-from typing import AsyncIterator
 from unittest.mock import AsyncMock
 
 import pytest
@@ -106,8 +106,8 @@ async def test_namespace_isolation_state_sync_vs_dev_websocket_test() -> None:
     Acceptance proof for `/state_sync` vs `/dev_websocket_test` namespaces.
     """
 
-    from flask import Flask
     import socketio
+    from flask import Flask
 
     from ctxai.helpers.websocket import WebSocketHandler
     from ctxai.helpers.websocket_manager import WebSocketManager

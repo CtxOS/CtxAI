@@ -1,8 +1,6 @@
 # api/synthesize.py
 from ctxai.helpers import kokoro_tts
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class Synthesize(ApiHandler):

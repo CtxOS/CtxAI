@@ -1,7 +1,6 @@
 from ctxai.helpers.errors import handle_error
 from ctxai.helpers.searxng import search as searxng
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
+from ctxai.helpers.tool import Response, Tool
 
 SEARCH_ENGINE_RESULTS = 10
 

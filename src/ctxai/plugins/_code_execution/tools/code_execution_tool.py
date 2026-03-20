@@ -5,17 +5,11 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-from ctxai.helpers import files
-from ctxai.helpers import plugins
-from ctxai.helpers import projects
-from ctxai.helpers import rfc_exchange
-from ctxai.helpers import runtime
-from ctxai.helpers import settings
+from ctxai.helpers import files, plugins, projects, rfc_exchange, runtime, settings
 from ctxai.helpers.messages import truncate_text as truncate_text_agent
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.strings import truncate_text as truncate_text_string
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
+from ctxai.helpers.tool import Response, Tool
 from ctxai.plugins._code_execution.helpers.shell_local import LocalInteractiveSession
 from ctxai.plugins._code_execution.helpers.shell_ssh import SSHInteractiveSession
 
@@ -458,7 +452,9 @@ _TIMEOUT_KEYS = ("first_output_timeout", "between_output_timeout", "max_exec_tim
 
 
 def _parse_timeouts(cfg: dict, prefix: str, defaults: tuple[int, ...]) -> dict:
-    return {key: int(cfg.get(f"{prefix}_{key}", default)) for key, default in zip(_TIMEOUT_KEYS, defaults)}
+    return {
+        key: int(cfg.get(f"{prefix}_{key}", default)) for key, default in zip(_TIMEOUT_KEYS, defaults, strict=False)
+    }
 
 
 def _get_config(agent) -> dict:

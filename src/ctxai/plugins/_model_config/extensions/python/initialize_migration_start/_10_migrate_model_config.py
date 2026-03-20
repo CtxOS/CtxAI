@@ -1,8 +1,7 @@
 import json
 import os
 
-from helpers import files
-from helpers import plugins
+from helpers import files, plugins
 from helpers.extension import Extension
 from helpers.print_style import PrintStyle
 

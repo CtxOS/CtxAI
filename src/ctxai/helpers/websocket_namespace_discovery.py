@@ -3,9 +3,9 @@ from __future__ import annotations
 import importlib.util
 import inspect
 import os
+from collections.abc import Iterable
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Iterable
 
 from ctxai.helpers.files import get_abs_path
 from ctxai.helpers.print_style import PrintStyle

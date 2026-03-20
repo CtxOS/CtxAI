@@ -2,9 +2,7 @@ import json
 
 from ctxai.agent import AgentContext
 from ctxai.helpers import persist_chat
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers.print_style import PrintStyle
 
 
