@@ -5,6 +5,7 @@ import threading
 from collections import OrderedDict
 from collections.abc import Awaitable, Callable, Coroutine
 from dataclasses import dataclass, field
+import time
 from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
@@ -30,10 +31,10 @@ class AgentContextType(Enum):
 
 # Maximum number of concurrent agent contexts before eviction kicks in.
 # Oldest non-running contexts are evicted first.
-MAX_CONTEXTS = 64
+DEFAULT_MAX_CONTEXTS = 64
 
-# Maximum concurrent agent execution threads.
-MAX_CONCURRENT_TASKS = 16
+# Maximum concurrent agent execution tasks.
+DEFAULT_MAX_CONCURRENT_TASKS = 16
 
 
 class AgentContext:
@@ -41,7 +42,9 @@ class AgentContext:
     _contexts_lock = threading.RLock()
     _counter: int = 0
     _notification_manager = None
-    _task_semaphore = threading.Semaphore(MAX_CONCURRENT_TASKS)
+    _max_contexts = DEFAULT_MAX_CONTEXTS
+    _max_concurrent_tasks = DEFAULT_MAX_CONCURRENT_TASKS
+    _task_semaphore = threading.BoundedSemaphore(DEFAULT_MAX_CONCURRENT_TASKS)
 
     @extension.extensible
     def __init__(
@@ -91,6 +94,17 @@ class AgentContext:
         AgentContext._counter += 1
         self.no = AgentContext._counter
         self.last_message = last_message or datetime.now(UTC)
+
+        # Product metrics for this context
+        self.product_metrics: dict[str, Any] = {
+            "tasks_started": 0,
+            "tasks_completed": 0,
+            "tasks_failed": 0,
+            "tasks_timed_out": 0,
+            "total_task_duration_ms": 0.0,
+            "avg_task_duration_ms": 0.0,
+            "last_task_duration_ms": 0.0,
+        }
 
         # initialize agent at last (context is complete now)
         self.agent0 = agent0 or Agent(0, self.config, self)
@@ -143,13 +157,30 @@ class AgentContext:
                 if short_id not in AgentContext._contexts:
                     return short_id
 
+    @classmethod
+    def set_max_contexts(cls, max_contexts: int) -> None:
+        cls._max_contexts = max(1, int(max_contexts))
+
+    @classmethod
+    def set_max_concurrent_tasks(cls, max_tasks: int) -> None:
+        cls._max_concurrent_tasks = max(1, int(max_tasks))
+        cls._task_semaphore = threading.BoundedSemaphore(cls._max_concurrent_tasks)
+
+    @classmethod
+    def get_max_contexts(cls) -> int:
+        return cls._max_contexts
+
+    @classmethod
+    def get_max_concurrent_tasks(cls) -> int:
+        return cls._max_concurrent_tasks
+
     @staticmethod
     def _evict_overflow():
         """Evict oldest non-running contexts when capacity is exceeded.
 
         Must be called while holding ``_contexts_lock``.
         """
-        while len(AgentContext._contexts) > MAX_CONTEXTS:
+        while len(AgentContext._contexts) > AgentContext._max_contexts:
             evicted = None
             # Walk from oldest to newest; prefer evicting non-running contexts
             for ctx_id, ctx in AgentContext._contexts.items():
@@ -220,6 +251,7 @@ class AgentContext:
             "type": self.type.value,
             "running": self.is_running(),
             "timeout": self.timeout,
+            "product_metrics": self.product_metrics,
             **self.output_data,
         }
 
@@ -291,14 +323,33 @@ class AgentContext:
             )
 
         async def _guarded(*a: Any, **kw: Any) -> Any:
-            AgentContext._task_semaphore.acquire()
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, AgentContext._task_semaphore.acquire)
+            self.product_metrics["tasks_started"] += 1
+            started_at = time.monotonic()
             try:
                 coro = func(*a, **kw)
                 if self.timeout and self.timeout > 0:
-                    return await asyncio.wait_for(coro, timeout=self.timeout)
-                return await coro
+                    result = await asyncio.wait_for(coro, timeout=self.timeout)
+                else:
+                    result = await coro
+                self.product_metrics["tasks_completed"] += 1
+                return result
+            except asyncio.TimeoutError:
+                self.product_metrics["tasks_timed_out"] += 1
+                raise
+            except Exception:
+                self.product_metrics["tasks_failed"] += 1
+                raise
             finally:
-                AgentContext._task_semaphore.release()
+                ended_at = time.monotonic()
+                duration_ms = (ended_at - started_at) * 1000.0
+                self.product_metrics["last_task_duration_ms"] = duration_ms
+                self.product_metrics["total_task_duration_ms"] += duration_ms
+                completed = self.product_metrics["tasks_completed"]
+                if completed > 0:
+                    self.product_metrics["avg_task_duration_ms"] = self.product_metrics["total_task_duration_ms"] / completed
+                await loop.run_in_executor(None, AgentContext._task_semaphore.release)
 
         self.task.start_task(_guarded, *args, **kwargs)
         return self.task

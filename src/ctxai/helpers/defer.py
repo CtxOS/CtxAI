@@ -125,17 +125,11 @@ class DeferredTask:
         if not self._future:
             raise RuntimeError("Task hasn't been started")
 
-        loop = asyncio.get_running_loop()
-
-        def _get_result():
-            try:
-                result = self._future.result(timeout)  # type: ignore
-                # self.kill()
-                return result
-            except TimeoutError:
-                raise TimeoutError("The task did not complete within the specified timeout.")
-
-        return await loop.run_in_executor(None, _get_result)
+        # Use asyncio.wrap_future to await without blocking the current event loop.
+        wrapped = asyncio.wrap_future(self._future)
+        if timeout:
+            return await asyncio.wait_for(wrapped, timeout=timeout)
+        return await wrapped
 
     def kill(self, terminate_thread: bool = False) -> None:
         """Kill the task and optionally terminate its thread."""

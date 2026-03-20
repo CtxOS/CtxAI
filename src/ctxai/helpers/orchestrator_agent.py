@@ -281,7 +281,7 @@ class OrchestratorAgent:
                 from ctxai.agent import UserMessage
 
                 deferred = agent.context.communicate(UserMessage(message=msg))
-                result = deferred.result_sync(timeout=task.timeout)
+                result = await deferred.result(timeout=task.timeout)
                 return result
             return {"status": "no_action", "task_id": task.id}
         finally:
