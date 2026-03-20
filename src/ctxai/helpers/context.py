@@ -1,7 +1,5 @@
 from contextvars import ContextVar
-from typing import Any, TypeVar, cast
-
-T = TypeVar("T")
+from typing import Any, cast
 
 # no mutable default — None is safe
 _context_data: ContextVar[dict[str, Any] | None] = ContextVar("_context_data", default=None)
@@ -33,7 +31,7 @@ def delete_context_data(key: str):
         _context_data.set(data)
 
 
-def get_context_data(key: str | None = None, default: T | None = None) -> T | None:
+def get_context_data[T](key: str | None = None, default: T | None = None) -> T | None:
     """Get a key from the current context, or the full dict if key is None."""
     data = _ensure_context()
     if key is None:

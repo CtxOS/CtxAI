@@ -24,7 +24,7 @@ import logging
 import time
 import uuid
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Protocol, runtime_checkable
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class MemoryType(str, Enum):
+class MemoryType(StrEnum):
     SHORT = "short"
     LONG = "long"
 

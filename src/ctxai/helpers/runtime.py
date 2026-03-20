@@ -7,7 +7,7 @@ import sys
 import threading
 from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Any, TypeVar, cast, overload
+from typing import Any, cast, overload
 
 import nest_asyncio
 
@@ -15,8 +15,6 @@ from ctxai.helpers import dotenv, files, rfc, settings
 
 nest_asyncio.apply()
 
-T = TypeVar("T")
-R = TypeVar("R")
 
 parser = argparse.ArgumentParser()
 args: dict[str, Any] = {}
@@ -87,14 +85,14 @@ def get_persistent_id() -> str:
 
 
 @overload
-async def call_development_function(func: Callable[..., Awaitable[T]], *args, **kwargs) -> T: ...
+async def call_development_function[T](func: Callable[..., Awaitable[T]], *args, **kwargs) -> T: ...
 
 
 @overload
-async def call_development_function(func: Callable[..., T], *args, **kwargs) -> T: ...
+async def call_development_function[T](func: Callable[..., T], *args, **kwargs) -> T: ...
 
 
-async def call_development_function(func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs) -> T:
+async def call_development_function[T](func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs) -> T:
     if is_development():
         url = _get_rfc_url()
         password = _get_rfc_password()
@@ -140,7 +138,7 @@ def _get_rfc_url() -> str:
     return url
 
 
-def call_development_function_sync(func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs) -> T:
+def call_development_function_sync[T](func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs) -> T:
     # run async function in sync manner
     result_queue: queue.Queue[T | None] = queue.Queue()
 
