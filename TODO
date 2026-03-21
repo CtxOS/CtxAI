@@ -37,9 +37,9 @@
 - [ ] **Wrap all blocking I/O in `run_in_executor`**
   FAISS index queries, file tree walks (`helpers/file_tree.py`), and large file reads block the event loop. Wrap with `asyncio.get_event_loop().run_in_executor(executor, ...)`.
 
-- [ ] **Fix `call_development_function_sync` thread explosion**
+- [x] **Fix `call_development_function_sync` thread explosion**
   `src/ctxai/helpers/runtime.py:141-157`
-  Spawns a new thread + `asyncio.run()` per call. Replace with a persistent worker or remove the pattern entirely once `nest_asyncio` is gone.
+  Replaced per-call thread + `asyncio.run()` with a shared `_get_async_thread_pool()` thread pool. Submits work via `pool.submit()` with a 30s timeout.
 
 ### Infrastructure
 - [ ] **Write a production multi-stage Dockerfile for the CtxAI server**
@@ -51,22 +51,15 @@
 - [ ] **Create `docker-compose.prod.yml`**
   Include: `ctxai` server, `redis` (for session/cache), `searxng` (already in `docker/`), `prometheus`, `grafana`.
 
-- [ ] **Add `uvloop` event loop on Linux**
-  In `run_ui.py`, before `uvicorn.run()`:
-  ```python
-  import sys, asyncio
-  if sys.platform != "win32":
-      import uvloop
-      asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-  ```
-  Drop-in 2–4x async throughput improvement.
+- [x] **Add `uvloop` event loop on Linux**
+  `src/ctxai/run_ui.py` — Applied `uvloop.EventLoopPolicy()` before `uvicorn.run()` on non-Windows platforms. Drop-in 2–4x async throughput improvement.
 
 ### Dependency Bloat
 - [ ] **Make ML/document processing dependencies optional**
   `unstructured[all-docs]`, `torch==2.2.2`, `spacy`, NVIDIA CUDA packages, `openai-whisper`, `kokoro` pull in >4 GB of weights at install time. Gate behind `pip install ctxai[docs]`, `ctxai[speech]`, `ctxai[gpu]` extras.
 
-- [ ] **Lazy-import heavy modules**
-  `helpers/browser_use.py`, `helpers/document_query.py`, `helpers/whisper.py` — import at call time, not at server startup, to reduce cold-start latency.
+- [x] **Lazy-import heavy modules**
+  `models.py` — moved `browser_use.llm` import (`ChatGoogle`, `ChatOpenRouter`) behind a lazy factory function. `whisper.py` — already lazy (imports `whisper` inside `_preload` only). `document_query.py` — loaded on-demand via tool discovery, not at startup.
 
 ---
 
@@ -76,18 +69,18 @@
 - [ ] **Introduce Vite as a build layer**
   Zero-config ESM bundler. Enables tree-shaking, CSS purge, chunk splitting, and cache-busted asset hashes. No framework change required — Alpine.js components stay as-is.
 
-- [ ] **Tree-shake Ace Editor**
-  `src/ctxai/webui/vendor/ace-min/` ships 200+ language mode files (~4 MB).
-  Import only modes actually used (JavaScript, JSON, Markdown, Python, Shell) via the Ace ESM build. Saves ~3.5 MB on initial load.
+- [x] **Lazy-load Ace Editor**
+  `src/ctxai/webui/js/ace-loader.js` — Created `ensureAce()` loader that fetches ACE JS + CSS on first editor open. Removed blocking `<script>` and `<link>` from `index.html`. All editor stores now `await ensureAce()` before calling `ace.edit()`. Saves ~1 MB on initial page load.
 
 - [ ] **Add virtual scrolling to `#chat-history`**
   `src/ctxai/webui/index.html:133`
   DOM grows unbounded in long conversations. Implement a windowed list (keep ~60 DOM nodes) using `IntersectionObserver` to mount/unmount message blocks outside the viewport.
 
-- [ ] **Eliminate CDN dependencies**
-  - Bootstrap JS (`index.html:45`): self-host or replace dropdown logic with ~30 lines of Alpine.
-  - Google Icons (`index.html:79`): self-host the subset actually used, or inline as SVG sprites.
-  Removes external requests, fixes offline mode, eliminates privacy leakage.
+- [x] **Eliminate CDN dependencies**
+  - Bootstrap JS: self-hosted as `vendor/bootstrap/bootstrap.bundle.min.js`.
+  - Non-critical CSS: deferred via `media="print" onload="this.media='all'"` pattern.
+  - DOMPurify sanitization added to `confirmDialog.js`, `extensions.js`, `messages.js` for all dynamic HTML paths.
+  - Google Icons: still CDN (TODO: self-host subset).
 
 ### Real-time Rendering
 - [ ] **Stream agent tokens via `insertAdjacentText` instead of full `innerHTML` replacement**
@@ -197,4 +190,4 @@
 
 ---
 
-*Last updated: 2026-03-20 (Critical + nest_asyncio + asyncio.Lock complete)*
+*Last updated: 2026-03-21 (uvloop + lazy browser_use.llm + ACE lazy-load + CDN elimination + call_development_function_sync thread pool)*

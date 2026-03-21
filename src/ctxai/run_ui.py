@@ -530,6 +530,11 @@ def run():
         except Exception as e:
             PrintStyle.warning(f"Shutdown flush failed ({reason}): {e}")
 
+    if sys.platform != "win32":
+        import uvloop
+
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
     config = uvicorn.Config(
         asgi_app,
         host=host,
