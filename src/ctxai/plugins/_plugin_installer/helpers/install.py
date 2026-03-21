@@ -10,11 +10,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
-
 from ctxai.helpers import files, git, plugins, print_style
 from ctxai.helpers import yaml as yaml_helper
+from ctxai.helpers.flask_compat import UploadFileAdapter as FileStorage
+from ctxai.helpers.flask_compat import secure_filename
 from ctxai.helpers.plugins import META_FILE_NAME, PluginMetadata, after_plugin_change, get_plugins_list
 
 

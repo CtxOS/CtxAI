@@ -2,13 +2,12 @@ import base64
 import mimetypes
 import os
 from io import BytesIO
+from typing import Any
 from urllib.parse import quote
 
-from flask import Response
-
-from ctxai.api import file_info
 from ctxai.helpers import files, runtime
-from ctxai.helpers.api import ApiHandler, Input, Output, Request
+from ctxai.helpers.api import ApiHandler, Input, Output
+from ctxai.helpers.flask_compat import Response
 
 
 def stream_file_download(file_source, download_name, chunk_size=8192):
@@ -21,24 +20,21 @@ def stream_file_download(file_source, download_name, chunk_size=8192):
         chunk_size: Size of chunks to stream (default 8192 bytes)
 
     Returns:
-        Flask Response object with streaming content
+        Response object with streaming content
     """
     # Calculate file size for Content-Length header
     if isinstance(file_source, str):
-        # File path - get size from filesystem
         file_size = os.path.getsize(file_source)
     elif isinstance(file_source, BytesIO):
-        # BytesIO object - get size from buffer
         current_pos = file_source.tell()
-        file_source.seek(0, 2)  # Seek to end
+        file_source.seek(0, 2)
         file_size = file_source.tell()
-        file_source.seek(current_pos)  # Restore original position
+        file_source.seek(current_pos)
     else:
         raise ValueError(f"Unsupported file source type: {type(file_source)}")
 
     def generate():
         if isinstance(file_source, str):
-            # File path - open and stream from disk
             with open(file_source, "rb") as f:
                 while True:
                     chunk = f.read(chunk_size)
@@ -46,30 +42,27 @@ def stream_file_download(file_source, download_name, chunk_size=8192):
                         break
                     yield chunk
         elif isinstance(file_source, BytesIO):
-            # BytesIO object - stream from memory
-            file_source.seek(0)  # Ensure we're at the beginning
+            file_source.seek(0)
             while True:
                 chunk = file_source.read(chunk_size)
                 if not chunk:
                     break
                 yield chunk
 
-    # Detect content type based on file extension
     content_type, _ = mimetypes.guess_type(download_name)
     if not content_type:
         content_type = "application/octet-stream"
 
-    # Create streaming response with proper headers for immediate streaming
     response = Response(
-        generate(),
+        response=generate(),
+        status=200,
         content_type=content_type,
-        direct_passthrough=True,  # Prevent Flask from buffering the response
         headers={
             "Content-Disposition": make_disposition(download_name),
-            "Content-Length": str(file_size),  # Critical for browser progress bars
+            "Content-Length": str(file_size),
             "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",  # Disable nginx buffering
-            "Accept-Ranges": "bytes",  # Allow browser to resume downloads
+            "X-Accel-Buffering": "no",
+            "Accept-Ranges": "bytes",
         },
     )
 
@@ -77,11 +70,8 @@ def stream_file_download(file_source, download_name, chunk_size=8192):
 
 
 def make_disposition(download_name: str) -> str:
-    # Basic ASCII fallback (strip or replace weird chars)
     ascii_fallback = download_name.encode("ascii", "ignore").decode("ascii") or "download"
-    utf8_name = quote(download_name)  # URL-encode UTF-8 bytes
-
-    # RFC 5987: filename* with UTF-8
+    utf8_name = quote(download_name)
     return f"attachment; filename=\"{ascii_fallback}\"; filename*=UTF-8''{utf8_name}"
 
 
@@ -90,12 +80,14 @@ class DownloadFile(ApiHandler):
     def get_methods(cls):
         return ["GET"]
 
-    async def process(self, input: Input, request: Request) -> Output:
+    async def process(self, input: Input, request: Any) -> Output:
         file_path = request.args.get("path", input.get("path", ""))
         if not file_path:
             raise ValueError("No file path provided")
         if not file_path.startswith("/"):
             file_path = f"/{file_path}"
+
+        from ctxai.api import file_info
 
         file = await runtime.call_development_function(file_info.get_file_info, file_path)
 

@@ -5,9 +5,12 @@ from functools import wraps
 from typing import TYPE_CHECKING
 
 from ctxai.helpers import cache, extract_tools, files, subagents
+from ctxai.helpers.opentelemetry_instrumentation import get_tracer, record_exception, start_span
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
+
+_tracer = get_tracer("ctxai.extensions")
 
 
 DEFAULT_EXTENSIONS_FOLDER = "python/extensions"
@@ -177,22 +180,59 @@ async def call_extensions_async(extension_point: str, agent: "Agent|None" = None
     # fetch classes for this extension point and agent
     classes = _get_extension_classes(extension_point, agent=agent, **kwargs)
 
-    # execute unique extensions
-    for cls in classes:
-        result = cls(agent=agent).execute(**kwargs)
-        if isinstance(result, Awaitable):
-            await result
+    with start_span(
+        _tracer,
+        f"extension.{extension_point}",
+        attributes={
+            "extension.point": extension_point,
+            "extension.count": len(classes),
+            "agent.context_id": agent.context.id if agent and agent.context else "",
+        },
+    ) as span:
+        # execute unique extensions
+        for i, cls in enumerate(classes):
+            with start_span(
+                _tracer,
+                f"extension.execute.{cls.__name__}",
+                attributes={"extension.class": cls.__name__, "extension.index": i},
+            ):
+                try:
+                    result = cls(agent=agent).execute(**kwargs)
+                    if isinstance(result, Awaitable):
+                        await result
+                except Exception as exc:
+                    record_exception(span, exc)
+                    raise
 
 
 def call_extensions_sync(extension_point: str, agent: "Agent|None" = None, **kwargs):
     # fetch classes for this extension point and agent
     classes = _get_extension_classes(extension_point, agent=agent, **kwargs)
 
-    # execute unique extensions
-    for cls in classes:
-        result = cls(agent=agent).execute(**kwargs)
-        if isinstance(result, Awaitable):
-            raise ValueError(f"Extension {cls.__name__} returned awaitable in sync mode")
+    with start_span(
+        _tracer,
+        f"extension.{extension_point}",
+        attributes={
+            "extension.point": extension_point,
+            "extension.count": len(classes),
+            "agent.context_id": agent.context.id if agent and agent.context else "",
+        },
+    ) as span:
+        # execute unique extensions
+        for i, cls in enumerate(classes):
+            with start_span(
+                _tracer,
+                f"extension.execute.{cls.__name__}",
+                attributes={"extension.class": cls.__name__, "extension.index": i},
+            ):
+                try:
+                    result = cls(agent=agent).execute(**kwargs)
+                    if isinstance(result, Awaitable):
+                        raise ValueError(f"Extension {cls.__name__} returned awaitable in sync mode")
+                except Exception as exc:
+                    if not isinstance(exc, ValueError):
+                        record_exception(span, exc)
+                    raise
 
 
 def get_webui_extensions(agent: "Agent | None", extension_point: str, filters: list[str] | None = None):

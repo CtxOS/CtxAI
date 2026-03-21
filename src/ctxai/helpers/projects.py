@@ -462,13 +462,13 @@ def get_knowledge_files_count(name: str):
     return len(files.list_files_in_dir_recursively(knowledge_folder))
 
 
-def get_file_structure(name: str, basic_data: BasicProjectData | None = None) -> str:
+async def get_file_structure(name: str, basic_data: BasicProjectData | None = None) -> str:
     project_folder = get_project_folder(name)
     if basic_data is None:
         basic_data = load_basic_project_data(name)
 
     tree = str(
-        file_tree.file_tree(
+        await file_tree.afile_tree(
             project_folder,
             max_depth=basic_data["file_structure"]["max_depth"],
             max_files=basic_data["file_structure"]["max_files"],

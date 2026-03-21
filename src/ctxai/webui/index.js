@@ -242,7 +242,40 @@ async function updateUserTime() {
 }
 
 updateUserTime();
-setInterval(updateUserTime, 1000);
+
+// Visibility-aware clock timer — pauses in background tabs to save CPU
+(function startClockTimer() {
+  let timerId = null;
+
+  function tick() {
+    updateUserTime();
+    if (!document.hidden) {
+      timerId = setTimeout(tick, 1000);
+    }
+  }
+
+  function resume() {
+    if (!timerId) {
+      updateUserTime(); // immediate update on tab focus
+      timerId = setTimeout(tick, 1000);
+    }
+  }
+
+  function pause() {
+    if (timerId) {
+      clearTimeout(timerId);
+      timerId = null;
+    }
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) pause();
+    else resume();
+  });
+
+  // Start immediately
+  resume();
+})();
 
 async function setMessages(...params) {
   return await msgs.setMessages(...params);

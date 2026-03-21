@@ -3,13 +3,16 @@
   "version": "1.0.0",
   "description": "Ctx AI WebUI - Alpine.js frontend",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "echo 'Static files - no build required'",
-    "build": "echo 'Static files - no build required'",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "format": "prettier --write \"**/*.html\" \"**/*.js\" \"**/*.css\"",
     "format:check": "prettier --check \"**/*.html\" \"**/*.js\" \"**/*.css\""
   },
   "devDependencies": {
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "vite": "^6.2.0"
   }
 }

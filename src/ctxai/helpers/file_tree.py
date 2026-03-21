@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from collections import deque
 from collections.abc import Iterable, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any, Literal
@@ -264,6 +266,22 @@ def file_tree(
         return [make_root_item(None)] + _build_tree_items_flat(list(iter_visible()))
 
     return [make_root_item(_to_nested_structure(root_node.items or []))]
+
+
+_executor: ThreadPoolExecutor | None = None
+
+
+def _get_executor() -> ThreadPoolExecutor:
+    global _executor
+    if _executor is None:
+        _executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="file-tree")
+    return _executor
+
+
+async def afile_tree(relative_path: str, **kwargs: Any) -> str | list[dict]:
+    """Async wrapper for :func:`file_tree` — runs the blocking walk in a thread pool."""
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(_get_executor(), lambda: file_tree(relative_path, **kwargs))
 
 
 @dataclass(slots=True)

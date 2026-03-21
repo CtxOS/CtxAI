@@ -720,7 +720,21 @@ export function _drawMessage({
 
       // do a smooth stream if requested
       if (smoothStream) smoothRender(contentDiv, processedContent);
-      else contentDiv.innerHTML = processedContent;
+      else {
+        // Streaming optimization: batch DOM writes with requestAnimationFrame
+        const lastRendered = contentDiv.dataset.lastRendered || "";
+        if (processedContent.startsWith(lastRendered) && processedContent.length > lastRendered.length) {
+          // Content is growing — defer full parse to next frame to avoid layout thrash
+          cancelAnimationFrame(contentDiv._pendingRender);
+          contentDiv._pendingRender = requestAnimationFrame(() => {
+            contentDiv.innerHTML = processedContent;
+            contentDiv.dataset.lastRendered = processedContent;
+          });
+        } else {
+          contentDiv.innerHTML = processedContent;
+          contentDiv.dataset.lastRendered = processedContent;
+        }
+      }
 
       // KaTeX rendering for markdown
       if (latex) {
@@ -752,7 +766,31 @@ export function _drawMessage({
       // }
 
       if (smoothStream) smoothRender(preElement, convertHTML(content));
-      else preElement.innerHTML = sanitizeHTML(convertHTML(content));
+      else {
+        // Streaming optimization: use insertAdjacentText for additive text updates
+        const rawText = convertHTML(content);
+        const sanitized = sanitizeHTML(rawText);
+        const lastRendered = preElement.dataset.lastRendered || "";
+
+        if (sanitized.startsWith(lastRendered) && sanitized.length > lastRendered.length) {
+          // Purely additive — append only the new text (avoids full innerHTML reflow)
+          const newText = sanitized.slice(lastRendered.length);
+          // Strip any HTML tags from the delta and insert as plain text
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = newText;
+          const plainDelta = tempDiv.textContent || tempDiv.innerText || "";
+          if (plainDelta) {
+            preElement.insertAdjacentText("beforeend", plainDelta);
+          }
+          // For content with HTML, fall back to full update
+          if (newText.includes("<")) {
+            preElement.innerHTML = sanitized;
+          }
+        } else {
+          preElement.innerHTML = sanitized;
+        }
+        preElement.dataset.lastRendered = sanitized;
+      }
     }
   } else {
     // Remove content if it exists but content is empty

@@ -16,6 +16,7 @@ import socketio
 from ctxai.helpers import runtime
 from ctxai.helpers.defer import DeferredTask
 from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.prometheus_metrics import metrics
 from ctxai.helpers.state_monitor import _ws_debug_enabled
 from ctxai.helpers.websocket import ConnectionNotFoundError, WebSocketHandler, WebSocketResult
 
@@ -382,6 +383,7 @@ class WebSocketManager:
             self.user_to_sids[self._ALL_USERS_BUCKET].add(identity)
             self.user_to_sids[user_bucket].add(identity)
             connection_count = sum(1 for conn_identity in self.connections if conn_identity[0] == namespace)
+        metrics.set_websocket_connections(len(self.connections))
         if _ws_debug_enabled():
             PrintStyle.info(f"WebSocket connected: namespace={namespace} sid={sid}")
         await self._run_lifecycle(namespace, lambda h: h.on_connect(sid))
@@ -430,6 +432,7 @@ class WebSocketManager:
                 if not self.user_to_sids[user_bucket]:
                     self.user_to_sids.pop(user_bucket, None)
             connection_count = sum(1 for conn_identity in self.connections if conn_identity[0] == namespace)
+        metrics.set_websocket_connections(len(self.connections))
         await self.unregister_diagnostic_watcher(namespace, sid)
         PrintStyle.info(f"WebSocket disconnected: namespace={namespace} sid={sid}")
         await self._run_lifecycle(namespace, lambda h: h.on_disconnect(sid))

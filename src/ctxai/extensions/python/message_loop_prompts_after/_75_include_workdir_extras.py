@@ -33,7 +33,7 @@ class IncludeWorkdirExtras(Extension):
             if runtime.is_development():
                 folder = files.normalize_a0_path(folder)
 
-            file_structure = projects.get_file_structure(project_name)
+            file_structure = await projects.get_file_structure(project_name)
         else:
             set = settings.get_settings()
             enabled = bool(set["workdir_show"])
@@ -53,7 +53,7 @@ class IncludeWorkdirExtras(Extension):
             files.create_dir(scan_path)
 
             file_structure = str(
-                file_tree.file_tree(
+                await file_tree.afile_tree(
                     scan_path,
                     max_depth=max_depth,
                     max_files=max_files,

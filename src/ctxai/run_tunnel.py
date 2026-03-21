@@ -1,54 +1,46 @@
-import threading
+import asyncio
 
-from flask import Flask, request
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+from starlette.routing import Route
 
 from ctxai.api.tunnel import Tunnel, stop
 from ctxai.helpers import dotenv, process, runtime
 from ctxai.helpers.print_style import PrintStyle
 
-# initialize the internal Flask server
-app = Flask("app")
-app.config["JSON_SORT_KEYS"] = False  # Disable key sorting in jsonify
+lock = asyncio.Lock()
+
+
+async def handle_request(request: Request):
+    body = await request.json()
+    tunnel = Tunnel(None, lock)
+    result = await tunnel.handle_request(request=type("Req", (), {"json": lambda self: body})())
+    if isinstance(result, dict):
+        return JSONResponse(result)
+    return JSONResponse({"error": "Unexpected response"}, status_code=500)
+
+
+app = Starlette(routes=[Route("/", handle_request, methods=["POST"])])
 
 
 def run():
-    # Suppress only request logs but keep the startup messages
-    from werkzeug.serving import WSGIRequestHandler, make_server
+    import uvicorn
 
     PrintStyle().print("Starting tunnel server...")
 
-    class NoRequestLoggingWSGIRequestHandler(WSGIRequestHandler):
-        def log_request(self, code="-", size="-"):
-            pass  # Override to suppress request logging
-
-    # Get configuration from environment
     tunnel_api_port = runtime.get_tunnel_api_port()
     host = runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "localhost"
-    server = None
-    lock = threading.Lock()
-    tunnel = Tunnel(app, lock)
 
-    # handle api request
-    @app.route("/", methods=["POST"])
-    async def handle_request():
-        return await tunnel.handle_request(request=request)  # type: ignore
+    config = uvicorn.Config(app, host=host, port=tunnel_api_port, log_level="warning")
+    server = uvicorn.Server(config)
+
+    process.set_server(server)
 
     try:
-        server = make_server(
-            host=host,
-            port=tunnel_api_port,
-            app=app,
-            request_handler=NoRequestLoggingWSGIRequestHandler,
-            threaded=True,
-        )
-
-        process.set_server(server)
-        # server.log_startup()
-        server.serve_forever()
+        server.run()
     finally:
-        # Clean up tunnel if it was started
-        if tunnel:
-            stop()
+        stop()
 
 
 # run the internal server

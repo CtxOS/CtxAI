@@ -21,6 +21,7 @@ from ctxai.agent import Agent, AgentContext
 from ctxai.helpers import files, guids, plugins, projects
 from ctxai.helpers.log import LogItem
 from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.prometheus_metrics import metrics
 from ctxai.helpers.safe_eval import make_comparator
 
 from . import knowledge_import
@@ -234,6 +235,14 @@ class Memory:
     ):
         self.db = db
         self.memory_subdir = memory_subdir
+        self._update_faiss_gauge()
+
+    def _update_faiss_gauge(self) -> None:
+        """Push current FAISS index size to Prometheus."""
+        try:
+            metrics.set_faiss_index_size(self.db.index.ntotal)
+        except Exception:
+            pass
 
     async def preload_knowledge(self, log_item: LogItem | None, kn_dirs: list[str], memory_subdir: str):
         if log_item:
@@ -350,6 +359,7 @@ class Memory:
 
         if tot:
             self._save_db()  # persist
+            self._update_faiss_gauge()
         return removed
 
     async def delete_documents_by_ids(self, ids: list[str]):
@@ -361,6 +371,7 @@ class Memory:
 
         if rem_docs:
             self._save_db()  # persist
+            self._update_faiss_gauge()
         return rem_docs
 
     async def insert_text(self, text, metadata: dict = None):
@@ -383,6 +394,7 @@ class Memory:
 
             await self.db.aadd_documents(documents=docs, ids=ids)
             self._save_db()  # persist
+            self._update_faiss_gauge()
         return ids
 
     async def update_documents(self, docs: list[Document]):
@@ -390,6 +402,7 @@ class Memory:
         await self.db.adelete(ids=ids)  # delete originals
         ins = await self.db.aadd_documents(documents=docs, ids=ids)  # add updated
         self._save_db()  # persist
+        self._update_faiss_gauge()
         return ins
 
     def _save_db(self):

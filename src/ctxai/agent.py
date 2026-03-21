@@ -21,6 +21,7 @@ from ctxai.helpers.dirty_json import DirtyJson
 from ctxai.helpers.errors import InterventionException
 from ctxai.helpers.localization import Localization
 from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.prometheus_metrics import metrics
 
 
 class AgentContextType(Enum):
@@ -109,6 +110,9 @@ class AgentContext:
         # initialize agent at last (context is complete now)
         self.agent0 = agent0 or Agent(0, self.config, self)
 
+        # Update Prometheus metrics
+        metrics.set_active_contexts(len(AgentContext._contexts))
+
     @staticmethod
     def get(id: str):
         with AgentContext._contexts_lock:
@@ -193,6 +197,7 @@ class AgentContext:
             context = AgentContext._contexts.pop(evicted, None)
             if context and context.task:
                 context.task.kill()
+        metrics.set_active_contexts(len(AgentContext._contexts))
 
     @classmethod
     def get_notification_manager(cls):
@@ -209,6 +214,7 @@ class AgentContext:
             context = AgentContext._contexts.pop(id, None)
         if context and context.task:
             context.task.kill()
+        metrics.set_active_contexts(len(AgentContext._contexts))
         return context
 
     def get_data(self, key: str, recursive: bool = True):
@@ -326,6 +332,7 @@ class AgentContext:
             loop = asyncio.get_running_loop()
             await loop.run_in_executor(None, AgentContext._task_semaphore.acquire)
             self.product_metrics["tasks_started"] += 1
+            metrics.inc_task("started")
             started_at = time.monotonic()
             try:
                 coro = func(*a, **kw)
@@ -334,16 +341,21 @@ class AgentContext:
                 else:
                     result = await coro
                 self.product_metrics["tasks_completed"] += 1
+                metrics.inc_task("completed")
                 return result
             except TimeoutError:
                 self.product_metrics["tasks_timed_out"] += 1
+                metrics.inc_task("timed_out")
                 raise
             except Exception:
                 self.product_metrics["tasks_failed"] += 1
+                metrics.inc_task("failed")
                 raise
             finally:
                 ended_at = time.monotonic()
                 duration_ms = (ended_at - started_at) * 1000.0
+                duration_s = duration_ms / 1000.0
+                metrics.observe_task_latency(duration_s)
                 self.product_metrics["last_task_duration_ms"] = duration_ms
                 self.product_metrics["total_task_duration_ms"] += duration_ms
                 completed = self.product_metrics["tasks_completed"]

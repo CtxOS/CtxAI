@@ -649,6 +649,10 @@
   grid-auto-rows: auto;
   max-width: 100%;
   gap: var(--spacing-xs);
+
+  /* Virtual scrolling: skip rendering off-screen groups */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 200px;
 }
 
 .message-group > * {

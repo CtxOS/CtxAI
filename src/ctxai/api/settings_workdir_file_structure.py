@@ -10,7 +10,7 @@ class SettingsWorkdirFileStructure(ApiHandler):
             raise Exception("workdir_path is required")
 
         tree = str(
-            file_tree.file_tree(
+            await file_tree.afile_tree(
                 workdir_path,
                 max_depth=int(input.get("workdir_max_depth", 0) or 0),
                 max_files=int(input.get("workdir_max_files", 0) or 0),

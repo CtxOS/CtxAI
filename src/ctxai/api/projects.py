@@ -31,7 +31,7 @@ class Projects(ApiHandler):
             elif action == "deactivate":
                 data = self.deactivate_project(ctxid)
             elif action == "file_structure":
-                data = self.get_file_structure(input.get("name", None), input.get("settings"))
+                data = await self.get_file_structure(input.get("name", None), input.get("settings"))
             else:
                 raise Exception("Invalid action")
 
@@ -134,7 +134,7 @@ class Projects(ApiHandler):
             raise Exception("Context ID is required")
         return projects.deactivate_project(context_id)
 
-    def get_file_structure(self, name: str | None, settings: dict | None):
+    async def get_file_structure(self, name: str | None, settings: dict | None):
         if not name:
             raise Exception("Project name is required")
         # project data
@@ -143,4 +143,4 @@ class Projects(ApiHandler):
         if settings:
             basic_data["file_structure"] = settings  # type: ignore
         # get structure
-        return projects.get_file_structure(name, basic_data)
+        return await projects.get_file_structure(name, basic_data)

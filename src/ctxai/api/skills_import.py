@@ -4,11 +4,9 @@ import time
 import uuid
 from pathlib import Path
 
-from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
-
 from ctxai.helpers import files
-from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler
+from ctxai.helpers.flask_compat import Response, UploadFileAdapter, secure_filename
 from ctxai.helpers.skills_import import import_skills
 
 
@@ -18,11 +16,12 @@ class SkillsImport(ApiHandler):
     Performs the actual import (not dry-run).
     """
 
-    async def process(self, input: dict, request: Request) -> dict | Response:
+    async def process(self, input: dict, request) -> dict | Response:
         if "skills_file" not in request.files:
             return {"success": False, "error": "No skills file provided"}
 
-        skills_file: FileStorage = request.files["skills_file"]
+        skills_file = UploadFileAdapter(request.files["skills_file"])
+        await skills_file.read_async()
         if not skills_file.filename:
             return {"success": False, "error": "No file selected"}
 

@@ -17,12 +17,16 @@ from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
 
 from ctxai.helpers import dirty_json, extension, extract_tools, history, subagents, tokens
+from ctxai.helpers.opentelemetry_instrumentation import get_tracer, record_exception, start_span
 from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.prometheus_metrics import metrics
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent, LoopData
     from ctxai.helpers.tool import Response as ToolResponse
     from ctxai.helpers.tool import Tool
+
+_tracer = get_tracer("ctxai.reasoning_engine")
 
 
 # ---------------------------------------------------------------------------
@@ -101,14 +105,41 @@ async def call_chat_model(
 ) -> tuple[str, str]:
     """Invoke the primary chat model and return (response, reasoning)."""
     model = agent.get_chat_model()
-    response, reasoning = await model.unified_call(
-        messages=messages,
-        reasoning_callback=reasoning_callback,
-        response_callback=response_callback,
-        rate_limiter_callback=(agent.rate_limiter_callback if not background else None),
-        explicit_caching=explicit_caching,
-    )
-    return response, reasoning
+    model_name = getattr(model, "model_name", None) or getattr(model, "model", "unknown")
+
+    with start_span(
+        _tracer,
+        "llm.chat_call",
+        attributes={
+            "llm.model": str(model_name),
+            "llm.provider": type(model).__name__,
+            "llm.background": background,
+            "agent.name": agent.name or "",
+            "agent.context_id": agent.context.id if agent.context else "",
+            "trace_id": agent.context.trace_id if agent.context else "",
+        },
+    ) as span:
+        import time
+
+        started = time.monotonic()
+        try:
+            response, reasoning = await model.unified_call(
+                messages=messages,
+                reasoning_callback=reasoning_callback,
+                response_callback=response_callback,
+                rate_limiter_callback=(agent.rate_limiter_callback if not background else None),
+                explicit_caching=explicit_caching,
+            )
+            span.set_attribute("llm.response_length", len(response))
+            span.set_attribute("llm.reasoning_length", len(reasoning) if reasoning else 0)
+            metrics.inc_llm_call(provider=type(model).__name__, model=str(model_name), status="success")
+            metrics.observe_llm_latency(time.monotonic() - started)
+            return response, reasoning
+        except Exception as exc:
+            record_exception(span, exc)
+            metrics.inc_llm_call(provider=type(model).__name__, model=str(model_name), status="error")
+            metrics.observe_llm_latency(time.monotonic() - started)
+            raise
 
 
 async def call_utility_model(
@@ -120,29 +151,55 @@ async def call_utility_model(
 ) -> str:
     """Invoke the utility (smaller) model and return the text response."""
     model = agent.get_utility_model()
+    model_name = getattr(model, "model_name", None) or getattr(model, "model", "unknown")
 
-    call_data: dict[str, Any] = {
-        "model": model,
-        "system": system,
-        "message": message,
-        "callback": callback,
-        "background": background,
-    }
-    await extension.call_extensions_async("util_model_call_before", agent, call_data=call_data)
+    with start_span(
+        _tracer,
+        "llm.utility_call",
+        attributes={
+            "llm.model": str(model_name),
+            "llm.provider": type(model).__name__,
+            "llm.background": background,
+            "llm.system_length": len(system),
+            "llm.message_length": len(message),
+            "agent.name": agent.name or "",
+            "agent.context_id": agent.context.id if agent.context else "",
+        },
+    ) as span:
+        import time
 
-    async def stream_callback(chunk: str, total: str) -> None:
-        if call_data["callback"]:
-            await call_data["callback"](chunk)
+        call_data: dict[str, Any] = {
+            "model": model,
+            "system": system,
+            "message": message,
+            "callback": callback,
+            "background": background,
+        }
+        await extension.call_extensions_async("util_model_call_before", agent, call_data=call_data)
 
-    response, _reasoning = await call_data["model"].unified_call(
-        system_message=call_data["system"],
-        user_message=call_data["message"],
-        response_callback=stream_callback if call_data["callback"] else None,
-        rate_limiter_callback=(agent.rate_limiter_callback if not call_data["background"] else None),
-    )
+        async def stream_callback(chunk: str, total: str) -> None:
+            if call_data["callback"]:
+                await call_data["callback"](chunk)
 
-    await extension.call_extensions_async("util_model_call_after", agent, call_data=call_data, response=response)
-    return response
+        started = time.monotonic()
+        try:
+            response, _reasoning = await call_data["model"].unified_call(
+                system_message=call_data["system"],
+                user_message=call_data["message"],
+                response_callback=stream_callback if call_data["callback"] else None,
+                rate_limiter_callback=(agent.rate_limiter_callback if not call_data["background"] else None),
+            )
+            span.set_attribute("llm.response_length", len(response))
+            metrics.inc_llm_call(provider=type(model).__name__, model=str(model_name), status="success")
+            metrics.observe_llm_latency(time.monotonic() - started)
+        except Exception as exc:
+            record_exception(span, exc)
+            metrics.inc_llm_call(provider=type(model).__name__, model=str(model_name), status="error")
+            metrics.observe_llm_latency(time.monotonic() - started)
+            raise
+
+        await extension.call_extensions_async("util_model_call_after", agent, call_data=call_data, response=response)
+        return response
 
 
 # ---------------------------------------------------------------------------
@@ -189,34 +246,55 @@ async def execute_tool(agent: Agent, tool: Tool, tool_args: dict, tool_name: str
     This is the base single-attempt execution.  Use ``execute_tool_with_retry``
     when retry/fallback semantics are needed.
     """
+    with start_span(
+        _tracer,
+        "tool.execute",
+        attributes={
+            "tool.name": tool_name,
+            "tool.class": type(tool).__name__,
+            "agent.name": agent.name or "",
+            "agent.context_id": agent.context.id if agent.context else "",
+        },
+    ) as span:
+        import time
 
-    await tool.before_execution(**tool_args)
-    await _check_intervention(agent)
+        started = time.monotonic()
+        try:
+            await tool.before_execution(**tool_args)
+            await _check_intervention(agent)
 
-    await extension.call_extensions_async(
-        "tool_execute_before",
-        agent,
-        tool_args=tool_args or {},
-        tool_name=tool_name,
-    )
+            await extension.call_extensions_async(
+                "tool_execute_before",
+                agent,
+                tool_args=tool_args or {},
+                tool_name=tool_name,
+            )
 
-    response: ToolResponse = await tool.execute(**tool_args)
-    await _check_intervention(agent)
+            response: ToolResponse = await tool.execute(**tool_args)
+            await _check_intervention(agent)
 
-    await extension.call_extensions_async(
-        "tool_execute_after",
-        agent,
-        response=response,
-        tool_name=tool_name,
-    )
+            await extension.call_extensions_async(
+                "tool_execute_after",
+                agent,
+                response=response,
+                tool_name=tool_name,
+            )
 
-    await tool.after_execution(response)
-    await _check_intervention(agent)
+            await tool.after_execution(response)
+            await _check_intervention(agent)
 
-    # Record tool result in agent memory
-    agent.memory.record_tool_result(tool_name, response.message)
+            # Record tool result in agent memory
+            agent.memory.record_tool_result(tool_name, response.message)
 
-    return response
+            span.set_attribute("tool.response_length", len(response.message) if response.message else 0)
+            metrics.inc_tool_execution(tool_name=tool_name, status="success")
+            metrics.observe_tool_latency(time.monotonic() - started)
+            return response
+        except Exception as exc:
+            record_exception(span, exc)
+            metrics.inc_tool_execution(tool_name=tool_name, status="error")
+            metrics.observe_tool_latency(time.monotonic() - started)
+            raise
 
 
 async def execute_tool_with_retry(
@@ -237,39 +315,56 @@ async def execute_tool_with_retry(
     """
     import asyncio
 
-    last_error: Exception | None = None
+    with start_span(
+        _tracer,
+        "tool.execute_with_retry",
+        attributes={
+            "tool.name": tool_name,
+            "tool.max_retries": max_retries,
+            "tool.retry_delay": retry_delay,
+            "tool.has_fallback": fallback_tool is not None,
+            "agent.name": agent.name or "",
+            "agent.context_id": agent.context.id if agent.context else "",
+        },
+    ) as span:
+        last_error: Exception | None = None
 
-    for attempt in range(1, max_retries + 1):
-        try:
-            return await execute_tool(agent, tool, tool_args, tool_name)
-        except Exception as e:
-            last_error = e
-            PrintStyle(font_color="orange", padding=True).print(
-                f"Tool '{tool_name}' attempt {attempt}/{max_retries} failed: {e}",
+        for attempt in range(1, max_retries + 1):
+            try:
+                span.set_attribute("tool.attempt", attempt)
+                return await execute_tool(agent, tool, tool_args, tool_name)
+            except Exception as e:
+                last_error = e
+                span.add_event("tool_retry", {"attempt": attempt, "error": str(e)})
+                PrintStyle(font_color="orange", padding=True).print(
+                    f"Tool '{tool_name}' attempt {attempt}/{max_retries} failed: {e}",
+                )
+                agent.context.log.log(
+                    type="warning",
+                    content=f"Tool '{tool_name}' attempt {attempt}/{max_retries} failed: {e}",
+                )
+                if attempt < max_retries:
+                    await asyncio.sleep(retry_delay * attempt)
+
+        # All retries exhausted — try fallback
+        if fallback_tool is not None:
+            span.add_event("tool_fallback", {"fallback_tool": fallback_tool.name})
+            PrintStyle(font_color="yellow", padding=True).print(
+                f"Tool '{tool_name}' exhausted retries, trying fallback '{fallback_tool.name}'",
             )
             agent.context.log.log(
-                type="warning",
-                content=f"Tool '{tool_name}' attempt {attempt}/{max_retries} failed: {e}",
+                type="info",
+                content=f"Trying fallback tool '{fallback_tool.name}' for '{tool_name}'",
             )
-            if attempt < max_retries:
-                await asyncio.sleep(retry_delay * attempt)
+            try:
+                return await execute_tool(agent, fallback_tool, tool_args, fallback_tool.name)
+            except Exception as fallback_error:
+                last_error = fallback_error
 
-    # All retries exhausted — try fallback
-    if fallback_tool is not None:
-        PrintStyle(font_color="yellow", padding=True).print(
-            f"Tool '{tool_name}' exhausted retries, trying fallback '{fallback_tool.name}'",
-        )
-        agent.context.log.log(
-            type="info",
-            content=f"Trying fallback tool '{fallback_tool.name}' for '{tool_name}'",
-        )
-        try:
-            return await execute_tool(agent, fallback_tool, tool_args, fallback_tool.name)
-        except Exception as fallback_error:
-            last_error = fallback_error
-
-    # No fallback or fallback also failed
-    raise last_error or RuntimeError(f"Tool '{tool_name}' failed after {max_retries} attempts")
+        # No fallback or fallback also failed
+        if last_error:
+            record_exception(span, last_error)
+        raise last_error or RuntimeError(f"Tool '{tool_name}' failed after {max_retries} attempts")
 
 
 async def parse_tool_request(agent: Agent, msg: str) -> tuple[str | None, str | None, dict, Tool | None, str | None]:

@@ -3,8 +3,8 @@ import io
 import os
 
 from PIL import Image
-from werkzeug.datastructures import FileStorage
 
+from ctxai.helpers.flask_compat import UploadFileAdapter as FileStorage
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.security import safe_filename
 

@@ -1,30 +1,36 @@
 import base64
 
-from werkzeug.datastructures import FileStorage
-
-from ctxai.api import get_work_dir_files
 from ctxai.helpers import runtime
-from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers.api import ApiHandler
 from ctxai.helpers.file_browser import FileBrowser
+from ctxai.helpers.flask_compat import Response, UploadFileAdapter
 
 
 class UploadWorkDirFiles(ApiHandler):
-    async def process(self, input: dict, request: Request) -> dict | Response:
+    async def process(self, input: dict, request) -> dict | Response:
+        # Ensure form data is loaded
+        await request._ensure_form()
+
         if "files[]" not in request.files:
             raise Exception("No files uploaded")
 
         current_path = request.form.get("path", "")
-        uploaded_files = request.files.getlist("files[]")
+        uploaded_files_raw = request.files.getlist("files[]")
 
-        # browser = FileBrowser()
-        # successful, failed = browser.save_files(uploaded_files, current_path)
+        # Wrap UploadFile objects with FileStorage-compatible adapter
+        uploaded_files = []
+        for f in uploaded_files_raw:
+            adapter = UploadFileAdapter(f)
+            await adapter.read_async()
+            uploaded_files.append(adapter)
 
         successful, failed = await upload_files(uploaded_files, current_path)
 
         if not successful and failed:
             raise Exception("All uploads failed")
 
-        # result = browser.get_files(current_path)
+        from ctxai.api import get_work_dir_files
+
         result = await runtime.call_development_function(get_work_dir_files.get_files, current_path)
 
         return {
@@ -35,7 +41,7 @@ class UploadWorkDirFiles(ApiHandler):
         }
 
 
-async def upload_files(uploaded_files: list[FileStorage], current_path: str):
+async def upload_files(uploaded_files: list, current_path: str):
     if runtime.is_development():
         successful = []
         failed = []
