@@ -478,7 +478,7 @@ markdown==3.7
     # via
     #   ctxai
     #   unstructured
-markdown-it-py==3.0.0
+markdown-it-py==4.0.0
     # via
     #   markdown-pdf
     #   rich
