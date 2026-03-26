@@ -73,7 +73,9 @@ format: ## format all code
 
 # ── Server ─────────────────────────────────────────────────────────
 
-run-server: ## start the web UI server
+run-server: ## start the web UI server (with lint check)
+	@echo "$(GREEN)Running lint check...$(NC)"
+	uv run $(RUFF) check src/ tests/ || true
 	@echo "$(GREEN)Starting server on $(HOST):$(PORT)...$(NC)"
 	uv run python -m ctxai.run_ui
 

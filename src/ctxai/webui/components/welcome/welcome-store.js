@@ -12,12 +12,16 @@ const model = {
   bannersLoading: false,
   lastBannerRefresh: 0,
   hasDismissedBanners: false,
+  _initialized: false,
 
   get isVisible() {
     return !chatsStore.selected;
   },
 
   init() {
+    if (this._initialized) return;
+    this._initialized = true;
+
     // Reload banners when settings change
     document.addEventListener("settings-updated", () => {
       this.refreshBanners(true);

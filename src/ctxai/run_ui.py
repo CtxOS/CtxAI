@@ -118,10 +118,10 @@ def add_security_headers(response: Response) -> Response:
     """Add security headers to all Flask responses."""
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-        "style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "img-src 'self' data: blob:; "
-        "font-src 'self' data:; "
+        "font-src 'self' data: https://fonts.gstatic.com; "
         "connect-src 'self' ws: wss:; "
         "frame-ancestors 'none';"
     )
@@ -487,7 +487,7 @@ def run():
 
     # Get configuration from environment
     port = runtime.get_web_ui_port()
-    host = runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "localhost"
+    host = runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "0.0.0.0"
 
     register_api_route(webapp, lock)
 

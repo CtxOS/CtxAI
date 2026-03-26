@@ -61,8 +61,8 @@ export async function importComponent(path, targetElement) {
     const doc = parser.parseFromString(html, "text/html");
 
     const allNodes = [
-      ...doc.querySelectorAll("style"),
-      ...doc.querySelectorAll("script"),
+      ...doc.head.querySelectorAll("style"),
+      ...doc.head.querySelectorAll("script"),
       ...doc.body.childNodes,
     ];
 

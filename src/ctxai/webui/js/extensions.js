@@ -66,10 +66,13 @@ export async function loadJsExtensions(extensionPoint) {
     });
     /** @type {JsExtensionImport[]} */
     const imports = await Promise.all(
-      response.extensions.map(async (path) => ({
-        path,
-        module: await import(normalizePath(path)),
-      })),
+      response.extensions.map(async (ext) => {
+        const path = typeof ext === "string" ? ext : ext.path;
+        return {
+          path,
+          module: await import(normalizePath(path)),
+        };
+      }),
     );
     cache.add(JS_CACHE_AREA, extensionPoint, imports);
     return imports;
@@ -182,8 +185,9 @@ export async function importHtmlExtensions(extensionPoint, targetElement) {
     });
     let combinedHTML = "";
     for (const extension of response.extensions) {
-      const path = normalizePath(extension).replace(/"/g, "&quot;");
-      combinedHTML += `<x-component path="${path}"></x-component>`;
+      const path = typeof extension === "string" ? extension : extension.path;
+      const escaped = normalizePath(path).replace(/"/g, "&quot;");
+      combinedHTML += `<x-component path="${escaped}"></x-component>`;
     }
     cache.add(HTML_CACHE_AREA, extensionPoint, combinedHTML);
     targetElement.innerHTML = combinedHTML;
