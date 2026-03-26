@@ -1,14 +1,7 @@
 {
-  "recommendations": [
-    "ms-python.python",
-    "ms-python.vscode-pylance",
-    "ms-python.black-formatter",
-    "charliermarsh.ruff",
-    "esbenp.prettier-vscode",
-    "dbaeumer.vscode-eslint",
-    "usernamehw.errorlens",
-    "ms-python.debugpy",
-    "eamodio.gitlens",
-    "mutantdino.resourcemonitor"
-  ]
+    "recommendations": [
+        "usernamehw.errorlens",
+        "ms-python.debugpy",
+        "ms-python.python"
+    ]
 }

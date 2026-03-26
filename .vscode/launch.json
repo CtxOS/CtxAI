@@ -1,17 +1,15 @@
 {
   "version": "0.2.0",
   "configurations": [
+
     {
       "name": "Debug run_ui.py",
       "type": "debugpy",
       "request": "launch",
-      "program": "./src/ctxai/run_ui.py",
+      "program": "./run_ui.py",
       "console": "integratedTerminal",
       "justMyCode": false,
-      "env": {
-        "PYTHONPATH": "src"
-      },
-      "args": ["--development=true"]
+      "args": ["--development=true", "-Xfrozen_modules=off"]
     },
     {
       "name": "Debug current file",
@@ -20,21 +18,7 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "justMyCode": false,
-      "env": {
-        "PYTHONPATH": "src"
-      }
-    },
-    {
-      "name": "Python: Pytest",
-      "type": "debugpy",
-      "request": "launch",
-      "module": "pytest",
-      "args": ["${workspaceFolder}/tests/"],
-      "console": "integratedTerminal",
-      "justMyCode": false,
-      "env": {
-        "PYTHONPATH": "src"
-      }
+      "args": ["--development=true", "-Xfrozen_modules=off"]
     }
   ]
 }

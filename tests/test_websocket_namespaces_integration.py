@@ -1,8 +1,7 @@
 import asyncio
 import contextlib
 import socket
-from collections.abc import AsyncIterator
-from typing import Any
+from typing import Any, AsyncIterator
 
 import pytest
 
@@ -49,12 +48,12 @@ async def test_unregistered_namespace_connection_fails_with_unknown_namespace_co
     connect_error payload (UNKNOWN_NAMESPACE), independent of python-socketio defaults.
     """
 
-    import socketio
     from flask import Flask
+    import socketio
 
-    from ctxai.helpers.websocket import WebSocketHandler
-    from ctxai.helpers.websocket_manager import WebSocketManager
-    from ctxai.run_ui import configure_websocket_namespaces
+    from helpers.websocket import WebSocketHandler
+    from helpers.websocket_manager import WebSocketManager
+    from run_ui import configure_websocket_namespaces
 
     class OpenHandler(WebSocketHandler):
         @classmethod

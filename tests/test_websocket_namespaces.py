@@ -3,9 +3,8 @@ import contextlib
 import socket
 import sys
 import threading
-from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import Any
+from typing import Any, AsyncIterator
 from unittest.mock import AsyncMock
 
 import pytest
@@ -14,8 +13,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from ctxai.helpers.state_monitor import StateMonitor
-from ctxai.helpers.websocket_manager import WebSocketManager
+from helpers.state_monitor import StateMonitor
+from helpers.websocket_manager import WebSocketManager
 
 
 class FakeSocketIOServer:
@@ -106,12 +105,12 @@ async def test_namespace_isolation_state_sync_vs_dev_websocket_test() -> None:
     Acceptance proof for `/webui` vs `/dev_websocket_test` namespaces.
     """
 
-    import socketio
     from flask import Flask
+    import socketio
 
-    from ctxai.helpers.websocket import WebSocketHandler
-    from ctxai.helpers.websocket_manager import WebSocketManager
-    from ctxai.run_ui import configure_websocket_namespaces
+    from helpers.websocket import WebSocketHandler
+    from helpers.websocket_manager import WebSocketManager
+    from run_ui import configure_websocket_namespaces
 
     class StateHandler(WebSocketHandler):
         @classmethod
@@ -221,8 +220,8 @@ async def test_diagnostics_include_source_namespace_and_deliver_on_dev_namespace
     but must include `sourceNamespace` identifying the origin namespace.
     """
 
-    from ctxai.helpers.websocket import WebSocketHandler
-    from ctxai.helpers.websocket_manager import DIAGNOSTIC_EVENT, WebSocketManager
+    from helpers.websocket import WebSocketHandler
+    from helpers.websocket_manager import DIAGNOSTIC_EVENT, WebSocketManager
 
     class DummyHandler(WebSocketHandler):
         @classmethod
@@ -246,7 +245,7 @@ async def test_diagnostics_include_source_namespace_and_deliver_on_dev_namespace
 
     await manager.handle_connect(ns_dev, "sid-watcher")
     await manager.handle_connect(ns_state, "sid-client")
-    assert await manager.register_diagnostic_watcher(ns_dev, "sid-watcher") is True
+    assert manager.register_diagnostic_watcher(ns_dev, "sid-watcher") is True
 
     socketio.emit.reset_mock()
 
@@ -268,7 +267,7 @@ def test_namespace_discovery_maps_core_handlers_to_expected_namespaces() -> None
     (no cross-registration).
     """
 
-    from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
+    from helpers.websocket_namespace_discovery import discover_websocket_namespaces
 
     discoveries = discover_websocket_namespaces(
         handlers_folder="python/websocket_handlers",
@@ -287,15 +286,21 @@ def test_namespace_discovery_maps_core_handlers_to_expected_namespaces() -> None
 
 
 def test_run_ui_builds_namespace_handler_map_without_cross_registration() -> None:
-    from ctxai.run_ui import _build_websocket_handlers_by_namespace
+    from run_ui import _build_websocket_handlers_by_namespace
 
     handlers_by_namespace = _build_websocket_handlers_by_namespace(object(), threading.RLock())
 
     assert "/webui" in handlers_by_namespace
     assert "/dev_websocket_test" in handlers_by_namespace
 
-    assert all(handler.__class__.__name__ != "DevWebsocketTestHandler" for handler in handlers_by_namespace["/webui"])
-    assert all(handler.__class__.__name__ != "WebuiHandler" for handler in handlers_by_namespace["/dev_websocket_test"])
+    assert all(
+        handler.__class__.__name__ != "DevWebsocketTestHandler"
+        for handler in handlers_by_namespace["/webui"]
+    )
+    assert all(
+        handler.__class__.__name__ != "WebuiHandler"
+        for handler in handlers_by_namespace["/dev_websocket_test"]
+    )
 
 
 @pytest.mark.asyncio
@@ -304,7 +309,7 @@ async def test_route_event_dispatches_only_within_connected_namespace_and_result
     CONTRACT.NS.ROUTING: inbound routing is restricted to handlers in the connected namespace.
     """
 
-    from ctxai.helpers.websocket import WebSocketHandler
+    from helpers.websocket import WebSocketHandler
 
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
@@ -360,7 +365,7 @@ async def test_lifecycle_broadcasts_deliver_only_within_the_namespace() -> None:
     CONTRACT.NS.DELIVERY: lifecycle broadcasts are namespace-scoped.
     """
 
-    from ctxai.helpers.websocket_manager import (
+    from helpers.websocket_manager import (
         LIFECYCLE_CONNECT_EVENT,
         LIFECYCLE_DISCONNECT_EVENT,
     )
@@ -375,7 +380,9 @@ async def test_lifecycle_broadcasts_deliver_only_within_the_namespace() -> None:
     await manager.handle_connect(ns_state, "sid-state-1")
     await asyncio.sleep(0)
     state_connect_calls = [
-        call for call in socketio.emit.await_args_list if call.args and call.args[0] == LIFECYCLE_CONNECT_EVENT
+        call
+        for call in socketio.emit.await_args_list
+        if call.args and call.args[0] == LIFECYCLE_CONNECT_EVENT
     ]
     assert state_connect_calls
     assert all(call.kwargs.get("namespace") == ns_state for call in state_connect_calls)
@@ -384,7 +391,9 @@ async def test_lifecycle_broadcasts_deliver_only_within_the_namespace() -> None:
     await manager.handle_connect(ns_dev, "sid-dev-1")
     await asyncio.sleep(0)
     dev_connect_calls = [
-        call for call in socketio.emit.await_args_list if call.args and call.args[0] == LIFECYCLE_CONNECT_EVENT
+        call
+        for call in socketio.emit.await_args_list
+        if call.args and call.args[0] == LIFECYCLE_CONNECT_EVENT
     ]
     assert dev_connect_calls
     assert all(call.kwargs.get("namespace") == ns_dev for call in dev_connect_calls)
@@ -398,7 +407,9 @@ async def test_lifecycle_broadcasts_deliver_only_within_the_namespace() -> None:
     await manager.handle_disconnect(ns_state, "sid-state-2")
     await asyncio.sleep(0)
     state_disconnect_calls = [
-        call for call in socketio.emit.await_args_list if call.args and call.args[0] == LIFECYCLE_DISCONNECT_EVENT
+        call
+        for call in socketio.emit.await_args_list
+        if call.args and call.args[0] == LIFECYCLE_DISCONNECT_EVENT
     ]
     assert state_disconnect_calls
     assert all(call.kwargs.get("namespace") == ns_state for call in state_disconnect_calls)
@@ -411,7 +422,7 @@ async def test_request_semantics_no_handlers_and_timeouts_are_namespace_scoped_a
     CONTRACT.REQUEST.RESULTS + CONTRACT.REQUEST.RESULTS.ORDERING + CONTRACT.NS.ROUTING.
     """
 
-    from ctxai.helpers.websocket import WebSocketHandler
+    from helpers.websocket import WebSocketHandler
 
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
@@ -421,6 +432,10 @@ async def test_request_semantics_no_handlers_and_timeouts_are_namespace_scoped_a
     ns_dev = "/dev_websocket_test"
 
     class Alpha(WebSocketHandler):
+        @classmethod
+        def get_event_types(cls) -> list[str]:
+            return ["multi", "slow"]
+
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
             if event_type == "slow":
                 await asyncio.sleep(0.2)
@@ -428,6 +443,10 @@ async def test_request_semantics_no_handlers_and_timeouts_are_namespace_scoped_a
             return {"alpha": True}
 
     class Beta(WebSocketHandler):
+        @classmethod
+        def get_event_types(cls) -> list[str]:
+            return ["multi"]
+
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
             return {"beta": True}
 
@@ -447,10 +466,11 @@ async def test_request_semantics_no_handlers_and_timeouts_are_namespace_scoped_a
     assert no_handler["results"][0]["error"]["code"] == "NO_HANDLERS"
     assert ns_dev in no_handler["results"][0]["error"]["error"]
 
-    # Event in a namespace that has handlers -> handler processes it.
-    handled_in_state = await manager.route_event(ns_state, "unknown_event", {"x": 1}, "sid-a")
-    assert handled_in_state["results"][0]["ok"] is True
-    assert handled_in_state["results"][0]["data"]["alpha"] is True
+    # Unknown event name in a namespace that *does* have other handlers -> NO_HANDLERS.
+    unhandled_in_state = await manager.route_event(ns_state, "unknown_event", {"x": 1}, "sid-a")
+    assert unhandled_in_state["results"][0]["ok"] is False
+    assert unhandled_in_state["results"][0]["error"]["code"] == "NO_HANDLERS"
+    assert ns_state in unhandled_in_state["results"][0]["error"]["error"]
 
     # Known event name in the wrong namespace -> NO_HANDLERS (no cross-namespace fallback).
     wrong_namespace = await manager.route_event(ns_dev, "multi", {"x": 1}, "sid-dev")

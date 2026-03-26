@@ -1,1 +1,5 @@
-# Override dependencies - now handled via pyproject.toml [tool.uv].override-dependencies
+litellm==1.79.3
+openai>=1.99.2
+# `unstructured` pulls `chardet` without an upper bound, but `requests`
+# warns on import when chardet>=6 is present in the same environment.
+chardet<6

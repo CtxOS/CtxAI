@@ -1,9 +1,9 @@
 # Troubleshooting and FAQ
-This page addresses frequently asked questions (FAQ) and provides troubleshooting steps for common issues encountered while using Ctx AI.
+This page addresses frequently asked questions (FAQ) and provides troubleshooting steps for common issues encountered while using CtxAI.
 
 ## Frequently Asked Questions
-**1. How do I ask Ctx AI to work directly on my files or dirs?**
-- Place the files/dirs in `/ctx/usr`. Ctx AI will be able to perform tasks on them.
+**1. How do I ask CtxAI to work directly on my files or dirs?**
+- Place the files/dirs in `/ctx0/usr`. CtxAI will be able to perform tasks on them.
 
 **2. When I input something in the chat, nothing happens. What's wrong?**
 - Check if you have set up API keys in the Settings page. If not, the application cannot call LLM providers.
@@ -15,35 +15,35 @@ This page addresses frequently asked questions (FAQ) and provides troubleshootin
 - No. ChatGPT Plus does not include API credits. You must provide an OpenAI API key in Settings.
 
 **5. Where is chat history stored?**
-- Chat history lives at `/ctx/usr/chats/` inside the container.
+- Chat history lives at `/ctx0/usr/chats/` inside the container.
 
-**6. How do I integrate open-source models with Ctx AI?**
+**6. How do I integrate open-source models with CtxAI?**
 Refer to the [Choosing your LLMs](../setup/installation.md#installing-and-using-ollama-local-models) section for configuring local models (Ollama, LM Studio, etc.).
 
 > [!TIP]
 > Some LLM providers offer free usage tiers, for example Groq, Mistral, SambaNova, or CometAPI.
 
-**7. How can I make Ctx AI retain memory between sessions?**
-Use **Settings → Backup & Restore** and avoid mapping the entire `/a0` directory. See [How to update Ctx AI](../setup/installation.md#how-to-update-ctxai).
+**7. How can I make CtxAI retain memory between sessions?**
+Use **Settings → Backup & Restore** and avoid mapping the entire `/ctx0` directory. See [How to update CtxAI](../setup/installation.md#how-to-update-ctxai).
 
-**8. My browser agent fails or is unreliable. What now?**
-The built-in browser agent is currently unstable on some systems. Use Skills or MCP alternatives such as Browser OS, Chrome DevTools, or Vercel's Agent Browser. See [MCP Setup](mcp-setup.md).
+**8. My browser agent fails or says Playwright is missing. What now?**
+The built-in Browser Agent is a plugin that uses the Main Model from `_model_config`. **Docker:** the Chromium headless shell is shipped preinstalled (typically under `/ctx0/tmp/playwright`). **Local development:** if the binary is missing, `ensure_playwright_binary()` in `plugins/_browser_agent/helpers/playwright.py` runs `playwright install chromium --only-shell` into `tmp/playwright` on first Browser Agent use (you may see UI notifications). To install ahead of time, run `PLAYWRIGHT_BROWSERS_PATH=tmp/playwright playwright install chromium --only-shell` after `pip install -r requirements.txt`. If you prefer an external browser stack, use MCP alternatives such as Browser OS, Chrome DevTools, or Playwright MCP. See [MCP Setup](mcp-setup.md).
 
 **9. My secrets disappeared after a backup restore.**
-Secrets are stored in `/ctx/usr/secrets.env` and are not always included in backup archives. Copy them manually.
+Secrets are stored in `/ctx0/usr/secrets.env` and are not always included in backup archives. Copy them manually.
 
 **10. Where can I find more documentation or tutorials?**
-- Join the Ctx AI [Skool](https://www.skool.com/ctxai) or [Discord](https://discord.gg/B8KZKNsPpj) community.
+- Join the CtxAI [Skool](https://www.skool.com/ctxai) or [Discord](https://discord.gg/B8KZKNsPpj) community.
 
 **11. How do I adjust API rate limits?**
-Use the model rate limit fields in Settings (Chat/Utility/Browser model sections) to set request/input/output limits. These map to the model config limits (for example `limit_requests`, `limit_input`, `limit_output`).
+Use the model rate limit fields in Settings (Main Model and Utility Model sections) to set request/input/output limits. The Browser Agent inherits the Main Model limits. These map to the model config limits (for example `limit_requests`, `limit_input`, `limit_output`).
 
 **12. My `code_execution_tool` doesn't work, what's wrong?**
 - Ensure Docker is installed and running.
 - On macOS, grant Docker Desktop access to your project files.
 - Verify that the Docker image is updated.
 
-**13. Can Ctx AI interact with external APIs or services (e.g., WhatsApp)?**
+**13. Can CtxAI interact with external APIs or services (e.g., WhatsApp)?**
 Yes, by creating custom tools or using MCP servers. See [Extensions](../developer/extensions.md) and [MCP Setup](mcp-setup.md).
 
 ## Troubleshooting
@@ -55,7 +55,45 @@ Yes, by creating custom tools or using MCP servers. See [Extensions](../develope
 **Usage**
 
 - **Terminal commands not executing:** Ensure the Docker container is running and properly configured.  Check SSH settings if applicable. Check if the Docker image is updated by removing it from Docker Desktop app, and subsequently pulling it again.
+- **CtxAI stuck on the update screen or not starting after an update:** If the browser stays on the updating screen for multiple minutes, reload the current browser window first. If the UI still does not come back, restart the Docker container. If it still does not recover, queue another self-update for the next startup and inspect the updater log.
+
+From the host, find the container name:
+
+```bash
+docker ps
+```
+
+Open a shell inside the container:
+
+```bash
+docker exec -it <container> /bin/bash
+```
+
+Queue an update for the next startup attempt with the recovery script in `/exe`:
+
+```bash
+/exe/trigger_self_update.sh
+```
+
+That default command writes `/exe/ctx0-self-update.yaml` with `main` and `latest`, so the next startup tries the newest release in the current installed major version. You can also specify the branch, version, and backup settings:
+
+```bash
+/exe/trigger_self_update.sh ready latest
+/exe/trigger_self_update.sh main v1.10 --backup-dir /root/update-backups --backup-name usr-recovery.zip
+/exe/trigger_self_update.sh development latest --no-backup
+```
+
+You can run the same commands directly from the host without opening a shell:
+
+```bash
+docker exec -it <container> /exe/trigger_self_update.sh
+docker exec -it <container> /exe/trigger_self_update.sh ready latest
+docker exec -it <container> tail -n 200 /exe/ctx0-self-update.log
+docker exec -it <container> cat /exe/ctx0-self-update-status.yaml
+```
+
+The recovery command only schedules the update. Restart the container or let CtxAI start again, then check `/exe/ctx0-self-update.log` and `/exe/ctx0-self-update-status.yaml` to see what happened.
 
 * **Error Messages:** Pay close attention to the error messages displayed in the Web UI or terminal.  They often provide valuable clues for diagnosing the issue. Refer to the specific error message in online searches or community forums for potential solutions.
 
-* **Performance Issues:** If Ctx AI is slow or unresponsive, it might be due to resource limitations, network latency, or the complexity of your prompts and tasks, especially when using local models.
+* **Performance Issues:** If CtxAI is slow or unresponsive, it might be due to resource limitations, network latency, or the complexity of your prompts and tasks, especially when using local models.

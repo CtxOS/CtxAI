@@ -1,15 +1,15 @@
 # Installation Guide
 
-Click to open a video to learn how to install Ctx AI:
+Click to open a video to learn how to install CtxAI:
 
-[![Easy Installation guide](../res/easy_ins_vid.png)](https://www.youtube.com/watch?v=w5v5Kjx51hs)
+[![Easy Installation guide](../res/install_guide.png)](https://www.youtube.com/watch?v=2-qFNUvqrXA)
 
 ## **Goal:** Go from zero to a first working chat with minimal setup.
 
 
 ## Step 1: Install Docker Desktop
 
-Docker Desktop provides the runtime environment for Ctx AI, ensuring consistent behavior and security across platforms. The entire framework runs within a Docker container, providing isolation and easy deployment.
+Docker Desktop provides the runtime environment for CtxAI, ensuring consistent behavior and security across platforms. The entire framework runs within a Docker container, providing isolation and easy deployment.
 
 **Choose your operating system:**
 
@@ -62,9 +62,9 @@ Once installed, launch Docker Desktop from your Start menu or desktop shortcut.
 
 <img src="../res/setup/image-11.png" alt="docker installed" height="100"/>
 
-✅ **Docker is now installed!**
+✅ **Docker is now installed!** 
 
-### Continue to [Step 2: Run Ctx AI](#step-2-run-ctxai)
+### Continue to [Step 2: Run CtxAI](#step-2-run-ctxai)
 
 ---
 
@@ -99,9 +99,9 @@ Open Docker Desktop from your Applications folder.
 
 ![docker socket macOS](../res/setup/macsocket.png)
 
-✅ **Docker is now installed!**
+✅ **Docker is now installed!** 
 
-### Continue to [Step 2: Run Ctx AI](#step-2-run-ctxai)
+### Continue to [Step 2: Run CtxAI](#step-2-run-ctxai)
 
 ---
 
@@ -138,16 +138,16 @@ docker login
 
 If you installed Docker Desktop, launch it from your applications menu.
 
-✅ **Docker is now installed!**
+✅ **Docker is now installed!** 
 
 > [!TIP]
 > **Deploying on a VPS/Server?** For production deployments with reverse proxy, SSL, and domain configuration, see the [VPS Deployment Guide](vps-deployment.md).
 
 ---
 
-## Step 2: Run Ctx AI
+## Step 2: Run CtxAI
 
-### 2.1. Pull the Ctx AI Docker Image
+### 2.1. Pull the CtxAI Docker Image
 
 **Using Docker Desktop GUI:**
 
@@ -165,22 +165,22 @@ docker pull ctxos/ctxai
 
 ### 2.2. (Optional) Map Folders for Persistence
 
-Choose or create a folder on your computer where Ctx AI will save its data.
+Choose or create a folder on your computer where CtxAI will save its data. 
 
-### Setting up persistence is needed only if you want your data and files to remain available even after you delete the container.
+### Setting up persistence is needed only if you want your data and files to remain available even after you delete the container. 
 
 You can pick any location you find convenient:
 
 - **Windows:** `C:\ctxai-data`
 - **macOS/Linux:** `/home/user/ctxai-data`
 
-You can map just the `/ctx/usr` directory (recommended) or individual subfolders of `/a0` to a local directory.
+You can map just the `/ctx0/usr` directory (recommended) or individual subfolders of `/ctx` to a local directory.
 
 > [!CAUTION]
-> Do **not** map the entire `/a0` directory: it contains the application code and can break upgrades.
+> Do **not** map the entire `/ctx` directory: it contains the application code and can break upgrades.
 
 > [!TIP]
-> Choose a location that's easy to access and backup. All your Ctx AI data will be directly accessible in this directory.
+> Choose a location that's easy to access and backup. All your CtxAI data will be directly accessible in this directory.
 
 ### 2.3. Run the Container
 
@@ -205,33 +205,33 @@ The framework will take a few seconds to initialize. Find the mapped port in Doc
 
 ![docker logs](../res/setup/5-docker-click-to-open.png)
 
-Open `http://localhost:<PORT>` in your browser. The Web UI will open - Ctx AI is ready for configuration!
+Open `http://localhost:<PORT>` in your browser. The Web UI will open - CtxAI is ready for configuration!
 
-![docker ui](../res/setup/6-docker-a0-running-new.png)
+![docker ui](../res/setup/6-docker-ctx0-running-new.png)
 
 > [!TIP]
 > You can also access the Web UI by clicking the port link directly under the container ID in Docker Desktop.
 
 > [!NOTE]
-> After starting the container, you'll find all Ctx AI files in your chosen directory. You can access and edit these files directly on your machine, and the changes will be immediately reflected in the running container.
+> After starting the container, you'll find all CtxAI files in your chosen directory. You can access and edit these files directly on your machine, and the changes will be immediately reflected in the running container.
 
 **Running A0 using Terminal?**
 
 ```bash
-docker run -p 0:80 -v /path/to/your/work_dir:/ctx/usr ctxos/ctxai
+docker run -p 0:80 -v /path/to/your/work_dir:/ctx0/usr ctxos/ctxai
 ```
 
 - Replace `0` with a fixed port if you prefer (e.g., `50080:80`)
 
 ---
 
-## Step 3: Configure Ctx AI
+## Step 3: Configure CtxAI
 
 The UI will show a warning banner "Missing LLM API Key for current settings". Click on `Add your API key` to enter Settings and start configuring A0.
 
 ### Settings Configuration
 
-Ctx AI provides a comprehensive settings interface to customize various aspects of its functionality. Access the settings by clicking the "Settings" button with a gear icon in the sidebar.
+CtxAI provides a comprehensive settings interface to customize various aspects of its functionality. Access the settings by clicking the "Settings" button with a gear icon in the sidebar.
 
 ### Agent Configuration
 
@@ -240,7 +240,7 @@ Ctx AI provides a comprehensive settings interface to customize various aspects 
 - **Knowledge Subdirectory:** Specify the location of custom knowledge files to enhance the agent's understanding.
 
 > [!NOTE]
-> Since v0.9.7, custom prompts belong in `/ctx/agents/<agent_name>/prompts/` rather than a shared `/prompts` folder. See the [Extensions guide](../developer/extensions.md#prompts) for details.
+> Since v0.9.7, custom prompts belong in `/ctx0/agents/<agent_name>/prompts/` rather than a shared `/prompts` folder. See the [Extensions guide](../developer/extensions.md#prompts) for details.
 
 > [!NOTE]
 > The Hacker profile is included in the main image. After launch, choose the **hacker** agent profile in Settings if you want the security-focused prompts and tooling. The "hacker" branch is deprecated.
@@ -280,7 +280,7 @@ Use `claude-sonnet-4-5` for Anthropic, but use `anthropic/claude-sonnet-4-5` for
 - **Model Name:** Select the specific embedding model (e.g., text-embedding-3-small)
 
 > [!NOTE]
-> Ctx AI uses a local embedding model by default (runs on CPU), but you can switch to OpenAI embeddings like `text-embedding-3-small` or `text-embedding-3-large` if preferred.
+> CtxAI uses a local embedding model by default (runs on CPU), but you can switch to OpenAI embeddings like `text-embedding-3-small` or `text-embedding-3-large` if preferred.
 
 ### Speech to Text Options
 
@@ -293,13 +293,13 @@ Use `claude-sonnet-4-5` for Anthropic, but use `anthropic/claude-sonnet-4-5` for
 Configure API keys for various service providers directly within the Web UI. Click `Save` to confirm your settings.
 
 > [!NOTE]
-> **OpenAI API vs Plus subscription:** A ChatGPT Plus subscription does not include API credits. You must provide a separate API key for OpenAI usage in Ctx AI.
+> **OpenAI API vs Plus subscription:** A ChatGPT Plus subscription does not include API credits. You must provide a separate API key for OpenAI usage in CtxAI.
 
 > [!TIP]
 > For OpenAI-compatible providers (e.g., custom gateways or Z.AI/GLM), add the API key under **External Services → Other OpenAI-compatible API keys**, then select **OpenAI Compatible** as the provider in model settings.
 
 > [!CAUTION]
-> **GitHub Copilot Provider:** When using the GitHub Copilot provider, after selecting the model and entering your first prompt, the OAuth login procedure will begin. You'll find the authentication code and link in the output logs. Complete the authentication process by following the provided link and entering the code, then you may continue using Ctx AI.
+> **GitHub Copilot Provider:** When using the GitHub Copilot provider, after selecting the model and entering your first prompt, the OAuth login procedure will begin. You'll find the authentication code and link in the output logs. Complete the authentication process by following the provided link and entering the code, then you may continue using CtxAI.
 
 ### Authentication
 
@@ -326,20 +326,22 @@ Learn more about Remote Function Calls in the [Development Setup guide](dev-setu
 
 ## Choosing Your LLMs
 
-The Settings page is the control center for selecting the Large Language Models (LLMs) that power Ctx AI. You can choose different LLMs for different roles:
+The Settings page is the control center for selecting the Large Language Models (LLMs) that power CtxAI. You can choose different LLMs for different roles:
 
 | LLM Role | Description |
 | --- | --- |
-| `chat_llm` | This is the primary LLM used for conversations and generating responses. |
+| `chat_llm` | This is the primary LLM used for conversations, agent reasoning, tool use, and the built-in browser agent. Vision support controls browser vision and image understanding. |
 | `utility_llm` | This LLM handles internal tasks like summarizing messages, managing memory, and processing internal prompts. Using a smaller, less expensive model here can improve efficiency. |
-| `browser_llm` | This LLM powers the browser agent for web navigation and interaction tasks. Vision support is recommended for better page understanding. |
 | `embedding_llm` | The embedding model shipped with A0 runs on CPU and is responsible for generating embeddings used for memory retrieval and knowledge base lookups. Changing the `embedding_llm` will re-index all of A0's memory. |
 
 **How to Change:**
 
 1. Open Settings page in the Web UI.
-2. Choose the provider for the LLM for each role (Chat model, Utility model, Browser model, Embedding model) and write the model name.
+2. Choose the provider for the LLM for each role (Main Model, Utility Model, Embedding Model) and write the model name.
 3. Click "Save" to apply the changes.
+
+> [!NOTE]
+> The Browser Agent does not have a separate model slot. It uses the effective Main Model resolved by `_model_config`, including per-chat overrides and the Main Model vision flag.
 
 ### Important Considerations
 
@@ -436,7 +438,7 @@ ollama pull <model-name>
 
 Replace `<model-name>` with the name of the model you want to use. For example: `ollama pull mistral-large`
 
-### Configuring Ollama in Ctx AI
+### Configuring Ollama in CtxAI
 
 1. Once you've downloaded your model(s), select it in the Settings page of the GUI.
 2. Within the Chat model, Utility model, or Embedding model section, choose **Ollama** as provider.
@@ -447,7 +449,7 @@ Replace `<model-name>` with the name of the model you want to use. For example: 
 ![ollama](../res/setup/settings/4-local-models.png)
 
 > [!NOTE]
-> If Ctx AI runs in Docker and Ollama runs on the host, ensure port **11434** is reachable from the container. If both services are in the same Docker network, you can use `http://<container_name>:11434` instead of `host.docker.internal`.
+> If CtxAI runs in Docker and Ollama runs on the host, ensure port **11434** is reachable from the container. If both services are in the same Docker network, you can use `http://<container_name>:11434` instead of `host.docker.internal`.
 
 ### Managing Downloaded Models
 
@@ -464,14 +466,14 @@ ollama rm <model-name>
 ```
 
 > [!TIP]
-> Experiment with different model combinations to find the balance of performance and cost that best suits your needs. E.g., faster and lower latency LLMs will help, and you can also use `faiss_gpu` instead of `faiss_cpu` for the memory.
+> Experiment with different model combinations to find the balance of performance and cost that best suits your needs. E.g., faster and lower latency LLMs will help, and you can also use `faiss_gpu` instead of `faiss_cpu` for the memory. 
 
 ---
 
-## How to Update Ctx AI
+## How to Update CtxAI
 
 > [!NOTE]
-> Since v0.9, Ctx AI includes a Backup & Restore workflow in the Settings UI. This is the **safest** way to upgrade Docker instances.
+> Since v0.9, CtxAI includes a Backup & Restore workflow in the Settings UI. This is the **safest** way to upgrade Docker instances.
 
 ### Recommended Update Process (Docker)
 
@@ -482,23 +484,23 @@ ollama rm <model-name>
 5. In the **new** instance, restore that backup from the same panel.
 
 > [!TIP]
-> If the new instance fails to load settings, remove `/ctx/usr/settings.json` and restart to regenerate default settings.
+> If the new instance fails to load settings, remove `/ctx0/usr/settings.json` and restart to regenerate default settings.
 
 ---
 
-## Using Ctx AI on Your Mobile Device
+## Using CtxAI on Your Mobile Device
 
-Ctx AI can be accessed from mobile devices and other computers using the built-in **Tunnel feature**.
+CtxAI can be accessed from mobile devices and other computers using the built-in **Tunnel feature**.
 
 ### Recommended: Using Tunnel (Remote Access)
 
-The Tunnel feature allows secure access to your Ctx AI instance from anywhere:
+The Tunnel feature allows secure access to your CtxAI instance from anywhere:
 
 1. Open Settings in the Web UI
 2. Navigate to the **External Services** tab
 3. Click on **Flare Tunnel** in the navigation menu
 4. Click **Create Tunnel** to generate a secure HTTPS URL
-5. Share this URL to access Ctx AI from any device
+5. Share this URL to access CtxAI from any device
 
 > [!IMPORTANT]
 > **Security:** Always set a username and password in Settings → Authentication before creating a tunnel to secure your instance on the internet.
@@ -516,37 +518,37 @@ If you prefer to keep access limited to your local network:
 > [!TIP]
 > Find your computer's IP address with `ipconfig` (Windows) or `ifconfig`/`ip addr` (macOS/Linux). It's usually in the format `192.168.x.x` or `10.0.x.x`.
 
-For developers or users who need to run Ctx AI directly on their system, see the [In-Depth Guide for Full Binaries Installation](dev-setup.md).
+For developers or users who need to run CtxAI directly on their system, see the [In-Depth Guide for Full Binaries Installation](dev-setup.md).
 
 ---
 
 ## Advanced: Automated Configuration via Environment Variables
 
-Ctx AI settings can be automatically configured using environment variables with the `A0_SET_` prefix in your `.env` file. This enables automated deployments without manual configuration.
+CtxAI settings can be automatically configured using environment variables with the `CTX0_SET_` prefix in your `.env` file. This enables automated deployments without manual configuration.
 
 **Usage:**
 
 Add variables to your `.env` file in the format:
 
 ```env
-A0_SET_{setting_name}={value}
+CTX0_SET_{setting_name}={value}
 ```
 
 **Examples:**
 
 ```env
 # Model configuration
-A0_SET_chat_model_provider=anthropic
-A0_SET_chat_model_name=claude-3-5-sonnet-20241022
-A0_SET_chat_model_ctx_length=200000
+CTX0_SET_chat_model_provider=anthropic
+CTX0_SET_chat_model_name=claude-3-5-sonnet-20241022
+CTX0_SET_chat_model_ctx_length=200000
 
 # Memory settings
-A0_SET_memory_recall_enabled=true
-A0_SET_memory_recall_interval=5
+CTX0_SET_memory_recall_enabled=true
+CTX0_SET_memory_recall_interval=5
 
 # Agent configuration
-A0_SET_agent_profile=custom
-A0_SET_agent_memory_subdir=production
+CTX0_SET_agent_profile=custom
+CTX0_SET_agent_memory_subdir=production
 ```
 
 **Docker usage:**
@@ -555,8 +557,8 @@ When running Docker, you can pass these as environment variables:
 
 ```bash
 docker run -p 50080:80 \
-  -e A0_SET_chat_model_provider=anthropic \
-  -e A0_SET_chat_model_name=claude-3-5-sonnet-20241022 \
+  -e CTX0_SET_chat_model_provider=anthropic \
+  -e CTX0_SET_chat_model_name=claude-3-5-sonnet-20241022 \
   ctxos/ctxai
 ```
 
@@ -570,11 +572,11 @@ docker run -p 50080:80 \
 
 ### Manual Migration (Legacy or Non-Docker)
 
-If you are migrating from older, non-Docker setups, A0 handles the migration of legacy folders and files automatically at runtime. The right place to save your files and directories is `a0/usr`.
+If you are migrating from older, non-Docker setups, A0 handles the migration of legacy folders and files automatically at runtime. The right place to save your files and directories is `ctx0/usr`.
 
 ## Conclusion
 
-After following the instructions for your specific operating system, you should have Ctx AI successfully installed and running. You can now start exploring the framework's capabilities and experimenting with creating your own intelligent agents.
+After following the instructions for your specific operating system, you should have CtxAI successfully installed and running. You can now start exploring the framework's capabilities and experimenting with creating your own intelligent agents.
 
 **Next Steps:**
 
@@ -582,4 +584,4 @@ After following the instructions for your specific operating system, you should 
 - For development setup and extensions, see the [Development Setup Guide](dev-setup.md)
 - For remote access via tunnel, see [Remote Access via Tunneling](../guides/usage.md#remote-access-via-tunneling)
 
-If you encounter any issues during the installation process, please consult the [Troubleshooting section](../guides/troubleshooting.md) of this documentation or refer to the Ctx AI [Skool](https://www.skool.com/ctxai) or [Discord](https://discord.gg/B8KZKNsPpj) community for assistance.
+If you encounter any issues during the installation process, please consult the [Troubleshooting section](../guides/troubleshooting.md) of this documentation or refer to the CtxAI [Skool](https://www.skool.com/ctxai) or [Discord](https://discord.gg/B8KZKNsPpj) community for assistance.

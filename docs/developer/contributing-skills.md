@@ -1,6 +1,6 @@
-# Contributing Skills to Ctx AI
+# Contributing Skills to CtxAI
 
-Welcome to the Ctx AI Skills ecosystem! This guide will help you create, test, and share skills with the community.
+Welcome to the CtxAI Skills ecosystem! This guide will help you create, test, and share skills with the community.
 
 ---
 
@@ -20,7 +20,7 @@ A **Skill** is a contextual expertise module that provides the AI agent with spe
 ### Cross-Platform Compatibility
 
 The SKILL.md standard is compatible with:
-- **Ctx AI** (this project)
+- **CtxAI** (this project)
 - **Claude Code** (Anthropic)
 - **Cursor** (AI IDE)
 - **OpenAI Codex CLI**
@@ -227,7 +227,7 @@ This skill includes helper scripts:
 # Validate the skill
 python -m helpers.skills_cli validate my-awesome-skill
 
-# Test in Ctx AI
+# Test in CtxAI
 # Start the agent and ask it to perform the task your skill handles
 ```
 
@@ -285,7 +285,7 @@ One skill = one expertise area. If your skill is getting too long, split it:
    ```
 
 2. **Test Semantic Recall:**
-   Start Ctx AI and ask questions that should trigger your skill.
+   Start CtxAI and ask questions that should trigger your skill.
 
 3. **Verify Instructions:**
    Follow your own instructions manually to ensure they work.
@@ -294,7 +294,7 @@ One skill = one expertise area. If your skill is getting too long, split it:
 
 ## Sharing Skills
 
-### Contributing to Ctx AI
+### Contributing to CtxAI
 
 1. **Fork the Repository:**
    ```bash
@@ -318,13 +318,13 @@ One skill = one expertise area. If your skill is getting too long, split it:
    - Title: `feat(skills): add my-skill-name skill`
    - Description: Explain what the skill does and why it's useful
 
-### Publishing to Skills Marketplace
+### Publishing Skills
 
-Share your skills on [skillsmp.com](https://skillsmp.com):
+Share your skills on [skillsmp.com](https://skillsmp.com) or [skills.sh](https://skills.sh):
 
 1. Create a GitHub repository for your skill
 2. Ensure it follows the SKILL.md standard
-3. Submit to the marketplace via their contribution process
+3. Submit via their contribution process
 
 ### Creating a Skills Collection
 

@@ -10,7 +10,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from ctxai.helpers.websocket_manager import WebSocketManager
+from helpers.websocket_manager import WebSocketManager
 
 NAMESPACE = "/webui"
 
@@ -30,9 +30,9 @@ async def test_state_sync_handshake_and_initial_snapshot_work_with_no_selected_c
     is null. We must still handshake and receive an initial `state_push` quickly (no hang).
     """
 
-    from ctxai.helpers.state_monitor import _reset_state_monitor_for_testing
-    from ctxai.helpers.state_snapshot import validate_snapshot_schema_v1
-    from ctxai.python.websocket_handlers.webui_handler import WebuiHandler
+    from helpers.state_snapshot import validate_snapshot_schema_v1
+    from helpers.state_monitor import _reset_state_monitor_for_testing
+    from python.websocket_handlers.webui_handler import WebuiHandler
 
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())

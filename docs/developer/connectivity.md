@@ -1,8 +1,8 @@
-# Ctx AI Connectivity Guide
+# CtxAI Connectivity Guide
 
-This guide covers the different ways to connect to Ctx AI from external applications, including using the External API, connecting as an MCP client, and enabling agent-to-agent communication.
+This guide covers the different ways to connect to CtxAI from external applications, including using the External API, connecting as an MCP client, and enabling agent-to-agent communication.
 
-**Note:** You can find your specific URLs and API tokens in your Ctx AI instance under `Settings > External Services`.
+**Note:** You can find your specific URLs and API tokens in your CtxAI instance under `Settings > External Services`.
 
 ### API Token Information
 
@@ -12,11 +12,11 @@ The API token is automatically generated from your username and password. This s
 
 ## External API Endpoints
 
-Ctx AI provides external API endpoints for integration with other applications. These endpoints use API key authentication and support text messages and file attachments.
+CtxAI provides external API endpoints for integration with other applications. These endpoints use API key authentication and support text messages and file attachments.
 
 ### `POST /api_message`
 
-Send messages to Ctx AI and receive responses. Supports text messages, file attachments, and conversation continuity.
+Send messages to CtxAI and receive responses. Supports text messages, file attachments, and conversation continuity.
 
 ### API Reference
 
@@ -25,7 +25,7 @@ Send messages to Ctx AI and receive responses. Supports text messages, file atta
 *   `message` (string, required): The message to send
 *   `attachments` (array, optional): Array of `{filename, base64}` objects
 *   `lifetime_hours` (number, optional): Chat lifetime in hours (default: 24)
-*   `project` (string, optional): Project name to activate (only on first message)
+*   `project_name` (string, optional): Project name to activate (only on first message)
 
 **Headers:**
 *   `X-API-KEY` (required)
@@ -39,7 +39,7 @@ Send messages to Ctx AI and receive responses. Supports text messages, file atta
 // Basic message example
 async function sendMessage() {
     try {
-        const response = await fetch('YOUR_AGENT_ZERO_URL/api_message', {
+        const response = await fetch('YOUR_CTXAI_URL/api_message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ sendMessage().then(result => {
 // Continue conversation example
 async function continueConversation(contextId) {
     try {
-        const response = await fetch('YOUR_AGENT_ZERO_URL/api_message', {
+        const response = await fetch('YOUR_CTXAI_URL/api_message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ async function sendWithAttachment() {
         const textContent = "Hello World from attachment!";
         const base64Content = btoa(textContent);
 
-        const response = await fetch('YOUR_AGENT_ZERO_URL/api_message', {
+        const response = await fetch('YOUR_CTXAI_URL/api_message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ sendWithAttachment();
 async function sendMessageWithProject() {
     try {
         // First message - activate project
-        const response = await fetch('YOUR_AGENT_ZERO_URL/api_message', {
+        const response = await fetch('YOUR_CTXAI_URL/api_message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ async function sendMessageWithProject() {
             },
             body: JSON.stringify({
                 message: "Analyze the project structure",
-                project: "my-web-app"  // Activates this project
+                project_name: "my-web-app"  // Activates this project
             })
         });
 
@@ -197,7 +197,7 @@ async function sendMessageWithProject() {
             console.log('Response:', data.response);
 
             // Continue conversation - project already set
-            const followUp = await fetch('YOUR_AGENT_ZERO_URL/api_message', {
+            const followUp = await fetch('YOUR_CTXAI_URL/api_message', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -206,7 +206,7 @@ async function sendMessageWithProject() {
                 body: JSON.stringify({
                     context_id: data.context_id,
                     message: "What files are in the project?"
-                    // Do NOT include project field here - already set on first message
+                    // Do NOT include project_name here - already set on first message
                 })
             });
 
@@ -256,7 +256,7 @@ async function getLogsGET(contextId, length = 50) {
             length: length.toString()
         });
 
-        const response = await fetch('YOUR_AGENT_ZERO_URL/api_log_get?' + params, {
+        const response = await fetch('YOUR_CTXAI_URL/api_log_get?' + params, {
             method: 'GET',
             headers: {
                 'X-API-KEY': 'YOUR_API_KEY'
@@ -291,7 +291,7 @@ getLogsGET('ctx_abc123', 20);
 // Get logs using POST request
 async function getLogsPOST(contextId, length = 50) {
     try {
-        const response = await fetch('YOUR_AGENT_ZERO_URL/api_log_get', {
+        const response = await fetch('YOUR_CTXAI_URL/api_log_get', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -352,7 +352,7 @@ Terminate and remove a chat context to free up resources. Similar to the MCP `fi
 // Basic terminate chat function
 async function terminateChat(contextId) {
     try {
-        const response = await fetch('YOUR_AGENT_ZERO_URL/api_terminate_chat', {
+        const response = await fetch('YOUR_CTXAI_URL/api_terminate_chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -426,7 +426,7 @@ Reset a chat context to clear conversation history while keeping the `context_id
 // Basic reset chat function
 async function resetChat(contextId) {
     try {
-        const response = await fetch('YOUR_AGENT_ZERO_URL/api_reset_chat', {
+        const response = await fetch('YOUR_CTXAI_URL/api_reset_chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -468,7 +468,7 @@ async function resetAndContinue() {
         console.log('Chat reset, starting fresh conversation...');
 
         // Continue with same context_id but fresh history
-        const response = await fetch('YOUR_AGENT_ZERO_URL/api_message', {
+        const response = await fetch('YOUR_CTXAI_URL/api_message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -499,7 +499,7 @@ Retrieve file contents by paths, returning files as base64 encoded data. Useful 
 ### API Reference
 
 **Parameters:**
-*   `paths` (array, required): Array of file paths to retrieve (e.g., `["/ctx/usr/uploads/file.txt"]`)
+*   `paths` (array, required): Array of file paths to retrieve (e.g., `["/ctx0/usr/uploads/file.txt"]`)
 
 **Headers:**
 *   `X-API-KEY` (required)
@@ -513,7 +513,7 @@ Retrieve file contents by paths, returning files as base64 encoded data. Useful 
 // Basic file retrieval
 async function getFiles(filePaths) {
     try {
-        const response = await fetch('YOUR_AGENT_ZERO_URL/api_files_get', {
+        const response = await fetch('YOUR_CTXAI_URL/api_files_get', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -553,15 +553,15 @@ async function getFiles(filePaths) {
 
 // Example 1: Get specific files
 const filePaths = [
-    "/ctx/usr/uploads/document.txt",
-    "/ctx/usr/uploads/data.json"
+     "/ctx0/usr/uploads/document.txt",
+     "/ctx0/usr/uploads/data.json"
 ];
 getFiles(filePaths);
 
 // Example 2: Complete attachment workflow
 async function attachmentWorkflow() {
     // Step 1: Send message with attachments
-    const messageResponse = await fetch('YOUR_AGENT_ZERO_URL/api_message', {
+    const messageResponse = await fetch('YOUR_CTXAI_URL/api_message', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -581,7 +581,7 @@ async function attachmentWorkflow() {
         console.log('Message sent with attachment');
 
         // Step 2: Retrieve the uploaded file
-        const retrievedFiles = await getFiles(["/ctx/usr/uploads/test.txt"]);
+         const retrievedFiles = await getFiles(["/ctx0/usr/uploads/test.txt"]);
 
         if (retrievedFiles && retrievedFiles["test.txt"]) {
             const originalContent = atob(retrievedFiles["test.txt"]);
@@ -598,18 +598,18 @@ attachmentWorkflow();
 
 ## MCP Server Connectivity
 
-Ctx AI includes an MCP Server that allows other MCP-compatible clients to connect to it. The server runs on the same URL and port as the Web UI.
+CtxAI includes an MCP Server that allows other MCP-compatible clients to connect to it. The server runs on the same URL and port as the Web UI.
 
 It provides two endpoint types:
 - **SSE (`/mcp/sse`):** For clients that support Server-Sent Events.
 - **Streamable HTTP (`/mcp/http/`):** For clients that use streamable HTTP requests.
 
 > [!NOTE]
-> This section describes **Ctx AI as an MCP server**. To configure Ctx AI as an MCP **client** (consuming external tools), see [MCP Setup](../guides/mcp-setup.md).
+> This section describes **CtxAI as an MCP server**. To configure CtxAI as an MCP **client** (consuming external tools), see [MCP Setup](../guides/mcp-setup.md).
 
 ### Example MCP Server Configuration
 
-Below is an example of a `mcp.json` configuration file that a client could use to connect to the Ctx AI MCP server.
+Below is an example of a `mcp.json` configuration file that a client could use to connect to the CtxAI MCP server. 
 
 **Note:** You can find your personalized connection URLs under `Settings > MCP Server > MCP Server`.
 
@@ -619,11 +619,11 @@ Below is an example of a `mcp.json` configuration file that a client could use t
     {
         "ctxai": {
             "type": "sse",
-            "url": "YOUR_AGENT_ZERO_URL/mcp/t-YOUR_API_TOKEN/sse"
+            "url": "YOUR_CTXAI_URL/mcp/t-YOUR_API_TOKEN/sse"
         },
         "ctxai-http": {
             "type": "streamable-http",
-            "url": "YOUR_AGENT_ZERO_URL/mcp/t-YOUR_API_TOKEN/http/"
+            "url": "YOUR_CTXAI_URL/mcp/t-YOUR_API_TOKEN/http/"
         }
     }
 }
@@ -638,11 +638,11 @@ You can specify a project for MCP connections by including it in the URL path:
     "mcpServers": {
         "ctxai-with-project": {
             "type": "sse",
-            "url": "YOUR_AGENT_ZERO_URL/mcp/t-YOUR_API_TOKEN/p-my-project-name/sse"
+            "url": "YOUR_CTXAI_URL/mcp/t-YOUR_API_TOKEN/p-my-project-name/sse"
         },
         "ctxai-http-with-project": {
             "type": "streamable-http",
-            "url": "YOUR_AGENT_ZERO_URL/mcp/t-YOUR_API_TOKEN/p-my-project-name/http/"
+            "url": "YOUR_CTXAI_URL/mcp/t-YOUR_API_TOKEN/p-my-project-name/http/"
         }
     }
 }
@@ -657,22 +657,22 @@ When a project is specified in the URL:
 
 ## A2A (Agent-to-Agent) Connectivity
 
-Ctx AI's A2A Server enables communication with other agents using the FastA2A protocol. Other agents can connect to your instance using the connection URL.
+CtxAI's A2A Server enables communication with other agents using the FastA2A protocol. Other agents can connect to your instance using the connection URL.
 
 ### A2A Connection URL
 
-To connect another agent to your Ctx AI instance, use the following URL format.
+To connect another agent to your CtxAI instance, use the following URL format. 
 
 **Note:** You can find your specific A2A connection URL under `Settings > External Services > A2A Connection`.
 
 ```
-YOUR_AGENT_ZERO_URL/a2a/t-YOUR_API_TOKEN
+YOUR_CTXAI_URL/a2a/t-YOUR_API_TOKEN
 ```
 
 To connect with a specific project active:
 
 ```
-YOUR_AGENT_ZERO_URL/a2a/t-YOUR_API_TOKEN/p-PROJECT_NAME
+YOUR_CTXAI_URL/a2a/t-YOUR_API_TOKEN/p-PROJECT_NAME
 ```
 
 When a project is specified:
@@ -681,7 +681,7 @@ When a project is specified:
 - This enables project-isolated agent-to-agent communication
 
 ### Practical Use Cases
-- Connect two Ctx AI instances for long-running, isolated workflows
+- Connect two CtxAI instances for long-running, isolated workflows
 - Delegate specialized tasks to a dedicated agent instance
 - Maintain strict context separation between agents
 

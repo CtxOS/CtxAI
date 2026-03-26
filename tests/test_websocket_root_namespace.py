@@ -1,8 +1,7 @@
 import asyncio
 import contextlib
 import socket
-from collections.abc import AsyncIterator
-from typing import Any
+from typing import Any, AsyncIterator
 
 import pytest
 
@@ -49,12 +48,12 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
     events by default, but request-style calls must not hang (NO_HANDLERS).
     """
 
-    import socketio
     from flask import Flask
+    import socketio
 
-    from ctxai.helpers.websocket import WebSocketHandler
-    from ctxai.helpers.websocket_manager import WebSocketManager
-    from ctxai.run_ui import configure_websocket_namespaces
+    from helpers.websocket import WebSocketHandler
+    from helpers.websocket_manager import WebSocketManager
+    from run_ui import configure_websocket_namespaces
 
     app = Flask("test_ws_root_namespace")
     app.secret_key = "test-secret"
@@ -122,12 +121,12 @@ async def test_root_namespace_fire_and_forget_does_not_invoke_application_handle
     Fire-and-forget emits on `/` must not invoke any application handler.
     """
 
-    import socketio
     from flask import Flask
+    import socketio
 
-    from ctxai.helpers.websocket import WebSocketHandler
-    from ctxai.helpers.websocket_manager import WebSocketManager
-    from ctxai.run_ui import configure_websocket_namespaces
+    from helpers.websocket import WebSocketHandler
+    from helpers.websocket_manager import WebSocketManager
+    from run_ui import configure_websocket_namespaces
 
     app = Flask("test_ws_root_fire_and_forget")
     app.secret_key = "test-secret"

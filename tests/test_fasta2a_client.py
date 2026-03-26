@@ -3,21 +3,17 @@
 Test script to verify FastA2A agent card routing and authentication.
 """
 
-import os
-import sys
-
+import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 import asyncio
-
 import pytest
+from helpers import settings
 
 
 def get_test_urls():
     """Get the URLs to test based on current settings."""
-    from ctxai.helpers import settings
-
     try:
         cfg = settings.get_settings()
         token = cfg.get("mcp_server_token", "")
@@ -32,7 +28,7 @@ def get_test_urls():
             "token_based": f"{base_url}/a2a/t-{token}/.well-known/agent.json",
             "bearer_auth": f"{base_url}/a2a/.well-known/agent.json",
             "api_key_header": f"{base_url}/a2a/.well-known/agent.json",
-            "api_key_query": f"{base_url}/a2a/.well-known/agent.json?api_key={token}",
+            "api_key_query": f"{base_url}/a2a/.well-known/agent.json?api_key={token}"
         }
 
         return {"token": token, "urls": urls}
@@ -76,7 +72,7 @@ def print_test_commands():
     print("   HTTP/1.1 200 OK")
     print("   Content-Type: application/json")
     print("   {")
-    print('     "name": "Ctx AI",')
+    print('     "name": "CtxAI",')
     print('     "version": "1.0.0",')
     print('     "skills": [...]')
     print("   }")
@@ -94,7 +90,7 @@ def print_troubleshooting():
     print("=" * 40)
     print()
     print("1. Server not running:")
-    print("   - Make sure Ctx AI is running: python run_ui.py")
+    print("   - Make sure CtxAI is running: python run_ui.py")
     print("   - Check the correct port (default: 50101)")
     print()
 
@@ -118,8 +114,6 @@ def print_troubleshooting():
 
 def validate_token_format():
     """Validate that the token format is correct."""
-    from ctxai.helpers import settings
-
     try:
         cfg = settings.get_settings()
         token = cfg.get("mcp_server_token", "")
@@ -150,33 +144,33 @@ def validate_token_format():
         return False
 
 
-def test_server_connectivity():
+@pytest.mark.asyncio
+async def test_server_connectivity():
     """Test basic server connectivity."""
-    import socket
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(1)
     try:
-        result = sock.connect_ex(("localhost", 50101))
-    finally:
-        sock.close()
+        import httpx
 
-    if result != 0:
-        pytest.skip("Server not running")
+        print("🌐 Server Connectivity Test")
+        print("=" * 30)
 
-    import httpx
-    import httpx._transports
+        async with httpx.AsyncClient() as client:
+            try:
+                # Test basic server
+                await client.get("http://localhost:50101/", timeout=5.0)
+                print("✅ CtxAI server is running")
+                return True
+            except httpx.ConnectError:
+                print("❌ Cannot connect to CtxAI server")
+                print("   Make sure the server is running: python run_ui.py")
+                return False
+            except Exception as e:
+                print(f"❌ Server connectivity error: {e}")
+                return False
 
-    print("🌐 Server Connectivity Test")
-    print("=" * 30)
-
-    try:
-        response = httpx.get("http://localhost:50101/", timeout=5.0)
-        print(f"✅ Ctx AI server is running: {response.status_code}")
-    except httpx.ConnectError:
-        pytest.skip("Cannot connect to Ctx AI server")
-    except Exception as e:
-        pytest.skip(f"Server connectivity error: {e}")
+    except ImportError:
+        print("ℹ️  httpx not available, skipping connectivity test")
+        print("   Install with: pip install httpx")
+        return None
 
 
 def main():
@@ -210,7 +204,7 @@ def main():
     print_test_commands()
 
     print("📋 Next Steps:")
-    print("1. Start Ctx AI server if not running")
+    print("1. Start CtxAI server if not running")
     print("2. Run one of the curl commands above")
     print("3. Check for successful 200 response with agent card JSON")
     print("4. If issues occur, see troubleshooting section")

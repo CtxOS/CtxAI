@@ -12,15 +12,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from datetime import UTC
-
-from ctxai.helpers.websocket import ConnectionNotFoundError, WebSocketHandler, WebSocketResult
-from ctxai.helpers.websocket_manager import (
+from helpers.websocket import ConnectionNotFoundError, WebSocketHandler, WebSocketResult
+from helpers.websocket_manager import (
+    WebSocketManager,
     BUFFER_TTL,
     DIAGNOSTIC_EVENT,
     LIFECYCLE_CONNECT_EVENT,
     LIFECYCLE_DISCONNECT_EVENT,
-    WebSocketManager,
 )
 
 NAMESPACE = "/test"
@@ -36,6 +34,10 @@ class DummyHandler(WebSocketHandler):
     def __init__(self, socketio, lock, results):
         super().__init__(socketio, lock)
         self.results = results
+
+    @classmethod
+    def get_event_types(cls) -> list[str]:
+        return ["dummy"]
 
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         response = {"sid": sid, "data": data}
@@ -140,7 +142,10 @@ async def test_route_event_no_handler_returns_standard_error():
     assert result["handlerId"].endswith("WebSocketManager")
     assert result["ok"] is False
     assert result["error"]["code"] == "NO_HANDLERS"
-    assert result["error"]["error"] == f"No handler for namespace '{NAMESPACE}'"
+    assert (
+        result["error"]["error"]
+        == f"No handler for namespace '{NAMESPACE}' event 'missing'"
+    )
 
 
 @pytest.mark.asyncio
@@ -159,6 +164,10 @@ async def test_route_event_all_aggregates_results():
     manager = WebSocketManager(socketio, threading.RLock())
 
     class EchoHandler(WebSocketHandler):
+        @classmethod
+        def get_event_types(cls) -> list[str]:
+            return ["multi"]
+
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
             return {"sid": sid, "echo": data}
 
@@ -169,7 +178,9 @@ async def test_route_event_all_aggregates_results():
     await manager.handle_connect(NAMESPACE, "sid-1")
     await manager.handle_connect(NAMESPACE, "sid-2")
 
-    aggregated = await manager.route_event_all(NAMESPACE, "multi", {"value": 42}, timeout_ms=1000)
+    aggregated = await manager.route_event_all(
+        NAMESPACE, "multi", {"value": 42}, timeout_ms=1000
+    )
 
     assert len(aggregated) == 2
     by_sid = {entry["sid"]: entry for entry in aggregated}
@@ -191,6 +202,10 @@ async def test_route_event_all_timeout_marks_error():
     manager = WebSocketManager(socketio, threading.RLock())
 
     class SlowHandler(WebSocketHandler):
+        @classmethod
+        def get_event_types(cls) -> list[str]:
+            return ["slow"]
+
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
             await asyncio.sleep(0.2)
             return {"status": "done"}
@@ -216,6 +231,10 @@ async def test_route_event_exception_standardizes_error_payload():
     manager = WebSocketManager(socketio, threading.RLock())
 
     class FailingHandler(WebSocketHandler):
+        @classmethod
+        def get_event_types(cls) -> list[str]:
+            return ["boom"]
+
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
             raise RuntimeError("kaboom")
 
@@ -241,6 +260,10 @@ async def test_route_event_offloads_blocking_handlers():
     manager = WebSocketManager(socketio, threading.RLock())
 
     class BlockingHandler(WebSocketHandler):
+        @classmethod
+        def get_event_types(cls) -> list[str]:
+            return ["block"]
+
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
             time.sleep(0.2)
             return {"status": "done"}
@@ -250,7 +273,9 @@ async def test_route_event_offloads_blocking_handlers():
     manager.register_handlers({NAMESPACE: [handler]})
     await manager.handle_connect(NAMESPACE, "sid-1")
 
-    route_task = asyncio.create_task(manager.route_event(NAMESPACE, "block", {}, "sid-1"))
+    route_task = asyncio.create_task(
+        manager.route_event(NAMESPACE, "block", {}, "sid-1")
+    )
     await asyncio.sleep(0)
 
     t0 = time.perf_counter()
@@ -309,7 +334,9 @@ async def test_emit_to_known_disconnected_sid_buffers():
     await manager.handle_connect(NAMESPACE, "sid-1")
     await manager.handle_disconnect(NAMESPACE, "sid-1")
 
-    await manager.emit_to(NAMESPACE, "sid-1", "event", {"a": 1}, correlation_id="corr-1")
+    await manager.emit_to(
+        NAMESPACE, "sid-1", "event", {"a": 1}, correlation_id="corr-1"
+    )
 
     assert (NAMESPACE, "sid-1") in manager.buffers
     buffered = list(manager.buffers[(NAMESPACE, "sid-1")])
@@ -327,7 +354,7 @@ async def test_buffer_overflow_drops_oldest(monkeypatch):
     await manager.handle_connect(NAMESPACE, "offline")
     await manager.handle_disconnect(NAMESPACE, "offline")
 
-    monkeypatch.setattr("ctxai.helpers.websocket_manager.BUFFER_MAX_SIZE", 2)
+    monkeypatch.setattr("helpers.websocket_manager.BUFFER_MAX_SIZE", 2)
 
     await manager.emit_to(NAMESPACE, "offline", "event", {"idx": 0})
     await manager.emit_to(NAMESPACE, "offline", "event", {"idx": 1})
@@ -347,9 +374,9 @@ async def test_expired_buffer_entries_are_discarded(monkeypatch):
     await manager.handle_connect(NAMESPACE, "sid-expired")
     await manager.handle_disconnect(NAMESPACE, "sid-expired")
 
-    from datetime import datetime, timedelta
+    from datetime import timedelta, timezone, datetime
 
-    past = datetime.now(UTC) - (BUFFER_TTL + timedelta(seconds=5))
+    past = datetime.now(timezone.utc) - (BUFFER_TTL + timedelta(seconds=5))
     future = past + BUFFER_TTL + timedelta(seconds=10)
 
     await manager.emit_to(NAMESPACE, "sid-expired", "event", {"a": 1})
@@ -358,7 +385,7 @@ async def test_expired_buffer_entries_are_discarded(monkeypatch):
     socketio.emit.reset_mock()
 
     monkeypatch.setattr(
-        "ctxai.helpers.websocket_manager._utcnow",
+        "helpers.websocket_manager._utcnow",
         lambda: future,
     )
     await manager.handle_connect(NAMESPACE, "sid-expired")
@@ -452,25 +479,41 @@ async def test_timestamps_are_timezone_aware():
     assert info.connected_at.tzinfo is not None
     assert info.last_activity.tzinfo is not None
 
-    with patch("ctxai.helpers.websocket_manager._utcnow") as mocked_now:
+    with patch("helpers.websocket_manager._utcnow") as mocked_now:
         mocked_now.return_value = info.last_activity
         await manager.route_event(NAMESPACE, "unknown", {}, "sid-utc")
         assert info.last_activity.tzinfo is not None
 
-
 class DuplicateHandler(WebSocketHandler):
+    @classmethod
+    def get_event_types(cls) -> list[str]:
+        return ["dup_event"]
+
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         return {"handledBy": self.identifier}
 
 
 class AnotherDuplicateHandler(WebSocketHandler):
+    @classmethod
+    def get_event_types(cls) -> list[str]:
+        return ["dup_event"]
+
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         return {"handledBy": self.identifier}
 
 
-def test_register_handlers_adds_multiple_per_namespace():
+def test_register_handlers_warns_on_duplicates(monkeypatch):
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
+
+    warnings: list[str] = []
+
+    def capture_warning(message: str) -> None:
+        warnings.append(message)
+
+    monkeypatch.setattr(
+        "helpers.print_style.PrintStyle.warning", staticmethod(capture_warning)
+    )
 
     DuplicateHandler._reset_instance_for_testing()
     AnotherDuplicateHandler._reset_instance_for_testing()
@@ -479,12 +522,14 @@ def test_register_handlers_adds_multiple_per_namespace():
 
     manager.register_handlers({NAMESPACE: [handler_a, handler_b]})
 
-    assert len(manager.handlers[NAMESPACE]) == 2
-    assert handler_a in manager.handlers[NAMESPACE]
-    assert handler_b in manager.handlers[NAMESPACE]
+    assert any("Duplicate handler registration" in msg for msg in warnings)
 
 
 class NonDictHandler(WebSocketHandler):
+    @classmethod
+    def get_event_types(cls) -> list[str]:
+        return ["non_dict"]
+
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         return "raw-value"
 
@@ -506,11 +551,19 @@ async def test_route_event_standardizes_success_payload():
 
 
 class ErrorHandler(WebSocketHandler):
+    @classmethod
+    def get_event_types(cls) -> list[str]:
+        return ["boom"]
+
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         raise RuntimeError("BOOM")
 
 
 class ResultHandler(WebSocketHandler):
+    @classmethod
+    def get_event_types(cls) -> list[str]:  # pragma: no cover - simple declaration
+        return ["result_event", "result_error"]
+
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         if event_type == "result_event":
             return WebSocketResult.ok({"sid": sid}, correlation_id="explicit", duration_ms=1.234)
@@ -575,11 +628,19 @@ async def test_route_event_preserves_websocket_result_errors():
 
 
 class AlphaFilterHandler(WebSocketHandler):
+    @classmethod
+    def get_event_types(cls) -> list[str]:
+        return ["filter_event"]
+
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         return {"handledBy": self.identifier, "sid": sid}
 
 
 class BetaFilterHandler(WebSocketHandler):
+    @classmethod
+    def get_event_types(cls) -> list[str]:
+        return ["filter_event"]
+
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         return {"handledBy": self.identifier, "sid": sid}
 
@@ -743,13 +804,13 @@ def test_debug_logging_respects_runtime_flag(monkeypatch):
     def capture(message: str) -> None:
         logs.append(message)
 
-    monkeypatch.setattr("ctxai.helpers.print_style.PrintStyle.debug", staticmethod(capture))
-    monkeypatch.setenv("A0_WS_DEBUG", "")
+    monkeypatch.setattr("helpers.print_style.PrintStyle.debug", staticmethod(capture))
+    monkeypatch.setattr("helpers.websocket_manager.runtime.is_development", lambda: False)
 
     manager._debug("should-not-log")  # noqa: SLF001
     assert logs == []
 
-    monkeypatch.setenv("A0_WS_DEBUG", "true")
+    monkeypatch.setattr("helpers.websocket_manager.runtime.is_development", lambda: True)
     manager._debug("should-log")  # noqa: SLF001
     assert logs == ["should-log"]
 
@@ -765,7 +826,7 @@ async def test_diagnostic_event_emitted_for_inbound():
     manager.register_handlers({NAMESPACE: [handler]})
 
     await manager.handle_connect(NAMESPACE, "observer")
-    assert await manager.register_diagnostic_watcher(NAMESPACE, "observer") is True
+    assert manager.register_diagnostic_watcher(NAMESPACE, "observer") is True
     await manager.handle_connect(NAMESPACE, "sid-client")
 
     await manager.route_event(NAMESPACE, "dummy", {"payload": "value"}, "sid-client")

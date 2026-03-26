@@ -2,6 +2,7 @@ import re
 import sys
 from pathlib import Path
 
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -30,7 +31,7 @@ def _get_named_exports(source: str) -> set[str]:
 
 
 def test_websocket_js_exports_minimal_namespaced_api_surface() -> None:
-    source = (PROJECT_ROOT / "src" / "ctxai" / "webui" / "js" / "websocket.js").read_text(encoding="utf-8")
+    source = (PROJECT_ROOT / "webui" / "js" / "websocket.js").read_text(encoding="utf-8")
     exports = _get_named_exports(source)
 
     assert "createNamespacedClient" in exports

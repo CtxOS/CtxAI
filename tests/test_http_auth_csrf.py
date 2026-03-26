@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from flask import Flask, Response
 
-from ctxai.helpers import runtime
+import pytest
+
+from helpers import runtime
 
 
 def _make_app() -> Flask:
@@ -28,9 +30,9 @@ def _set_csrf_cookie(client, token: str) -> None:
 
 
 def test_http_auth_enforced_when_configured(monkeypatch) -> None:
-    from ctxai.helpers.api import csrf_protect, requires_auth
+    from run_ui import csrf_protect, requires_auth
 
-    monkeypatch.setattr("ctxai.helpers.login.get_credentials_hash", lambda: "hash")
+    monkeypatch.setattr("helpers.login.get_credentials_hash", lambda: "hash")
 
     app = _make_app()
 
@@ -46,9 +48,9 @@ def test_http_auth_enforced_when_configured(monkeypatch) -> None:
 
 
 def test_http_csrf_required_even_when_auth_not_configured(monkeypatch) -> None:
-    from ctxai.helpers.api import csrf_protect, requires_auth
+    from run_ui import csrf_protect, requires_auth
 
-    monkeypatch.setattr("ctxai.helpers.login.get_credentials_hash", lambda: None)
+    monkeypatch.setattr("helpers.login.get_credentials_hash", lambda: None)
 
     app = _make_app()
 
@@ -65,9 +67,9 @@ def test_http_csrf_required_even_when_auth_not_configured(monkeypatch) -> None:
 
 
 def test_http_csrf_rejects_missing_token(monkeypatch) -> None:
-    from ctxai.helpers.api import csrf_protect, requires_auth
+    from run_ui import csrf_protect, requires_auth
 
-    monkeypatch.setattr("ctxai.helpers.login.get_credentials_hash", lambda: "hash")
+    monkeypatch.setattr("helpers.login.get_credentials_hash", lambda: "hash")
 
     app = _make_app()
 
@@ -84,9 +86,9 @@ def test_http_csrf_rejects_missing_token(monkeypatch) -> None:
 
 
 def test_http_csrf_accepts_valid_header_without_cookie(monkeypatch) -> None:
-    from ctxai.helpers.api import csrf_protect, requires_auth
+    from run_ui import csrf_protect, requires_auth
 
-    monkeypatch.setattr("ctxai.helpers.login.get_credentials_hash", lambda: "hash")
+    monkeypatch.setattr("helpers.login.get_credentials_hash", lambda: "hash")
 
     app = _make_app()
 
@@ -103,9 +105,9 @@ def test_http_csrf_accepts_valid_header_without_cookie(monkeypatch) -> None:
 
 
 def test_http_csrf_accepts_valid_cookie(monkeypatch) -> None:
-    from ctxai.helpers.api import csrf_protect, requires_auth
+    from run_ui import csrf_protect, requires_auth
 
-    monkeypatch.setattr("ctxai.helpers.login.get_credentials_hash", lambda: "hash")
+    monkeypatch.setattr("helpers.login.get_credentials_hash", lambda: "hash")
 
     app = _make_app()
 

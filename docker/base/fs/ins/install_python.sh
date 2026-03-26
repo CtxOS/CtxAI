@@ -9,7 +9,7 @@ apt clean && apt-get update && apt-get -y upgrade
 
 # install python 3.13 globally
 apt-get install -y --no-install-recommends \
-    python3.13 python3.13-venv
+    python3.13 python3.13-venv 
     #python3.13-dev
 
 
@@ -51,11 +51,11 @@ source /etc/profile.d/pyenv.sh
 echo "====================PYENV 3.12 VENV===================="
 pyenv install 3.12.4
 
-/opt/pyenv/versions/3.12.4/bin/python -m venv /opt/venv-ctx
-source /opt/venv-ctx/bin/activate
+/opt/pyenv/versions/3.12.4/bin/python -m venv /opt/venv-a0
+source /opt/venv-a0/bin/activate
 
 # upgrade pip and install static packages
-pip install --no-cache-dir --upgrade pip
+pip install --no-cache-dir --upgrade pip pipx
 
 # Install some packages in specific variants
 pip install --no-cache-dir \

@@ -1,6 +1,0 @@
-# PR badge config (for marketplace or docs)
-badges:
-  - name: CI
-    link: https://github.com/ctxos/ctxai/actions/workflows/ci.yml
-  - name: Build
-    link: https://github.com/ctxos/ctxai/actions/workflows/build.yml

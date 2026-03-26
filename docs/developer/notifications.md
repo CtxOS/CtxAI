@@ -1,6 +1,6 @@
-# Ctx AI Notifications
+# CtxAI Notifications
 
-Quick guide for using the notification system in Ctx AI.
+Quick guide for using the notification system in CtxAI.
 
 > [!TIP]
 > Notifications pair well with scheduled tasks. See [Tasks & Scheduling](../guides/usage.md#tasks--scheduling) for automation patterns.
@@ -10,7 +10,7 @@ Quick guide for using the notification system in Ctx AI.
 Use `AgentNotification` helper methods anywhere in your Python code:
 
 ```python
-from ctxai.helpers.notification import AgentNotification
+from helpers.notification import AgentNotification
 
 # Basic notifications
 AgentNotification.info("Operation completed")

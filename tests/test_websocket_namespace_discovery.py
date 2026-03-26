@@ -2,9 +2,8 @@ import asyncio
 import contextlib
 import socket
 import sys
-from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import Any
+from typing import Any, AsyncIterator
 
 import pytest
 
@@ -56,7 +55,7 @@ def _write_handler_module(path: Path, class_name: str, event_type: str) -> None:
                 "",
                 "from typing import Any",
                 "",
-                "from ctxai.helpers.websocket import WebSocketHandler",
+                "from helpers.websocket import WebSocketHandler",
                 "",
                 f"class {class_name}(WebSocketHandler):",
                 "    @classmethod",
@@ -67,17 +66,21 @@ def _write_handler_module(path: Path, class_name: str, event_type: str) -> None:
                 "    def requires_csrf(cls) -> bool:",
                 "        return False",
                 "",
+                "    @classmethod",
+                "    def get_event_types(cls) -> list[str]:",
+                f"        return ['{event_type}']",
+                "",
                 "    async def process_event(self, event_type: str, data: dict[str, Any], sid: str):",
                 "        return {'ok': True}",
                 "",
-            ],
+            ]
         ),
         encoding="utf-8",
     )
 
 
 def test_discovery_supports_folder_entries_and_ignores_deeper_nesting(tmp_path: Path) -> None:
-    from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
+    from helpers.websocket_namespace_discovery import discover_websocket_namespaces
 
     folder = tmp_path / "orders"
     folder.mkdir()
@@ -97,7 +100,7 @@ def test_discovery_supports_folder_entries_and_ignores_deeper_nesting(tmp_path: 
 
 
 def test_discovery_folder_suffix_handler_stripped(tmp_path: Path) -> None:
-    from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
+    from helpers.websocket_namespace_discovery import discover_websocket_namespaces
 
     folder = tmp_path / "sales_handler"
     folder.mkdir()
@@ -109,12 +112,12 @@ def test_discovery_folder_suffix_handler_stripped(tmp_path: Path) -> None:
 
 
 def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tmp_path: Path, monkeypatch) -> None:
-    import socketio
     from flask import Flask
+    import socketio
 
-    from ctxai.helpers.websocket_manager import WebSocketManager
-    from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
-    from ctxai.run_ui import configure_websocket_namespaces
+    from helpers.websocket_manager import WebSocketManager
+    from helpers.websocket_namespace_discovery import discover_websocket_namespaces
+    from run_ui import configure_websocket_namespaces
 
     empty = tmp_path / "empty"
     empty.mkdir()
@@ -125,7 +128,7 @@ def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tmp_path
     def _warn(message: str) -> None:
         warnings.append(message)
 
-    monkeypatch.setattr("ctxai.helpers.print_style.PrintStyle.warning", staticmethod(_warn))
+    monkeypatch.setattr("helpers.print_style.PrintStyle.warning", staticmethod(_warn))
 
     discoveries = discover_websocket_namespaces(handlers_folder=str(tmp_path), include_root_default=False)
     assert "/empty" not in {d.namespace for d in discoveries}
@@ -140,7 +143,9 @@ def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tmp_path
 
     handlers_by_namespace: dict[str, list[Any]] = {}
     for discovery in discoveries:
-        handlers_by_namespace[discovery.namespace] = [cls.get_instance(sio, lock) for cls in discovery.handler_classes]
+        handlers_by_namespace[discovery.namespace] = [
+            cls.get_instance(sio, lock) for cls in discovery.handler_classes
+        ]
 
     configure_websocket_namespaces(
         webapp=app,
@@ -150,7 +155,6 @@ def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tmp_path
     )
 
     asgi_app = socketio.ASGIApp(sio)
-
     async def _run() -> None:
         async with _run_asgi_app(asgi_app) as base_url:
             client = socketio.AsyncClient()
@@ -177,10 +181,12 @@ def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tmp_path
 
 
 def test_discovery_invalid_modules_fail_fast_with_descriptive_errors(tmp_path: Path) -> None:
-    from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
+    from helpers.websocket_namespace_discovery import discover_websocket_namespaces
 
     # 0 handlers in a *_handler.py module
-    (tmp_path / "bad_handler.py").write_text("class NotAHandler:\n    pass\n", encoding="utf-8")
+    (tmp_path / "bad_handler.py").write_text(
+        "class NotAHandler:\n    pass\n", encoding="utf-8"
+    )
     with pytest.raises(RuntimeError) as excinfo:
         discover_websocket_namespaces(handlers_folder=str(tmp_path), include_root_default=False)
     assert "defines no WebSocketHandler subclasses" in str(excinfo.value)
@@ -190,21 +196,25 @@ def test_discovery_invalid_modules_fail_fast_with_descriptive_errors(tmp_path: P
     (tmp_path / "two_handler.py").write_text(
         "\n".join(
             [
-                "from ctxai.helpers.websocket import WebSocketHandler",
+                "from helpers.websocket import WebSocketHandler",
                 "class A(WebSocketHandler):",
                 "    @classmethod",
                 "    def requires_auth(cls): return False",
                 "    @classmethod",
                 "    def requires_csrf(cls): return False",
+                "    @classmethod",
+                "    def get_event_types(cls): return ['two_a']",
                 "    async def process_event(self, event_type, data, sid): return {'ok': True}",
                 "class B(WebSocketHandler):",
                 "    @classmethod",
                 "    def requires_auth(cls): return False",
                 "    @classmethod",
                 "    def requires_csrf(cls): return False",
+                "    @classmethod",
+                "    def get_event_types(cls): return ['two_b']",
                 "    async def process_event(self, event_type, data, sid): return {'ok': True}",
                 "",
-            ],
+            ]
         ),
         encoding="utf-8",
     )

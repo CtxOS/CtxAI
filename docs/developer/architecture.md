@@ -1,12 +1,12 @@
 # Architecture Overview
-Ctx AI is built on a flexible and modular architecture designed for extensibility and customization. This section outlines the key components and the interactions between them.
+CtxAI is built on a flexible and modular architecture designed for extensibility and customization. This section outlines the key components and the interactions between them.
 
 ## System Architecture
 
 The user or Agent 0 is at the top of the hierarchy, delegating tasks to subordinate agents, which can further delegate to other agents. Each agent can utilize tools and access the shared assets (prompts, memory, knowledge, extensions and skills) to perform its tasks.
 
 ## Runtime Architecture
-Ctx AI's runtime architecture is built around Docker containers:
+CtxAI's runtime architecture is built around Docker containers:
 
 1. **Host System (your machine)**:
    - Requires only Docker and a web browser
@@ -14,7 +14,7 @@ Ctx AI's runtime architecture is built around Docker containers:
    - Handles container orchestration
 
 2. **Runtime Container**:
-   - Houses the complete Ctx AI framework
+   - Houses the complete CtxAI framework
    - Manages the Web UI and API endpoints
    - Handles all core functionalities including code execution
    - Provides a standardized environment across all platforms
@@ -27,8 +27,8 @@ This architecture ensures:
 - Flexible deployment options for advanced users
 
 > [!NOTE]
-> The legacy approach of running Ctx AI directly on the host system (using Python, Conda, etc.)
-> is still possible but requires Remote Function Calling (RFC) configuration through the Settings
+> The legacy approach of running CtxAI directly on the host system (using Python, Conda, etc.) 
+> is still possible but requires Remote Function Calling (RFC) configuration through the Settings 
 > page. See the [development guide](development.md) for detailed instructions.
 
 ## Implementation Details
@@ -52,7 +52,7 @@ This architecture ensures:
 | `/tmp` | Temporary runtime data |
 | `/usr/chats` | Saved chat history (JSON) |
 | `/usr/secrets.env` | Secrets store (not always included in backups) |
-| `/usr/projects` | Project workspaces and `.a0proj` metadata |
+| `/usr/projects` | Project workspaces and `.ctx0proj` metadata |
 | `/webui` | Web interface components |
 | `/webui/css` | Stylesheets |
 | `/webui/js` | JavaScript modules |
@@ -65,7 +65,7 @@ This architecture ensures:
 | `usr/secrets.env` | Secrets store (managed via Settings -> Secrets) |
 | `conf/model_providers.yaml` | Model provider defaults and settings |
 | `agent.py` | Core agent implementation |
-| `initialize.py` | Framework initialization |
+| `execute.py` | Framework initialization |
 | `models.py` | Model providers and configs |
 | `preload.py` | Pre-initialization routines |
 | `prepare.py` | Environment preparation |
@@ -73,16 +73,16 @@ This architecture ensures:
 | `run_ui.py` | Web UI launcher |
 
 > [!NOTE]
-> In the Docker runtime, the framework lives under `/ctx` inside the container. Data persists as long as the container exists. For upgrades, prefer **Backup & Restore** instead of mapping the full `/ctx` directory.
+> In the Docker runtime, the framework lives under `/ctx0` inside the container. Data persists as long as the container exists. For upgrades, prefer **Backup & Restore** instead of mapping the full `/ctx0` directory.
 
 ## Core Components
-Ctx AI's architecture revolves around the following key components:
+CtxAI's architecture revolves around the following key components:
 
 ### 1. Agents
 The core actors within the framework. Agents receive instructions, reason, make decisions, and utilize tools to achieve their objectives. Agents operate within a hierarchical structure, with superior agents delegating tasks to subordinate agents.
 
 #### Agent Hierarchy and Communication
-Ctx AI employs a hierarchical agent structure, where a top-level agent (often the user) can delegate tasks to subordinate agents. This hierarchy allows for the efficient breakdown of complex tasks into smaller, more manageable sub-tasks.
+CtxAI employs a hierarchical agent structure, where a top-level agent (often the user) can delegate tasks to subordinate agents. This hierarchy allows for the efficient breakdown of complex tasks into smaller, more manageable sub-tasks.
 
 Communication flows between agents through messages, which are structured according to the prompt templates. These messages typically include:
 
@@ -90,10 +90,10 @@ Communication flows between agents through messages, which are structured accord
 | --- | --- |
 | `Thoughts:` | The agent's Chain of Thought and planning process |
 | `Tool name:` | The specific tool used by the agent |
-| `Responses or queries:` | Results, feedback or queries from ctxai.tools or other agents |
+| `Responses or queries:` | Results, feedback or queries from tools or other agents |
 
 #### Interaction Flow
-A typical interaction flow within Ctx AI might look like this:
+A typical interaction flow within CtxAI might look like this:
 
 1. The user provides an instruction to Agent 0
 2. Agent 0 initializes VectorDB and access memory
@@ -104,14 +104,14 @@ A typical interaction flow within Ctx AI might look like this:
 7. Agent 0 provides the final response to the user
 
 ### 2. Tools
-Tools are functionalities that agents can leverage. These can include anything from web search and code execution to interacting with APIs or controlling external software. Ctx AI provides a mechanism for defining and integrating both built-in and custom tools.
+Tools are functionalities that agents can leverage. These can include anything from web search and code execution to interacting with APIs or controlling external software. CtxAI provides a mechanism for defining and integrating both built-in and custom tools.
 
 #### Built-in Tools
-Ctx AI comes with a set of built-in tools designed to help agents perform tasks efficiently:
+CtxAI comes with a set of built-in tools designed to help agents perform tasks efficiently:
 
 | Tool | Function |
 | --- | --- |
-| behavior_adjustment | Ctx AI use this tool to change its behavior according to a prior request from the user.
+| behavior_adjustment | CtxAI use this tool to change its behavior according to a prior request from the user.
 | call_subordinate | Allows agents to delegate tasks to subordinate agents |
 | code_execution_tool | Allows agents to execute Python, Node.js, and Shell code in the terminal |
 | input | Allows agents to use the keyboard to interact with an active shell |
@@ -119,7 +119,7 @@ Ctx AI comes with a set of built-in tools designed to help agents perform tasks 
 | memory_tool | Enables agents to save, load, delete and forget information from memory |
 
 #### SearXNG Integration
-Ctx AI has integrated SearXNG as its primary search tool, replacing the previous knowledge tools (Perplexity and DuckDuckGo). This integration enhances the agent's ability to retrieve information while ensuring user privacy and customization.
+CtxAI has integrated SearXNG as its primary search tool, replacing the previous knowledge tools (Perplexity and DuckDuckGo). This integration enhances the agent's ability to retrieve information while ensuring user privacy and customization.
 
 - Privacy-Focused Search
 SearXNG is an open-source metasearch engine that allows users to search multiple sources without tracking their queries. This integration ensures that user data remains private and secure while accessing a wide range of information.
@@ -128,15 +128,15 @@ SearXNG is an open-source metasearch engine that allows users to search multiple
 The integration provides access to various types of content, including images, videos, and news articles, allowing users to gather comprehensive information on any topic.
 
 - Fallback Mechanism
-In cases where SearXNG might not return satisfactory results, Ctx AI can be configured to fall back on other sources or methods, ensuring that users always have access to information.
+In cases where SearXNG might not return satisfactory results, CtxAI can be configured to fall back on other sources or methods, ensuring that users always have access to information.
 
 > [!NOTE]
-> The Knowledge Tool is designed to work seamlessly with both online searches through
-> SearXNG and local knowledge base queries, providing a comprehensive information
+> The Knowledge Tool is designed to work seamlessly with both online searches through 
+> SearXNG and local knowledge base queries, providing a comprehensive information 
 > retrieval system.
 
 #### Custom Tools
-Users can create custom tools to extend Ctx AI's capabilities. Custom tools can be integrated into the framework by defining a tool specification, which includes the tool's prompt. Place these prompt overrides in your agent profile:
+Users can create custom tools to extend CtxAI's capabilities. Custom tools can be integrated into the framework by defining a tool specification, which includes the tool's prompt. Place these prompt overrides in your agent profile:
 
 1. Create `agent.system.tool.$TOOL_NAME.md` in `agents/<agent_profile>/prompts/`
 2. Add the reference in `agent.system.tools.md` within the same prompt scope
@@ -149,7 +149,7 @@ Users can create custom tools to extend Ctx AI's capabilities. Custom tools can 
 > to add contextual expertise that is only loaded when relevant.
 
 ### 3. Memory System
-The memory system is a critical component of Ctx AI, enabling the agent to learn and adapt from past interactions. It operates on a hybrid model where part of the memory is managed automatically by the framework while users can also manually input and extract information.
+The memory system is a critical component of CtxAI, enabling the agent to learn and adapt from past interactions. It operates on a hybrid model where part of the memory is managed automatically by the framework while users can also manually input and extract information.
 
 #### Memory Structure
 The memory is categorized into four distinct areas:
@@ -168,10 +168,10 @@ The memory is categorized into four distinct areas:
 
 #### Messages History and Summarization
 
-Ctx AI employs a sophisticated message history and summarization system to maintain context effectively while optimizing memory usage. This system dynamically manages the information flow, ensuring relevant details are readily available while efficiently handling the constraints of context windows.
+CtxAI employs a sophisticated message history and summarization system to maintain context effectively while optimizing memory usage. This system dynamically manages the information flow, ensuring relevant details are readily available while efficiently handling the constraints of context windows.
 
 - **Context Extraction:** The system identifies key information from previous messages that are vital for ongoing discussions. This process mirrors how humans recall important memories, allowing less critical details to fade.
-- **Summarization Process:** Using natural language processing through the utility model, Ctx AI condenses the extracted information into concise summaries. By summarizing past interactions, Ctx AI can quickly recall important facts about the whole chat, leading to more appropriate responses.
+- **Summarization Process:** Using natural language processing through the utility model, CtxAI condenses the extracted information into concise summaries. By summarizing past interactions, CtxAI can quickly recall important facts about the whole chat, leading to more appropriate responses.
 - **Contextual Relevance:** The summarized context is prioritized based on its relevance to the current topic, ensuring users receive the most pertinent information.
 
 **Implementation Details:**
@@ -191,10 +191,10 @@ Ctx AI employs a sophisticated message history and summarization system to maint
   - Enables efficient navigation of long conversation histories.
   - Maintains semantic connections between related topics.
 
-By dynamically adjusting context windows and summarizing past interactions, Ctx AI enhances both efficiency and user experience. This innovation not only reflects the framework's commitment to being dynamic and user-centric, but also draws inspiration from human cognitive processes, making AI interactions more relatable and effective. Just as humans forget trivial details, Ctx AI intelligently condenses information to enhance communication.
+By dynamically adjusting context windows and summarizing past interactions, CtxAI enhances both efficiency and user experience. This innovation not only reflects the framework's commitment to being dynamic and user-centric, but also draws inspiration from human cognitive processes, making AI interactions more relatable and effective. Just as humans forget trivial details, CtxAI intelligently condenses information to enhance communication.
 
 > [!NOTE]
-> To maximize the effectiveness of context summarization, users should provide clear and specific instructions during interactions. This helps Ctx AI understand which details are most important to retain.
+> To maximize the effectiveness of context summarization, users should provide clear and specific instructions during interactions. This helps CtxAI understand which details are most important to retain.
 
 ### 4. Prompts
 The `prompts` directory contains various Markdown files that control agent behavior and communication. The most important file is `agent.system.main.md`, which acts as a central hub, referencing other prompt files.
@@ -206,6 +206,7 @@ The `prompts` directory contains various Markdown files that control agent behav
 | agent.system.main.communication.md | Specifies how the agent should communicate |
 | agent.system.main.solving.md | Describes the agent's approach to tasks |
 | agent.system.main.tips.md | Provides additional tips or guidance |
+| agent.system.main.specifics.md | Empty by default — override per profile for agent-specific instructions |
 | agent.system.main.behaviour.md | Controls dynamic behavior adjustments and rules |
 | agent.system.main.environment.md | Defines the runtime environment context |
 | agent.system.tools.md | Organizes and calls the individual tool prompt files |
@@ -220,11 +221,36 @@ The `prompts` directory contains various Markdown files that control agent behav
 #### Custom Prompts (Post v0.9.7)
 1. Create or clone an existing agent profile under `agents/<agent_profile>/`
 2. Add only the prompt files you want to override in `agents/<agent_profile>/prompts/`
-3. Ctx AI merges these overrides with the default prompts automatically
+3. CtxAI merges these overrides with the default prompts automatically
 4. Select the **Agent Profile** in Settings to activate the overrides
 
+#### Prompt Inheritance with `{{include original}}`
+When overriding a prompt, you can extend the original instead of replacing it entirely. Use `{{include original}}` to pull in the default version and add your changes on top:
+
+**Example:** `agents/developer/prompts/agent.system.main.communication.md`:
+```markdown
+{{include original}}
+
+- always explain your reasoning
+- include code snippets in responses
+```
+
+This finds `agent.system.main.communication.md` in the next directory up the hierarchy → includes the default from `prompts/` → appends the additions. Result:
+
+```markdown
+## Communication
+- be concise
+- use markdown formatting
+- ask clarifying questions when unsure
+
+- always explain your reasoning
+- include code snippets in responses
+```
+
+Overrides stay small and automatically inherit any future changes to the default.
+
 #### Dynamic Behavior System
-- **Behavior Adjustment**:
+- **Behavior Adjustment**: 
   - Agents can modify their behavior in real-time based on user instructions
   - Behavior changes are automatically integrated into the system prompt
   - Behavioral rules are merged intelligently, avoiding duplicates and conflicts
@@ -246,8 +272,8 @@ The `prompts` directory contains various Markdown files that control agent behav
   - Changes are applied without disrupting other components
   - Maintains separation between core functionality and behavioral rules
 
-> [!NOTE]
-> You can customize any of these files. Ctx AI will use files in `agents/<agent_profile>/prompts/` when present, and fall back to `prompts/` for everything else.
+> [!NOTE]  
+> You can customize any of these files. CtxAI will use files in `agents/<agent_profile>/prompts/` when present, and fall back to `prompts/` for everything else.
 
 > [!TIP]
 > The behavior system allows for dynamic adjustments without modifying the base prompt files.
@@ -261,7 +287,7 @@ Knowledge refers to the user-provided information and data that agents can lever
   - Automatically imported and indexed
   - Expandable format support
 
-- **Knowledge Base**:
+- **Knowledge Base**: 
   - Can include PDFs, databases, books, documentation
   - `/docs` folder automatically added
   - Used for answering questions and decision-making
@@ -299,7 +325,7 @@ Your detailed instructions here...
 #### Directory Structure
 | Directory | Description |
 |-----------|-------------|
-| `/skills` | Default skills included with Ctx AI |
+| `/skills` | Default skills included with CtxAI |
 | `/usr/skills` | Your custom skills (create folders here) |
 
 #### Adding Skills
@@ -316,7 +342,7 @@ Skills are surfaced via description/tag matching. You can also use the `skills_t
 - Read files from within a skill directory
 
 ### 7. Extensions
-Extensions are a powerful feature of Ctx AI, designed to keep the main codebase clean and organized while allowing for greater flexibility and modularity.
+Extensions are a powerful feature of CtxAI, designed to keep the main codebase clean and organized while allowing for greater flexibility and modularity.
 
 #### Structure
 Extensions can be found in `python/extensions` directory:
@@ -337,6 +363,6 @@ Extensions can be found in `python/extensions` directory:
 4. Ensure compatibility with main system
 5. Test thoroughly before deployment
 
-> [!NOTE]
+> [!NOTE]  
 > Consider contributing valuable custom components to the main repository.
 > See [Contributing](../guides/contribution.md) for more information.
