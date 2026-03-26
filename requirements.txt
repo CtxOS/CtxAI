@@ -746,7 +746,7 @@ py-key-value-aio==0.2.8
     # via fastmcp
 py-key-value-shared==0.2.8
     # via py-key-value-aio
-pyasn1==0.6.2
+pyasn1==0.6.3
     # via
     #   pyasn1-modules
     #   rsa
