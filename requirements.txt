@@ -226,7 +226,7 @@ exchangelib==5.6.0
     # via ctxai
 faiss-cpu==1.8.0.post1 ; sys_platform == 'darwin'
     # via ctxai
-faiss-cpu==1.12.0 ; sys_platform != 'darwin'
+faiss-cpu==1.13.2 ; sys_platform != 'darwin'
     # via ctxai
 fasta2a==0.5.0
     # via ctxai
