@@ -287,7 +287,7 @@ class AgentContext:
     def nudge(self):
         self.kill_process()
         self.paused = False
-        self.task = self.communicate(UserMessage(self.agent0.read_prompt("fw.msg_nudge.md")))
+        self.task = self.communicate(UserMessage(message=self.agent0.read_prompt("fw.msg_nudge.md")))
         return self.task
 
     @extension.extensible

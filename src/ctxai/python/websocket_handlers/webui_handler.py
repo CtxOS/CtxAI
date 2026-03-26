@@ -7,22 +7,18 @@ from ctxai.helpers.state_snapshot import StateRequestValidationError, parse_stat
 from ctxai.helpers.websocket import WebSocketHandler, WebSocketResult
 
 
-class StateSyncHandler(WebSocketHandler):
-    @classmethod
-    def get_event_types(cls) -> list[str]:
-        return ["state_request"]
-
+class WebuiHandler(WebSocketHandler):
     async def on_connect(self, sid: str) -> None:
         monitor = get_state_monitor()
         monitor.bind_manager(self.manager, handler_id=self.identifier)
         monitor.register_sid(self.namespace, sid)
         if _ws_debug_enabled():
-            PrintStyle.debug(f"[StateSyncHandler] connect sid={sid}")
+            PrintStyle.debug(f"[WebuiHandler] connect sid={sid}")
 
     async def on_disconnect(self, sid: str) -> None:
         get_state_monitor().unregister_sid(self.namespace, sid)
         if _ws_debug_enabled():
-            PrintStyle.debug(f"[StateSyncHandler] disconnect sid={sid}")
+            PrintStyle.debug(f"[WebuiHandler] disconnect sid={sid}")
 
     async def process_event(self, event_type: str, data: dict, sid: str) -> dict | WebSocketResult | None:
         correlation_id = data.get("correlationId")
@@ -30,7 +26,7 @@ class StateSyncHandler(WebSocketHandler):
             request = parse_state_request_payload(data)
         except StateRequestValidationError as exc:
             PrintStyle.warning(
-                f"[StateSyncHandler] INVALID_REQUEST sid={sid} reason={exc.reason} details={exc.details!r}",
+                f"[WebuiHandler] INVALID_REQUEST sid={sid} reason={exc.reason} details={exc.details!r}",
             )
             return self.result_error(
                 code="INVALID_REQUEST",
@@ -40,7 +36,7 @@ class StateSyncHandler(WebSocketHandler):
 
         if _ws_debug_enabled():
             PrintStyle.debug(
-                f"[StateSyncHandler] state_request sid={sid} context={request.context!r} "
+                f"[WebuiHandler] state_request sid={sid} context={request.context!r} "
                 f"log_from={request.log_from} notifications_from={request.notifications_from} "  # noqa: E501
                 f"timezone={request.timezone!r} "
                 f"correlation_id={correlation_id}",
@@ -60,10 +56,10 @@ class StateSyncHandler(WebSocketHandler):
         monitor.mark_dirty(
             self.namespace,
             sid,
-            reason="state_sync_handler.StateSyncHandler.state_request",
+            reason="webui_handler.WebuiHandler.state_request",
         )
         if _ws_debug_enabled():
-            PrintStyle.debug(f"[StateSyncHandler] state_request accepted sid={sid} seq_base={seq_base}")
+            PrintStyle.debug(f"[WebuiHandler] state_request accepted sid={sid} seq_base={seq_base}")
 
         return self.result_ok(
             {

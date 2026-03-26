@@ -76,18 +76,10 @@ async def test_connect_security_is_computed_per_namespace_and_enforced(monkeypat
         def requires_csrf(cls) -> bool:
             return False
 
-        @classmethod
-        def get_event_types(cls) -> list[str]:
-            return ["open_ping"]
-
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str) -> dict[str, Any]:
             return {"ok": True}
 
     class SecureHandler(WebSocketHandler):
-        @classmethod
-        def get_event_types(cls) -> list[str]:
-            return ["secure_ping"]
-
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str) -> dict[str, Any]:
             return {"ok": True}
 
@@ -131,8 +123,7 @@ async def test_connect_security_is_computed_per_namespace_and_enforced(monkeypat
             assert res.get("results")
             res_unhandled = await open_client.call("unhandled_event", {"x": 1}, namespace="/open", timeout=2)
             assert res_unhandled["results"]
-            assert res_unhandled["results"][0]["ok"] is False
-            assert res_unhandled["results"][0]["error"]["code"] == "NO_HANDLERS"
+            assert res_unhandled["results"][0]["ok"] is True
         finally:
             await open_client.disconnect()
 
@@ -195,10 +186,6 @@ async def test_unknown_namespace_rejected_with_deterministic_connect_error_paylo
         def requires_csrf(cls) -> bool:
             return False
 
-        @classmethod
-        def get_event_types(cls) -> list[str]:
-            return ["open_ping"]
-
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str) -> dict[str, Any]:
             return {"ok": True}
 
@@ -255,10 +242,6 @@ async def test_secure_namespace_rejects_missing_auth_even_with_valid_csrf(monkey
     from ctxai.run_ui import configure_websocket_namespaces
 
     class SecureHandler(WebSocketHandler):
-        @classmethod
-        def get_event_types(cls) -> list[str]:
-            return ["secure_ping"]
-
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str) -> dict[str, Any]:
             return {"ok": True}
 
@@ -321,10 +304,6 @@ async def test_secure_namespace_rejects_invalid_csrf_cookie(monkeypatch) -> None
     from ctxai.run_ui import configure_websocket_namespaces
 
     class SecureHandler(WebSocketHandler):
-        @classmethod
-        def get_event_types(cls) -> list[str]:
-            return ["secure_ping"]
-
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str) -> dict[str, Any]:
             return {"ok": True}
 
@@ -395,10 +374,6 @@ async def test_csrf_required_without_auth_is_enforced(monkeypatch) -> None:
         @classmethod
         def requires_csrf(cls) -> bool:
             return True
-
-        @classmethod
-        def get_event_types(cls) -> list[str]:
-            return ["csrf_only_ping"]
 
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str) -> dict[str, Any]:
             return {"ok": True}

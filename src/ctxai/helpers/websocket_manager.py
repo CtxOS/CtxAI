@@ -82,9 +82,7 @@ class WebSocketManager:
             self.lock = _SyncLockAsyncWrapper(lock)
         else:
             self.lock = lock
-        self.handlers: defaultdict[str, defaultdict[str, list[WebSocketHandler]]] = defaultdict(
-            lambda: defaultdict(list),
-        )
+        self.handlers: defaultdict[str, list[WebSocketHandler]] = defaultdict(list)
         self.connections: dict[ConnectionIdentity, ConnectionInfo] = {}
         self.buffers: defaultdict[ConnectionIdentity, deque[BufferedEvent]] = defaultdict(deque)
         self._known_sids: set[ConnectionIdentity] = set()
@@ -279,12 +277,11 @@ class WebSocketManager:
     def _select_handlers(
         self,
         namespace: str,
-        event_type: str,
         *,
         include: set[str] | None,
         exclude: set[str] | None,
     ) -> tuple[list[WebSocketHandler], set[str]]:
-        registered = self.handlers.get(namespace, {}).get(event_type, [])  # type: ignore[call-overload]
+        registered = self.handlers.get(namespace, [])
         available_ids = {handler.identifier for handler in registered}
 
         if include is not None:
@@ -324,32 +321,12 @@ class WebSocketManager:
         for namespace, handlers in handlers_by_namespace.items():
             for handler in handlers:
                 handler.bind_manager(self, namespace=namespace)
-                declared = handler.get_event_types()
-                try:
-                    validated_events = handler.validate_event_types(declared)
-                except Exception as exc:
-                    PrintStyle.error(f"Failed to register handler {handler.identifier}: {exc}")
-                    raise
-
                 if _ws_debug_enabled():
                     PrintStyle.info(
-                        "Registered WebSocket handler {} namespace={} for events: {}".format(
-                            handler.identifier,
-                            namespace,
-                            ", ".join(validated_events),
-                        ),
+                        f"Registered WebSocket handler {handler.identifier} namespace={namespace}",
                     )
-                for event_type in validated_events:
-                    existing = self.handlers[namespace].get(event_type)
-                    if existing:
-                        PrintStyle.warning(
-                            f"Duplicate handler registration for namespace '{namespace}' event '{event_type}'",
-                        )
-                    self.handlers[namespace][event_type].append(handler)
-                    self._debug(f"Registered handler {handler.identifier} namespace={namespace} event='{event_type}'")
-
-    def iter_event_types(self, namespace: str) -> Iterable[str]:
-        return list(self.handlers.get(namespace, {}).keys())
+                self.handlers[namespace].append(handler)
+                self._debug(f"Registered handler {handler.identifier} namespace={namespace}")
 
     def iter_namespaces(self) -> list[str]:
         return list(self.handlers.keys())
@@ -543,13 +520,13 @@ class WebSocketManager:
         include = include_handlers or include_meta
         exclude = exclude_handlers or (exclude_meta if allow_exclude else None)
 
-        registered = self.handlers.get(namespace, {}).get(event_type, [])  # type: ignore[call-overload]
+        registered = self.handlers.get(namespace, [])
         if not registered:
-            PrintStyle.warning(f"No handlers registered for event '{event_type}'")
+            PrintStyle.warning(f"No handlers registered for namespace '{namespace}'")
             error = self._build_error_result(
                 handler_id=handler_id or self._identifier,
                 code="NO_HANDLERS",
-                message=f"No handler for namespace '{namespace}' event '{event_type}'",
+                message=f"No handler for namespace '{namespace}'",
                 correlation_id=correlation_id,
             )
             if ack:
@@ -557,7 +534,7 @@ class WebSocketManager:
             return {"correlationId": correlation_id, "results": [error]}
 
         try:
-            selected_handlers, _ = self._select_handlers(namespace, event_type, include=include, exclude=exclude)
+            selected_handlers, _ = self._select_handlers(namespace, include=include, exclude=exclude)
         except ValueError as exc:
             error = self._build_error_result(
                 handler_id=handler_id or self._identifier,
@@ -981,14 +958,10 @@ class WebSocketManager:
             )
 
     async def _run_lifecycle(self, namespace: str, fn: Callable[[WebSocketHandler], Any]) -> None:
-        seen: set[WebSocketHandler] = set()
+        handlers = self.handlers.get(namespace, [])
         coros: list[Any] = []
-        for handler_list in self.handlers.get(namespace, {}).values():
-            for handler in handler_list:
-                if handler in seen:
-                    continue
-                seen.add(handler)
-                coros.append(self._get_handler_worker().execute_inside(fn, handler))
+        for handler in handlers:
+            coros.append(self._get_handler_worker().execute_inside(fn, handler))
         if coros:
             await asyncio.gather(*coros, return_exceptions=True)
 

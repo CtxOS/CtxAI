@@ -37,10 +37,6 @@ class DummyHandler(WebSocketHandler):
         super().__init__(socketio, lock)
         self.results = results
 
-    @classmethod
-    def get_event_types(cls) -> list[str]:
-        return ["dummy"]
-
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         response = {"sid": sid, "data": data}
         self.results.append(response)
@@ -144,7 +140,7 @@ async def test_route_event_no_handler_returns_standard_error():
     assert result["handlerId"].endswith("WebSocketManager")
     assert result["ok"] is False
     assert result["error"]["code"] == "NO_HANDLERS"
-    assert result["error"]["error"] == f"No handler for namespace '{NAMESPACE}' event 'missing'"
+    assert result["error"]["error"] == f"No handler for namespace '{NAMESPACE}'"
 
 
 @pytest.mark.asyncio
@@ -163,10 +159,6 @@ async def test_route_event_all_aggregates_results():
     manager = WebSocketManager(socketio, threading.RLock())
 
     class EchoHandler(WebSocketHandler):
-        @classmethod
-        def get_event_types(cls) -> list[str]:
-            return ["multi"]
-
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
             return {"sid": sid, "echo": data}
 
@@ -199,10 +191,6 @@ async def test_route_event_all_timeout_marks_error():
     manager = WebSocketManager(socketio, threading.RLock())
 
     class SlowHandler(WebSocketHandler):
-        @classmethod
-        def get_event_types(cls) -> list[str]:
-            return ["slow"]
-
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
             await asyncio.sleep(0.2)
             return {"status": "done"}
@@ -228,10 +216,6 @@ async def test_route_event_exception_standardizes_error_payload():
     manager = WebSocketManager(socketio, threading.RLock())
 
     class FailingHandler(WebSocketHandler):
-        @classmethod
-        def get_event_types(cls) -> list[str]:
-            return ["boom"]
-
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
             raise RuntimeError("kaboom")
 
@@ -257,10 +241,6 @@ async def test_route_event_offloads_blocking_handlers():
     manager = WebSocketManager(socketio, threading.RLock())
 
     class BlockingHandler(WebSocketHandler):
-        @classmethod
-        def get_event_types(cls) -> list[str]:
-            return ["block"]
-
         async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
             time.sleep(0.2)
             return {"status": "done"}
@@ -479,33 +459,18 @@ async def test_timestamps_are_timezone_aware():
 
 
 class DuplicateHandler(WebSocketHandler):
-    @classmethod
-    def get_event_types(cls) -> list[str]:
-        return ["dup_event"]
-
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         return {"handledBy": self.identifier}
 
 
 class AnotherDuplicateHandler(WebSocketHandler):
-    @classmethod
-    def get_event_types(cls) -> list[str]:
-        return ["dup_event"]
-
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         return {"handledBy": self.identifier}
 
 
-def test_register_handlers_warns_on_duplicates(monkeypatch):
+def test_register_handlers_adds_multiple_per_namespace():
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
-
-    warnings: list[str] = []
-
-    def capture_warning(message: str) -> None:
-        warnings.append(message)
-
-    monkeypatch.setattr("ctxai.helpers.print_style.PrintStyle.warning", staticmethod(capture_warning))
 
     DuplicateHandler._reset_instance_for_testing()
     AnotherDuplicateHandler._reset_instance_for_testing()
@@ -514,14 +479,12 @@ def test_register_handlers_warns_on_duplicates(monkeypatch):
 
     manager.register_handlers({NAMESPACE: [handler_a, handler_b]})
 
-    assert any("Duplicate handler registration" in msg for msg in warnings)
+    assert len(manager.handlers[NAMESPACE]) == 2
+    assert handler_a in manager.handlers[NAMESPACE]
+    assert handler_b in manager.handlers[NAMESPACE]
 
 
 class NonDictHandler(WebSocketHandler):
-    @classmethod
-    def get_event_types(cls) -> list[str]:
-        return ["non_dict"]
-
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         return "raw-value"
 
@@ -543,19 +506,11 @@ async def test_route_event_standardizes_success_payload():
 
 
 class ErrorHandler(WebSocketHandler):
-    @classmethod
-    def get_event_types(cls) -> list[str]:
-        return ["boom"]
-
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         raise RuntimeError("BOOM")
 
 
 class ResultHandler(WebSocketHandler):
-    @classmethod
-    def get_event_types(cls) -> list[str]:  # pragma: no cover - simple declaration
-        return ["result_event", "result_error"]
-
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         if event_type == "result_event":
             return WebSocketResult.ok({"sid": sid}, correlation_id="explicit", duration_ms=1.234)
@@ -620,19 +575,11 @@ async def test_route_event_preserves_websocket_result_errors():
 
 
 class AlphaFilterHandler(WebSocketHandler):
-    @classmethod
-    def get_event_types(cls) -> list[str]:
-        return ["filter_event"]
-
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         return {"handledBy": self.identifier, "sid": sid}
 
 
 class BetaFilterHandler(WebSocketHandler):
-    @classmethod
-    def get_event_types(cls) -> list[str]:
-        return ["filter_event"]
-
     async def process_event(self, event_type: str, data: dict[str, Any], sid: str):
         return {"handledBy": self.identifier, "sid": sid}
 

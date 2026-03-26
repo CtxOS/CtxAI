@@ -16,6 +16,6 @@ class PluginScanStart(ApiHandler):
         if context is None:
             return Response(f"Context {ctxid} not found.", 404)
 
-        context.communicate(UserMessage(text, []))
+        context.communicate(UserMessage(message=text, attachments=[]))
 
         return {"ok": True, "context": ctxid}

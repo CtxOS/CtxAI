@@ -12,7 +12,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from ctxai.helpers.websocket_manager import WebSocketManager
 
-NAMESPACE = "/state_sync"
+NAMESPACE = "/webui"
 
 
 class FakeSocketIOServer:
@@ -28,11 +28,11 @@ async def _create_manager() -> WebSocketManager:
     manager = WebSocketManager(socketio, threading.RLock())
 
     from ctxai.helpers.state_monitor import _reset_state_monitor_for_testing
-    from ctxai.python.websocket_handlers.state_sync_handler import StateSyncHandler
+    from ctxai.python.websocket_handlers.webui_handler import WebuiHandler
 
     _reset_state_monitor_for_testing()
-    StateSyncHandler._reset_instance_for_testing()
-    handler = StateSyncHandler.get_instance(socketio, threading.RLock())
+    WebuiHandler._reset_instance_for_testing()
+    handler = WebuiHandler.get_instance(socketio, threading.RLock())
     manager.register_handlers({NAMESPACE: [handler]})
     await manager.handle_connect(NAMESPACE, "sid-1")
     return manager
@@ -43,11 +43,11 @@ async def _create_manager_with_socketio() -> tuple[WebSocketManager, FakeSocketI
     manager = WebSocketManager(socketio, threading.RLock())
 
     from ctxai.helpers.state_monitor import _reset_state_monitor_for_testing
-    from ctxai.python.websocket_handlers.state_sync_handler import StateSyncHandler
+    from ctxai.python.websocket_handlers.webui_handler import WebuiHandler
 
     _reset_state_monitor_for_testing()
-    StateSyncHandler._reset_instance_for_testing()
-    handler = StateSyncHandler.get_instance(socketio, threading.RLock())
+    WebuiHandler._reset_instance_for_testing()
+    handler = WebuiHandler.get_instance(socketio, threading.RLock())
     manager.register_handlers({NAMESPACE: [handler]})
     await manager.handle_connect(NAMESPACE, "sid-1")
     return manager, socketio
