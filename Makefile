@@ -24,6 +24,8 @@ all: help
 
 # ── Utilities ──────────────────────────────────────────────────────
 
+pre-push:
+
 check-tools: ## verify required tools are installed
 	@command -v uv >/dev/null 2>&1 || { echo >&2 "$(RED)uv is not installed. Aborting.$(NC)"; exit 1; }
 	@echo "$(GREEN)All required tools are installed.$(NC)"

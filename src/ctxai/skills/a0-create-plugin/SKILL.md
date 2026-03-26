@@ -6,13 +6,13 @@ description: Create, extend, or modify Ctx AI plugins. Follows strict full-stack
 # Ctx AI Plugin Development
 
 > [!IMPORTANT]
-> Always create new plugins in `/a0/usr/plugins/<plugin_name>/`. The `/a0/plugins/` directory is reserved for core system plugins.
+> Always create new plugins in `/ctx/usr/plugins/<plugin_name>/`. The `/ctx/plugins/` directory is reserved for core system plugins.
 
 Primary references:
-- /a0/AGENTS.md (Full-stack architecture & AgentContext)
-- /a0/docs/agents/AGENTS.components.md (Component system deep dive)
-- /a0/docs/agents/AGENTS.modals.md (Modal system & CSS conventions)
-- /a0/docs/agents/AGENTS.plugins.md (Extension points, plugin.yaml, settings system, Plugin Index)
+- /ctx/AGENTS.md (Full-stack architecture & AgentContext)
+- /ctx/docs/agents/AGENTS.components.md (Component system deep dive)
+- /ctx/docs/agents/AGENTS.modals.md (Modal system & CSS conventions)
+- /ctx/docs/agents/AGENTS.plugins.md (Extension points, plugin.yaml, settings system, Plugin Index)
 
 ---
 
@@ -22,7 +22,7 @@ Before starting, ask the user one question:
 
 > "Should this plugin be **local only** (stays in your Ctx AI installation) or a **community plugin** (published to the Plugin Index so others can install it)?"
 
-- **Local plugin**: Create it in `/a0/usr/plugins/<plugin_name>/`. No repository needed. Skip to the manifest section below.
+- **Local plugin**: Create it in `/ctx/usr/plugins/<plugin_name>/`. No repository needed. Skip to the manifest section below.
 - **Community plugin**: The plugin must live in its own GitHub repository (runtime manifest at the repo root), and then a separate index submission PR is made to https://github.com/ctxos/a0-plugins. Guide the user through both steps.
 
 ---
@@ -87,7 +87,7 @@ Do **not** show errors or success via inline boxes (e.g. a red `<div>` bound to 
 - **Success**: `toastFrontendSuccess(message, "My Plugin")`
 - **Warnings/Info**: `toastFrontendWarning`, `toastFrontendInfo` from `/components/notifications/notification-store.js`
 
-Import and call from your store; do not render a dedicated error/success block in the template. See [Notifications](/a0/docs/developer/notifications.md) for the full API.
+Import and call from your store; do not render a dedicated error/success block in the template. See [Notifications](/ctx/docs/developer/notifications.md) for the full API.
 
 ---
 
@@ -175,7 +175,7 @@ save_plugin_config(
 
 ## Directory Layout
 ```
-/a0/usr/plugins/<name>/
+/ctx/usr/plugins/<name>/
   plugin.yaml           # Required manifest
   initialize.py         # Optional one-time setup script
   hooks.py              # Optional framework runtime hook functions

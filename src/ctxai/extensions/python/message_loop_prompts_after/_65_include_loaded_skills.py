@@ -5,7 +5,7 @@ from ctxai.tools.skills_tool import DATA_NAME_LOADED_SKILLS
 
 
 class IncludeLoadedSkills(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 

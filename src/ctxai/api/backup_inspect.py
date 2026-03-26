@@ -1,8 +1,6 @@
 from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import Response
 from ctxai.helpers.backup import BackupService
-from werkzeug.datastructures import FileStorage
+from ctxai.helpers.flask_compat import Response, UploadFileAdapter
 
 
 class BackupInspect(ApiHandler):
@@ -14,13 +12,14 @@ class BackupInspect(ApiHandler):
     def requires_loopback(cls) -> bool:
         return False
 
-    async def process(self, input: dict, request: Request) -> dict | Response:
+    async def process(self, input: dict, request) -> dict | Response:
         # Handle file upload
         if "backup_file" not in request.files:
             return {"success": False, "error": "No backup file provided"}
 
-        backup_file: FileStorage = request.files["backup_file"]
-        if backup_file.filename == "":
+        backup_file = UploadFileAdapter(request.files["backup_file"])
+        await backup_file.read_async()
+        if not backup_file.filename:
             return {"success": False, "error": "No file selected"}
 
         try:

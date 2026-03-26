@@ -4,8 +4,7 @@ import threading
 import time
 from pathlib import Path
 from typing import Any
-from unittest.mock import AsyncMock
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -13,13 +12,15 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from datetime import UTC
+
 from ctxai.helpers.websocket import ConnectionNotFoundError, WebSocketHandler, WebSocketResult
 from ctxai.helpers.websocket_manager import (
-    WebSocketManager,
     BUFFER_TTL,
     DIAGNOSTIC_EVENT,
     LIFECYCLE_CONNECT_EVENT,
     LIFECYCLE_DISCONNECT_EVENT,
+    WebSocketManager,
 )
 
 NAMESPACE = "/test"
@@ -366,9 +367,9 @@ async def test_expired_buffer_entries_are_discarded(monkeypatch):
     await manager.handle_connect(NAMESPACE, "sid-expired")
     await manager.handle_disconnect(NAMESPACE, "sid-expired")
 
-    from datetime import timedelta, timezone, datetime
+    from datetime import datetime, timedelta
 
-    past = datetime.now(timezone.utc) - (BUFFER_TTL + timedelta(seconds=5))
+    past = datetime.now(UTC) - (BUFFER_TTL + timedelta(seconds=5))
     future = past + BUFFER_TTL + timedelta(seconds=10)
 
     await manager.emit_to(NAMESPACE, "sid-expired", "event", {"a": 1})
@@ -817,7 +818,7 @@ async def test_diagnostic_event_emitted_for_inbound():
     manager.register_handlers({NAMESPACE: [handler]})
 
     await manager.handle_connect(NAMESPACE, "observer")
-    assert manager.register_diagnostic_watcher(NAMESPACE, "observer") is True
+    assert await manager.register_diagnostic_watcher(NAMESPACE, "observer") is True
     await manager.handle_connect(NAMESPACE, "sid-client")
 
     await manager.route_event(NAMESPACE, "dummy", {"payload": "value"}, "sid-client")

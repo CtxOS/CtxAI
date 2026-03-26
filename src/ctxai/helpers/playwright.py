@@ -4,7 +4,6 @@ from pathlib import Path
 
 from ctxai.helpers import files
 
-
 # this helper ensures that playwright is installed in /lib/playwright
 # should work for both docker and local installation
 

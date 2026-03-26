@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from ctxai.helpers.websocket import WebSocketHandler
-from ctxai.helpers.websocket import WebSocketResult
+from ctxai.helpers.websocket import WebSocketHandler, WebSocketResult
 
 
 class RootDefaultHandler(WebSocketHandler):

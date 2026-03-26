@@ -1,17 +1,16 @@
 import inspect
 from abc import abstractmethod
+from collections.abc import Awaitable
 from functools import wraps
-from typing import Awaitable
-from typing import Type
 from typing import TYPE_CHECKING
 
-from ctxai.helpers import cache
-from ctxai.helpers import extract_tools
-from ctxai.helpers import files
-from ctxai.helpers import subagents
+from ctxai.helpers import cache, extract_tools, files, subagents
+from ctxai.helpers.opentelemetry_instrumentation import get_tracer, record_exception, start_span
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
+
+_tracer = get_tracer("ctxai.extensions")
 
 
 DEFAULT_EXTENSIONS_FOLDER = "python/extensions"
@@ -169,7 +168,7 @@ def extensible(func):
 
 class Extension:
     def __init__(self, agent: "Agent|None", **kwargs):
-        self.agent: "Agent|None" = agent
+        self.agent: Agent | None = agent
         self.kwargs = kwargs
 
     @abstractmethod
@@ -181,22 +180,59 @@ async def call_extensions_async(extension_point: str, agent: "Agent|None" = None
     # fetch classes for this extension point and agent
     classes = _get_extension_classes(extension_point, agent=agent, **kwargs)
 
-    # execute unique extensions
-    for cls in classes:
-        result = cls(agent=agent).execute(**kwargs)
-        if isinstance(result, Awaitable):
-            await result
+    with start_span(
+        _tracer,
+        f"extension.{extension_point}",
+        attributes={
+            "extension.point": extension_point,
+            "extension.count": len(classes),
+            "agent.context_id": agent.context.id if agent and agent.context else "",
+        },
+    ) as span:
+        # execute unique extensions
+        for i, cls in enumerate(classes):
+            with start_span(
+                _tracer,
+                f"extension.execute.{cls.__name__}",
+                attributes={"extension.class": cls.__name__, "extension.index": i},
+            ):
+                try:
+                    result = cls(agent=agent).execute(**kwargs)
+                    if isinstance(result, Awaitable):
+                        await result
+                except Exception as exc:
+                    record_exception(span, exc)
+                    raise
 
 
 def call_extensions_sync(extension_point: str, agent: "Agent|None" = None, **kwargs):
     # fetch classes for this extension point and agent
     classes = _get_extension_classes(extension_point, agent=agent, **kwargs)
 
-    # execute unique extensions
-    for cls in classes:
-        result = cls(agent=agent).execute(**kwargs)
-        if isinstance(result, Awaitable):
-            raise ValueError(f"Extension {cls.__name__} returned awaitable in sync mode")
+    with start_span(
+        _tracer,
+        f"extension.{extension_point}",
+        attributes={
+            "extension.point": extension_point,
+            "extension.count": len(classes),
+            "agent.context_id": agent.context.id if agent and agent.context else "",
+        },
+    ) as span:
+        # execute unique extensions
+        for i, cls in enumerate(classes):
+            with start_span(
+                _tracer,
+                f"extension.execute.{cls.__name__}",
+                attributes={"extension.class": cls.__name__, "extension.index": i},
+            ):
+                try:
+                    result = cls(agent=agent).execute(**kwargs)
+                    if isinstance(result, Awaitable):
+                        raise ValueError(f"Extension {cls.__name__} returned awaitable in sync mode")
+                except Exception as exc:
+                    if not isinstance(exc, ValueError):
+                        record_exception(span, exc)
+                    raise
 
 
 def get_webui_extensions(agent: "Agent | None", extension_point: str, filters: list[str] | None = None):
@@ -206,7 +242,7 @@ def get_webui_extensions(agent: "Agent | None", extension_point: str, filters: l
     effective_filters = filters or ["*"]
 
     base_dir = files.get_base_dir()
-    plugins_dir = files.get_abs_path(base_dir, "plugins")
+    files.get_abs_path(base_dir, "plugins")
 
     folders = get_plugin_paths("extensions/webui", extension_point)
 
@@ -231,7 +267,7 @@ def get_webui_extensions(agent: "Agent | None", extension_point: str, filters: l
     return entries
 
 
-def _get_extension_classes(extension_point: str, agent: "Agent|None" = None, **kwargs) -> list[Type[Extension]]:
+def _get_extension_classes(extension_point: str, agent: "Agent|None" = None, **kwargs) -> list[type[Extension]]:
     # search for extension folders in all agent's paths
     paths = subagents.get_paths(agent, "extensions/python", extension_point)
 

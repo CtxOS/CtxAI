@@ -1,9 +1,7 @@
 from ctxai import initialize
-from ctxai.agent import Agent
-from ctxai.agent import UserMessage
+from ctxai.agent import Agent, UserMessage
 from ctxai.extensions.python.hist_add_tool_result import _90_save_tool_call_file as save_tool_call_file
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
+from ctxai.helpers.tool import Response, Tool
 
 
 class Delegation(Tool):

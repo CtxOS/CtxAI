@@ -174,7 +174,7 @@ You can pick any location you find convenient:
 - **Windows:** `C:\ctxai-data`
 - **macOS/Linux:** `/home/user/ctxai-data`
 
-You can map just the `/a0/usr` directory (recommended) or individual subfolders of `/a0` to a local directory.
+You can map just the `/ctx/usr` directory (recommended) or individual subfolders of `/a0` to a local directory.
 
 > [!CAUTION]
 > Do **not** map the entire `/a0` directory: it contains the application code and can break upgrades.
@@ -218,7 +218,7 @@ Open `http://localhost:<PORT>` in your browser. The Web UI will open - Ctx AI is
 **Running A0 using Terminal?**
 
 ```bash
-docker run -p 0:80 -v /path/to/your/work_dir:/a0/usr ctxos/ctxai
+docker run -p 0:80 -v /path/to/your/work_dir:/ctx/usr ctxos/ctxai
 ```
 
 - Replace `0` with a fixed port if you prefer (e.g., `50080:80`)
@@ -240,7 +240,7 @@ Ctx AI provides a comprehensive settings interface to customize various aspects 
 - **Knowledge Subdirectory:** Specify the location of custom knowledge files to enhance the agent's understanding.
 
 > [!NOTE]
-> Since v0.9.7, custom prompts belong in `/a0/agents/<agent_name>/prompts/` rather than a shared `/prompts` folder. See the [Extensions guide](../developer/extensions.md#prompts) for details.
+> Since v0.9.7, custom prompts belong in `/ctx/agents/<agent_name>/prompts/` rather than a shared `/prompts` folder. See the [Extensions guide](../developer/extensions.md#prompts) for details.
 
 > [!NOTE]
 > The Hacker profile is included in the main image. After launch, choose the **hacker** agent profile in Settings if you want the security-focused prompts and tooling. The "hacker" branch is deprecated.
@@ -482,7 +482,7 @@ ollama rm <model-name>
 5. In the **new** instance, restore that backup from the same panel.
 
 > [!TIP]
-> If the new instance fails to load settings, remove `/a0/usr/settings.json` and restart to regenerate default settings.
+> If the new instance fails to load settings, remove `/ctx/usr/settings.json` and restart to regenerate default settings.
 
 ---
 

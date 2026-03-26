@@ -2,14 +2,8 @@ import fnmatch
 import secrets
 from urllib.parse import urlparse
 
-from ctxai.helpers import dotenv
-from ctxai.helpers import login
-from ctxai.helpers import runtime
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Input
-from ctxai.helpers.api import Output
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import session
+from ctxai.helpers import dotenv, login, runtime
+from ctxai.helpers.api import ApiHandler, Input, Output, Request, session
 
 ALLOWED_ORIGINS_KEY = "ALLOWED_ORIGINS"
 
@@ -29,7 +23,11 @@ class GetCsrfToken(ApiHandler):
         if not origin_check["ok"]:
             return {
                 "ok": False,
-                "error": f"Origin {self.get_origin_from_request(request)} not allowed when login is disabled. Set login and password or add your URL to ALLOWED_ORIGINS env variable. Currently allowed origins: {','.join(origin_check['allowed_origins'])}",
+                "error": (
+                    f"Origin {self.get_origin_from_request(request)} not allowed when login is disabled. "
+                    "Set login and password or add your URL to ALLOWED_ORIGINS env variable. "
+                    f"Currently allowed origins: {','.join(origin_check['allowed_origins'])}"
+                ),
             }
 
         # generate a csrf token if it doesn't exist

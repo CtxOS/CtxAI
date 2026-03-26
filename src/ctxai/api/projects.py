@@ -1,11 +1,6 @@
 from ctxai.helpers import projects
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Input
-from ctxai.helpers.api import Output
-from ctxai.helpers.api import Request
-from ctxai.helpers.notification import NotificationManager
-from ctxai.helpers.notification import NotificationPriority
-from ctxai.helpers.notification import NotificationType
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
+from ctxai.helpers.notification import NotificationManager, NotificationPriority, NotificationType
 
 
 class Projects(ApiHandler):
@@ -36,7 +31,7 @@ class Projects(ApiHandler):
             elif action == "deactivate":
                 data = self.deactivate_project(ctxid)
             elif action == "file_structure":
-                data = self.get_file_structure(input.get("name", None), input.get("settings"))
+                data = await self.get_file_structure(input.get("name", None), input.get("settings"))
             else:
                 raise Exception("Invalid action")
 
@@ -75,7 +70,7 @@ class Projects(ApiHandler):
             raise Exception("Git URL is required")
 
         # Progress notification
-        notification = NotificationManager.send_notification(
+        NotificationManager.send_notification(
             NotificationType.PROGRESS,
             NotificationPriority.NORMAL,
             "Cloning repository...",
@@ -139,7 +134,7 @@ class Projects(ApiHandler):
             raise Exception("Context ID is required")
         return projects.deactivate_project(context_id)
 
-    def get_file_structure(self, name: str | None, settings: dict | None):
+    async def get_file_structure(self, name: str | None, settings: dict | None):
         if not name:
             raise Exception("Project name is required")
         # project data
@@ -148,4 +143,4 @@ class Projects(ApiHandler):
         if settings:
             basic_data["file_structure"] = settings  # type: ignore
         # get structure
-        return projects.get_file_structure(name, basic_data)
+        return await projects.get_file_structure(name, basic_data)

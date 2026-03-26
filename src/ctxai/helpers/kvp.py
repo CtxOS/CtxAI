@@ -59,7 +59,7 @@ def get_persistent(key: str, default: Any = None) -> Any:
     path = _key_to_path(key)
     with _persistent_lock:
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 return json.load(f)
         except FileNotFoundError:
             return default

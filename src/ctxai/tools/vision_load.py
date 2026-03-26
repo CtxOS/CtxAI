@@ -1,13 +1,9 @@
 import base64
 from mimetypes import guess_type
 
-from ctxai.helpers import files
-from ctxai.helpers import history
-from ctxai.helpers import images
-from ctxai.helpers import runtime
+from ctxai.helpers import files, history, images, runtime
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
+from ctxai.helpers.tool import Response, Tool
 
 # image optimization and token estimation for context window
 MAX_PIXELS = 768_000
@@ -16,9 +12,10 @@ TOKENS_ESTIMATE = 1500
 
 
 class VisionLoad(Tool):
-    async def execute(self, paths: list[str] = [], **kwargs) -> Response:
+    async def execute(self, paths: list[str] = None, **kwargs) -> Response:
+        if paths is None:
+            paths = []
         self.images_dict: dict[str, str | None] = {}
-        template: list[dict[str, str]] = []  # type: ignore
 
         for path in paths:
             if not await runtime.call_development_function(files.exists, str(path)):

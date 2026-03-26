@@ -4,6 +4,7 @@ import {
   copyToClipboard,
 } from "/components/messages/action-buttons/simple-action-buttons.js";
 import { store as notificationStore } from "/components/notifications/notification-store.js";
+import { ensureAce } from "/js/ace-loader.js";
 
 // Step Detail Store - manages the step detail modal
 
@@ -112,16 +113,13 @@ const model = {
   },
 
   // Initialize ACE editor for raw JSON view
-  initRawEditor() {
+  async initRawEditor() {
     const container = document.getElementById("step-detail-raw-editor");
     if (!container) return;
 
     this.destroyRawEditor();
 
-    if (!window.ace?.edit) {
-      console.warn("ACE editor not available");
-      return;
-    }
+    await ensureAce();
 
     const stepData = this.selectedStepForDetail;
     if (!stepData) return;

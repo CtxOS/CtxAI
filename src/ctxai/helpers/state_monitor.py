@@ -4,16 +4,16 @@ import asyncio
 import os
 import threading
 import time
-from dataclasses import dataclass
-from dataclasses import field
-from typing import Any
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 
 from ctxai.helpers import runtime
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.state_snapshot import advance_state_request_after_snapshot
-from ctxai.helpers.state_snapshot import build_snapshot_from_request
-from ctxai.helpers.state_snapshot import StateRequestV1
+from ctxai.helpers.state_snapshot import (
+    StateRequestV1,
+    advance_state_request_after_snapshot,
+    build_snapshot_from_request,
+)
 from ctxai.helpers.websocket import ConnectionNotFoundError
 
 if TYPE_CHECKING:  # pragma: no cover - hints only
@@ -65,7 +65,7 @@ class StateMonitor:
         self._dispatcher_loop: asyncio.AbstractEventLoop | None = None
         self._dirty_wave_seq: int = 0
 
-    def bind_manager(self, manager: "WebSocketManager", *, handler_id: str | None = None) -> None:
+    def bind_manager(self, manager: WebSocketManager, *, handler_id: str | None = None) -> None:
         with self._lock:
             self._manager = manager
             if handler_id:
@@ -322,7 +322,8 @@ class StateMonitor:
             return
 
         _debug_log(
-            f"[StateMonitor] follow_up_push namespace={namespace} sid={sid} dirty={dirty_version} pushed={pushed_version}",
+            f"[StateMonitor] follow_up_push namespace={namespace} sid={sid} "
+            f"dirty={dirty_version} pushed={pushed_version}",
         )
         try:
             loop = self._dispatcher_loop or asyncio.get_running_loop()

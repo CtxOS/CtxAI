@@ -2,31 +2,26 @@ import asyncio
 import random
 import string
 import threading
+import time
 from collections import OrderedDict
-from dataclasses import dataclass
-from dataclasses import field
-from datetime import datetime
-from datetime import timezone
+from collections.abc import Awaitable, Callable, Coroutine
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
-from typing import Awaitable
-from typing import Callable
-from typing import Coroutine
-from typing import Dict
+
+from langchain_core.messages import BaseMessage
 
 import ctxai.helpers.log as Log
 import ctxai.models as models
 from ctxai.helpers import context as context_helper
-from ctxai.helpers import extension
-from ctxai.helpers import files
-from ctxai.helpers import history
-from ctxai.helpers import subagents
+from ctxai.helpers import extension, files, history, subagents
 from ctxai.helpers.defer import DeferredTask
 from ctxai.helpers.dirty_json import DirtyJson
 from ctxai.helpers.errors import InterventionException
 from ctxai.helpers.localization import Localization
 from ctxai.helpers.print_style import PrintStyle
-from langchain_core.messages import BaseMessage
+from ctxai.helpers.prometheus_metrics import metrics
 
 
 class AgentContextType(Enum):
@@ -37,10 +32,10 @@ class AgentContextType(Enum):
 
 # Maximum number of concurrent agent contexts before eviction kicks in.
 # Oldest non-running contexts are evicted first.
-MAX_CONTEXTS = 64
+DEFAULT_MAX_CONTEXTS = 64
 
-# Maximum concurrent agent execution threads.
-MAX_CONCURRENT_TASKS = 16
+# Maximum concurrent agent execution tasks.
+DEFAULT_MAX_CONCURRENT_TASKS = 16
 
 
 class AgentContext:
@@ -48,7 +43,9 @@ class AgentContext:
     _contexts_lock = threading.RLock()
     _counter: int = 0
     _notification_manager = None
-    _task_semaphore = threading.Semaphore(MAX_CONCURRENT_TASKS)
+    _max_contexts = DEFAULT_MAX_CONTEXTS
+    _max_concurrent_tasks = DEFAULT_MAX_CONCURRENT_TASKS
+    _task_semaphore = threading.BoundedSemaphore(DEFAULT_MAX_CONCURRENT_TASKS)
 
     @extension.extensible
     def __init__(
@@ -92,15 +89,29 @@ class AgentContext:
         self.paused = paused
         self.streaming_agent = streaming_agent
         self.task: DeferredTask | None = None
-        self.created_at = created_at or datetime.now(timezone.utc)
+        self.created_at = created_at or datetime.now(UTC)
         self.type = type
         self.timeout = timeout  # per-context execution timeout in seconds (0 = no limit)
         AgentContext._counter += 1
         self.no = AgentContext._counter
-        self.last_message = last_message or datetime.now(timezone.utc)
+        self.last_message = last_message or datetime.now(UTC)
+
+        # Product metrics for this context
+        self.product_metrics: dict[str, Any] = {
+            "tasks_started": 0,
+            "tasks_completed": 0,
+            "tasks_failed": 0,
+            "tasks_timed_out": 0,
+            "total_task_duration_ms": 0.0,
+            "avg_task_duration_ms": 0.0,
+            "last_task_duration_ms": 0.0,
+        }
 
         # initialize agent at last (context is complete now)
         self.agent0 = agent0 or Agent(0, self.config, self)
+
+        # Update Prometheus metrics
+        metrics.set_active_contexts(len(AgentContext._contexts))
 
     @staticmethod
     def get(id: str):
@@ -150,13 +161,30 @@ class AgentContext:
                 if short_id not in AgentContext._contexts:
                     return short_id
 
+    @classmethod
+    def set_max_contexts(cls, max_contexts: int) -> None:
+        cls._max_contexts = max(1, int(max_contexts))
+
+    @classmethod
+    def set_max_concurrent_tasks(cls, max_tasks: int) -> None:
+        cls._max_concurrent_tasks = max(1, int(max_tasks))
+        cls._task_semaphore = threading.BoundedSemaphore(cls._max_concurrent_tasks)
+
+    @classmethod
+    def get_max_contexts(cls) -> int:
+        return cls._max_contexts
+
+    @classmethod
+    def get_max_concurrent_tasks(cls) -> int:
+        return cls._max_concurrent_tasks
+
     @staticmethod
     def _evict_overflow():
         """Evict oldest non-running contexts when capacity is exceeded.
 
         Must be called while holding ``_contexts_lock``.
         """
-        while len(AgentContext._contexts) > MAX_CONTEXTS:
+        while len(AgentContext._contexts) > AgentContext._max_contexts:
             evicted = None
             # Walk from oldest to newest; prefer evicting non-running contexts
             for ctx_id, ctx in AgentContext._contexts.items():
@@ -169,6 +197,7 @@ class AgentContext:
             context = AgentContext._contexts.pop(evicted, None)
             if context and context.task:
                 context.task.kill()
+        metrics.set_active_contexts(len(AgentContext._contexts))
 
     @classmethod
     def get_notification_manager(cls):
@@ -185,6 +214,7 @@ class AgentContext:
             context = AgentContext._contexts.pop(id, None)
         if context and context.task:
             context.task.kill()
+        metrics.set_active_contexts(len(AgentContext._contexts))
         return context
 
     def get_data(self, key: str, recursive: bool = True):
@@ -227,6 +257,7 @@ class AgentContext:
             "type": self.type.value,
             "running": self.is_running(),
             "timeout": self.timeout,
+            "product_metrics": self.product_metrics,
             **self.output_data,
         }
 
@@ -298,19 +329,47 @@ class AgentContext:
             )
 
         async def _guarded(*a: Any, **kw: Any) -> Any:
-            AgentContext._task_semaphore.acquire()
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, AgentContext._task_semaphore.acquire)
+            self.product_metrics["tasks_started"] += 1
+            metrics.inc_task("started")
+            started_at = time.monotonic()
             try:
                 coro = func(*a, **kw)
                 if self.timeout and self.timeout > 0:
-                    return await asyncio.wait_for(coro, timeout=self.timeout)
-                return await coro
+                    result = await asyncio.wait_for(coro, timeout=self.timeout)
+                else:
+                    result = await coro
+                self.product_metrics["tasks_completed"] += 1
+                metrics.inc_task("completed")
+                return result
+            except TimeoutError:
+                self.product_metrics["tasks_timed_out"] += 1
+                metrics.inc_task("timed_out")
+                raise
+            except Exception:
+                self.product_metrics["tasks_failed"] += 1
+                metrics.inc_task("failed")
+                raise
             finally:
-                AgentContext._task_semaphore.release()
+                ended_at = time.monotonic()
+                duration_ms = (ended_at - started_at) * 1000.0
+                duration_s = duration_ms / 1000.0
+                metrics.observe_task_latency(duration_s)
+                self.product_metrics["last_task_duration_ms"] = duration_ms
+                self.product_metrics["total_task_duration_ms"] += duration_ms
+                completed = self.product_metrics["tasks_completed"]
+                if completed > 0:
+                    self.product_metrics["avg_task_duration_ms"] = (
+                        self.product_metrics["total_task_duration_ms"] / completed
+                    )
+                await loop.run_in_executor(None, AgentContext._task_semaphore.release)
 
         self.task.start_task(_guarded, *args, **kwargs)
         return self.task
 
-    # this wrapper ensures that superior agents are called back if the chat was loaded from file and original callstack is gone
+    # this wrapper ensures that superior agents are called back if the chat was loaded from file
+    # and original callstack is gone
     @extension.extensible
     async def _process_chain(self, agent: "Agent", msg: "UserMessage|str", user=True):
         from ctxai.helpers.agent_orchestrator import run_process_chain
@@ -336,7 +395,7 @@ class AgentConfig:
     profile: str = ""
     knowledge_subdirs: list[str] = field(default_factory=lambda: ["default", "custom"])
     browser_http_headers: dict[str, str] = field(default_factory=dict)  # Custom HTTP headers for browser requests
-    additional: Dict[str, Any] = field(default_factory=dict)
+    additional: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -485,7 +544,7 @@ class Agent:
 
     @extension.extensible
     def hist_add_message(self, ai: bool, content: history.MessageContent, tokens: int = 0):
-        self.last_message = datetime.now(timezone.utc)
+        self.last_message = datetime.now(UTC)
         # Allow extensions to process content before adding to history
         content_data = {"content": content}
         extension.call_extensions_sync("hist_add_before", self, content_data=content_data, ai=ai)
@@ -647,7 +706,7 @@ class Agent:
 
         Delegates resolution and execution to ``reasoning_engine``.
         """
-        from ctxai.helpers.reasoning_engine import parse_tool_request, execute_tool
+        from ctxai.helpers.reasoning_engine import execute_tool, parse_tool_request
         from ctxai.helpers.tool import Response as ToolResponse
 
         raw_tool_name, tool_name, tool_args, tool, error = await parse_tool_request(self, msg)
@@ -773,7 +832,7 @@ class AgentMemory:
             {
                 "key": key,
                 "value": value,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             },
         )
         self._manager.remember(
@@ -825,7 +884,7 @@ class AgentMemory:
             {
                 "tool": tool_name,
                 "result": result[:500],  # truncate to avoid bloat
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             },
         )
         if len(self.recent_tool_results) > self.MAX_RECENT_TOOLS:

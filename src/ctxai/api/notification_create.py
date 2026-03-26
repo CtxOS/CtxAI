@@ -1,9 +1,8 @@
+from typing import Any
+
 from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.notification import NotificationManager
-from ctxai.helpers.notification import NotificationPriority
-from ctxai.helpers.notification import NotificationType
-from flask import Request
-from flask import Response
+from ctxai.helpers.flask_compat import Response
+from ctxai.helpers.notification import NotificationManager, NotificationPriority, NotificationType
 
 
 class NotificationCreate(ApiHandler):
@@ -11,7 +10,7 @@ class NotificationCreate(ApiHandler):
     def requires_auth(cls) -> bool:
         return True
 
-    async def process(self, input: dict, request: Request) -> dict | Response:
+    async def process(self, input: dict, request: Any) -> dict | Response:
         # Extract notification data
         notification_type = input.get("type", NotificationType.INFO.value)
         priority = input.get("priority", NotificationPriority.NORMAL.value)

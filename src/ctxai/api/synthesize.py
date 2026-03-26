@@ -1,8 +1,6 @@
 # api/synthesize.py
 from ctxai.helpers import kokoro_tts
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class Synthesize(ApiHandler):
@@ -11,7 +9,7 @@ class Synthesize(ApiHandler):
         ctxid = input.get("ctxid", "")
 
         if ctxid:
-            context = self.use_context(ctxid)
+            self.use_context(ctxid)
 
         # if not await kokoro_tts.is_downloaded():
         #     context.log.log(type="info", content="Kokoro TTS model is currently being initialized, please wait...")

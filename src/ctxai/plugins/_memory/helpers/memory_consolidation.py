@@ -1,14 +1,11 @@
 import asyncio
 import json
-from dataclasses import dataclass
-from dataclasses import field
-from datetime import datetime
-from datetime import timezone
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
+
+from langchain_core.documents import Document
 
 from ctxai.agent import Agent
 from ctxai.helpers.dirty_json import DirtyJson
@@ -16,7 +13,6 @@ from ctxai.helpers.log import LogItem
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.plugins._memory.helpers.memory import Memory
 from ctxai.plugins._memory.tools.memory_load import DEFAULT_THRESHOLD as DEFAULT_MEMORY_THRESHOLD
-from langchain_core.documents import Document
 
 
 class ConsolidationAction(Enum):
@@ -50,10 +46,10 @@ class ConsolidationResult:
     """Result of memory consolidation analysis."""
 
     action: ConsolidationAction
-    memories_to_remove: List[str] = field(default_factory=list)
-    memories_to_update: List[Dict[str, Any]] = field(default_factory=list)
+    memories_to_remove: list[str] = field(default_factory=list)
+    memories_to_update: list[dict[str, Any]] = field(default_factory=list)
     new_memory_content: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     reasoning: str = ""
 
 
@@ -62,10 +58,10 @@ class MemoryAnalysisContext:
     """Context for LLM memory analysis."""
 
     new_memory: str
-    similar_memories: List[Document]
+    similar_memories: list[Document]
     area: str
     timestamp: str
-    existing_metadata: Dict[str, Any]
+    existing_metadata: dict[str, Any]
 
 
 class MemoryConsolidator:
@@ -74,7 +70,7 @@ class MemoryConsolidator:
     optimal memory organization and automatically consolidates related memories.
     """
 
-    def __init__(self, agent: Agent, config: Optional[ConsolidationConfig] = None):
+    def __init__(self, agent: Agent, config: ConsolidationConfig | None = None):
         self.agent = agent
         self.config = config or ConsolidationConfig()
 
@@ -82,8 +78,8 @@ class MemoryConsolidator:
         self,
         new_memory: str,
         area: str,
-        metadata: Dict[str, Any],
-        log_item: Optional[LogItem] = None,
+        metadata: dict[str, Any],
+        log_item: LogItem | None = None,
     ) -> dict:
         """
         Process a new memory through the intelligent consolidation pipeline.
@@ -106,7 +102,7 @@ class MemoryConsolidator:
             result = await asyncio.wait_for(processing_task, timeout=self.config.processing_timeout_seconds)
             return result
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             PrintStyle().error(f"Memory consolidation timeout for area {area}")
             return {"success": False, "memory_ids": []}
 
@@ -118,8 +114,8 @@ class MemoryConsolidator:
         self,
         new_memory: str,
         area: str,
-        metadata: Dict[str, Any],
-        log_item: Optional[LogItem] = None,
+        metadata: dict[str, Any],
+        log_item: LogItem | None = None,
     ) -> dict:
         """Execute the full consolidation pipeline."""
 
@@ -176,7 +172,8 @@ class MemoryConsolidator:
                 deleted_count = len(similar_memories) - len(valid_similar_memories)
                 if log_item:
                     log_item.update(
-                        progress=f"Filtered out {deleted_count} deleted memories, {len(valid_similar_memories)} remain for analysis",
+                        progress=f"Filtered out {deleted_count} deleted memories, "  # noqa: E501
+                        f"{len(valid_similar_memories)} remain for analysis",
                         race_condition_detected=True,
                         deleted_similar_memories_count=deleted_count,
                     )
@@ -271,8 +268,8 @@ class MemoryConsolidator:
         self,
         db: Memory,
         result: ConsolidationResult,
-        original_metadata: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        original_metadata: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Gather and merge metadata from memories being consolidated to preserve important fields.
         This ensures critical metadata like priority, source, etc. is preserved during consolidation.
@@ -332,8 +329,8 @@ class MemoryConsolidator:
         self,
         new_memory: str,
         area: str,
-        log_item: Optional[LogItem] = None,
-    ) -> List[Document]:
+        log_item: LogItem | None = None,
+    ) -> list[Document]:
         """
         Find similar memories using both semantic similarity and keyword matching.
         Now includes knowledge source awareness and similarity scores for validation.
@@ -416,7 +413,7 @@ class MemoryConsolidator:
 
         return limited_similar
 
-    async def _extract_search_keywords(self, new_memory: str, log_item: Optional[LogItem] = None) -> List[str]:
+    async def _extract_search_keywords(self, new_memory: str, log_item: LogItem | None = None) -> list[str]:
         """Extract search keywords/queries from new memory using utility LLM."""
 
         try:
@@ -460,7 +457,7 @@ class MemoryConsolidator:
     async def _analyze_memory_consolidation(
         self,
         context: MemoryAnalysisContext,
-        log_item: Optional[LogItem] = None,
+        log_item: LogItem | None = None,
     ) -> ConsolidationResult:
         """Use LLM to analyze memory consolidation options."""
 
@@ -533,8 +530,8 @@ class MemoryConsolidator:
         self,
         result: ConsolidationResult,
         area: str,
-        original_metadata: Dict[str, Any],  # Add original metadata parameter
-        log_item: Optional[LogItem] = None,
+        original_metadata: dict[str, Any],  # Add original metadata parameter
+        log_item: LogItem | None = None,
     ) -> list:
         """Apply the consolidation decisions to the memory database."""
 
@@ -571,8 +568,8 @@ class MemoryConsolidator:
         db: Memory,
         result: ConsolidationResult,
         area: str,
-        original_metadata: Dict[str, Any],  # Add original metadata parameter
-        log_item: Optional[LogItem] = None,
+        original_metadata: dict[str, Any],  # Add original metadata parameter
+        log_item: LogItem | None = None,
     ) -> list:
         """Handle KEEP_SEPARATE action: Insert new memory without touching existing ones."""
 
@@ -601,8 +598,8 @@ class MemoryConsolidator:
         db: Memory,
         result: ConsolidationResult,
         area: str,
-        original_metadata: Dict[str, Any],  # Add original metadata parameter
-        log_item: Optional[LogItem] = None,
+        original_metadata: dict[str, Any],  # Add original metadata parameter
+        log_item: LogItem | None = None,
     ) -> list:
         """Handle MERGE action: Combine memories, remove originals, insert consolidated version."""
 
@@ -636,8 +633,8 @@ class MemoryConsolidator:
         db: Memory,
         result: ConsolidationResult,
         area: str,
-        original_metadata: Dict[str, Any],  # Add original metadata parameter
-        log_item: Optional[LogItem] = None,
+        original_metadata: dict[str, Any],  # Add original metadata parameter
+        log_item: LogItem | None = None,
     ) -> list:
         """Handle REPLACE action: Remove old memories, insert new version with similarity validation."""
 
@@ -716,8 +713,8 @@ class MemoryConsolidator:
         db: Memory,
         result: ConsolidationResult,
         area: str,
-        original_metadata: Dict[str, Any],  # Add original metadata parameter
-        log_item: Optional[LogItem] = None,
+        original_metadata: dict[str, Any],  # Add original metadata parameter
+        log_item: LogItem | None = None,
     ) -> list:
         """Handle UPDATE action: Modify existing memories in place with additional information."""
 
@@ -776,7 +773,7 @@ class MemoryConsolidator:
 
     def _get_timestamp(self) -> str:
         """Get current timestamp in standard format."""
-        return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        return datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
 
 
 # Factory function for easy instantiation

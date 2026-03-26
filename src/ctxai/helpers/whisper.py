@@ -4,9 +4,7 @@ import tempfile
 import warnings
 
 from ctxai.helpers import files
-from ctxai.helpers.notification import NotificationManager
-from ctxai.helpers.notification import NotificationPriority
-from ctxai.helpers.notification import NotificationType
+from ctxai.helpers.notification import NotificationManager, NotificationPriority, NotificationType
 from ctxai.helpers.print_style import PrintStyle
 
 # Suppress FutureWarning from torch.load

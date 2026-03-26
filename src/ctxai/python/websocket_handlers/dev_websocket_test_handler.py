@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any
-from typing import Dict
 
 from ctxai.helpers import runtime
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.websocket import WebSocketHandler
-from ctxai.helpers.websocket import WebSocketResult
+from ctxai.helpers.websocket import WebSocketHandler, WebSocketResult
 
 
 class DevWebsocketTestHandler(WebSocketHandler):
@@ -29,7 +27,7 @@ class DevWebsocketTestHandler(WebSocketHandler):
     async def process_event(
         self,
         event_type: str,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         sid: str,
     ) -> dict[str, Any] | WebSocketResult | None:
         if event_type == "ws_event_console_subscribe":
@@ -38,7 +36,7 @@ class DevWebsocketTestHandler(WebSocketHandler):
                     code="NOT_AVAILABLE",
                     message="Event console is available only in development mode",
                 )
-            registered = self.manager.register_diagnostic_watcher(self.namespace, sid)
+            registered = await self.manager.register_diagnostic_watcher(self.namespace, sid)
             if not registered:
                 return self.result_error(
                     code="SUBSCRIBE_FAILED",
@@ -47,7 +45,7 @@ class DevWebsocketTestHandler(WebSocketHandler):
             return self.result_ok({"status": "subscribed", "timestamp": data.get("requestedAt")})
 
         if event_type == "ws_event_console_unsubscribe":
-            self.manager.unregister_diagnostic_watcher(self.namespace, sid)
+            await self.manager.unregister_diagnostic_watcher(self.namespace, sid)
             return self.result_ok({"status": "unsubscribed"})
 
         if event_type == "ws_tester_emit":

@@ -1,18 +1,17 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from collections import deque
+from collections.abc import Iterable, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from datetime import datetime
-from datetime import timezone
-from typing import Any
-from typing import Iterable
-from typing import Literal
-from typing import Optional
-from typing import Sequence
+from datetime import UTC, datetime
+from typing import Any, Literal
+
+from pathspec import PathSpec
 
 from ctxai.helpers import files as files_helper
-from pathspec import PathSpec
 
 SORT_BY_NAME = "name"
 SORT_BY_CREATED = "created"
@@ -47,10 +46,11 @@ def file_tree(
             finishes rendering before deeper levels are skipped.
         folders_first: When True, folders render before files within each directory.
         max_folders: Optional per-directory cap (0 = unlimited) on rendered folder entries before adding a
-            ``# N more folders`` comment. When only a single folder exceeds the limit and ``max_folders`` is greater than zero, that folder is rendered
-            directly instead of emitting a summary comment.
-        max_files: Optional per-directory cap (0 = unlimited) on rendered file entries before adding a ``# N more files`` comment.
-            As with folders, a single excess file is rendered when ``max_files`` is greater than zero.
+            ``# N more folders`` comment. When only a single folder exceeds the limit and ``max_folders``
+            is greater than zero, that folder is rendered directly instead of emitting a summary comment.
+        max_files: Optional per-directory cap (0 = unlimited) on rendered file entries before adding a
+            ``# N more files`` comment. As with folders, a single excess file is rendered when
+            ``max_files`` is greater than zero.
         sort: Tuple of ``(key, direction)`` where key is one of :data:`SORT_BY_NAME`,
             :data:`SORT_BY_CREATED`, or :data:`SORT_BY_MODIFIED`; direction is :data:`SORT_ASC`
             or :data:`SORT_DESC`.
@@ -115,8 +115,8 @@ def file_tree(
         name=root_name,
         level=0,
         item_type="folder",
-        created=datetime.fromtimestamp(root_stat.st_ctime, tz=timezone.utc),
-        modified=datetime.fromtimestamp(root_stat.st_mtime, tz=timezone.utc),
+        created=datetime.fromtimestamp(root_stat.st_ctime, tz=UTC),
+        modified=datetime.fromtimestamp(root_stat.st_mtime, tz=UTC),
         parent=None,
         items=[],
         rel_path="",
@@ -141,8 +141,8 @@ def file_tree(
             name=entry.name,
             level=level,
             item_type=item_type,
-            created=datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc),
-            modified=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
+            created=datetime.fromtimestamp(stat.st_ctime, tz=UTC),
+            modified=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
             parent=parent,
             items=[] if item_type == "folder" else None,
             rel_path=rel_posix,
@@ -268,6 +268,22 @@ def file_tree(
     return [make_root_item(_to_nested_structure(root_node.items or []))]
 
 
+_executor: ThreadPoolExecutor | None = None
+
+
+def _get_executor() -> ThreadPoolExecutor:
+    global _executor
+    if _executor is None:
+        _executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="file-tree")
+    return _executor
+
+
+async def afile_tree(relative_path: str, **kwargs: Any) -> str | list[dict]:
+    """Async wrapper for :func:`file_tree` — runs the blocking walk in a thread pool."""
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(_get_executor(), lambda: file_tree(relative_path, **kwargs))
+
+
 @dataclass(slots=True)
 class _TreeEntry:
     name: str
@@ -275,8 +291,8 @@ class _TreeEntry:
     item_type: Literal["file", "folder", "comment"]
     created: datetime
     modified: datetime
-    parent: Optional["_TreeEntry"] = None
-    items: Optional[list["_TreeEntry"]] = None
+    parent: _TreeEntry | None = None
+    items: list[_TreeEntry] | None = None
     is_last: bool = False
     rel_path: str = ""
     text: str = ""
@@ -402,8 +418,8 @@ def _create_folder_unprocessed_comment(
     folder_node: _TreeEntry,
     folder_path: str,
     abs_root: str,
-    ignore_spec: Optional[PathSpec],
-) -> Optional[_TreeEntry]:
+    ignore_spec: PathSpec | None,
+) -> _TreeEntry | None:
     try:
         folders, files = _list_directory_children(
             folder_path,
@@ -423,8 +439,8 @@ def _create_folder_unprocessed_comment(
                 name=entry.name,
                 level=folder_node.level + 1,
                 item_type="folder",
-                created=datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc),
-                modified=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
+                created=datetime.fromtimestamp(stat.st_ctime, tz=UTC),
+                modified=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
                 parent=folder_node,
                 items=None,
                 rel_path=os.path.join(folder_node.rel_path, entry.name),
@@ -437,8 +453,8 @@ def _create_folder_unprocessed_comment(
                 name=entry.name,
                 level=folder_node.level + 1,
                 item_type="file",
-                created=datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc),
-                modified=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
+                created=datetime.fromtimestamp(stat.st_ctime, tz=UTC),
+                modified=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
                 parent=folder_node,
                 items=None,
                 rel_path=os.path.join(folder_node.rel_path, entry.name),
@@ -479,7 +495,7 @@ def _refresh_render_metadata(node: _TreeEntry) -> None:
         _refresh_render_metadata(child)
 
 
-def _resolve_ignore_patterns(ignore: str | None, root_abs_path: str) -> Optional[PathSpec]:
+def _resolve_ignore_patterns(ignore: str | None, root_abs_path: str) -> PathSpec | None:
     if ignore is None:
         return None
 
@@ -496,7 +512,7 @@ def _resolve_ignore_patterns(ignore: str | None, root_abs_path: str) -> Optional
             reference_path = os.path.join(root_abs_path, reference)
 
         try:
-            with open(reference_path, "r", encoding="utf-8") as handle:
+            with open(reference_path, encoding="utf-8") as handle:
                 content = handle.read()
         except FileNotFoundError as exc:
             raise FileNotFoundError(f"Ignore file not found: {reference_path}") from exc
@@ -514,7 +530,7 @@ def _resolve_ignore_patterns(ignore: str | None, root_abs_path: str) -> Optional
 def _list_directory_children(
     directory: str,
     root_abs_path: str,
-    ignore_spec: Optional[PathSpec],
+    ignore_spec: PathSpec | None,
     *,
     max_depth_remaining: int,
     cache: dict[str, bool],

@@ -2,20 +2,11 @@ from __future__ import annotations
 
 import os
 import re
-from dataclasses import dataclass
-from dataclasses import field
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from ctxai.helpers import file_tree
-from ctxai.helpers import files
-from ctxai.helpers import runtime
-from ctxai.helpers import subagents
+from ctxai.helpers import file_tree, files, runtime, subagents
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
@@ -34,16 +25,16 @@ class Skill:
     skill_md_path: Path
     version: str = ""
     author: str = ""
-    tags: List[str] = field(default_factory=list)
-    triggers: List[str] = field(default_factory=list)
-    allowed_tools: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
+    triggers: list[str] = field(default_factory=list)
+    allowed_tools: list[str] = field(default_factory=list)
     license: str = ""
     compatibility: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Optional heavy fields (only set when requested)
     content: str = ""  # body content (markdown without frontmatter)
-    raw_frontmatter: Dict[str, Any] = field(default_factory=dict)
+    raw_frontmatter: dict[str, Any] = field(default_factory=dict)
 
 
 def get_skills_base_dir() -> Path:
@@ -52,7 +43,7 @@ def get_skills_base_dir() -> Path:
 
 def get_skill_roots(
     agent: Agent | None = None,
-) -> List[str]:
+) -> list[str]:
     if agent:
         # skill roots available to agent
         paths = subagents.get_paths(agent, "skills")
@@ -87,7 +78,7 @@ def _is_hidden_path(path: Path) -> bool:
     return any(part.startswith(".") for part in path.parts)
 
 
-def discover_skill_md_files(root: Path) -> List[Path]:
+def discover_skill_md_files(root: Path) -> list[Path]:
     """
     Recursively discover SKILL.md files under a root directory.
     Hidden folders/files are ignored.
@@ -95,7 +86,7 @@ def discover_skill_md_files(root: Path) -> List[Path]:
     if not root.exists():
         return []
 
-    results: List[Path] = []
+    results: list[Path] = []
     for p in root.rglob("SKILL.md"):
         try:
             if not p.is_file():
@@ -111,7 +102,7 @@ def discover_skill_md_files(root: Path) -> List[Path]:
     return results
 
 
-def _coerce_list(value: Any) -> List[str]:
+def _coerce_list(value: Any) -> list[str]:
     if value is None:
         return []
     if isinstance(value, list):
@@ -136,12 +127,12 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
-def split_frontmatter(markdown: str) -> Tuple[Dict[str, Any], str, List[str]]:
+def split_frontmatter(markdown: str) -> tuple[dict[str, Any], str, list[str]]:
     """
     Splits a SKILL.md into (frontmatter_dict, body_text, errors).
     Enforces YAML frontmatter at the top for spec compatibility.
     """
-    errors: List[str] = []
+    errors: list[str] = []
     text = markdown or ""
     lines = text.splitlines()
 
@@ -176,10 +167,10 @@ def split_frontmatter(markdown: str) -> Tuple[Dict[str, Any], str, List[str]]:
     return fm, body, errors
 
 
-def _parse_frontmatter_fallback(frontmatter_text: str) -> Dict[str, Any]:
+def _parse_frontmatter_fallback(frontmatter_text: str) -> dict[str, Any]:
     # Minimal YAML subset: key: value, lists with "- item"
-    data: Dict[str, Any] = {}
-    current_key: Optional[str] = None
+    data: dict[str, Any] = {}
+    current_key: str | None = None
     for raw in frontmatter_text.splitlines():
         line = raw.rstrip()
         if not line.strip() or line.strip().startswith("#"):
@@ -210,12 +201,12 @@ def _parse_frontmatter_fallback(frontmatter_text: str) -> Dict[str, Any]:
     return data
 
 
-def parse_frontmatter(frontmatter_text: str) -> Tuple[Dict[str, Any], List[str]]:
+def parse_frontmatter(frontmatter_text: str) -> tuple[dict[str, Any], list[str]]:
     """
     Parse YAML frontmatter with PyYAML when available,
     falling back to a minimal subset parser.
     """
-    errors: List[str] = []
+    errors: list[str] = []
     if not frontmatter_text.strip():
         return {}, errors
 
@@ -241,7 +232,7 @@ def skill_from_markdown(
     *,
     include_content: bool = False,
     validate: bool = True,
-) -> Optional[Skill]:
+) -> Skill | None:
     try:
         text = _read_text(skill_md_path)
     except Exception:
@@ -300,9 +291,9 @@ def skill_from_markdown(
 def list_skills(
     agent: Agent | None = None,
     include_content: bool = False,
-) -> List[Skill]:
+) -> list[Skill]:
     """List skills, optionally filtered by agent scope."""
-    skills: List[Skill] = []
+    skills: list[Skill] = []
 
     roots = get_skill_roots(agent)
 
@@ -317,7 +308,7 @@ def list_skills(
         return skills
 
     # Dedupe by normalized name, preserving root_order priority (earlier wins)
-    by_name: Dict[str, Skill] = {}
+    by_name: dict[str, Skill] = {}
     for s in skills:
         key = _normalize_name(s.name) or _normalize_name(s.path.name)
         if key and key not in by_name:
@@ -353,7 +344,7 @@ def find_skill(
     skill_name: str,
     agent: Agent | None = None,
     include_content: bool = False,
-) -> Optional[Skill]:
+) -> Skill | None:
     target = _normalize_name(skill_name)
     if not target:
         return None
@@ -445,7 +436,7 @@ def search_skills(
     query: str,
     limit: int = 25,
     agent: Agent | None = None,
-) -> List[Skill]:
+) -> list[Skill]:
     q = (query or "").strip().lower()
     if not q:
         return []
@@ -453,7 +444,7 @@ def search_skills(
     terms = [t for t in re.split(r"\s+", q) if t]
     candidates = list_skills(agent)
 
-    scored: List[Tuple[int, Skill]] = []
+    scored: list[tuple[int, Skill]] = []
     for s in candidates:
         name = s.name.lower()
         desc = (s.description or "").lower()
@@ -478,8 +469,8 @@ def search_skills(
 _NAME_RE = re.compile(r"^[a-z0-9-]+$")
 
 
-def validate_skill(skill: Skill) -> List[str]:
-    issues: List[str] = []
+def validate_skill(skill: Skill) -> list[str]:
+    issues: list[str] = []
     name = (skill.name or "").strip()
     desc = (skill.description or "").strip()
 
@@ -508,7 +499,7 @@ def validate_skill(skill: Skill) -> List[str]:
     return issues
 
 
-def validate_skill_md(skill_md_path: Path) -> List[str]:
+def validate_skill_md(skill_md_path: Path) -> list[str]:
     try:
         text = _read_text(skill_md_path)
     except Exception:

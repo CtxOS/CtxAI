@@ -1,14 +1,8 @@
 import os
-from typing import cast
-from typing import TYPE_CHECKING
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict, cast
 
-from ctxai.helpers import dirty_json
-from ctxai.helpers import file_tree
-from ctxai.helpers import files
-from ctxai.helpers import persist_chat
+from ctxai.helpers import dirty_json, file_tree, files, persist_chat
 from ctxai.helpers.print_style import PrintStyle
-
 
 if TYPE_CHECKING:
     from ctxai.agent import AgentContext
@@ -84,7 +78,7 @@ def delete_project(name: str):
 
 
 def create_project(name: str, data: BasicProjectData):
-    abs_path = files.create_dir_safe(files.get_abs_path(PROJECTS_PARENT_DIR, name), rename_format="{name}_{number}")
+    files.create_dir_safe(files.get_abs_path(PROJECTS_PARENT_DIR, name), rename_format="{name}_{number}")
     create_project_meta_folders(name)
     data = _normalizeBasicData(data)
     save_project_header(name, data)
@@ -468,13 +462,13 @@ def get_knowledge_files_count(name: str):
     return len(files.list_files_in_dir_recursively(knowledge_folder))
 
 
-def get_file_structure(name: str, basic_data: BasicProjectData | None = None) -> str:
+async def get_file_structure(name: str, basic_data: BasicProjectData | None = None) -> str:
     project_folder = get_project_folder(name)
     if basic_data is None:
         basic_data = load_basic_project_data(name)
 
     tree = str(
-        file_tree.file_tree(
+        await file_tree.afile_tree(
             project_folder,
             max_depth=basic_data["file_structure"]["max_depth"],
             max_files=basic_data["file_structure"]["max_files"],

@@ -1,9 +1,9 @@
+from typing import Any
+
 from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import Response
 from ctxai.helpers.backup import BackupService
+from ctxai.helpers.flask_compat import Response, send_file
 from ctxai.helpers.persist_chat import save_tmp_chats
-from flask import send_file  # type: ignore[attr-defined]
 
 
 class BackupCreate(ApiHandler):
@@ -15,7 +15,7 @@ class BackupCreate(ApiHandler):
     def requires_loopback(cls) -> bool:
         return False
 
-    async def process(self, input: dict, request: Request) -> dict | Response:
+    async def process(self, input: dict, request: Any) -> dict | Response:
         try:
             # Get input parameters
             include_patterns = input.get("include_patterns", [])

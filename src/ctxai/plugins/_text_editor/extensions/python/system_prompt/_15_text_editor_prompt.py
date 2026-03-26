@@ -6,10 +6,12 @@ from ctxai.helpers.extension import Extension
 class TextEditorPrompt(Extension):
     async def execute(
         self,
-        system_prompt: list[str] = [],
-        loop_data: LoopData = LoopData(),
+        system_prompt: list[str] = None,
+        loop_data: LoopData | None = None,
         **kwargs,
     ):
+        if system_prompt is None:
+            system_prompt = []
         if not self.agent:
             return
 

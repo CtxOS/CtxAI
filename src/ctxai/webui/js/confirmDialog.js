@@ -28,15 +28,19 @@ export function showConfirmDialog(options) {
     // Create dialog
     const dialog = document.createElement("div");
     dialog.className = "confirm-dialog";
+    const _safe =
+      typeof DOMPurify !== "undefined"
+        ? (s) => DOMPurify.sanitize(String(s ?? ""))
+        : (s) => String(s ?? "");
     dialog.innerHTML = `
       <div class="confirm-dialog-header">
         <span class="confirm-dialog-icon material-symbols-outlined" style="color: ${typeConfig.color}">${typeConfig.icon}</span>
-        <span class="confirm-dialog-title">${title}</span>
+        <span class="confirm-dialog-title">${_safe(title)}</span>
       </div>
-      <div class="confirm-dialog-body">${message}</div>
+      <div class="confirm-dialog-body">${_safe(message)}</div>
       <div class="confirm-dialog-footer">
-        <button class="button cancel confirm-dialog-cancel">${cancelText}</button>
-        <button class="button confirm confirm-dialog-confirm">${confirmText}</button>
+        <button class="button cancel confirm-dialog-cancel">${_safe(cancelText)}</button>
+        <button class="button confirm confirm-dialog-confirm">${_safe(confirmText)}</button>
       </div>
     `;
 

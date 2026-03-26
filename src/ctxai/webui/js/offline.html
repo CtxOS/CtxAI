@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ctx AI — Offline</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #1a1a2e;
+        color: #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      .container {
+        text-align: center;
+        padding: 2rem;
+        max-width: 400px;
+      }
+      .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+      h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+      p { color: #888; margin-bottom: 1.5rem; line-height: 1.5; }
+      button {
+        background: #4a6cf7;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      button:hover { background: #3a5ce7; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="icon">&#x1F50C;</div>
+      <h1>You're offline</h1>
+      <p>Ctx AI needs an internet connection to communicate with the server. Check your connection and try again.</p>
+      <button onclick="location.reload()">Reconnect</button>
+    </div>
+    <script>
+      // Auto-reload when back online
+      window.addEventListener("online", () => location.reload());
+    </script>
+  </body>
+</html>

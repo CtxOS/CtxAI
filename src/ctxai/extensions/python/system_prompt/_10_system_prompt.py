@@ -1,16 +1,16 @@
 from typing import Any
 
-from ctxai.agent import Agent
-from ctxai.agent import LoopData
-from ctxai.helpers import projects
-from ctxai.helpers import skills
+from ctxai.agent import Agent, LoopData
+from ctxai.helpers import projects, skills
 from ctxai.helpers.extension import Extension
 from ctxai.helpers.mcp_handler import MCPConfig
 from ctxai.helpers.settings import get_settings
 
 
 class SystemPrompt(Extension):
-    async def execute(self, system_prompt: list[str] = [], loop_data: LoopData = LoopData(), **kwargs: Any):
+    async def execute(self, system_prompt: list[str] = None, loop_data: LoopData | None = None, **kwargs: Any):
+        if system_prompt is None:
+            system_prompt = []
         if not self.agent:
             return
 

@@ -10,13 +10,10 @@ import heapq
 import logging
 import threading
 import uuid
-from dataclasses import dataclass
-from dataclasses import field
-from datetime import datetime
-from datetime import timezone
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from enum import IntEnum
-from typing import Any
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     pass
@@ -53,7 +50,7 @@ class Task:
     """
 
     priority: int = field(compare=True)
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc), compare=True)
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC), compare=True)
     id: str = field(default_factory=lambda: uuid.uuid4().hex[:12], compare=False)
     description: str = field(default="", compare=False)
     required_skills: list[str] = field(default_factory=list, compare=False)

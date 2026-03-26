@@ -1,12 +1,11 @@
-from ctxai.agent import Agent
-from ctxai.agent import LoopData
+from ctxai.agent import Agent, LoopData
 from ctxai.helpers.extension import Extension
 
 DATA_NAME_ITER_NO = "iteration_no"
 
 
 class IterationNo(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 

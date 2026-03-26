@@ -562,6 +562,7 @@ export function drawProcessStep({
 function adjustStepContent(content) {
   content = escapeHTML(content);
   content = convertPathsToLinks(content);
+  content = sanitizeHTML(content);
   return content;
 }
 
@@ -715,10 +716,25 @@ export function _drawMessage({
       processedContent = marked.parse(processedContent, { breaks: true });
       processedContent = convertPathsToLinks(processedContent);
       processedContent = addBlankTargetsToLinks(processedContent);
+      processedContent = sanitizeHTML(processedContent);
 
       // do a smooth stream if requested
       if (smoothStream) smoothRender(contentDiv, processedContent);
-      else contentDiv.innerHTML = processedContent;
+      else {
+        // Streaming optimization: batch DOM writes with requestAnimationFrame
+        const lastRendered = contentDiv.dataset.lastRendered || "";
+        if (processedContent.startsWith(lastRendered) && processedContent.length > lastRendered.length) {
+          // Content is growing — defer full parse to next frame to avoid layout thrash
+          cancelAnimationFrame(contentDiv._pendingRender);
+          contentDiv._pendingRender = requestAnimationFrame(() => {
+            contentDiv.innerHTML = processedContent;
+            contentDiv.dataset.lastRendered = processedContent;
+          });
+        } else {
+          contentDiv.innerHTML = processedContent;
+          contentDiv.dataset.lastRendered = processedContent;
+        }
+      }
 
       // KaTeX rendering for markdown
       if (latex) {
@@ -750,7 +766,31 @@ export function _drawMessage({
       // }
 
       if (smoothStream) smoothRender(preElement, convertHTML(content));
-      else preElement.innerHTML = convertHTML(content);
+      else {
+        // Streaming optimization: use insertAdjacentText for additive text updates
+        const rawText = convertHTML(content);
+        const sanitized = sanitizeHTML(rawText);
+        const lastRendered = preElement.dataset.lastRendered || "";
+
+        if (sanitized.startsWith(lastRendered) && sanitized.length > lastRendered.length) {
+          // Purely additive — append only the new text (avoids full innerHTML reflow)
+          const newText = sanitized.slice(lastRendered.length);
+          // Strip any HTML tags from the delta and insert as plain text
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = newText;
+          const plainDelta = tempDiv.textContent || tempDiv.innerText || "";
+          if (plainDelta) {
+            preElement.insertAdjacentText("beforeend", plainDelta);
+          }
+          // For content with HTML, fall back to full update
+          if (newText.includes("<")) {
+            preElement.innerHTML = sanitized;
+          }
+        } else {
+          preElement.innerHTML = sanitized;
+        }
+        preElement.dataset.lastRendered = sanitized;
+      }
     }
   } else {
     // Remove content if it exists but content is empty
@@ -1607,8 +1647,10 @@ function drawKvpsIncremental(container, kvps, latex) {
         th = row.insertCell(0);
         th.classList.add("kvps-key");
       }
-      const convertedKey = convertIcons(String(key), "");
-      if (convertedKey !== String(key)) {
+      const rawKey = String(key);
+      const escapedKey = escapeHTML(rawKey);
+      const convertedKey = convertIcons(escapedKey, "");
+      if (convertedKey !== escapedKey) {
         th.innerHTML = convertedKey;
       } else {
         th.textContent = convertToTitleCase(key);
@@ -1735,6 +1777,36 @@ function escapeHTML(str) {
     '"': "&quot;",
   };
   return str.replace(/[&<>'"]/g, (char) => escapeChars[char]);
+}
+
+/**
+ * Sanitize HTML content to prevent XSS attacks using DOMPurify.
+ * @param {string} html - The HTML content to sanitize
+ * @returns {string} - The sanitized HTML content
+ */
+function sanitizeHTML(html) {
+  if (typeof html !== "string") return "";
+  if (typeof globalThis.DOMPurify !== "undefined") {
+    return globalThis.DOMPurify.sanitize(html, {
+      USE_PROFILES: { html: true },
+      ALLOWED_TAGS: [
+        "h1", "h2", "h3", "h4", "h5", "h6",
+        "p", "br", "hr", "pre", "code",
+        "ul", "ol", "li",
+        "table", "thead", "tbody", "tr", "th", "td",
+        "a", "img", "strong", "em", "b", "i", "u", "s",
+        "blockquote", "div", "span", "details", "summary",
+        "input", "latex",
+      ],
+      ALLOWED_ATTR: [
+        "href", "src", "alt", "title", "class", "id",
+        "target", "rel", "style", "type", "checked",
+      ],
+      ALLOW_DATA_ATTR: false,
+    });
+  }
+  // Fallback: basic escaping if DOMPurify is not loaded
+  return escapeHTML(html);
 }
 
 function convertPathsToLinks(str) {

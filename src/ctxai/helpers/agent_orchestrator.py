@@ -14,8 +14,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ctxai.helpers import extension
-from ctxai.helpers.event_bus import EventBus
-from ctxai.helpers.event_bus import EventType
+from ctxai.helpers.event_bus import EventBus, EventType
 from ctxai.helpers.print_style import PrintStyle
 
 if TYPE_CHECKING:
@@ -28,9 +27,9 @@ if TYPE_CHECKING:
 
 
 async def run_process_chain(
-    context: "AgentContext",
-    agent: "Agent",
-    msg: "UserMessage | str",
+    context: AgentContext,
+    agent: Agent,
+    msg: UserMessage | str,
     user: bool = True,
 ) -> str:
     """Execute one process-chain iteration and recurse to superior if needed.
@@ -71,7 +70,7 @@ async def run_process_chain(
 # ---------------------------------------------------------------------------
 
 
-async def run_monologue(agent: "Agent") -> str:
+async def run_monologue(agent: Agent) -> str:
     """Run one iteration of the agent's reasoning loop.
 
     The *outer* monologue_start/monologue_end extension hooks are handled by
@@ -202,7 +201,7 @@ async def run_monologue(agent: "Agent") -> str:
 # ---------------------------------------------------------------------------
 
 
-async def _process_tools(agent: "Agent", msg: str) -> str | None:
+async def _process_tools(agent: Agent, msg: str) -> str | None:
     """Parse tool request from *msg*, resolve, execute, return final answer or None."""
     from ctxai.helpers import reasoning_engine
     from ctxai.helpers.tool import Response as ToolResponse

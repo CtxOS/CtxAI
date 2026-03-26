@@ -13,16 +13,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from dataclasses import dataclass
-from dataclasses import field
-from datetime import datetime
-from datetime import timezone
-from enum import Enum
-from typing import Any
-from typing import Awaitable
-from typing import Callable
-from typing import Protocol
-from typing import TYPE_CHECKING
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from enum import StrEnum
+from typing import TYPE_CHECKING, Any, Protocol
 
 if TYPE_CHECKING:
     pass
@@ -35,7 +30,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class EventType(str, Enum):
+class EventType(StrEnum):
     """Well-known framework lifecycle events."""
 
     # Monologue-level
@@ -88,7 +83,7 @@ class Event:
 
     type: EventType
     agent: Any  # Agent | None – kept as Any to avoid circular import at runtime
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     data: dict[str, Any] = field(default_factory=dict)
     custom_name: str = ""  # populated when type == CUSTOM
 

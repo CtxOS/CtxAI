@@ -4,13 +4,14 @@ import mimetypes
 import os
 
 import aiohttp
+
 from ctxai.helpers.vector_db import VectorDB
 
 os.environ["USER_AGENT"] = "@mixedbread-ai/unstructured"  # noqa E402
 from langchain_unstructured import UnstructuredLoader  # noqa E402
 
 from urllib.parse import urlparse
-from typing import Callable, Sequence, List, Optional, Tuple
+from collections.abc import Callable, Sequence
 from datetime import datetime
 
 from langchain_community.document_loaders import AsyncHtmlLoader
@@ -149,7 +150,7 @@ class DocumentQueryStore:
             PrintStyle.error(f"Error adding document '{document_uri}': {err_text}")
             return False, []
 
-    async def get_document(self, document_uri: str) -> Optional[Document]:
+    async def get_document(self, document_uri: str) -> Document | None:
         """
         Retrieve a document by its URI.
 
@@ -184,7 +185,7 @@ class DocumentQueryStore:
 
         return Document(page_content=full_content, metadata=metadata)
 
-    async def _get_document_chunks(self, document_uri: str) -> List[Document]:
+    async def _get_document_chunks(self, document_uri: str) -> list[Document]:
         """
         Get all chunks for a document.
 
@@ -273,7 +274,7 @@ class DocumentQueryStore:
         limit: int = 10,
         threshold: float = 0.5,
         filter: str = "",
-    ) -> List[Document]:
+    ) -> list[Document]:
         """
         Search for documents similar to the query across the entire store.
 
@@ -315,7 +316,7 @@ class DocumentQueryStore:
         query: str,
         limit: int = 10,
         threshold: float = 0.5,
-    ) -> List[Document]:
+    ) -> list[Document]:
         """
         Search for content within a specific document.
 
@@ -330,7 +331,7 @@ class DocumentQueryStore:
         """
         return await self.search_documents(query, limit, threshold, f"document_uri == '{document_uri}'")
 
-    async def list_documents(self) -> List[str]:
+    async def list_documents(self) -> list[str]:
         """
         Get a list of all document URIs in the store.
 
@@ -359,7 +360,7 @@ class DocumentQueryHelper:
         self.progress_callback = progress_callback or (lambda x: None)
         self.store_lock = asyncio.Lock()
 
-    async def document_qa(self, document_uris: List[str], questions: Sequence[str]) -> Tuple[bool, str]:
+    async def document_qa(self, document_uris: list[str], questions: Sequence[str]) -> tuple[bool, str]:
         self.progress_callback(f"Starting Q&A process for {len(document_uris)} documents")
         await self.agent.handle_intervention()
 
@@ -397,7 +398,10 @@ class DocumentQueryHelper:
 
         if not selected_chunks:
             self.progress_callback("No relevant content found in the documents")
-            content = f"!!! No content found for documents: {json.dumps(document_uris)} matching queries: {json.dumps(questions)}"
+            content = (
+                f"!!! No content found for documents: {json.dumps(document_uris)} "
+                f"matching queries: {json.dumps(questions)}"
+            )
             return False, content
 
         self.progress_callback(f"Processing {len(questions)} questions in context of {len(selected_chunks)} chunks")
@@ -453,7 +457,8 @@ class DocumentQueryHelper:
 
                 if not response:
                     raise ValueError(
-                        f"DocumentQueryHelper::document_get_content: Document fetch error: {document_uri} ({last_error})",
+                        f"DocumentQueryHelper::document_get_content: Document fetch error: "
+                        f"{document_uri} ({last_error})",
                     )
 
                 mimetype = response.headers["content-type"]
@@ -562,14 +567,16 @@ class DocumentQueryHelper:
                 temp_file_path = temp_file.name
         elif scheme in ["http", "https"]:
             # download the file from the web url to a temporary file using python libraries for downloading
-            import requests  # type: ignore[import-untyped]
             import tempfile
+
+            import requests  # type: ignore[import-untyped]
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
                 response = requests.get(document, timeout=10.0)
                 if response.status_code != 200:
                     raise ValueError(
-                        f"DocumentQueryHelper::handle_pdf_document: Failed to download PDF from {document}: {response.status_code}",
+                        f"DocumentQueryHelper::handle_pdf_document: Failed to download PDF from "
+                        f"{document}: {response.status_code}",
                     )
                 temp_file.write(response.content)
                 temp_file_path = temp_file.name
@@ -629,8 +636,8 @@ class DocumentQueryHelper:
             # Use RFC file operations to read the file as binary
             file_content_bytes = files.read_file_bin(document)
             # Create a temporary file for UnstructuredLoader since it needs a file path
-            import tempfile
             import os
+            import tempfile
 
             # Get file extension to preserve it for proper processing
             _, ext = os.path.splitext(document)

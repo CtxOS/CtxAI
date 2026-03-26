@@ -1,4 +1,4 @@
-name: CI
+name: 🚀 CI (CtxAi)
 
 on:
   push:
@@ -6,50 +6,128 @@ on:
   pull_request:
     branches: [main, development]
 
+permissions:
+  contents: read
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  PYTHON_VERSION: "3.12"
 
 jobs:
+  # =========================
+  # 🧪 TEST JOB
+  # =========================
   test:
+    name: 🧪 Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
+      - name: ⚡ Setup uv
+        uses: astral-sh/setup-uv@v7
 
-      - name: Install dependencies
-        run: uv sync --all-extras
+      - name: 📦 Install dependencies
+        run: uv sync --all-extras --dev
 
-      - name: Run tests
-        run: uv run pytest -x --tb=short
+      - name: 🧪 Run tests with coverage
+        run: |
+          uv run pytest \
+            --maxfail=1 \
+            --disable-warnings \
+            --tb=short \
+            --cov=src/ctxai \
+            --cov-report=xml \
+            --cov-report=term
 
-      - name: Type check
-        run: uv run mypy src/ctxai/ --ignore-missing-imports || true
+      - name: 📤 Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ github.run_id }}
+          path: coverage.xml
 
+      - name: 🧠 Type check (non-blocking)
+        run: uv run mypy src/ctxai --ignore-missing-imports || true
+
+
+  # =========================
+  # 🔍 LINT JOB
+  # =========================
   lint:
+    name: 🔍 Lint & Format
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
-      - uses: actions/checkout@v4
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
+      - name: ⚡ Setup uv
+        uses: astral-sh/setup-uv@v7
 
-      - name: Install dependencies
-        run: uv sync --all-extras
+      - name: 📦 Install dependencies
+        run: uv sync --all-extras --dev
 
-      - name: Run ruff
-        run: uv run ruff check src/ctxai/ tests/
+      - name: 🔍 Ruff Lint
+        run: uv run ruff check src/ctxai tests --output-format=github
 
-      - name: Run ruff format
-        run: uv run ruff format --check src/ctxai/ tests/
+      - name: 🎨 Ruff Format Check
+        run: uv run ruff format --check src/ctxai tests
+
+
+  # =========================
+  # 📊 COVERAGE COMBINE
+  # =========================
+  coverage:
+    name: 📊 Coverage
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 📥 Download coverage
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-${{ github.run_id }}
+
+      - name: 📊 Show coverage summary
+        run: |
+          python - <<EOF
+          import xml.etree.ElementTree as ET
+          tree = ET.parse("coverage.xml")
+          root = tree.getroot()
+          rate = float(root.attrib.get("line-rate", 0)) * 100
+          print(f"Coverage: {rate:.2f}%")
+          if rate < 70:
+              raise SystemExit("❌ Coverage below 70%")
+          EOF
+
+
+  # =========================
+  # ✅ FINAL STATUS CHECK
+  # =========================
+  check:
+    name: ✅ CI Status
+    if: always()
+    needs: [test, lint, coverage]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧠 Evaluate pipeline
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}

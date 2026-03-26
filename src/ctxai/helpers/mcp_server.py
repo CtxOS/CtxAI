@@ -1,24 +1,12 @@
 import contextvars
 import os
 import threading
-from typing import Annotated
-from typing import Literal
-from typing import Union
+from typing import Annotated, Literal
 from urllib.parse import urlparse
 
 import fastmcp
-from ctxai import initialize
-from ctxai.agent import AgentContext
-from ctxai.agent import AgentContextType
-from ctxai.agent import UserMessage
-from ctxai.helpers import projects
-from ctxai.helpers import settings
-from ctxai.helpers.persist_chat import remove_chat
-from ctxai.helpers.print_style import PrintStyle
 from fastmcp import FastMCP
-from fastmcp.server.http import build_resource_metadata_url
-from fastmcp.server.http import create_base_app
-from fastmcp.server.http import create_sse_app
+from fastmcp.server.http import build_resource_metadata_url, create_base_app, create_sse_app
 from openai import BaseModel
 from pydantic import Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -26,10 +14,13 @@ from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.routing import Mount  # type: ignore
-from starlette.types import ASGIApp
-from starlette.types import Receive
-from starlette.types import Scope
-from starlette.types import Send
+from starlette.types import ASGIApp, Receive, Scope, Send
+
+from ctxai import initialize
+from ctxai.agent import AgentContext, AgentContextType, UserMessage
+from ctxai.helpers import projects, settings
+from ctxai.helpers.persist_chat import remove_chat
+from ctxai.helpers.print_style import PrintStyle
 
 _PRINTER = PrintStyle(italic=True, font_color="green", padding=False)
 
@@ -102,7 +93,8 @@ async def send_message(
         Annotated[
             list[str],
             Field(
-                description="Optional: A list of attachments (file paths or web urls) to send to the remote Ctx AI Instance with the message. Default: Empty list",
+                description="Optional: A list of attachments (file paths or web urls) to send to the remote Ctx AI "
+                "Instance with the message. Default: Empty list",
                 title="attachments",
             ),
         ]
@@ -112,7 +104,8 @@ async def send_message(
         Annotated[
             str,
             Field(
-                description="Optional: ID of the chat. Used to continue a chat. This value is returned in response to sending previous message. Default: Empty string",
+                description="Optional: ID of the chat. Used to continue a chat. This value is returned in response "
+                "to sending previous message. Default: Empty string",
                 title="chat_id",
             ),
         ]
@@ -122,14 +115,15 @@ async def send_message(
         Annotated[
             bool,
             Field(
-                description="Optional: Whether to use a persistent chat. If true, the chat will be saved and can be continued later. Default: False.",
+                description="Optional: Whether to use a persistent chat. If true, the chat will be saved "
+                "and can be continued later. Default: False.",
                 title="persistent_chat",
             ),
         ]
         | None
     ) = None,
 ) -> Annotated[
-    Union[ToolResponse, ToolError],
+    ToolResponse | ToolError,
     Field(description="The response from the remote Ctx AI Instance", title="response"),
 ]:
     # Get project name from context variable (set in proxy __call__)
@@ -181,7 +175,8 @@ async def send_message(
 
 FINISH_CHAT_DESCRIPTION = """
 Finish a chat with the remote Ctx AI Instance.
-This tool is used to finish a persistent chat (send_message with persistent_chat=True) with the remote Ctx AI Instance connected remotely via MCP.
+This tool is used to finish a persistent chat (send_message with persistent_chat=True) with the remote Ctx AI Instance
+connected remotely via MCP.
 If you want to continue the chat, use the send_message tool instead.
 Always use this tool to finish persistent chat conversations with remote Ctx AI.
 """
@@ -215,12 +210,13 @@ async def finish_chat(
     chat_id: Annotated[
         str,
         Field(
-            description="ID of the chat to be finished. This value is returned in response to sending previous message.",
+            description="ID of the chat to be finished. This value is returned "
+            "in response to sending previous message.",
             title="chat_id",
         ),
     ],
 ) -> Annotated[
-    Union[ToolResponse, ToolError],
+    ToolResponse | ToolError,
     Field(description="The response from the remote Ctx AI Instance", title="response"),
 ]:
     if not chat_id:
@@ -341,9 +337,9 @@ class DynamicMcpProxy:
     ) -> ASGIApp:
         """Create a Streamable HTTP app with manual session manager lifecycle."""
 
-        from mcp.server.streamable_http_manager import StreamableHTTPSessionManager  # type: ignore
-        from mcp.server.auth.middleware.bearer_auth import RequireAuthMiddleware  # type: ignore
         import anyio
+        from mcp.server.auth.middleware.bearer_auth import RequireAuthMiddleware  # type: ignore
+        from mcp.server.streamable_http_manager import StreamableHTTPSessionManager  # type: ignore
 
         server_routes = []
         server_middleware = []

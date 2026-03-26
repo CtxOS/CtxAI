@@ -2,8 +2,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
-from ctxai.agent import Agent
-from ctxai.agent import LoopData
+from ctxai.agent import Agent, LoopData
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.strings import sanitize_string
 

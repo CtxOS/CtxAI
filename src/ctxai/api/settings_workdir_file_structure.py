@@ -1,8 +1,5 @@
-from ctxai.helpers import file_tree
-from ctxai.helpers import files
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import Response
+from ctxai.helpers import file_tree, files
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class SettingsWorkdirFileStructure(ApiHandler):
@@ -13,7 +10,7 @@ class SettingsWorkdirFileStructure(ApiHandler):
             raise Exception("workdir_path is required")
 
         tree = str(
-            file_tree.file_tree(
+            await file_tree.afile_tree(
                 workdir_path,
                 max_depth=int(input.get("workdir_max_depth", 0) or 0),
                 max_files=int(input.get("workdir_max_files", 0) or 0),

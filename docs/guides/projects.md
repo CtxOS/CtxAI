@@ -66,7 +66,7 @@ Ctx AI's **Git Projects** feature allows you to clone repositories directly into
 ![Git Clone Progress](../res/usage/projects/projects-gitprojects-clone.png)
 
 The cloning process:
-- Downloads the repository to `/a0/usr/projects/<project_name>/`
+- Downloads the repository to `/ctx/usr/projects/<project_name>/`
 - By default, clones the `main` branch
 - Supports authentication via token (stored securely, never in URLs)
 - You can ask the agent to checkout different branches later
@@ -308,7 +308,7 @@ The agent will understand the context based on the project's instructions and wo
 Understanding the project directory structure helps you work effectively:
 
 ```
-/a0/usr/projects/<project_name>/
+/ctx/usr/projects/<project_name>/
 ├── .a0proj/                    # Project metadata (hidden)
 │   ├── project.json            # Main configuration
 │   ├── variables.env           # Non-sensitive variables

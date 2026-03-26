@@ -5,8 +5,6 @@ import re
 from fnmatch import fnmatch
 from types import ModuleType
 from typing import Any
-from typing import Type
-from typing import TypeVar
 
 import regex
 
@@ -71,9 +69,6 @@ def fix_json_string(json_string):
     return fixed_string
 
 
-T = TypeVar("T")  # Define a generic type variable
-
-
 def import_module(file_path: str) -> ModuleType:
     # Handle file paths with periods in the name using importlib.util
     abs_path = get_abs_path(file_path)
@@ -89,12 +84,12 @@ def import_module(file_path: str) -> ModuleType:
     return module
 
 
-def load_classes_from_folder(
+def load_classes_from_folder[T](
     folder: str,
     name_pattern: str,
-    base_class: Type[T],
+    base_class: type[T],
     one_per_file: bool = True,
-) -> list[Type[T]]:
+) -> list[type[T]]:
     classes = []
     abs_folder = get_abs_path(folder)
 
@@ -127,7 +122,7 @@ def load_classes_from_folder(
     return classes
 
 
-def load_classes_from_file(file: str, base_class: type[T], one_per_file: bool = True) -> list[type[T]]:
+def load_classes_from_file[T](file: str, base_class: type[T], one_per_file: bool = True) -> list[type[T]]:
     classes = []
     # Use the new import_module function
     module = import_module(file)

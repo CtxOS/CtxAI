@@ -1,11 +1,8 @@
-from datetime import datetime
-from datetime import timedelta
-from datetime import timezone
+from datetime import UTC, datetime, timedelta
 
 from ctxai.helpers.localization import Localization
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
+from ctxai.helpers.tool import Response, Tool
 from ctxai.helpers.wait import managed_wait
 
 
@@ -21,7 +18,7 @@ class WaitTool(Tool):
 
         is_duration_wait = not bool(until_timestamp_str)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         target_time = None
 
         if until_timestamp_str:

@@ -15,7 +15,11 @@ class MissingApiKeyCheck(Extension):
         "embedding": "Embedding Model",
     }
 
-    async def execute(self, banners: list = [], frontend_context: dict = {}, **kwargs):
+    async def execute(self, banners: list = None, frontend_context: dict = None, **kwargs):
+        if frontend_context is None:
+            frontend_context = {}
+        if banners is None:
+            banners = []
         current_settings = settings_helper.get_settings()
         model_providers = {
             "chat": current_settings.get("chat_model_provider", ""),
@@ -57,7 +61,8 @@ class MissingApiKeyCheck(Extension):
                 "priority": 100,
                 "title": "Missing LLM API Key for current settings",
                 "html": f"""No API key configured for: {model_list}.<br>
-                     Ctx AI will not be able to function properly unless you provide an API key or change your settings.<br>
+                     Ctx AI will not be able to function properly unless you provide an API key
+                     or change your settings.<br>
                      <a href="#" onclick="document.getElementById('settings').click(); return false;">
                      Add your API key</a> in Settings → External Services → API Keys.""",
                 "dismissible": False,

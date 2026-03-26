@@ -1,7 +1,5 @@
 from ctxai.helpers import settings
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers.print_style import PrintStyle
 
 

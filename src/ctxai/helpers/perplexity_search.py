@@ -1,5 +1,6 @@
-import ctxai.models as models
 from openai import OpenAI
+
+import ctxai.models as models
 
 
 def perplexity_search(
@@ -13,7 +14,8 @@ def perplexity_search(
     client = OpenAI(api_key=api_key, base_url=base_url)
 
     messages = [
-        # It is recommended to use only single-turn conversations and avoid system prompts for the online LLMs (sonar-small-online and sonar-medium-online).
+        # It is recommended to use only single-turn conversations and avoid system prompts for the online LLMs
+        # (sonar-small-online and sonar-medium-online).
         # {
         #     "role": "system",
         #     "content": (

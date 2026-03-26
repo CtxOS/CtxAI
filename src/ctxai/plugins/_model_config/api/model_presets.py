@@ -2,9 +2,7 @@ import os
 
 from ctxai.helpers import files
 from ctxai.helpers import yaml as yaml_helper
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Request
-from ctxai.helpers.api import Response
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class ModelPresets(ApiHandler):

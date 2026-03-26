@@ -1,18 +1,17 @@
 from ctxai.agent import LoopData
-from ctxai.helpers import errors
-from ctxai.helpers import plugins
-from ctxai.helpers.defer import DeferredTask
-from ctxai.helpers.defer import THREAD_BACKGROUND
+from ctxai.helpers import errors, plugins
+from ctxai.helpers.defer import THREAD_BACKGROUND, DeferredTask
 from ctxai.helpers.dirty_json import DirtyJson
 from ctxai.helpers.extension import Extension
 from ctxai.helpers.log import LogItem
 from ctxai.plugins._memory.helpers.memory import Memory
 from ctxai.plugins._memory.tools.memory_load import DEFAULT_THRESHOLD as DEFAULT_MEMORY_THRESHOLD
+
 # Direct import - this extension lives inside the memory plugin
 
 
 class MemorizeSolutions(Extension):
-    def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    def execute(self, loop_data: LoopData | None = None, **kwargs):
         # try:
         if not self.agent:
             return
@@ -90,7 +89,7 @@ class MemorizeSolutions(Extension):
 
             # If solutions is not a list, try to make it one
             if not isinstance(solutions, list):
-                if isinstance(solutions, (str, dict)):
+                if isinstance(solutions, str | dict):
                     solutions = [solutions]
                 else:
                     log_item.update(heading="Invalid solutions format received.")
@@ -171,9 +170,10 @@ class MemorizeSolutions(Extension):
 
                     # Update final results with structured logging
                     log_item.update(
-                        heading=f"Solution memorization completed: {total_processed} solutions processed, {total_consolidated} intelligently consolidated",
+                        heading=f"Solution memorization completed: {total_processed} solutions processed, "  # noqa: E501
+                        f"{total_consolidated} intelligently consolidated",
                         solutions=solutions_txt,
-                        result=f"{total_processed} solutions processed, {total_consolidated} intelligently consolidated",
+                        result=f"{total_processed} solutions processed, {total_consolidated} intelligently consolidated",  # noqa: E501
                         solutions_processed=total_processed,
                         solutions_consolidated=total_consolidated,
                         update_progress="none",

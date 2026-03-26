@@ -5,16 +5,10 @@ import time
 import uuid
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any
-from typing import cast
-from typing import Literal
-from typing import Optional
-from typing import TYPE_CHECKING
-from typing import TypeVar
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from ctxai.helpers.secrets import get_secrets_manager
 from ctxai.helpers.strings import truncate_text_by_ratio
-
 
 if TYPE_CHECKING:
     from ctxai.agent import AgentContext
@@ -43,8 +37,6 @@ def _lazy_mark_dirty_for_context(context_id: str, *, reason: str | None = None) 
         _MARK_DIRTY_FOR_CONTEXT = mark_dirty_for_context
     _MARK_DIRTY_FOR_CONTEXT(context_id, reason=reason)
 
-
-T = TypeVar("T")
 
 Type = Literal[
     "agent",
@@ -91,7 +83,7 @@ def _truncate_key(text: str) -> str:
     return truncate_text_by_ratio(str(text), KEY_MAX_LEN, "...", ratio=1.0)
 
 
-def _truncate_value(val: T) -> T:
+def _truncate_value[T](val: T) -> T:
     # If dict, recursively truncate each value
     if isinstance(val, dict):
         for k in list(val.keys()):
@@ -155,9 +147,9 @@ class LogItem:
     type: Type
     heading: str = ""
     content: str = ""
-    update_progress: Optional[ProgressUpdate] = "persistent"
-    kvps: Optional[OrderedDict] = None  # Use OrderedDict for kvps
-    id: Optional[str] = None  # Add id field
+    update_progress: ProgressUpdate | None = "persistent"
+    kvps: OrderedDict | None = None  # Use OrderedDict for kvps
+    id: str | None = None  # Add id field
     guid: str = ""
     timestamp: float = 0.0
     agentno: int = 0
@@ -228,7 +220,7 @@ class LogOutput:
 class Log:
     def __init__(self):
         self._lock = threading.RLock()
-        self.context: "AgentContext|None" = None  # set from outside
+        self.context: AgentContext | None = None  # set from outside
         self.guid: str = str(uuid.uuid4())
         self.updates: list[int] = []
         self.logs: list[LogItem] = []
@@ -244,7 +236,7 @@ class Log:
         content: str | None = None,
         kvps: dict | None = None,
         update_progress: ProgressUpdate | None = None,
-        id: Optional[str] = None,
+        id: str | None = None,
         **kwargs,
     ) -> LogItem:
         with self._lock:
@@ -288,7 +280,7 @@ class Log:
         content: str | None = None,
         kvps: dict | None = None,
         update_progress: ProgressUpdate | None = None,
-        id: Optional[str] = None,
+        id: str | None = None,
         notify_state_monitor: bool = True,
         **kwargs,
     ):
@@ -422,7 +414,7 @@ class Log:
             self.logs = []
         self.set_initial_progress()
 
-    def _mask_recursive(self, obj: T) -> T:
+    def _mask_recursive[T](self, obj: T) -> T:
         """Recursively mask secrets in nested objects."""
         try:
             from ctxai.agent import AgentContext

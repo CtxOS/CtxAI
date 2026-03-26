@@ -1,0 +1,115 @@
+# ============================================================================
+# Production Docker Compose for CtxAI
+# Usage: docker compose -f docker-compose.prod.yml up -d
+# ============================================================================
+
+services:
+  # ── CtxAI Server ──────────────────────────────────────────────────────────
+  ctxai:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ctxai
+    restart: unless-stopped
+    ports:
+      - "${CTXAI_PORT:-50001}:50001"
+    environment:
+      - PYTHONPATH=/app/src
+      - WEB_UI_HOST=0.0.0.0
+      - WEB_UI_PORT=50001
+      - AUTH_LOGIN=${AUTH_LOGIN:-}
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    volumes:
+      - ctxai-data:/app/usr
+      - ctxai-tmp:/app/tmp
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:50001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+        reservations:
+          memory: 512M
+          cpus: "0.5"
+
+  # ── Redis (session cache, distributed context store) ──────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: ctxai-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── SearXNG (web search) ─────────────────────────────────────────────────
+  searxng:
+    image: searxng/searxng:latest
+    container_name: ctxai-searxng
+    restart: unless-stopped
+    ports:
+      - "${SEARXNG_PORT:-8888}:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:${SEARXNG_PORT:-8888}/
+    volumes:
+      - searxng-data:/etc/searxng
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+
+  # ── Prometheus (metrics) ─────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ctxai-prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+
+  # ── Grafana (dashboards) ─────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ctxai-grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+
+volumes:
+  ctxai-data:
+  ctxai-tmp:
+  redis-data:
+  searxng-data:
+  prometheus-data:
+  grafana-data:

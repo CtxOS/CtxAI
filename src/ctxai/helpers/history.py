@@ -3,18 +3,11 @@ import json
 import math
 from abc import abstractmethod
 from collections.abc import Mapping
-from typing import cast
-from typing import Dict
-from typing import List
-from typing import TypedDict
-from typing import Union
+from typing import TypedDict, cast
 
-from ctxai.helpers import messages
-from ctxai.helpers import settings
-from ctxai.helpers import tokens
-from langchain_core.messages import AIMessage
-from langchain_core.messages import BaseMessage
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+
+from ctxai.helpers import messages, settings, tokens
 
 BULK_MERGE_COUNT = 3
 TOPICS_MERGE_COUNT = 3
@@ -36,14 +29,14 @@ class RawMessage(TypedDict):
     preview: str | None
 
 
-MessageContent = Union[
-    List["MessageContent"],
-    Dict[str, "MessageContent"],
-    List[Dict[str, "MessageContent"]],
-    str,
-    List[str],
-    RawMessage,
-]
+MessageContent = (
+    list["MessageContent"]
+    | dict[str, "MessageContent"]
+    | list[dict[str, "MessageContent"]]
+    | str
+    | list[str]
+    | RawMessage
+)
 
 
 class OutputMessage(TypedDict):
@@ -301,7 +294,7 @@ class Bulk(Record):
     def from_dict(data: dict, history: "History"):
         bulk = Bulk(history=history)
         bulk.summary = data["summary"]
-        cls = data["_cls"]
+        data["_cls"]
         bulk.records = [Record.from_dict(r, history=history) for r in data["records"]]
         return bulk
 
@@ -580,7 +573,7 @@ def _merge_outputs(a: MessageContent, b: MessageContent) -> MessageContent:
     return cast(MessageContent, a + b)
 
 
-def _merge_properties(a: Dict[str, MessageContent], b: Dict[str, MessageContent]) -> Dict[str, MessageContent]:
+def _merge_properties(a: dict[str, MessageContent], b: dict[str, MessageContent]) -> dict[str, MessageContent]:
     result = a.copy()
     for k, v in b.items():
         if k in result:

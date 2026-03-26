@@ -66,7 +66,7 @@ Your skill instructions go here...
 ## Skill Directory Structure
 
 ```
-/a0/usr/skills/
+/ctx/usr/skills/
 └── my-skill/
    ├── SKILL.md           # Required: Main skill file
    ├── scripts/           # Optional: Helper scripts
@@ -171,7 +171,7 @@ If your skill needs scripts or templates:
 
 ```bash
 # Create directory structure
-mkdir -p /a0/usr/skills/my-skill/{scripts,templates,docs}
+mkdir -p /ctx/usr/skills/my-skill/{scripts,templates,docs}
 ```
 
 ## Example: Complete Skill
@@ -257,12 +257,12 @@ print(f"Took {elapsed:.4f} seconds")
 
 1. Create skill directory:
    ```bash
-   mkdir -p /a0/usr/skills/my-skill
+   mkdir -p /ctx/usr/skills/my-skill
    ```
 
 2. Create SKILL.md:
    ```bash
-   touch /a0/usr/skills/my-skill/SKILL.md
+   touch /ctx/usr/skills/my-skill/SKILL.md
    ```
 
 3. Add content and save
@@ -276,7 +276,7 @@ To share skills with others:
 1. Create a GitHub repository
 2. Include the skill directory structure
 3. Add a README with installation instructions
-4. Users can copy to their `/a0/usr/skills/` directory
+4. Users can copy to their `/ctx/usr/skills/` directory
 
 ## Testing Your Skill
 

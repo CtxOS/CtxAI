@@ -5,25 +5,23 @@ import contextlib
 import threading
 import uuid
 from typing import Any
-from typing import List
+
+from starlette.requests import Request
 
 from ctxai import initialize
-from ctxai.agent import AgentContext
-from ctxai.agent import AgentContextType
-from ctxai.agent import UserMessage
-from ctxai.helpers import projects
-from ctxai.helpers import settings
+from ctxai.agent import AgentContext, AgentContextType, UserMessage
+from ctxai.helpers import projects, settings
 from ctxai.helpers.persist_chat import remove_chat
 from ctxai.helpers.print_style import PrintStyle
-from starlette.requests import Request
+
 # Local imports
 
 # Import FastA2A
 try:
-    from fasta2a import Worker, FastA2A  # type: ignore
+    from fasta2a import FastA2A, Worker  # type: ignore
     from fasta2a.broker import InMemoryBroker  # type: ignore
+    from fasta2a.schema import AgentProvider, Artifact, Message, Skill  # type: ignore
     from fasta2a.storage import InMemoryStorage  # type: ignore
-    from fasta2a.schema import Message, Artifact, AgentProvider, Skill  # type: ignore
 
     FASTA2A_AVAILABLE = True
 except ImportError:  # pragma: no cover – library not installed
@@ -148,11 +146,11 @@ class AgentZeroWorker(Worker):  # type: ignore[misc]
 
         # Note: No context cleanup needed since contexts are always temporary and cleaned up in run_task
 
-    def build_message_history(self, history: List[Any]) -> List[Message]:  # type: ignore
+    def build_message_history(self, history: list[Any]) -> list[Message]:  # type: ignore
         # Not used in this simplified implementation
         return []
 
-    def build_artifacts(self, result: Any) -> List[Artifact]:  # type: ignore
+    def build_artifacts(self, result: Any) -> list[Artifact]:  # type: ignore
         # No artifacts for now
         return []
 
@@ -218,11 +216,12 @@ class DynamicA2AProxy:
             broker = InMemoryBroker()  # type: ignore[arg-type]
 
             # Define Ctx AI's skills
-            skills: List[Skill] = [
+            skills: list[Skill] = [
                 {  # type: ignore
                     "id": "general_assistance",
                     "name": "General AI Assistant",
-                    "description": "Provides general AI assistance including code execution, file management, web browsing, and problem solving",
+                    "description": "Provides general AI assistance including code execution, "
+                    "file management, web browsing, and problem solving",
                     "tags": ["ai", "assistant", "code", "files", "web", "automation"],
                     "examples": [
                         "Write and execute Python code",

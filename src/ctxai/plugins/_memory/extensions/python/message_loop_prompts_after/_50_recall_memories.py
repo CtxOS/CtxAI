@@ -1,12 +1,10 @@
 import asyncio
 
 from ctxai.agent import LoopData
-from ctxai.helpers import dirty_json
-from ctxai.helpers import errors
-from ctxai.helpers import log
-from ctxai.helpers import plugins
+from ctxai.helpers import dirty_json, errors, log, plugins
 from ctxai.helpers.extension import Extension
 from ctxai.plugins._memory.helpers.memory import Memory
+
 # Direct import - this extension lives inside the memory plugin
 
 
@@ -24,7 +22,7 @@ class RecallMemories(Extension):
     # SOLUTIONS_MAX_RESULT = 3
     # THRESHOLD = DEFAULT_MEMORY_THRESHOLD
 
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 
@@ -127,7 +125,7 @@ class RecallMemories(Extension):
             query=query,
             limit=set["memory_recall_memories_max_search"],
             threshold=set["memory_recall_similarity_threshold"],
-            filter=f"area == '{Memory.Area.MAIN.value}' or area == '{Memory.Area.FRAGMENTS.value}'",  # exclude solutions
+            filter=f"area == '{Memory.Area.MAIN.value}' or area == '{Memory.Area.FRAGMENTS.value}'",  # noqa: E501
         )
 
         # search for solutions

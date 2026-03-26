@@ -2,48 +2,37 @@ import asyncio
 import json
 import re
 import threading
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
+from collections.abc import Awaitable, Callable
 from contextlib import AsyncExitStack
 from datetime import timedelta
 from shutil import which
-from typing import Annotated
-from typing import Any
-from typing import Awaitable
-from typing import Callable
-from typing import cast
-from typing import ClassVar
-from typing import Dict
-from typing import List
-from typing import Literal
-from typing import Optional
-from typing import TextIO
-from typing import TypeVar
-from typing import Union
+from typing import (
+    Annotated,
+    Any,
+    ClassVar,
+    Literal,
+    Optional,
+    TextIO,
+    TypeVar,
+    cast,
+)
 
 import httpx
-from anyio.streams.memory import MemoryObjectReceiveStream
-from anyio.streams.memory import MemoryObjectSendStream
-from ctxai.helpers import dirty_json
-from ctxai.helpers import errors
-from ctxai.helpers import settings
-from ctxai.helpers.log import LogItem
-from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
-from mcp import ClientSession
-from mcp import StdioServerParameters
+from anyio.streams.memory import MemoryObjectReceiveStream, MemoryObjectSendStream
+from mcp import ClientSession, StdioServerParameters
 from mcp.client.sse import sse_client
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
 from mcp.shared.message import SessionMessage
-from mcp.types import CallToolResult
-from mcp.types import ListToolsResult
-from pydantic import BaseModel
-from pydantic import Discriminator
-from pydantic import Field
-from pydantic import PrivateAttr
-from pydantic import Tag
+from mcp.types import CallToolResult, ListToolsResult
+from pydantic import BaseModel, Discriminator, Field, PrivateAttr, Tag
+
+from ctxai.helpers import dirty_json, errors, settings
+from ctxai.helpers.log import LogItem
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.runtime import safe_run_async
+from ctxai.helpers.tool import Response, Tool
 
 
 def normalize_name(name: str) -> str:
@@ -204,7 +193,7 @@ class MCPTool(Tool):
 
 class MCPServerRemote(BaseModel):
     name: str = Field(default_factory=str)
-    description: Optional[str] = Field(default="Remote SSE Server")
+    description: str | None = Field(default="Remote SSE Server")
     type: str = Field(default="sse", description="Server connection type")
     url: str = Field(default_factory=str)
     headers: dict[str, Any] | None = Field(default_factory=dict[str, Any])
@@ -229,7 +218,7 @@ class MCPServerRemote(BaseModel):
         with self.__lock:
             return self.__client.get_log()  # type: ignore
 
-    def get_tools(self) -> List[dict[str, Any]]:
+    def get_tools(self) -> list[dict[str, Any]]:
         """Get all tools from the server"""
         with self.__lock:
             return self.__client.tools  # type: ignore
@@ -239,7 +228,7 @@ class MCPServerRemote(BaseModel):
         with self.__lock:
             return self.__client.has_tool(tool_name)  # type: ignore
 
-    async def call_tool(self, tool_name: str, input_data: Dict[str, Any]) -> CallToolResult:
+    async def call_tool(self, tool_name: str, input_data: dict[str, Any]) -> CallToolResult:
         """Call a tool with the given input data"""
         with self.__lock:
             # We already run in an event loop, dont believe Pylance
@@ -275,7 +264,7 @@ class MCPServerRemote(BaseModel):
 
 class MCPServerLocal(BaseModel):
     name: str = Field(default_factory=str)
-    description: Optional[str] = Field(default="Local StdIO Server")
+    description: str | None = Field(default="Local StdIO Server")
     type: str = Field(default="stdio", description="Server connection type")
     command: str = Field(default_factory=str)
     args: list[str] = Field(default_factory=list)
@@ -303,7 +292,7 @@ class MCPServerLocal(BaseModel):
         with self.__lock:
             return self.__client.get_log()  # type: ignore
 
-    def get_tools(self) -> List[dict[str, Any]]:
+    def get_tools(self) -> list[dict[str, Any]]:
         """Get all tools from the server"""
         with self.__lock:
             return self.__client.tools  # type: ignore
@@ -313,7 +302,7 @@ class MCPServerLocal(BaseModel):
         with self.__lock:
             return self.__client.has_tool(tool_name)  # type: ignore
 
-    async def call_tool(self, tool_name: str, input_data: Dict[str, Any]) -> CallToolResult:
+    async def call_tool(self, tool_name: str, input_data: dict[str, Any]) -> CallToolResult:
         """Call a tool with the given input data"""
         with self.__lock:
             # We already run in an event loop, dont believe Pylance
@@ -346,10 +335,7 @@ class MCPServerLocal(BaseModel):
 
 
 MCPServer = Annotated[
-    Union[
-        Annotated[MCPServerRemote, Tag("MCPServerRemote")],
-        Annotated[MCPServerLocal, Tag("MCPServerLocal")],
-    ],
+    Annotated[MCPServerRemote, Tag("MCPServerRemote")] | Annotated[MCPServerLocal, Tag("MCPServerLocal")],
     Discriminator(_determine_server_type),
 ]
 
@@ -376,7 +362,7 @@ class MCPConfig(BaseModel):
     @classmethod
     def update(cls, config_str: str) -> Any:
         with cls.__lock:
-            servers_data: List[Dict[str, Any]] = []  # Default to empty list
+            servers_data: list[dict[str, Any]] = []  # Default to empty list
 
             if config_str and config_str.strip():  # Only parse if non-empty and not just whitespace
                 try:
@@ -395,12 +381,14 @@ class MCPConfig(BaseModel):
                                     font_color="black",
                                     padding=True,
                                 ).print(
-                                    f"Warning: MCP config item (from json.loads) was not a dictionary and was ignored: {item}",
+                                    f"Warning: MCP config item (from json.loads) was not a dictionary "
+                                    f"and was ignored: {item}",
                                 )
                         servers_data = valid_servers
                     else:
                         PrintStyle(background_color="red", font_color="white", padding=True).print(
-                            f"Error: Parsed MCP config (from json.loads) top-level structure is not a list. Config string was: '{config_str}'",
+                            f"Error: Parsed MCP config (from json.loads) top-level structure is not a list. "
+                            f"Config string was: '{config_str}'",
                         )
                         # servers_data remains empty
                 except Exception as e_json:  # Catch json.JSONDecodeError specifically if possible, or general Exception
@@ -419,17 +407,20 @@ class MCPConfig(BaseModel):
                     #                 valid_servers.append(item)
                     #             else:
                     #                 PrintStyle(background_color="yellow", font_color="black", padding=True).print(
-                    #                     f"Warning: MCP config item (from DirtyJson) was not a dictionary and was ignored: {item}"
+                    #                     f"Warning: MCP config item (from DirtyJson) was not a dictionary "
+                    #                     f"and was ignored: {item}"
                     #                 )
                     #         servers_data = valid_servers
                     #     else:
                     #         PrintStyle(background_color="red", font_color="white", padding=True).print(
-                    #             f"Error: Parsed MCP config (from DirtyJson) top-level structure is not a list. Config string was: '{config_str}'"
+                    #             f"Error: Parsed MCP config (from DirtyJson) top-level structure is not a list. "
+                    #             f"Config string was: '{config_str}'"
                     #         )
                     #         # servers_data remains empty
                     # except Exception as e_dirty:
                     #     PrintStyle(background_color="red", font_color="white", padding=True).print(
-                    #         f"Error parsing MCP config string with DirtyJson as well: {e_dirty}. Config string was: '{config_str}'"
+                    #         f"Error parsing MCP config string with DirtyJson as well: {e_dirty}. "
+                    #         f"Config string was: '{config_str}'"
                     #     )
                     #     # servers_data remains empty, allowing graceful degradation
 
@@ -437,7 +428,6 @@ class MCPConfig(BaseModel):
             instance = cls.get_instance()
             # Directly update the servers attribute of the existing instance or re-initialize carefully
             # For simplicity and to ensure __init__ logic runs if needed for setup:
-            new_instance_data = {"servers": servers_data}  # Prepare data for re-initialization or update
 
             # Option 1: Re-initialize the existing instance (if __init__ is idempotent for other fields)
             instance.__init__(servers_list=servers_data)  # type: ignore[misc]
@@ -453,7 +443,8 @@ class MCPConfig(BaseModel):
             #             instance.servers.append(MCPServerLocal(server_item_data))
             #     except Exception as e_init:
             #         PrintStyle(background_color="grey", font_color="red", padding=True).print(
-            #             f"MCPConfig.update: Failed to create MCPServer from item '{server_item_data.get('name', 'Unknown')}': {e_init}"
+            #             f"MCPConfig.update: Failed to create MCPServer from item "
+            #             f"'{server_item_data.get('name', 'Unknown')}': {e_init}"
             #         )
 
             cls.__initialized = True
@@ -481,8 +472,8 @@ class MCPConfig(BaseModel):
                 normalized.append(servers)  # single server?
         return normalized
 
-    def __init__(self, servers_list: List[Dict[str, Any]]):
-        from collections.abc import Mapping, Iterable
+    def __init__(self, servers_list: list[dict[str, Any]]):
+        from collections.abc import Iterable, Mapping
 
         # # DEBUG: Print the received servers_list
         # if servers_list:
@@ -596,7 +587,7 @@ class MCPConfig(BaseModel):
             async def _init_all():
                 await asyncio.gather(*[_init_server(s) for s in self.servers])
 
-            asyncio.run(_init_all())
+            safe_run_async(_init_all())
 
     def get_server_log(self, server_name: str) -> str:
         with self.__lock:
@@ -667,7 +658,7 @@ class MCPConfig(BaseModel):
         with self.__lock:
             return self.__initialized
 
-    def get_tools(self) -> List[dict[str, dict[str, Any]]]:
+    def get_tools(self) -> list[dict[str, dict[str, Any]]]:
         """Get all tools from all servers"""
         with self.__lock:
             tools = []
@@ -745,7 +736,7 @@ class MCPConfig(BaseModel):
             return None
         return MCPTool(agent=agent, name=tool_name, method=None, args={}, message="", loop_data=None)
 
-    async def call_tool(self, tool_name: str, input_data: Dict[str, Any]) -> CallToolResult:
+    async def call_tool(self, tool_name: str, input_data: dict[str, Any]) -> CallToolResult:
         """Call a tool with the given input data"""
         if "." not in tool_name:
             raise ValueError(f"Tool {tool_name} not found")
@@ -767,12 +758,12 @@ class MCPClientBase(ABC):
 
     __lock: ClassVar[threading.Lock] = threading.Lock()
 
-    def __init__(self, server: Union[MCPServerLocal, MCPServerRemote]):
+    def __init__(self, server: MCPServerLocal | MCPServerRemote):
         self.server = server
-        self.tools: List[dict[str, Any]] = []  # Tools are cached on the client instance
+        self.tools: list[dict[str, Any]] = []  # Tools are cached on the client instance
         self.error: str = ""
-        self.log: List[str] = []
-        self.log_file: Optional[TextIO] = None
+        self.log: list[str] = []
+        self.log_file: TextIO | None = None
 
     # Protected method
     @abstractmethod
@@ -796,14 +787,17 @@ class MCPClientBase(ABC):
         Creates a temporary session, executes coro_func with it, and ensures cleanup.
         """
         operation_name = coro_func.__name__  # For logging
-        # PrintStyle(font_color="cyan").print(f"MCPClientBase ({self.server.name}): Creating new session for operation '{operation_name}'...")
+        # PrintStyle(font_color="cyan").print(
+        #     f"MCPClientBase ({self.server.name}): Creating new session for operation '{operation_name}'...")
         # Store the original exception outside the async block
         original_exception: Exception | None = None
         try:
             async with AsyncExitStack() as temp_stack:
                 try:
                     stdio, write = await self._create_stdio_transport(temp_stack)
-                    # PrintStyle(font_color="cyan").print(f"MCPClientBase ({self.server.name} - {operation_name}): Transport created. Initializing session...")
+                    # PrintStyle(font_color="cyan").print(
+                    #     f"MCPClientBase ({self.server.name} - {operation_name}): Transport created. "
+                    #     f"Initializing session...")
                     session = await temp_stack.enter_async_context(
                         ClientSession(
                             stdio,  # type: ignore
@@ -824,7 +818,7 @@ class MCPClientBase(ABC):
                     else:
                         original_exception = e
                     # Create a dummy exception to break out of the async block
-                    raise RuntimeError("Dummy exception to break out of async block")
+                    raise RuntimeError("Dummy exception to break out of async block") from e
         except Exception as outer_exc:
             # Check if this is our dummy exception
             if original_exception is not None:
@@ -833,21 +827,25 @@ class MCPClientBase(ABC):
                 err = outer_exc
             # We have the original exception stored
             PrintStyle(background_color="#AA4455", font_color="white", padding=False).print(
-                f"MCPClientBase ({self.server.name} - {operation_name}): Error during operation: {type(err).__name__}: {err}",
+                f"MCPClientBase ({self.server.name} - {operation_name}): Error during operation: "
+                f"{type(err).__name__}: {err}",
             )
-            raise err  # Re-raise the original exception
+            raise err from outer_exc  # Re-raise the original exception
         # finally:
         #     PrintStyle(font_color="cyan").print(
-        #         f"MCPClientBase ({self.server.name} - {operation_name}): Session and transport will be closed by AsyncExitStack."
+        #         f"MCPClientBase ({self.server.name} - {operation_name}): Session and transport will be closed "
+        #         f"by AsyncExitStack."
         #     )
         # This line should ideally be unreachable if the try/except/finally logic within the 'async with' is exhaustive.
         # Adding it to satisfy linters that might not fully trace the raise/return paths through async context managers.
         raise RuntimeError(
-            f"MCPClientBase ({self.server.name} - {operation_name}): _execute_with_session exited 'async with' block unexpectedly.",
+            f"MCPClientBase ({self.server.name} - {operation_name}): _execute_with_session exited "
+            f"'async with' block unexpectedly.",
         )
 
     async def update_tools(self) -> "MCPClientBase":
-        # PrintStyle(font_color="cyan").print(f"MCPClientBase ({self.server.name}): Starting 'update_tools' operation...")
+        # PrintStyle(font_color="cyan").print(
+        #     f"MCPClientBase ({self.server.name}): Starting 'update_tools' operation...")
 
         async def list_tools_op(current_session: ClientSession):
             response: ListToolsResult = await current_session.list_tools()
@@ -879,7 +877,10 @@ class MCPClientBase(ABC):
             )
             with self.__lock:
                 self.tools = []  # Ensure tools are cleared on failure
-                self.error = f"Failed to initialize. {error_text[:200]}{'...' if len(error_text) > 200 else ''}"  # store error from ctxai.tools fetch
+                self.error = (
+                    f"Failed to initialize. {error_text[:200]}"
+                    f"{'...' if len(error_text) > 200 else ''}"
+                )  # store error from ctxai.tools fetch
         return self
 
     def has_tool(self, tool_name: str) -> bool:
@@ -890,21 +891,24 @@ class MCPClientBase(ABC):
                     return True
         return False
 
-    def get_tools(self) -> List[dict[str, Any]]:
+    def get_tools(self) -> list[dict[str, Any]]:
         """Get all tools from the server (uses cached tools)"""
         with self.__lock:
             return self.tools
 
-    async def call_tool(self, tool_name: str, input_data: Dict[str, Any]) -> CallToolResult:
-        # PrintStyle(font_color="cyan").print(f"MCPClientBase ({self.server.name}): Preparing for 'call_tool' operation for tool '{tool_name}'.")
+    async def call_tool(self, tool_name: str, input_data: dict[str, Any]) -> CallToolResult:
+        # PrintStyle(font_color="cyan").print(
+        #     f"MCPClientBase ({self.server.name}): Preparing for 'call_tool' operation for tool '{tool_name}'.")
         if not self.has_tool(tool_name):
             PrintStyle(font_color="orange").print(
-                f"MCPClientBase ({self.server.name}): Tool '{tool_name}' not in cache for 'call_tool', refreshing tools...",
+                f"MCPClientBase ({self.server.name}): Tool '{tool_name}' not in cache for 'call_tool', "
+                f"refreshing tools...",
             )
             await self.update_tools()  # This will use its own properly managed session
             if not self.has_tool(tool_name):
                 PrintStyle(font_color="red").print(
-                    f"MCPClientBase ({self.server.name}): Tool '{tool_name}' not found after refresh. Raising ValueError.",
+                    f"MCPClientBase ({self.server.name}): Tool '{tool_name}' not found after refresh. "
+                    f"Raising ValueError.",
                 )
                 raise ValueError(
                     f"Tool {tool_name} not found after refreshing tool list for server {self.server.name}.",
@@ -915,13 +919,15 @@ class MCPClientBase(ABC):
 
         async def call_tool_op(current_session: ClientSession):
             set = settings.get_settings()
-            # PrintStyle(font_color="cyan").print(f"MCPClientBase ({self.server.name}): Executing 'call_tool' for '{tool_name}' via MCP session...")
+            # PrintStyle(font_color="cyan").print(
+            #     f"MCPClientBase ({self.server.name}): Executing 'call_tool' for '{tool_name}' via MCP session...")
             response: CallToolResult = await current_session.call_tool(
                 tool_name,
                 input_data,
                 read_timeout_seconds=timedelta(seconds=set["mcp_client_tool_timeout"]),
             )
-            # PrintStyle(font_color="green").print(f"MCPClientBase ({self.server.name}): Tool '{tool_name}' call successful via session.")
+            # PrintStyle(font_color="green").print(
+            #     f"MCPClientBase ({self.server.name}): Tool '{tool_name}' call successful via session.")
             return response
 
         try:
@@ -929,11 +935,13 @@ class MCPClientBase(ABC):
         except Exception as e:
             # Error logged by _execute_with_session. Re-raise a specific error for the caller.
             PrintStyle(background_color="#AA4455", font_color="white", padding=True).print(
-                f"MCPClientBase ({self.server.name}): 'call_tool' operation for '{tool_name}' failed: {type(e).__name__}: {e}",
+                f"MCPClientBase ({self.server.name}): 'call_tool' operation for '{tool_name}' failed: "
+                f"{type(e).__name__}: {e}",
             )
             raise ConnectionError(
-                f"MCPClientBase::Failed to call tool '{tool_name}' on server '{self.server.name}'. Original error: {type(e).__name__}: {e}",
-            )
+                f"MCPClientBase::Failed to call tool '{tool_name}' on server '{self.server.name}'. "
+                f"Original error: {type(e).__name__}: {e}",
+            ) from e
 
     def get_log(self):
         # read and return lines from self.log_file, do not close it
@@ -994,7 +1002,7 @@ class MCPClientLocal(MCPClientBase):
         return stdio_transport
 
 
-class CustomHTTPClientFactory(ABC):
+class CustomHTTPClientFactory:
     def __init__(self, verify: bool = True):
         self.verify = verify
 
@@ -1027,10 +1035,10 @@ class CustomHTTPClientFactory(ABC):
 
 
 class MCPClientRemote(MCPClientBase):
-    def __init__(self, server: Union[MCPServerLocal, MCPServerRemote]):
+    def __init__(self, server: MCPServerLocal | MCPServerRemote):
         super().__init__(server)
-        self.session_id: Optional[str] = None  # Track session ID for streaming HTTP clients
-        self.session_id_callback: Optional[Callable[[], Optional[str]]] = None
+        self.session_id: str | None = None  # Track session ID for streaming HTTP clients
+        self.session_id_callback: Callable[[], str | None] | None = None
 
     async def _create_stdio_transport(
         self,
@@ -1080,7 +1088,7 @@ class MCPClientRemote(MCPClientBase):
             )
             return stdio_transport
 
-    def get_session_id(self) -> Optional[str]:
+    def get_session_id(self) -> str | None:
         """Get the current session ID if available (for streaming HTTP clients)."""
         if self.session_id_callback is not None:
             return self.session_id_callback()

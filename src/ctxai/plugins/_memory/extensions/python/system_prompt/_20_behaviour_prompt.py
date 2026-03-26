@@ -1,13 +1,15 @@
-from ctxai.agent import Agent
-from ctxai.agent import LoopData
+from ctxai.agent import Agent, LoopData
 from ctxai.helpers import files
 from ctxai.helpers.extension import Extension
 from ctxai.plugins._memory.helpers import memory
+
 # Direct import - this extension lives inside the memory plugin
 
 
 class BehaviourPrompt(Extension):
-    async def execute(self, system_prompt: list[str] = [], loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, system_prompt: list[str] = None, loop_data: LoopData | None = None, **kwargs):
+        if system_prompt is None:
+            system_prompt = []
         if not self.agent:
             return
 

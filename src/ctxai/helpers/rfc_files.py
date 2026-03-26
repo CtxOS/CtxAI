@@ -336,7 +336,7 @@ def _read_file_binary_impl(file_path: str) -> str:
             content = file.read()
             return base64.b64encode(content).decode("utf-8")
     except Exception as e:
-        raise Exception(f"Failed to read file {file_path}: {str(e)}")
+        raise Exception(f"Failed to read file {file_path}: {str(e)}") from e
 
 
 def _write_file_binary_impl(file_path: str, b64_content: str) -> bool:
@@ -363,7 +363,7 @@ def _write_file_binary_impl(file_path: str, b64_content: str) -> bool:
 
         return True
     except Exception as e:
-        raise Exception(f"Failed to write file {file_path}: {str(e)}")
+        raise Exception(f"Failed to write file {file_path}: {str(e)}") from e
 
 
 def _delete_file_impl(file_path: str) -> bool:
@@ -380,7 +380,7 @@ def _delete_file_impl(file_path: str) -> bool:
         os.remove(file_path)
         return True
     except Exception as e:
-        raise Exception(f"Failed to delete file {file_path}: {str(e)}")
+        raise Exception(f"Failed to delete file {file_path}: {str(e)}") from e
 
 
 def _delete_folder_impl(folder_path: str) -> bool:
@@ -397,7 +397,7 @@ def _delete_folder_impl(folder_path: str) -> bool:
         shutil.rmtree(folder_path)
         return True
     except Exception as e:
-        raise Exception(f"Failed to delete folder {folder_path}: {str(e)}")
+        raise Exception(f"Failed to delete folder {folder_path}: {str(e)}") from e
 
 
 def _list_folder_impl(folder_path: str, include_hidden: bool = False) -> list:
@@ -435,7 +435,7 @@ def _list_folder_impl(folder_path: str, include_hidden: bool = False) -> list:
         return items
 
     except Exception as e:
-        raise Exception(f"Failed to list folder {folder_path}: {str(e)}")
+        raise Exception(f"Failed to list folder {folder_path}: {str(e)}") from e
 
 
 def _make_dirs_impl(folder_path: str) -> bool:
@@ -446,7 +446,7 @@ def _make_dirs_impl(folder_path: str) -> bool:
         os.makedirs(folder_path, exist_ok=True)
         return True
     except Exception as e:
-        raise Exception(f"Failed to create directories {folder_path}: {str(e)}")
+        raise Exception(f"Failed to create directories {folder_path}: {str(e)}") from e
 
 
 def _path_exists_impl(file_path: str) -> bool:
@@ -511,7 +511,7 @@ def _move_file_impl(source_path: str, destination_path: str) -> bool:
         os.rename(source_path, destination_path)
         return True
     except Exception as e:
-        raise Exception(f"Failed to move file {source_path} to {destination_path}: {str(e)}")
+        raise Exception(f"Failed to move file {source_path} to {destination_path}: {str(e)}") from e
 
 
 def _read_directory_impl(dir_path: str) -> str:
@@ -532,7 +532,7 @@ def _read_directory_impl(dir_path: str) -> str:
 
         # Create zip archive
         with zipfile.ZipFile(temp_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for root, dirs, files in os.walk(dir_path):
+            for root, _dirs, files in os.walk(dir_path):
                 for file in files:
                     file_path = os.path.join(root, file)
                     arcname = os.path.relpath(file_path, dir_path)
@@ -552,7 +552,7 @@ def _read_directory_impl(dir_path: str) -> str:
         # Clean up temporary file if it exists
         if temp_zip_path is not None and os.path.exists(temp_zip_path):
             os.unlink(temp_zip_path)
-        raise Exception(f"Failed to zip directory {dir_path}: {str(e)}")
+        raise Exception(f"Failed to zip directory {dir_path}: {str(e)}") from e
 
 
 def _read_file_as_base64_impl(file_path: str) -> str:
@@ -570,7 +570,7 @@ def _read_file_as_base64_impl(file_path: str) -> str:
             content = file.read()
             return base64.b64encode(content).decode("utf-8")
     except Exception as e:
-        raise Exception(f"Failed to read file {file_path}: {str(e)}")
+        raise Exception(f"Failed to read file {file_path}: {str(e)}") from e
 
 
 def _write_file_from_base64_impl(file_path: str, content: str) -> bool:
@@ -596,4 +596,4 @@ def _write_file_from_base64_impl(file_path: str, content: str) -> bool:
 
         return True
     except Exception as e:
-        raise Exception(f"Failed to write file {file_path}: {str(e)}")
+        raise Exception(f"Failed to write file {file_path}: {str(e)}") from e

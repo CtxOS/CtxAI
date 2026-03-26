@@ -1,3 +1,4 @@
+import asyncio
 import json
 import socket
 import struct
@@ -5,37 +6,30 @@ import threading
 from abc import abstractmethod
 from functools import wraps
 from pathlib import Path
-from typing import Any
-from typing import Dict
-from typing import TypedDict
-from typing import Union
+from typing import Any, TypedDict, Union
 
 from ctxai import initialize
 from ctxai.agent import AgentContext
-from ctxai.helpers import cache
-from ctxai.helpers import files
+from ctxai.helpers import cache, files
 from ctxai.helpers.errors import format_error
+from ctxai.helpers.flask_compat import Response, redirect, request, session, url_for
 from ctxai.helpers.print_style import PrintStyle
-from flask import Flask
-from flask import redirect
-from flask import Request
-from flask import request
-from flask import Response
-from flask import session
-from flask import url_for
-from werkzeug.wrappers.response import Response as BaseResponse
 
-ThreadLockType = Union[threading.Lock, threading.RLock]
+ThreadLockType = Union[threading.Lock, threading.RLock, asyncio.Lock]  # noqa: UP007
 
 CACHE_AREA = "api_handlers(api)(plugins)(extensions)"
 cache.toggle_area(CACHE_AREA, False)  # cache off for now
 
+# Dedicated lock for synchronous context operations (use_context is sync)
+_context_lock = threading.RLock()
+
 Input = dict
-Output = Union[Dict[str, Any], Response, TypedDict]  # type: ignore
+Output = Union[dict[str, Any], Response, TypedDict]  # type: ignore  # noqa: UP007
+Request = Any
 
 
 class ApiHandler:
-    def __init__(self, app: Flask, thread_lock: ThreadLockType):
+    def __init__(self, app: Any, thread_lock: ThreadLockType):
         self.app = app
         self.thread_lock = thread_lock
 
@@ -60,17 +54,17 @@ class ApiHandler:
         return cls.requires_auth()
 
     @abstractmethod
-    async def process(self, input: Input, request: Request) -> Output:
+    async def process(self, input: Input, request: Any) -> Output:
         pass
 
-    async def handle_request(self, request: Request) -> Response:
+    async def handle_request(self, request: Any) -> Response:
         try:
             # input data from request based on type
             input_data: Input = {}
             if request.is_json:
                 try:
                     if request.data:  # Check if there's any data
-                        input_data = request.get_json()
+                        input_data = await request.get_json()
                     # If empty or not valid JSON, use empty dict
                 except Exception as e:
                     # Just log the error and continue with empty input
@@ -98,7 +92,7 @@ class ApiHandler:
 
     # get context to run ctx ai in
     def use_context(self, ctxid: str, create_if_not_exists: bool = True):
-        with self.thread_lock:
+        with _context_lock:
             if not ctxid:
                 first = AgentContext.first()
                 if first:
@@ -125,11 +119,11 @@ def is_loopback_address(address: str) -> bool:
     try:
         socket.inet_pton(socket.AF_INET6, address)
         address_type = "ipv6"
-    except socket.error:
+    except OSError:
         try:
             socket.inet_pton(socket.AF_INET, address)
             address_type = "ipv4"
-        except socket.error:
+        except OSError:
             address_type = "hostname"
 
     if address_type == "ipv4":
@@ -155,7 +149,7 @@ def requires_api_key(f):
 
         valid_api_key = get_settings()["mcp_server_token"]
 
-        if api_key := request.headers.get("X-API-KEY"):
+        if api_key := request.headers.get("x-api-key"):
             if api_key != valid_api_key:
                 return Response("Invalid API key", 401)
         elif request.json and request.json.get("api_key"):
@@ -172,7 +166,8 @@ def requires_api_key(f):
 def requires_loopback(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
-        if not is_loopback_address(str(request.remote_addr)):
+        addr = request.remote_addr or ""
+        if not is_loopback_address(addr):
             return Response("Access denied.", 403, {})
         return await f(*args, **kwargs)
 
@@ -200,7 +195,7 @@ def csrf_protect(f):
         from ctxai.helpers import runtime
 
         token = session.get("csrf_token")
-        header = request.headers.get("X-CSRF-Token")
+        header = request.headers.get("x-csrf-token")
         cookie = request.cookies.get("csrf_token_" + runtime.get_runtime_id())
         sent = header or cookie
         if not token or not sent or token != sent:
@@ -210,72 +205,81 @@ def csrf_protect(f):
     return decorated
 
 
-def register_api_route(app: Flask, lock: ThreadLockType) -> None:
-    from ctxai.helpers.extract_tools import load_classes_from_file
+def register_api_route(app: Any, lock: ThreadLockType) -> None:
+    from fastapi import Request as FastAPIRequest
+
     from ctxai.helpers import plugins
+    from ctxai.helpers.extract_tools import load_classes_from_file
 
-    async def _dispatch(path: str) -> BaseResponse:
-        # Return cached wrapped handler if available
-        cached = cache.get(CACHE_AREA, path)
-        if cached is not None:
-            return await cached()
+    @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
+    async def _api_dispatch(path: str, starlette_request: FastAPIRequest):
+        from ctxai.helpers.flask_compat import _form_data_cache, _request_ctx, _session_data, _session_dirty
 
-        # Resolve file path for the handler
-        # Try built-in api folder first, then plugin api folders
-        handler_cls: type[ApiHandler] | None = None
-        is_plugin_handler = False
+        # Populate compat request context
+        _request_ctx.set(starlette_request)
+        _form_data_cache.set(None)
+        star_session = getattr(starlette_request.state, "session", None)
+        _session_data.set(dict(star_session) if star_session else {})
+        _session_dirty.set(False)
 
-        # Check built-in python/api/<path>.py
-        builtin_file = files.get_abs_path(f"api/{path}.py")
-        if files.is_in_dir(builtin_file, files.get_abs_path("api")) and files.exists(builtin_file):
-            classes = load_classes_from_file(builtin_file, ApiHandler)  # type: ignore[type-abstract]
-            if classes:
-                handler_cls = classes[0]
+        try:
+            # Check API rate limit
+            from ctxai.run_ui import _check_api_rate_limit
 
-        # Check plugin api folders: path format plugins/<plugin_name>/<handler>
-        if handler_cls is None and path.startswith("plugins/"):
-            parts = path.split("/", 2)
-            if len(parts) == 3:
-                _, plugin_name, handler_name = parts
-                plugin_dir = plugins.find_plugin_dir(plugin_name)
-                if plugin_dir:
-                    plugin_file = Path(plugin_dir) / "api" / f"{handler_name}.py"
-                    if plugin_file.is_file():
-                        classes = load_classes_from_file(str(plugin_file), ApiHandler)  # type: ignore[type-abstract]
-                        if classes:
-                            handler_cls = classes[0]
-                            is_plugin_handler = True
+            remote_addr = starlette_request.client.host if starlette_request.client else "unknown"
+            if not _check_api_rate_limit(remote_addr):
+                return Response("Rate limit exceeded. Please slow down.", 429)
 
-        if handler_cls is None:
-            return Response(f"API endpoint not found: {path}", 404)
+            # Resolve file path for the handler
+            handler_cls: type[ApiHandler] | None = None
+            is_plugin_handler = False
 
-        # Check method is allowed
-        if request.method not in handler_cls.get_methods():
-            return Response(f"Method {request.method} not allowed for: {path}", 405)
+            # Check built-in python/api/<path>.py
+            builtin_file = files.get_abs_path(f"api/{path}.py")
+            if files.is_in_dir(builtin_file, files.get_abs_path("api")) and files.exists(builtin_file):
+                classes = load_classes_from_file(builtin_file, ApiHandler)  # type: ignore[type-abstract]
+                if classes:
+                    handler_cls = classes[0]
 
-        # Build handler call, wrapping with security decorators as required
-        async def call_handler() -> BaseResponse:
-            instance = handler_cls(app, lock)  # type: ignore[misc]
-            return await instance.handle_request(request=request)
+            # Check plugin api folders: path format plugins/<plugin_name>/<handler>
+            if handler_cls is None and path.startswith("plugins/"):
+                parts = path.split("/", 2)
+                if len(parts) == 3:
+                    _, plugin_name, handler_name = parts
+                    plugin_dir = plugins.find_plugin_dir(plugin_name)
+                    if plugin_dir:
+                        plugin_file = Path(plugin_dir) / "api" / f"{handler_name}.py"
+                        if plugin_file.is_file():
+                            classes = load_classes_from_file(str(plugin_file), ApiHandler)  # type: ignore[type-abstract]
+                            if classes:
+                                handler_cls = classes[0]
+                                is_plugin_handler = True
 
-        handler_fn = call_handler
-        # Plugin handlers MUST always require auth + CSRF regardless of
-        # what the handler class declares.  Only built-in handlers may opt out.
-        if is_plugin_handler or handler_cls.requires_csrf():
-            handler_fn = csrf_protect(handler_fn)
-        if is_plugin_handler or handler_cls.requires_api_key():
-            handler_fn = requires_api_key(handler_fn)
-        if is_plugin_handler or handler_cls.requires_auth():
-            handler_fn = requires_auth(handler_fn)
-        if handler_cls.requires_loopback():
-            handler_fn = requires_loopback(handler_fn)
+            if handler_cls is None:
+                return Response(f"API endpoint not found: {path}", 404)
 
-        cache.add(CACHE_AREA, path, handler_fn)
-        return await handler_fn()
+            # Check method is allowed
+            if starlette_request.method not in handler_cls.get_methods():
+                return Response(f"Method {starlette_request.method} not allowed for: {path}", 405)
 
-    app.add_url_rule(
-        "/api/<path:path>",
-        "api_dispatch",
-        _dispatch,
-        methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    )
+            # Build handler call, wrapping with security decorators as required
+            async def call_handler() -> Response:
+                instance = handler_cls(app, lock)  # type: ignore[misc]
+                return await instance.handle_request(request=request)
+
+            handler_fn = call_handler
+            # Plugin handlers MUST always require auth + CSRF
+            if is_plugin_handler or handler_cls.requires_csrf():
+                handler_fn = csrf_protect(handler_fn)
+            if is_plugin_handler or handler_cls.requires_api_key():
+                handler_fn = requires_api_key(handler_fn)
+            if is_plugin_handler or handler_cls.requires_auth():
+                handler_fn = requires_auth(handler_fn)
+            if handler_cls.requires_loopback():
+                handler_fn = requires_loopback(handler_fn)
+
+            cache.add(CACHE_AREA, path, handler_fn)
+            return await handler_fn()
+        finally:
+            _request_ctx.set(None)
+            _form_data_cache.set(None)

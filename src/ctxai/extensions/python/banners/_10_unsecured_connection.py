@@ -7,7 +7,11 @@ from ctxai.helpers.extension import Extension
 class UnsecuredConnectionCheck(Extension):
     """Check: non-local without credentials, or credentials over non-HTTPS."""
 
-    async def execute(self, banners: list = [], frontend_context: dict = {}, **kwargs):
+    async def execute(self, banners: list = None, frontend_context: dict = None, **kwargs):
+        if frontend_context is None:
+            frontend_context = {}
+        if banners is None:
+            banners = []
         hostname = frontend_context.get("hostname", "")
         protocol = frontend_context.get("protocol", "")
 

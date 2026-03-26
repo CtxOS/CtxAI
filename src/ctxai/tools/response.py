@@ -1,5 +1,4 @@
-from ctxai.helpers.tool import Response
-from ctxai.helpers.tool import Tool
+from ctxai.helpers.tool import Response, Tool
 
 
 class ResponseTool(Tool):
@@ -7,7 +6,10 @@ class ResponseTool(Tool):
         return Response(message=self.args["text"] if "text" in self.args else self.args["message"], break_loop=True)
 
     async def before_execution(self, **kwargs):
-        # self.log = self.agent.context.log.log(type="response", heading=f"{self.agent.agent_name}: Responding", content=self.args.get("text", ""))
+        # self.log = self.agent.context.log.log(
+        #     type="response", heading=f"{self.agent.agent_name}: Responding",
+        #     content=self.args.get("text", "")
+        # )
         # don't log here anymore, we have the live_response extension now
         pass
 

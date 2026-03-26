@@ -13,11 +13,8 @@ Usage:
 import argparse
 import re
 import sys
-from dataclasses import dataclass
-from dataclasses import field
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
-from typing import Optional
 
 import yaml  # type: ignore[import-untyped]
 
@@ -36,12 +33,12 @@ class Skill:
     path: Path
     version: str = "1.0.0"
     author: str = ""
-    tags: List[str] = field(default_factory=list)
-    trigger_patterns: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
+    trigger_patterns: list[str] = field(default_factory=list)
     content: str = ""
 
 
-def get_skills_dirs() -> List[Path]:
+def get_skills_dirs() -> list[Path]:
     """Get all skill directories"""
     base = Path(files.get_abs_path("usr", "skills"))
     return [
@@ -50,7 +47,7 @@ def get_skills_dirs() -> List[Path]:
     ]
 
 
-def parse_skill_file(skill_path: Path) -> Optional[Skill]:
+def parse_skill_file(skill_path: Path) -> Skill | None:
     """Parse a SKILL.md file and return a Skill object"""
     try:
         content = skill_path.read_text(encoding="utf-8")
@@ -79,7 +76,7 @@ def parse_skill_file(skill_path: Path) -> Optional[Skill]:
         return None
 
 
-def list_skills() -> List[Skill]:
+def list_skills() -> list[Skill]:
     """List all available skills"""
     skills = []
     for skills_dir in get_skills_dirs():
@@ -95,7 +92,7 @@ def list_skills() -> List[Skill]:
     return skills
 
 
-def find_skill(name: str) -> Optional[Skill]:
+def find_skill(name: str) -> Skill | None:
     """Find a skill by name"""
     for skill in list_skills():
         if skill.name == name or skill.path.name == name:
@@ -103,7 +100,7 @@ def find_skill(name: str) -> Optional[Skill]:
     return None
 
 
-def search_skills(query: str) -> List[Skill]:
+def search_skills(query: str) -> list[Skill]:
     """Search skills by name, description, or tags"""
     query = query.lower()
     results = []
@@ -118,7 +115,7 @@ def search_skills(query: str) -> List[Skill]:
     return results
 
 
-def validate_skill(skill: Skill) -> List[str]:
+def validate_skill(skill: Skill) -> list[str]:
     """Validate a skill and return list of issues"""
     issues = []
 
@@ -149,8 +146,8 @@ def validate_skill(skill: Skill) -> List[str]:
 
     # Check for associated files
     skill_dir = skill.path
-    has_scripts = (skill_dir / "scripts").exists()
-    has_docs = (skill_dir / "docs").exists()
+    (skill_dir / "scripts").exists()
+    (skill_dir / "docs").exists()
 
     return issues
 
@@ -227,7 +224,7 @@ Description of what to do next.
     return skill_dir
 
 
-def print_skill_table(skills: List[Skill]):
+def print_skill_table(skills: list[Skill]):
     """Print skills in a formatted table"""
     if not skills:
         print("No skills found.")

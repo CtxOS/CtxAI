@@ -1,20 +1,19 @@
 from __future__ import annotations
 
-from ctxai.helpers.api import ApiHandler
-from ctxai.helpers.api import Input
-from ctxai.helpers.api import Output
-from ctxai.helpers.api import Request
-from ctxai.plugins._plugin_installer.helpers.install import get_marketplace_index
-from ctxai.plugins._plugin_installer.helpers.install import install_from_git
-from ctxai.plugins._plugin_installer.helpers.install import install_uploaded_zip
-from ctxai.plugins._plugin_installer.helpers.install import update_from_git
-from werkzeug.datastructures import FileStorage
+from ctxai.helpers.api import ApiHandler, Input, Output
+from ctxai.helpers.flask_compat import UploadFileAdapter
+from ctxai.plugins._plugin_installer.helpers.install import (
+    get_marketplace_index,
+    install_from_git,
+    install_uploaded_zip,
+    update_from_git,
+)
 
 
 class PluginInstall(ApiHandler):
     """Plugin installation API. Handles ZIP upload, Git clone, and index fetch."""
 
-    async def process(self, input: Input, request: Request) -> Output:
+    async def process(self, input: Input, request) -> Output:
         action = input.get("action", "") or request.form.get("action", "")
 
         try:
@@ -33,11 +32,11 @@ class PluginInstall(ApiHandler):
         except Exception as e:
             return {"success": False, "error": f"Installation failed: {e}"}
 
-    def _install_zip(self, request: Request) -> dict:
+    def _install_zip(self, request) -> dict:
         if "plugin_file" not in request.files:
             return {"success": False, "error": "No file provided"}
 
-        plugin_file: FileStorage = request.files["plugin_file"]
+        plugin_file = UploadFileAdapter(request.files["plugin_file"])
         if not plugin_file.filename:
             return {"success": False, "error": "No file selected"}
 
