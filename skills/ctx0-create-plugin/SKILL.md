@@ -95,7 +95,7 @@ Import it in the HTML <head>:
 </head>
 ```
 
-### 3. User Feedback: A0 Notifications Only
+### 3. User Feedback: CTX0 Notifications Only
 Do **not** show errors or success via inline boxes (e.g. a red `<div>` bound to `store.error`). Use the project notification system so toasts and history stay consistent.
 
 - **Errors**: `toastFrontendError(message, "My Plugin")` (or `$store.notificationStore.frontendError(...)`)

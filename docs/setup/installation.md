@@ -215,7 +215,7 @@ Open `http://localhost:<PORT>` in your browser. The Web UI will open - CtxAI is 
 > [!NOTE]
 > After starting the container, you'll find all CtxAI files in your chosen directory. You can access and edit these files directly on your machine, and the changes will be immediately reflected in the running container.
 
-**Running A0 using Terminal?**
+**Running CTX0 using Terminal?**
 
 ```bash
 docker run -p 0:80 -v /path/to/your/work_dir:/ctx0/usr ctxos/ctxai
@@ -227,7 +227,7 @@ docker run -p 0:80 -v /path/to/your/work_dir:/ctx0/usr ctxos/ctxai
 
 ## Step 3: Configure CtxAI
 
-The UI will show a warning banner "Missing LLM API Key for current settings". Click on `Add your API key` to enter Settings and start configuring A0.
+The UI will show a warning banner "Missing LLM API Key for current settings". Click on `Add your API key` to enter Settings and start configuring CTX0.
 
 ### Settings Configuration
 
@@ -332,7 +332,7 @@ The Settings page is the control center for selecting the Large Language Models 
 | --- | --- |
 | `chat_llm` | This is the primary LLM used for conversations, agent reasoning, tool use, and the built-in browser agent. Vision support controls browser vision and image understanding. |
 | `utility_llm` | This LLM handles internal tasks like summarizing messages, managing memory, and processing internal prompts. Using a smaller, less expensive model here can improve efficiency. |
-| `embedding_llm` | The embedding model shipped with A0 runs on CPU and is responsible for generating embeddings used for memory retrieval and knowledge base lookups. Changing the `embedding_llm` will re-index all of A0's memory. |
+| `embedding_llm` | The embedding model shipped with CTX0 runs on CPU and is responsible for generating embeddings used for memory retrieval and knowledge base lookups. Changing the `embedding_llm` will re-index all of CTX0's memory. |
 
 **How to Change:**
 
@@ -572,7 +572,7 @@ docker run -p 50080:80 \
 
 ### Manual Migration (Legacy or Non-Docker)
 
-If you are migrating from older, non-Docker setups, A0 handles the migration of legacy folders and files automatically at runtime. The right place to save your files and directories is `ctx0/usr`.
+If you are migrating from older, non-Docker setups, CTX0 handles the migration of legacy folders and files automatically at runtime. The right place to save your files and directories is `ctx0/usr`.
 
 ## Conclusion
 

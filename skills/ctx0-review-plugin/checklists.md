@@ -61,7 +61,7 @@ export const store = createStore("myPluginStore", {
 
 ## Notification System (required)
 
-Do NOT render inline error/success blocks. Use the A0 notification system:
+Do NOT render inline error/success blocks. Use the CTX0 notification system:
 
 ```javascript
 // Frontend (Alpine store or component)

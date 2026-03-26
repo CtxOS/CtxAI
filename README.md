@@ -259,7 +259,7 @@ New release-note files for current releases live in [docs/release_notes](./docs/
 ### v0.9.4 - Connectivity, UI
 [Release video](https://www.youtube.com/watch?v=C2BAdDOduIc)
 - External API endpoints
-- Streamable HTTP MCP A0 server
+- Streamable HTTP MCP CTX0 server
 - A2A (Agent to Agent) protocol - server+client
 - New notifications system
 - New local terminal interface for stability

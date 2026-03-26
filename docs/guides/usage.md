@@ -145,7 +145,7 @@ CtxAI instances can communicate with each other using the A2A protocol. This ena
 - **Distributed workflows** across multiple agents
 - **Project-specific collaboration** with isolated contexts
 
-To enable A2A connectivity, go to **Settings → MCP/A2A → A0 A2A Server** and toggle the server on. You'll receive a connection URL that other CtxAI instances can use to communicate with your agent.
+To enable A2A connectivity, go to **Settings → MCP/A2A → CTX0 A2A Server** and toggle the server on. You'll receive a connection URL that other CtxAI instances can use to communicate with your agent.
 
 See [A2A Setup](a2a-setup.md) for detailed configuration and use cases.
 
@@ -329,12 +329,12 @@ Once activated, the agent:
 
 ```
 331: /ctx0/usr/projects/<project_name>/
-332: ├── .ctx0proj/                    # Project metadata (managed by A0)
+332: ├── .ctx0proj/                    # Project metadata (managed by CTX0)
 333: │   ├── project.json            # Main configuration
 334: │   ├── variables.env           # Non-sensitive config
 ```
 /ctx0/usr/projects/<project_name>/
-├── .ctx0proj/                    # Project metadata (managed by A0)
+├── .ctx0proj/                    # Project metadata (managed by CTX0)
 │   ├── project.json            # Main configuration
 │   ├── variables.env           # Non-sensitive config
 │   ├── secrets.env             # Sensitive credentials
@@ -669,7 +669,7 @@ Generate unified weekly report."
 Explore related features:
 
 - [Projects](#projects) - Create isolated contexts for tasks
-- [Notifications](../developer/notifications.md) - Understand A0's notification system
+- [Notifications](../developer/notifications.md) - Understand CTX0's notification system
 - [Memory Management](#memory-management) - Understand task memory isolation
 - [Secrets & Variables](#secrets--variables) - Secure credentials for tasks
 

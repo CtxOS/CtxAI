@@ -288,7 +288,7 @@ The agent now:
 
 **Example prompt after activation:**
 ```
-Hi A0. Start first development phase:
+Hi CTX0. Start first development phase:
 - recon
 - scope definition
 - AGENTS.md generation

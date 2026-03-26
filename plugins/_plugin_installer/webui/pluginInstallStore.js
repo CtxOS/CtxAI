@@ -17,7 +17,7 @@ const SECURITY_WARNING = {
   title: "Security Warning",
   message: `
     <p><strong>Third-party plugins may contain malicious code.</strong> <br> We can't guarantee their safety &mdash; install at your own risk.</p>
-    <p style="margin-top: 0.75em;">We recommend scanning all plugins with A0 first.</p>
+    <p style="margin-top: 0.75em;">We recommend scanning all plugins with CTX0 first.</p>
   `,
   type: "warning",
   confirmText: "Install Anyway",

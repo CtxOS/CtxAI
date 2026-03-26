@@ -5,7 +5,7 @@ bots: []
 #   notify_messages: false       # Show a WebUI notification for each incoming Telegram message.
 #   token: ""
 #   mode: polling                # polling or webhook
-#   webhook_url: ""              # required if mode=webhook, your A0 base URL e.g. https://yourdomain.com (webhook path appended automatically)
+#   webhook_url: ""              # required if mode=webhook, your CTX0 base URL e.g. https://yourdomain.com (webhook path appended automatically)
 #   webhook_secret: ""           # optional shared secret for webhook verification
 #   allowed_users: []            # Telegram user IDs or @usernames. Empty = allow all.
 #   group_mode: mention          # mention (respond when @mentioned or replied to) | all (respond to every message) | off (ignore groups)

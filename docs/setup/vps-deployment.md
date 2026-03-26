@@ -394,7 +394,7 @@ chmod 600 /etc/ssl/ctx0/*
 
 ## Authentication Setup
 
-### Understanding A0 Authentication Variables
+### Understanding CTX0 Authentication Variables
 
 | Variable | Purpose | Example |
 |----------|---------|--------|
@@ -717,9 +717,9 @@ curl -I https://your-domain.com/login
 
 | Port | Purpose |
 |------|---------|
-| 50080 | First A0 instance |
-| 50081 | Second A0 instance |
-| 50082 | Third A0 instance |
+| 50080 | First CTX0 instance |
+| 50081 | Second CTX0 instance |
+| 50082 | Third CTX0 instance |
 | 80 | HTTP (redirect to HTTPS) |
 | 443 | HTTPS (main access) |
 
@@ -741,7 +741,7 @@ AUTH_PASSWORD=your_secure_password
 
 ## Appendix: Multi-Instance Setup
 
-For running multiple A0 instances on the same server:
+For running multiple CTX0 instances on the same server:
 
 ```bash
 # Instance 1: ctx0-primary on port 50080
@@ -768,4 +768,4 @@ Each instance needs:
 
 *This guide comes from successful CtxAI deployments across DirectAdmin and standard Linux environments.*
 
-Contributed by @hurtdidit in the A0 Community.
+Contributed by @hurtdidit in the CTX0 Community.

@@ -37,4 +37,4 @@ This plugin builds a structured scanning prompt from a selectable checklist, run
 
 - **Name**: `_plugin_scan`
 - **Title**: `Plugin Scanner`
-- **Description**: Security scanner for third-party A0 plugins.
+- **Description**: Security scanner for third-party CTX0 plugins.
