@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, cast, overload
 
-from ctxai.helpers import dotenv, files, rfc, settings
+from ctxai.helpers import dotenv, files, rfc
 
 # Thread pool for running async coroutines from sync contexts
 _async_thread_pool: ThreadPoolExecutor | None = None
@@ -161,6 +161,8 @@ def _get_rfc_password() -> str:
 
 
 def _get_rfc_url() -> str:
+    from ctxai.helpers import settings
+
     set = settings.get_settings()
     url = set["rfc_url"]
     if "://" not in url:
