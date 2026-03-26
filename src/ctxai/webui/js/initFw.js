@@ -1,8 +1,11 @@
 import * as initializer from "./initializer.js";
 import * as _modals from "./modals.js";
 import * as _components from "./components.js";
-import * as _extensions from "./extensions.js";
+import * as extensions from "./extensions.js";
 import { registerAlpineMagic } from "./confirmClick.js";
+
+// process extensions
+await extensions.callJsExtensions("initFw_start")
 
 // initialize required elements
 await initializer.initialize();
@@ -161,3 +164,6 @@ globalThis.Alpine.magic("instantiate", () => (src) => {
 
   return out;
 });
+
+// process extensions
+await extensions.callJsExtensions("initFw_end")
