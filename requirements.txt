@@ -296,7 +296,7 @@ google-auth-oauthlib==1.2.4
     # via browser-use
 google-cloud-vision==3.12.1
     # via unstructured
-google-genai==1.29.0
+google-genai==1.68.0
     # via browser-use
 googleapis-common-protos==1.73.0
     # via
@@ -478,7 +478,7 @@ markdown==3.7
     # via
     #   ctxai
     #   unstructured
-markdown-it-py==3.0.0
+markdown-it-py==4.0.0
     # via
     #   markdown-pdf
     #   rich
