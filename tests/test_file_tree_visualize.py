@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import argparse
 import os
-from collections.abc import Iterable
+import sys
+import time
+from collections.abc import Callable, Iterable
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-import sys
-import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 try:
     import pytest  # type: ignore
@@ -36,30 +36,29 @@ from ctxai.helpers.file_tree import (
 )
 from ctxai.helpers.files import create_dir, delete_dir, get_abs_path, write_file
 
-
 BASE_TEMP_ROOT = "tmp/tests/file_tree/visualize"
 
 
 @dataclass(slots=True)
 class Config:
     label: str
-    params: Dict[str, Any]
+    params: dict[str, Any]
 
 
-SetupHook = Optional[Callable[[str], None]]
+SetupHook = Callable[[str], None] | None
 
 
 @dataclass(slots=True)
 class Scenario:
     name: str
     description: str
-    structure: Dict[str, Any]
-    configs: List[Config] = field(default_factory=list)
-    ignore_content: Optional[str] = None
+    structure: dict[str, Any]
+    configs: list[Config] = field(default_factory=list)
+    ignore_content: str | None = None
     setup: SetupHook = None
 
 
-def materialize_structure(base_rel: str, structure: Dict[str, Any]) -> None:
+def materialize_structure(base_rel: str, structure: dict[str, Any]) -> None:
     for entry, value in structure.items():
         rel = os.path.join(base_rel, entry)
         if isinstance(value, dict):
@@ -79,7 +78,7 @@ def print_header(title: str, char: str = "=") -> None:
     print(char * 80)
 
 
-def print_flat(items: List[Dict[str, Any]]) -> None:
+def print_flat(items: list[dict[str, Any]]) -> None:
     print("level  type     name                   text")
     print("-" * 80)
     for item in items:
@@ -90,10 +89,10 @@ def print_flat(items: List[Dict[str, Any]]) -> None:
         print(f"{level:<5}  {item_type:<7}  {name:<20}  {text}")
 
 
-def print_nested(items: List[Dict[str, Any]], root_label: str) -> None:
+def print_nested(items: list[dict[str, Any]], root_label: str) -> None:
     print(root_label)
 
-    def recurse(nodes: List[Dict[str, Any]], prefix: str) -> None:
+    def recurse(nodes: list[dict[str, Any]], prefix: str) -> None:
         total = len(nodes)
         for index, node in enumerate(nodes):
             is_last = index == total - 1
@@ -125,20 +124,20 @@ def _set_entry_times(relative_path: str, timestamp: float) -> None:
     time.sleep(0.01)
 
 
-def _apply_timestamps(base_rel: str, paths: List[str], base_ts: Optional[float] = None) -> None:
+def _apply_timestamps(base_rel: str, paths: list[str], base_ts: float | None = None) -> None:
     if base_ts is None:
         base_ts = time.time()
     for offset, rel in enumerate(paths, start=1):
         _set_entry_times(os.path.join(base_rel, rel), base_ts + offset)
 
 
-def list_scenarios(scenarios: List[Scenario]) -> None:
+def list_scenarios(scenarios: list[Scenario]) -> None:
     print("Available scenarios:")
     for scenario in scenarios:
         print(f"  - {scenario.name}: {scenario.description}")
 
 
-def run_scenarios(selected: List[Scenario]) -> None:
+def run_scenarios(selected: list[Scenario]) -> None:
     create_dir(BASE_TEMP_ROOT)
     for scenario in selected:
         print_header(f"Scenario: {scenario.name} — {scenario.description}")
@@ -189,8 +188,8 @@ def run_scenarios(selected: List[Scenario]) -> None:
         print()
 
 
-def build_scenarios() -> List[Scenario]:
-    scenarios: List[Scenario] = []
+def build_scenarios() -> list[Scenario]:
+    scenarios: list[Scenario] = []
 
     scenarios.append(
         Scenario(
@@ -237,7 +236,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     def setup_sorting(base_rel: str) -> None:
@@ -291,7 +290,7 @@ def build_scenarios() -> List[Scenario]:
                 ),
             ],
             setup=setup_sorting,
-        )
+        ),
     )
 
     scenarios.append(
@@ -344,7 +343,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -357,7 +356,7 @@ def build_scenarios() -> List[Scenario]:
                     "b.py": "",
                     "dir1": {},
                     "dir2": {},
-                }
+                },
             },
             configs=[
                 Config(
@@ -381,7 +380,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -393,7 +392,7 @@ def build_scenarios() -> List[Scenario]:
                     "dir_a": {},
                     "dir_b": {},
                     "file_a.txt": "",
-                }
+                },
             },
             configs=[
                 Config(
@@ -424,7 +423,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -436,15 +435,15 @@ def build_scenarios() -> List[Scenario]:
                     "layer2_a": {
                         "layer3_a": {
                             "layer4_a": {"layer5_a.txt": ""},
-                        }
-                    }
+                        },
+                    },
                 },
                 "layer1_b": {
                     "layer2_b": {
                         "layer3_b": {
                             "layer4_b": {"layer5_b.txt": ""},
-                        }
-                    }
+                        },
+                    },
                 },
                 "root_file.txt": "",
             },
@@ -467,7 +466,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -493,9 +492,9 @@ def build_scenarios() -> List[Scenario]:
                         "max_folders": 1,
                         "max_files": 1,
                     },
-                )
+                ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -528,9 +527,9 @@ def build_scenarios() -> List[Scenario]:
                         "sort": (SORT_BY_CREATED, SORT_DESC),
                         "max_lines": 4,
                     },
-                )
+                ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -553,9 +552,9 @@ def build_scenarios() -> List[Scenario]:
                         "max_folders": 1,
                         "max_files": 1,
                     },
-                )
+                ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -567,7 +566,7 @@ def build_scenarios() -> List[Scenario]:
                     "branch": {
                         "leaf_a.txt": "",
                         "leaf_b.txt": "",
-                    }
+                    },
                 },
                 "alpha.txt": "",
             },
@@ -591,9 +590,9 @@ def build_scenarios() -> List[Scenario]:
                         "sort": (SORT_BY_CREATED, SORT_ASC),
                         "max_depth": 2,
                     },
-                )
+                ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -639,7 +638,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     stress_structure = {
@@ -770,7 +769,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     scenarios.append(
@@ -813,7 +812,7 @@ def build_scenarios() -> List[Scenario]:
                     },
                 ),
             ],
-        )
+        ),
     )
 
     return scenarios

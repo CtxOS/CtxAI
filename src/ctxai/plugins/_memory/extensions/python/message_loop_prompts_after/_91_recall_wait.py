@@ -1,14 +1,16 @@
-from ctxai.helpers.extension import Extension
 from ctxai.agent import LoopData
+from ctxai.helpers import plugins
+from ctxai.helpers.extension import Extension
 from ctxai.plugins._memory.extensions.python.message_loop_prompts_after._50_recall_memories import (
-    DATA_NAME_TASK as DATA_NAME_TASK_MEMORIES,
     DATA_NAME_ITER as DATA_NAME_ITER_MEMORIES,
 )
-from ctxai.helpers import plugins
+from ctxai.plugins._memory.extensions.python.message_loop_prompts_after._50_recall_memories import (
+    DATA_NAME_TASK as DATA_NAME_TASK_MEMORIES,
+)
 
 
 class RecallWait(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 

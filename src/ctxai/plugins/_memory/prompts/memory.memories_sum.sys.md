@@ -36,7 +36,7 @@
 > AsyncRaceError in primary_modules.py was fixed by adding a thread lock on line 123 (important event with details for context)
 > Local SQL database was created, server is running on port 3306 (important event with details for context)
 
-# WRONG examples with (explanation of error), never output memories like these 
+# WRONG examples with (explanation of error), never output memories like these
 > Dog Information (no useful facts)
 > The user requested current RAM and CPU status. (No exact facts to memorize)
 > User greeted with 'hi' (just conversation, not useful in the future )

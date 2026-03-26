@@ -1,5 +1,6 @@
-from ctxai.helpers import dotenv
 import hashlib
+
+from ctxai.helpers import dotenv
 
 
 def get_credentials_hash():

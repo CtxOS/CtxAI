@@ -1,14 +1,14 @@
-import os
-from pathlib import Path
-import shutil
 import base64
+import os
+import shutil
 import subprocess
-from typing import Dict, List, Tuple, Any
-from ctxai.helpers.security import safe_filename
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 from ctxai.helpers import files
 from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.security import safe_filename
 
 
 class FileBrowser:
@@ -35,7 +35,7 @@ class FileBrowser:
             size = file.tell()
             file.seek(0)
             return size <= self.MAX_FILE_SIZE
-        except (AttributeError, IOError):
+        except (OSError, AttributeError):
             return False
 
     def save_file_b64(self, current_path: str, filename: str, base64_content: str):
@@ -54,7 +54,7 @@ class FileBrowser:
             PrintStyle.error(f"Error saving file {filename}: {e}")
             return False
 
-    def save_files(self, files: List, current_path: str = "") -> Tuple[List[str], List[str]]:
+    def save_files(self, files: list, current_path: str = "") -> tuple[list[str], list[str]]:
         """Save uploaded files and return successful and failed filenames"""
         successful = []
         failed = []
@@ -197,10 +197,10 @@ class FileBrowser:
     def _get_file_extension(self, filename: str) -> str:
         return filename.rsplit(".", 1)[1].lower() if "." in filename else ""
 
-    def _get_files_via_ls(self, full_path: Path) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def _get_files_via_ls(self, full_path: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         """Get files and folders using ls command for better error handling"""
-        files: List[Dict[str, Any]] = []
-        folders: List[Dict[str, Any]] = []
+        files: list[dict[str, Any]] = []
+        folders: list[dict[str, Any]] = []
 
         try:
             # Use ls command to get directory listing
@@ -252,7 +252,7 @@ class FileBrowser:
                     try:
                         stat_info = entry_path.stat()
 
-                        entry_data: Dict[str, Any] = {
+                        entry_data: dict[str, Any] = {
                             "name": filename,
                             "path": str(entry_path.relative_to(self.base_dir)),
                             "modified": datetime.fromtimestamp(stat_info.st_mtime).isoformat(),
@@ -265,7 +265,7 @@ class FileBrowser:
 
                         if entry_path.is_file():
                             entry_data.update(
-                                {"type": self._get_file_type(filename), "size": stat_info.st_size, "is_dir": False}
+                                {"type": self._get_file_type(filename), "size": stat_info.st_size, "is_dir": False},
                             )
                             files.append(entry_data)
                         elif entry_path.is_dir():
@@ -274,7 +274,7 @@ class FileBrowser:
                                     "type": "folder",
                                     "size": 0,  # Directories show as 0 bytes
                                     "is_dir": True,
-                                }
+                                },
                             )
                             folders.append(entry_data)
 
@@ -298,7 +298,7 @@ class FileBrowser:
 
         return files, folders
 
-    def get_files(self, current_path: str = "") -> Dict:
+    def get_files(self, current_path: str = "") -> dict:
         try:
             # Resolve the full path while preventing directory traversal
             full_path = (self.base_dir / current_path).resolve()

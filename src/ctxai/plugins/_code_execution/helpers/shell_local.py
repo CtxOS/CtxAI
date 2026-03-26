@@ -1,4 +1,3 @@
-from typing import Optional, Tuple
 from ctxai.helpers import runtime
 from ctxai.plugins._code_execution.helpers import tty_session
 from ctxai.plugins._code_execution.helpers.shell_ssh import clean_string
@@ -26,7 +25,7 @@ class LocalInteractiveSession:
         self.full_output = ""
         await self.session.sendline(command)
 
-    async def read_output(self, timeout: float = 0, reset_full_output: bool = False) -> Tuple[str, Optional[str]]:
+    async def read_output(self, timeout: float = 0, reset_full_output: bool = False) -> tuple[str, str | None]:
         if not self.session:
             raise Exception("Shell not connected")
 

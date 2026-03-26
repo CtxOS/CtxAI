@@ -1,4 +1,5 @@
 import { createStore } from "/js/AlpineStore.js";
+import { ensureAce } from "/js/ace-loader.js";
 
 const model = {
   // State
@@ -61,7 +62,7 @@ const model = {
     });
   },
 
-  initEditor() {
+  async initEditor() {
     const container = document.getElementById("context-viewer-container");
     if (!container) {
       console.warn("Context container not found, deferring editor init");
@@ -73,12 +74,7 @@ const model = {
       this.editor.destroy();
     }
 
-    // Check if ACE is available
-    if (!window.ace?.edit) {
-      console.error("ACE editor not available");
-      this.error = "Editor library not loaded";
-      return;
-    }
+    await ensureAce();
 
     const editorInstance = window.ace.edit("context-viewer-container");
     if (!editorInstance) {

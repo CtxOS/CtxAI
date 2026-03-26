@@ -1,35 +1,85 @@
-from datetime import timedelta
-from typing import Iterable, cast
+from __future__ import annotations
+
+import asyncio
 import os
 import secrets
-import time
+import sys
 import threading
-import asyncio
-
+import time
 import urllib.request
+from collections.abc import Iterable
+from datetime import timedelta
+from typing import cast
+
+import socketio  # type: ignore[import-untyped]
 import uvicorn
-from flask import Flask, request, Response, session, redirect, url_for, render_template_string
+from flask import Flask, Response, redirect, render_template_string, request, session, url_for
 from werkzeug.wrappers.request import Request as WerkzeugRequest
 
 import ctxai.initialize as initialize
-from ctxai.helpers import files, git, mcp_server, fasta2a_server, settings as settings_helper, extension
-from ctxai.helpers.files import get_abs_path
-from ctxai.helpers import runtime, dotenv, process
-from ctxai.helpers.websocket import WebSocketHandler, validate_ws_origin
+from ctxai.helpers import cache, dotenv, extension, fasta2a_server, files, git, login, mcp_server, process, runtime
+from ctxai.helpers import settings as settings_helper
 from ctxai.helpers.api import register_api_route, requires_auth
+from ctxai.helpers.files import get_abs_path
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers import login
-import socketio  # type: ignore[import-untyped]
+from ctxai.helpers.websocket import WebSocketHandler, validate_ws_origin
+
+# Simple in-memory rate limiter for login attempts
+_login_attempts: dict[str, list[float]] = {}
+_LOGIN_MAX_ATTEMPTS = 10
+_LOGIN_WINDOW_SECONDS = 300  # 5 minutes
+
+# General API rate limiter
+_api_attempts: dict[str, list[float]] = {}
+_API_MAX_ATTEMPTS = 100  # 100 requests per minute
+_API_WINDOW_SECONDS = 60  # 1 minute
+
+
+def _check_login_rate_limit(remote_addr: str) -> bool:
+    """Return True if the request is allowed, False if rate-limited."""
+    import time
+
+    now = time.monotonic()
+    window_start = now - _LOGIN_WINDOW_SECONDS
+    attempts = _login_attempts.get(remote_addr, [])
+    # Prune old entries
+    attempts = [t for t in attempts if t > window_start]
+    if len(attempts) >= _LOGIN_MAX_ATTEMPTS:
+        _login_attempts[remote_addr] = attempts
+        return False
+    attempts.append(now)
+    _login_attempts[remote_addr] = attempts
+    return True
+
+
+def _check_api_rate_limit(remote_addr: str) -> bool:
+    """Return True if the API request is allowed, False if rate-limited."""
+    import time
+
+    now = time.monotonic()
+    window_start = now - _API_WINDOW_SECONDS
+    attempts = _api_attempts.get(remote_addr, [])
+    # Prune old entries
+    attempts = [t for t in attempts if t > window_start]
+    if len(attempts) >= _API_MAX_ATTEMPTS:
+        _api_attempts[remote_addr] = attempts
+        return False
+    attempts.append(now)
+    _api_attempts[remote_addr] = attempts
+    return True
+
+
+# disable logging
+import logging
+
+from flask import send_file
 from socketio import ASGIApp, packet
 from starlette.applications import Starlette
 from starlette.routing import Mount
 from uvicorn.middleware.wsgi import WSGIMiddleware
+
 from ctxai.helpers.websocket_manager import WebSocketManager
 from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
-from flask import send_file
-
-# disable logging
-import logging
 
 logging.getLogger().setLevel(logging.WARNING)
 
@@ -62,7 +112,45 @@ webapp.config.update(
     MAX_FORM_MEMORY_SIZE=int(os.getenv("FLASK_MAX_FORM_MEMORY_SIZE", str(UPLOAD_LIMIT_BYTES))),
 )
 
-lock = threading.RLock()
+
+@webapp.after_request
+def add_security_headers(response: Response) -> Response:
+    """Add security headers to all Flask responses."""
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: blob:; "
+        "font-src 'self' data:; "
+        "connect-src 'self' ws: wss:; "
+        "frame-ancestors 'none';"
+    )
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+    # Add Cache-Control headers for static assets
+    path = request.path or ""
+    # Static assets (CSS, JS, images, fonts) get long cache
+    if any(
+        path.endswith(ext)
+        for ext in (".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".woff", ".woff2", ".ttf", ".eot")
+    ):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    # index.html should not be cached to ensure updates are picked up
+    elif path.endswith(".html") or path == "/":
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    # API responses should not be cached
+    elif path.startswith("/api/") or path.startswith("/poll") or path.startswith("/message"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+
+    # Set SESSION_COOKIE_SECURE when behind TLS
+    if os.environ.get("HTTPS") == "1" or request.headers.get("X-Forwarded-Proto") == "https":
+        webapp.config["SESSION_COOKIE_SECURE"] = True
+    return response
+
+
+lock = asyncio.Lock()
 
 socketio_server = socketio.AsyncServer(
     async_mode="asgi",
@@ -89,15 +177,20 @@ websocket_manager.set_server_restart_broadcast(_settings.get("websocket_server_r
 async def login_handler():
     error = None
     if request.method == "POST":
-        user = dotenv.get_dotenv_value("AUTH_LOGIN")
-        password = dotenv.get_dotenv_value("AUTH_PASSWORD")
-
-        if request.form["username"] == user and request.form["password"] == password:
-            session["authentication"] = login.get_credentials_hash()
-            return redirect(url_for("serve_index"))
+        remote_addr = request.remote_addr or "unknown"
+        if not _check_login_rate_limit(remote_addr):
+            await asyncio.sleep(2)
+            error = "Too many login attempts. Please wait before trying again."
         else:
-            await asyncio.sleep(1)
-            error = "Invalid Credentials. Please try again."
+            user = dotenv.get_dotenv_value("AUTH_LOGIN")
+            password = dotenv.get_dotenv_value("AUTH_PASSWORD")
+
+            if request.form["username"] == user and request.form["password"] == password:
+                session["authentication"] = login.get_credentials_hash()
+                return redirect(url_for("serve_index"))
+            else:
+                await asyncio.sleep(1)
+                error = "Invalid Credentials. Please try again."
 
     login_page_content = files.read_file("webui/login.html")
     return render_template_string(login_page_content, error=error)
@@ -179,7 +272,8 @@ async def _serve_plugin_asset(plugin_name, asset_path):
 
         # Security: ensure the resolved path is within the plugin webui directory
         if not files.is_in_dir(str(asset_file), str(webui_dir)) and not files.is_in_dir(
-            str(asset_file), str(webui_extensions_dir)
+            str(asset_file),
+            str(webui_extensions_dir),
         ):
             return Response("Access denied", 403)
 
@@ -194,7 +288,7 @@ async def _serve_plugin_asset(plugin_name, asset_path):
 
 def _build_websocket_handlers_by_namespace(
     socketio_server: socketio.AsyncServer,
-    lock: threading.RLock,
+    lock: threading.RLock | asyncio.Lock,
 ) -> dict[str, list[WebSocketHandler]]:
     discoveries = discover_websocket_namespaces(
         handlers_folder="python/websocket_handlers",
@@ -261,7 +355,7 @@ def configure_websocket_namespaces(
             for handler in namespace_handlers[1:]:
                 if bool(handler.requires_auth()) != auth_required or bool(handler.requires_csrf()) != csrf_required:
                     raise ValueError(
-                        f"WebSocket namespace {namespace!r} has mixed auth/csrf requirements across handlers"
+                        f"WebSocket namespace {namespace!r} has mixed auth/csrf requirements across handlers",
                     )
 
         @socketio_server.on("connect", namespace=namespace)
@@ -277,7 +371,7 @@ def configure_websocket_namespaces(
                 origin_ok, origin_reason = validate_ws_origin(environ)
                 if not origin_ok:
                     PrintStyle.warning(
-                        f"WebSocket origin validation failed for {_namespace} {sid}: {origin_reason or 'invalid'}"
+                        f"WebSocket origin validation failed for {_namespace} {sid}: {origin_reason or 'invalid'}",
                     )
                     return False
 
@@ -286,7 +380,7 @@ def configure_websocket_namespaces(
                     if credentials_hash:
                         if session.get("authentication") != credentials_hash:
                             PrintStyle.warning(
-                                f"WebSocket authentication failed for {_namespace} {sid}: session not valid"
+                                f"WebSocket authentication failed for {_namespace} {sid}: session not valid",
                             )
                             return False
                     else:
@@ -296,7 +390,7 @@ def configure_websocket_namespaces(
                     expected_token = session.get("csrf_token")
                     if not isinstance(expected_token, str) or not expected_token:
                         PrintStyle.warning(
-                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf_token not initialized"
+                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf_token not initialized",
                         )
                         return False
 
@@ -305,12 +399,12 @@ def configure_websocket_namespaces(
                         auth_token = _auth.get("csrf_token") or _auth.get("csrfToken")
                     if not isinstance(auth_token, str) or not auth_token:
                         PrintStyle.warning(
-                            f"WebSocket CSRF validation failed for {_namespace} {sid}: missing csrf_token in auth"
+                            f"WebSocket CSRF validation failed for {_namespace} {sid}: missing csrf_token in auth",
                         )
                         return False
                     if auth_token != expected_token:
                         PrintStyle.warning(
-                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf_token mismatch"
+                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf_token mismatch",
                         )
                         return False
 
@@ -318,7 +412,7 @@ def configure_websocket_namespaces(
                     cookie_token = request.cookies.get(cookie_name)
                     if cookie_token != expected_token:
                         PrintStyle.warning(
-                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf cookie mismatch"
+                            f"WebSocket CSRF validation failed for {_namespace} {sid}: csrf cookie mismatch",
                         )
                         return False
 
@@ -356,10 +450,28 @@ def configure_websocket_namespaces(
 
 
 def run():
+    # Use uvloop on Linux for 2-4x async throughput improvement
+    if sys.platform != "win32":
+        try:
+            import uvloop
+
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        except ImportError:
+            pass
+
     PrintStyle().print("Initializing framework...")
 
     # migrate data before anything else
     initialize.initialize_migration()
+
+    # Configure in-memory cache: 500 entries per area, 1-hour TTL
+    cache.configure(max_size=500, ttl_seconds=3600)
+
+    # Warn if authentication is not configured
+    if not login.is_login_required():
+        PrintStyle(background_color="yellow", font_color="black", padding=True).print(
+            "WARNING: No authentication configured. Set AUTH_LOGIN and AUTH_PASSWORD in usr/.env to secure access.",
+        )
 
     # # Suppress only request logs but keep the startup messages
     # from werkzeug.serving import WSGIRequestHandler
@@ -387,7 +499,7 @@ def run():
         handlers_by_namespace=handlers_by_namespace,
     )
 
-    init_a0()
+    init_ctx()
 
     wsgi_app = WSGIMiddleware(webapp)
     starlette_app = Starlette(
@@ -395,7 +507,7 @@ def run():
             Mount("/mcp", app=mcp_server.DynamicMcpProxy.get_instance()),
             Mount("/a2a", app=fasta2a_server.DynamicA2AProxy.get_instance()),
             Mount("/", app=wsgi_app),
-        ]
+        ],
     )
 
     asgi_app = ASGIApp(socketio_server, other_asgi_app=starlette_app)
@@ -417,6 +529,11 @@ def run():
             flush_and_shutdown_callback()
         except Exception as e:
             PrintStyle.warning(f"Shutdown flush failed ({reason}): {e}")
+
+    if sys.platform != "win32":
+        import uvloop
+
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     config = uvicorn.Config(
         asgi_app,
@@ -460,7 +577,7 @@ def wait_for_health(host: str, port: int):
 
 
 @extension.extensible
-def init_a0():
+def init_ctx():
     # initialize contexts and MCP
     init_chats = initialize.initialize_chats()
     # only wait for init chats, otherwise they would seem to disappear for a while on restart

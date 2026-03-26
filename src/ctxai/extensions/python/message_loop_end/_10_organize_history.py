@@ -1,12 +1,12 @@
-from ctxai.helpers.extension import Extension
 from ctxai.agent import LoopData
-from ctxai.helpers.defer import DeferredTask, THREAD_BACKGROUND
+from ctxai.helpers.defer import THREAD_BACKGROUND, DeferredTask
+from ctxai.helpers.extension import Extension
 
 DATA_NAME_TASK = "_organize_history_task"
 
 
 class OrganizeHistory(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 

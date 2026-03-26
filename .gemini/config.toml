@@ -1,0 +1,14 @@
+[config]
+model = "gemini-2.5-pro"
+language = "en"
+enable_auto_review = true
+enable_pr_summary = true
+enable_unit_tests = true
+enable_security_review = true
+enable_suggestions = true
+review_level = "medium"
+exclude_patterns = [
+    "src/ctxai/usr/**",
+    "docs/release-notes.md",
+    "*.lock",
+]

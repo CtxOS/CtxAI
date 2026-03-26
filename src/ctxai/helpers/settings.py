@@ -3,21 +3,20 @@ import hashlib
 import json
 import os
 import subprocess
-from typing import Any, Literal, TypedDict, cast, TypeVar
+from typing import Any, Literal, TypedDict, cast
 
 import ctxai.models as models
-from ctxai.helpers import runtime, whisper, defer, git, subagents
-from . import files, dotenv
+from ctxai.helpers import defer, git, runtime, subagents, whisper
+from ctxai.helpers.notification import NotificationManager, NotificationPriority, NotificationType
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.providers import get_providers, FieldOption as ProvidersFO
+from ctxai.helpers.providers import FieldOption as ProvidersFO
+from ctxai.helpers.providers import get_providers
 from ctxai.helpers.secrets import get_default_secrets_manager
-from ctxai.helpers.notification import NotificationManager, NotificationType, NotificationPriority
+
+from . import dotenv, files
 
 
-T = TypeVar("T")
-
-
-def get_default_value(name: str, value: T) -> T:
+def get_default_value[T](name: str, value: T) -> T:
     """
     Load setting value from .env with A0_SET_ prefix, falling back to default.
 
@@ -45,7 +44,7 @@ def get_default_value(name: str, value: T) -> T:
             return type(value)(env_value.strip())  # type: ignore
     except (ValueError, TypeError, json.JSONDecodeError) as e:
         PrintStyle(background_color="yellow", font_color="black").print(
-            f"Warning: Invalid value for A0_SET_{name}='{env_value}': {e}. Using default: {value}"
+            f"Warning: Invalid value for A0_SET_{name}='{env_value}': {e}. Using default: {value}",
         )
         return value
 
@@ -209,10 +208,11 @@ SETTINGS_FILE = files.get_abs_path("usr/settings.json")
 _settings: Settings | None = None
 _runtime_settings_snapshot: Settings | None = None
 
-OptionT = TypeVar("OptionT", bound=FieldOption)
 
-
-def _ensure_option_present(options: list[OptionT] | None, current_value: str | None) -> list[OptionT]:
+def _ensure_option_present[OptionT: FieldOption](
+    options: list[OptionT] | None,
+    current_value: str | None,
+) -> list[OptionT]:
     """
     Ensure the currently selected value exists in a dropdown options list.
     If missing, inserts it at the front as {value: current_value, label: current_value}.
@@ -266,25 +266,30 @@ def convert_out(settings: Settings) -> SettingsOutput:
             runtime_settings.get(
                 "uvicorn_access_logs_enabled",
                 default_settings["uvicorn_access_logs_enabled"],
-            )
+            ),
         ),
     }
 
     additional["chat_providers"] = _ensure_option_present(
-        additional.get("chat_providers"), current.get("chat_model_provider")
+        additional.get("chat_providers"),
+        current.get("chat_model_provider"),
     )
     additional["chat_providers"] = _ensure_option_present(
-        additional.get("chat_providers"), current.get("util_model_provider")
+        additional.get("chat_providers"),
+        current.get("util_model_provider"),
     )
     additional["chat_providers"] = _ensure_option_present(
-        additional.get("chat_providers"), current.get("browser_model_provider")
+        additional.get("chat_providers"),
+        current.get("browser_model_provider"),
     )
     additional["embedding_providers"] = _ensure_option_present(
-        additional.get("embedding_providers"), current.get("embed_model_provider")
+        additional.get("embedding_providers"),
+        current.get("embed_model_provider"),
     )
     additional["agent_subdirs"] = _ensure_option_present(additional.get("agent_subdirs"), current.get("agent_profile"))
     additional["knowledge_subdirs"] = _ensure_option_present(
-        additional.get("knowledge_subdirs"), current.get("agent_knowledge_subdir")
+        additional.get("knowledge_subdirs"),
+        current.get("agent_knowledge_subdir"),
     )
     additional["stt_models"] = _ensure_option_present(additional.get("stt_models"), current.get("stt_model_size"))
 
@@ -584,8 +589,8 @@ def get_default_settings() -> Settings:
 def _apply_settings(previous: Settings | None):
     global _settings
     if _settings:
-        from ctxai.agent import AgentContext
         from ctxai import initialize
+        from ctxai.agent import AgentContext
 
         config = initialize.initialize_agent()
         for ctx in AgentContext.all():
@@ -598,8 +603,9 @@ def _apply_settings(previous: Settings | None):
 
         # reload whisper model if necessary
         if not previous or _settings["stt_model_size"] != previous["stt_model_size"]:
-            task = defer.DeferredTask().start_task(
-                whisper.preload, _settings["stt_model_size"]
+            defer.DeferredTask().start_task(
+                whisper.preload,
+                _settings["stt_model_size"],
             )  # TODO overkill, replace with background task
 
         # notify plugins of embedding model change
@@ -638,7 +644,7 @@ def _apply_settings(previous: Settings | None):
                     )
                     (
                         PrintStyle(background_color="red", font_color="black", padding=True).print(
-                            "Failed to update MCP settings"
+                            "Failed to update MCP settings",
                         )
                     )
                     (PrintStyle(background_color="black", font_color="red", padding=True).print(f"{e}"))
@@ -646,7 +652,7 @@ def _apply_settings(previous: Settings | None):
                 PrintStyle(background_color="#6734C3", font_color="white", padding=True).print("Parsed MCP config:")
                 (
                     PrintStyle(background_color="#334455", font_color="white", padding=False).print(
-                        mcp_config.model_dump_json()
+                        mcp_config.model_dump_json(),
                     )
                 )
                 NotificationManager.send_notification(
@@ -656,8 +662,9 @@ def _apply_settings(previous: Settings | None):
                     group="settings-mcp",
                 )
 
-            task2 = defer.DeferredTask().start_task(
-                update_mcp_settings, config.mcp_servers
+            defer.DeferredTask().start_task(
+                update_mcp_settings,
+                config.mcp_servers,
             )  # TODO overkill, replace with background task
 
         # update token in mcp server
@@ -671,8 +678,9 @@ def _apply_settings(previous: Settings | None):
 
                 DynamicMcpProxy.get_instance().reconfigure(token=token)
 
-            task3 = defer.DeferredTask().start_task(
-                update_mcp_token, current_token
+            defer.DeferredTask().start_task(
+                update_mcp_token,
+                current_token,
             )  # TODO overkill, replace with background task
 
         # update token in a2a server
@@ -683,8 +691,9 @@ def _apply_settings(previous: Settings | None):
 
                 DynamicA2AProxy.get_instance().reconfigure(token=token)
 
-            task4 = defer.DeferredTask().start_task(
-                update_a2a_token, current_token
+            defer.DeferredTask().start_task(
+                update_a2a_token,
+                current_token,
             )  # TODO overkill, replace with background task
 
 
@@ -724,7 +733,7 @@ def _dict_to_env(data_dict):
             # Quote strings and escape internal quotes
             escaped_value = value.replace('"', '\\"')
             lines.append(f'{key}="{escaped_value}"')
-        elif isinstance(value, (dict, list, bool)) or value is None:
+        elif isinstance(value, dict | list | bool) or value is None:
             # Serialize as unquoted JSON
             lines.append(f"{key}={json.dumps(value, separators=(',', ':'))}")
         else:

@@ -4,11 +4,12 @@ import time
 import uuid
 from pathlib import Path
 
-from ctxai.helpers.api import ApiHandler, Request, Response
-from ctxai.helpers import files
-from ctxai.helpers.skills_import import import_skills
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+
+from ctxai.helpers import files
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers.skills_import import import_skills
 
 
 class SkillsImportPreview(ApiHandler):

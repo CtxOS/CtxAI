@@ -1,10 +1,13 @@
-import os
-import webcolors
-import html
-import sys
 import atexit
-from datetime import datetime
+import html
+import json
+import os
+import sys
 from collections.abc import Mapping
+from datetime import datetime
+
+import webcolors
+
 from . import files
 
 _runtime_module = None
@@ -229,6 +232,25 @@ class PrintStyle:
     def error(*args, sep=" ", end="\n", flush=True):
         prefixed = PrintStyle._prefixed_args("Error", args)
         PrintStyle(font_color="red", padding=True).print(*prefixed, sep=sep, end=end, flush=flush)
+
+    @staticmethod
+    def to_json_log(level: str, message: str, context_id: str | None = None, **kwargs) -> str:
+        """Generate a structured JSON log entry for log aggregators."""
+        log_entry = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "level": level.upper(),
+            "message": message,
+        }
+        if context_id:
+            log_entry["context_id"] = context_id
+        log_entry.update(kwargs)
+        return json.dumps(log_entry, default=str)
+
+    @staticmethod
+    def json_log(level: str, message: str, context_id: str | None = None, **kwargs):
+        """Emit a structured JSON log line to stdout."""
+        log_entry = PrintStyle.to_json_log(level, message, context_id, **kwargs)
+        print(log_entry, flush=True)
 
 
 # Ensure HTML file is closed properly when the program exits

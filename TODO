@@ -1,0 +1,193 @@
+# CtxAI — TODO & Gap Remediation
+
+> Generated from project review on 2026-03-20
+> Branch: `dev-bug`
+> Ordered by priority: **Critical → High → Medium → Low**
+
+---
+
+## 🔴 Critical — Fix Before Any Production Traffic ✅ COMPLETE
+
+### Security
+- [x] **Sanitize agent HTML output before `innerHTML` assignment**
+  `src/ctxai/webui/js/messages.js` + `index.js` + `modals.js`
+  Added DOMPurify to all paths that write agent-generated content into the DOM. Removed dangerous `onclick`/`onchange` attributes from ALLOWED_ATTR. Sanitized modal titles and error messages.
+
+- [x] **Add Content-Security-Policy headers to Flask responses**
+  `src/ctxai/run_ui.py:114-148`
+  `@webapp.after_request` hook emits `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Cache-Control`, and conditional `SESSION_COOKIE_SECURE`.
+
+---
+
+## 🟠 High — Runtime & Architecture
+
+### Async Model (Biggest Single Win)
+- [x] **Remove `nest_asyncio`**
+  `src/ctxai/helpers/runtime.py:16`
+  Replaced `nest_asyncio.apply()` with `safe_run_async()` helper that uses a thread pool for sync-to-async bridging. Updated all 5 files that used nest_asyncio: `plugins.py`, `task_scheduler.py`, `models.py`, `tty_session.py`, `mcp_handler.py`.
+
+- [ ] **Migrate from `Flask + WSGIMiddleware` to native FastAPI/Starlette**
+  `src/ctxai/run_ui.py:429`
+  FastAPI is already a declared dependency. Replace the WSGI → ASGI bridge with a fully async handler chain to eliminate the thread-pool bottleneck on every HTTP request.
+
+- [x] **Replace `threading.RLock` with `asyncio.Lock` for async paths**
+  `src/ctxai/run_ui.py:90,103`
+  Changed shared lock from `threading.RLock()` to `asyncio.Lock()`. Updated `websocket_manager.py` to use `async with self.lock:`. Made diagnostic watcher methods async. Updated type annotations in `api.py`, `websocket.py`.
+
+- [ ] **Wrap all blocking I/O in `run_in_executor`**
+  FAISS index queries, file tree walks (`helpers/file_tree.py`), and large file reads block the event loop. Wrap with `asyncio.get_event_loop().run_in_executor(executor, ...)`.
+
+- [x] **Fix `call_development_function_sync` thread explosion**
+  `src/ctxai/helpers/runtime.py:141-157`
+  Replaced per-call thread + `asyncio.run()` with a shared `_get_async_thread_pool()` thread pool. Submits work via `pool.submit()` with a 30s timeout.
+
+### Infrastructure
+- [ ] **Write a production multi-stage Dockerfile for the CtxAI server**
+  No production image exists. Create `Dockerfile.server`:
+  Stage 1 `builder`: `python:3.12-slim` — install deps via `uv`.
+  Stage 2 `runtime`: distroless or slim — copy virtualenv + `src/ctxai`.
+  Target image ≤ 300 MB (exclude torch/CUDA unless GPU mode enabled).
+
+- [ ] **Create `docker-compose.prod.yml`**
+  Include: `ctxai` server, `redis` (for session/cache), `searxng` (already in `docker/`), `prometheus`, `grafana`.
+
+- [x] **Add `uvloop` event loop on Linux**
+  `src/ctxai/run_ui.py` — Applied `uvloop.EventLoopPolicy()` before `uvicorn.run()` on non-Windows platforms. Drop-in 2–4x async throughput improvement.
+
+### Dependency Bloat
+- [ ] **Make ML/document processing dependencies optional**
+  `unstructured[all-docs]`, `torch==2.2.2`, `spacy`, NVIDIA CUDA packages, `openai-whisper`, `kokoro` pull in >4 GB of weights at install time. Gate behind `pip install ctxai[docs]`, `ctxai[speech]`, `ctxai[gpu]` extras.
+
+- [x] **Lazy-import heavy modules**
+  `models.py` — moved `browser_use.llm` import (`ChatGoogle`, `ChatOpenRouter`) behind a lazy factory function. `whisper.py` — already lazy (imports `whisper` inside `_preload` only). `document_query.py` — loaded on-demand via tool discovery, not at startup.
+
+---
+
+## 🟡 High — Frontend Performance
+
+### Build Pipeline
+- [ ] **Introduce Vite as a build layer**
+  Zero-config ESM bundler. Enables tree-shaking, CSS purge, chunk splitting, and cache-busted asset hashes. No framework change required — Alpine.js components stay as-is.
+
+- [x] **Lazy-load Ace Editor**
+  `src/ctxai/webui/js/ace-loader.js` — Created `ensureAce()` loader that fetches ACE JS + CSS on first editor open. Removed blocking `<script>` and `<link>` from `index.html`. All editor stores now `await ensureAce()` before calling `ace.edit()`. Saves ~1 MB on initial page load.
+
+- [ ] **Add virtual scrolling to `#chat-history`**
+  `src/ctxai/webui/index.html:133`
+  DOM grows unbounded in long conversations. Implement a windowed list (keep ~60 DOM nodes) using `IntersectionObserver` to mount/unmount message blocks outside the viewport.
+
+- [x] **Eliminate CDN dependencies**
+  - Bootstrap JS: self-hosted as `vendor/bootstrap/bootstrap.bundle.min.js`.
+  - Non-critical CSS: deferred via `media="print" onload="this.media='all'"` pattern.
+  - DOMPurify sanitization added to `confirmDialog.js`, `extensions.js`, `messages.js` for all dynamic HTML paths.
+  - Google Icons: still CDN (TODO: self-host subset).
+
+### Real-time Rendering
+- [ ] **Stream agent tokens via `insertAdjacentText` instead of full `innerHTML` replacement**
+  Current pattern reassigns the full message HTML on every poll tick. Streaming directly into a `<pre>` or `<span>` node with `insertAdjacentText` eliminates layout thrash during active responses.
+
+- [ ] **Move markdown parsing + syntax highlighting to a Web Worker**
+  Offload `marked`/`highlight.js` calls from the main thread. Use `postMessage` to return rendered HTML. Keeps the UI responsive during long agent outputs.
+
+---
+
+## 🟡 Medium — Observability & Ops
+
+- [ ] **Replace `PrintStyle` with structured JSON logging**
+  `src/ctxai/helpers/print_style.py`
+  Use Python's `logging` module with a JSON formatter. Emit `level`, `timestamp`, `correlation_id`, `context_id` fields on every log line. Required for any log aggregator (Loki, CloudWatch, Datadog).
+
+- [ ] **Add a Prometheus `/metrics` endpoint**
+  Instrument: active agent contexts, LLM call latency histogram, WebSocket connection count, message queue depth, FAISS query duration. Expose via `GET /metrics` (restrict to internal network).
+
+- [ ] **Add OpenTelemetry distributed tracing**
+  Wrap LLM calls, tool executions, and extension hook chains with OTEL spans. Export to Jaeger/Grafana Tempo via `OTEL_EXPORTER_OTLP_ENDPOINT`.
+
+- [ ] **Add structured health endpoint**
+  `src/ctxai/api/health.py` — expand beyond 200 OK to return JSON with: uptime, active contexts, memory usage, LLM provider reachability, FAISS index size.
+
+- [ ] **Add database/state migration tooling**
+  Settings and memory state currently have no versioned migration path. Add an `alembic`-style or custom migration runner called on startup.
+
+---
+
+## 🟡 Medium — Frontend UX Gaps
+
+- [ ] **Replace Alpine.js reactivity for the message list with Solid.js**
+  Alpine's dirty-checking is too coarse for fine-grained token-by-token updates. Solid.js signals compile to direct DOM mutations (~10x faster for list diffing). Scope the replacement to `#chat-history` only; keep Alpine everywhere else.
+
+- [ ] **Add proper loading/skeleton states for `<x-component>` fragments**
+  Components are fetched over HTTP at runtime with no loading indicator. Add a `<slot name="loading">` pattern or a skeleton shimmer while the fragment loads.
+
+- [ ] **Coordinate timer intervals**
+  `index.js` runs `setInterval(updateUserTime, 1000)` and a `setTimeout`-chained poll loop independently. Consolidate into a single `requestAnimationFrame`-gated scheduler to avoid timer drift and reduce CPU wake-ups in background tabs.
+
+- [ ] **Add `Cache-Control` headers for static assets**
+  Flask serves `./webui` as static files without explicit cache headers. Add `max-age=31536000, immutable` for hashed assets and `no-cache` for `index.html`.
+
+- [ ] **PWA: implement offline fallback page**
+  `src/ctxai/webui/js/sw.js` registers a service worker but the offline strategy is unimplemented. Cache the app shell and show a "reconnecting…" screen when the backend is unreachable.
+
+---
+
+## 🟢 Medium — Security Hardening
+
+- [ ] **Add rate limiting to all API endpoints**
+  Only `/login` has a rate limiter (`run_ui.py:30-44`). Apply `slowapi` or a custom middleware to `/message_async`, `/upload`, and WebSocket connect events.
+
+- [ ] **Audit plugin asset serving for path traversal**
+  `run_ui.py:190-223` resolves plugin asset paths. The `is_in_dir` check is correct but test coverage for path traversal edge cases (symlinks, `../`, URL-encoded separators) should be added.
+
+- [ ] **Set `SESSION_COOKIE_SECURE=True` when behind TLS**
+  `run_ui.py:83` — add `SESSION_COOKIE_SECURE` conditional on `HTTPS` environment variable or `X-Forwarded-Proto` header.
+
+- [ ] **Add HSTS and `Referrer-Policy` response headers**
+
+---
+
+## 🟢 Low — Code Quality & Developer Experience
+
+- [ ] **Add `mypy` strict type coverage to `helpers/`**
+  `pyproject.toml` declares `strict = true` but many helpers use `Any` and `# type: ignore`. Incrementally annotate starting with `helpers/api.py`, `helpers/websocket.py`, `helpers/plugins.py`.
+
+- [ ] **Enable `ruff` format check in CI**
+  `pyproject.toml` declares ruff but there is no CI enforcement. Add a `pre-commit` hook and GitHub Actions step.
+
+- [ ] **Add integration tests for WebSocket message flow**
+  Current tests cover unit behaviour of handlers. Add end-to-end tests using `pytest-asyncio` + `python-socketio` test client to verify the full send → agent loop → poll response cycle.
+
+- [ ] **Document the extension hook execution order**
+  `extensions/python/` folders use numeric prefixes (`_10_`, `_50_`, `_90_`) but the ordering contract is undocumented. Add a `docs/agents/AGENTS.extensions.md` covering hook names, execution order, and return value semantics.
+
+- [ ] **Remove duplicate Ace vendor directories**
+  Both `vendor/_ace/` and `vendor/ace-min/` exist with overlapping content. Consolidate to one.
+
+- [ ] **Resolve `.gitkeep` + empty `__init__.py` inconsistency**
+  Several `extensions/python/` subdirectories use `.gitkeep`; others use `__init__.py`. Standardize.
+
+---
+
+## 🔵 Future / Performance Ceiling
+
+- [ ] **PyO3 Rust extensions for hot paths**
+  Priority order:
+  1. File tree walker (replace `helpers/file_tree.py` with `walkdir` crate) — 10–40x faster
+  2. JSON parsing (replace `helpers/dirty_json.py` with `simd-json` via PyO3) — 3–5x faster
+  3. BLAKE3 hashing for cache/memory keys — 4–8x faster
+  Build with `maturin develop` in CI.
+
+- [ ] **Replace FAISS-CPU with `hnswlib` or `usearch` for async-native ANN**
+  FAISS blocks the event loop. Both alternatives have async-friendly Rust/C++ cores and better recall/speed tradeoffs at the embedding sizes CtxAI uses.
+
+- [ ] **Evaluate replacing Socket.IO with raw WebSocket + MessagePack framing**
+  Socket.IO adds ~40KB client JS overhead and JSON-only framing. A raw WebSocket with MessagePack (`msgpack`) binary framing reduces per-message overhead by 20–40% for large agent outputs.
+
+- [ ] **Multi-arch Docker images (amd64 + arm64)**
+  Add `.github/workflows/docker.yml` using `docker/setup-buildx-action` + QEMU. Publish to `ghcr.io/ctxos/ctxai:{version,latest,sha}`.
+
+- [ ] **Kubernetes Helm chart**
+  Once the production Dockerfile exists, create `charts/ctxai/` with: Deployment, Service, ConfigMap, HPA (scale on WebSocket connection count), PodDisruptionBudget.
+
+---
+
+*Last updated: 2026-03-21 (uvloop + lazy browser_use.llm + ACE lazy-load + CDN elimination + call_development_function_sync thread pool)*

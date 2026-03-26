@@ -1,19 +1,20 @@
+import random
+
 from ctxai.helpers.api import ApiHandler, Input, Output, Request
-from ctxai.helpers.task_scheduler import (
-    TaskScheduler,
-    ScheduledTask,
-    AdHocTask,
-    PlannedTask,
-    TaskSchedule,
-    serialize_task,
-    parse_task_schedule,
-    parse_task_plan,
-    TaskType,
-)
-from ctxai.helpers.projects import load_basic_project_data
 from ctxai.helpers.localization import Localization
 from ctxai.helpers.print_style import PrintStyle
-import random
+from ctxai.helpers.projects import load_basic_project_data
+from ctxai.helpers.task_scheduler import (
+    AdHocTask,
+    PlannedTask,
+    ScheduledTask,
+    TaskSchedule,
+    TaskScheduler,
+    TaskType,
+    parse_task_plan,
+    parse_task_schedule,
+    serialize_task,
+)
 
 
 class SchedulerTaskCreate(ApiHandler):
@@ -62,7 +63,7 @@ class SchedulerTaskCreate(ApiHandler):
 
         # Debug log the token value
         printer.print(
-            f"Token received from frontend: '{token}' (type: {type(token)}, length: {len(token) if token else 0})"
+            f"Token received from frontend: '{token}' (type: {type(token)}, length: {len(token) if token else 0})",
         )
 
         # Generate a random token if empty or not provided
@@ -96,7 +97,7 @@ class SchedulerTaskCreate(ApiHandler):
                 try:
                     task_schedule = parse_task_schedule(schedule)
                 except ValueError as e:
-                    raise ValueError(str(e))
+                    raise ValueError(str(e)) from e
             else:
                 raise ValueError("Invalid schedule format. Must be string or object.")
 

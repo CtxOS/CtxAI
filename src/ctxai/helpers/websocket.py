@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import re
 import threading
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
-from typing import Any, Iterable, Optional, TYPE_CHECKING
 
 import socketio
 
@@ -179,7 +181,7 @@ class WebSocketResult:
             raise TypeError("Error payload must be a dictionary or None")
         if correlation_id is not None and not isinstance(correlation_id, str):
             raise TypeError("Correlation ID must be a string or None")
-        if duration_ms is not None and not isinstance(duration_ms, (int, float)):
+        if duration_ms is not None and not isinstance(duration_ms, int | float):
             raise TypeError("Duration must be a number or None")
 
         self._ok = bool(ok)
@@ -195,7 +197,7 @@ class WebSocketResult:
         *,
         correlation_id: str | None = None,
         duration_ms: float | None = None,
-    ) -> "WebSocketResult":
+    ) -> WebSocketResult:
         if data is not None and not isinstance(data, dict):
             raise TypeError("WebSocketResult.ok data must be a dict or None")
         payload = dict(data) if data is not None else None
@@ -215,7 +217,7 @@ class WebSocketResult:
         details: Any | None = None,
         correlation_id: str | None = None,
         duration_ms: float | None = None,
-    ) -> "WebSocketResult":
+    ) -> WebSocketResult:
         if not isinstance(code, str) or not code.strip():
             raise ValueError("Error code must be a non-empty string")
         if not isinstance(message, str) or not message.strip():
@@ -273,11 +275,11 @@ class WebSocketHandler(ABC):
     conventions.
     """
 
-    _instances: dict[type["WebSocketHandler"], "WebSocketHandler"] = {}
-    _construction_tokens: dict[type["WebSocketHandler"], bool] = {}
+    _instances: dict[type[WebSocketHandler], WebSocketHandler] = {}
+    _construction_tokens: dict[type[WebSocketHandler], bool] = {}
     _singleton_lock = threading.RLock()
 
-    def __init__(self, socketio: socketio.AsyncServer, lock: threading.RLock) -> None:
+    def __init__(self, socketio: socketio.AsyncServer, lock: threading.RLock | asyncio.Lock) -> None:
         """Create a handler bound to the shared Socket.IO instance."""
 
         cls = self.__class__
@@ -285,18 +287,18 @@ class WebSocketHandler(ABC):
             raise SingletonInstantiationError(f"{cls.__name__} must be instantiated via {cls.__name__}.get_instance()")
 
         self.socketio: socketio.AsyncServer = socketio
-        self.lock: threading.RLock = lock
-        self._manager: Optional[WebSocketManager] = None
+        self.lock: threading.RLock | asyncio.Lock = lock
+        self._manager: WebSocketManager | None = None
         self._namespace: str | None = None
 
     @classmethod
     def get_instance(
         cls,
         socketio: socketio.AsyncServer | None = None,
-        lock: threading.RLock | None = None,
+        lock: threading.RLock | asyncio.Lock | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> "WebSocketHandler":
+    ) -> WebSocketHandler:
         """Return the singleton instance for ``cls``.
 
         Args:

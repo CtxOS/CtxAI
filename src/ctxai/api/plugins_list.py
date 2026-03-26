@@ -1,5 +1,5 @@
-from ctxai.helpers.api import ApiHandler, Input, Output, Request
 from ctxai.helpers import plugins
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
 
 
 class PluginsList(ApiHandler):

@@ -1,32 +1,31 @@
-from typing import Any, List, Sequence
-from langchain_community.vectorstores import FAISS
+from collections.abc import Sequence
 
-# faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
 import faiss
-
-
-from langchain_core.documents import Document
+from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import InMemoryByteStore
 from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import (
     DistanceStrategy,
 )
-from langchain.embeddings import CacheBackedEmbeddings
-from simpleeval import simple_eval
+from langchain_core.documents import Document
 
 from ctxai.agent import Agent
 from ctxai.helpers import guids
+from ctxai.helpers.safe_eval import make_comparator
+
+# faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
 
 
 class MyFaiss(FAISS):
     # override aget_by_ids
-    def get_by_ids(self, ids: Sequence[str], /) -> List[Document]:
+    def get_by_ids(self, ids: Sequence[str], /) -> list[Document]:
         # return all self.docstore._dict[id] in ids
         return [
             self.docstore._dict[id] for id in (ids if isinstance(ids, list) else [ids]) if id in self.docstore._dict
         ]  # type: ignore
 
-    async def aget_by_ids(self, ids: Sequence[str], /) -> List[Document]:
+    async def aget_by_ids(self, ids: Sequence[str], /) -> list[Document]:
         return self.get_by_ids(ids)
 
     def get_all_docs(self) -> dict[str, Document]:
@@ -98,7 +97,7 @@ class VectorDB:
         ids = [guids.generate_id() for _ in range(len(docs))]
 
         if ids:
-            for doc, id in zip(docs, ids):
+            for doc, id in zip(docs, ids, strict=False):
                 doc.metadata["id"] = id  # add ids to documents metadata
 
             self.db.add_documents(documents=docs, ids=ids)
@@ -131,12 +130,4 @@ def cosine_normalizer(val: float) -> float:
 
 
 def get_comparator(condition: str):
-    def comparator(data: dict[str, Any]):
-        try:
-            result = simple_eval(condition, names=data)
-            return result
-        except Exception:
-            # PrintStyle.error(f"Error evaluating condition: {e}")
-            return False
-
-    return comparator
+    return make_comparator(condition)

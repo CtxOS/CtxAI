@@ -9,7 +9,7 @@ apt clean && apt-get update && apt-get -y upgrade
 
 # install python 3.13 globally
 apt-get install -y --no-install-recommends \
-    python3.13 python3.13-venv 
+    python3.13 python3.13-venv
     #python3.13-dev
 
 

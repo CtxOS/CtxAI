@@ -1,8 +1,8 @@
 # Ctx AI Installation Guide
 
-> **Purpose:** Step-by-step guide for deploying Ctx AI instances on VPS/dedicated servers  
-> **Author:** Auto-generated from deployment experience  
-> **Last Updated:** December 21 2025  
+> **Purpose:** Step-by-step guide for deploying Ctx AI instances on VPS/dedicated servers
+> **Author:** Auto-generated from deployment experience
+> **Last Updated:** December 21 2025
 > **Compatibility:** Docker-capable Linux servers (AlmaLinux, CentOS, Rocky, Ubuntu, Debian)
 
 ---
@@ -173,7 +173,7 @@ A0_PORT="50080"
 docker pull ctxos/ctxai:latest
 
 # Run container
-docker run -d   --name ${A0_NAME}   --restart unless-stopped   -p ${A0_PORT}:80   -v ${A0_PATH}/.env:/a0/.env   -v ${A0_PATH}/usr:/a0/usr   ctxos/ctxai:latest
+docker run -d   --name ${A0_NAME}   --restart unless-stopped   -p ${A0_PORT}:80   -v ${A0_PATH}/.env:/ctx/.env   -v ${A0_PATH}/usr:/ctx/usr   ctxos/ctxai:latest
 ```
 
 ### Step 5: Verify Container
@@ -383,11 +383,11 @@ mkdir -p /etc/ssl/a0
 chmod 700 /etc/ssl/a0
 
 # Copy your certificates
-cp certificate.crt /etc/ssl/a0/
-cp private.key /etc/ssl/a0/
-cp chain.crt /etc/ssl/a0/  # if applicable
+cp certificate.crt /etc/ssl/ctx/
+cp private.key /etc/ssl/ctx/
+cp chain.crt /etc/ssl/ctx/  # if applicable
 
-chmod 600 /etc/ssl/a0/*
+chmod 600 /etc/ssl/ctx/*
 ```
 
 ---
@@ -519,7 +519,7 @@ wscat -c wss://a0.example.com/ws
 **Fix:**
 ```bash
 # Verify .env inside container
-docker exec a0-instance cat /a0/.env
+docker exec a0-instance cat /ctx/.env
 
 # Ensure format is:
 # AUTH_LOGIN=username  (NOT AUTH_LOGIN=true)
@@ -620,7 +620,7 @@ journalctl -u docker --since "1 hour ago"
 docker restart a0-instance
 
 # Verify env is loaded
-docker exec a0-instance cat /a0/.env
+docker exec a0-instance cat /ctx/.env
 ```
 
 ---
@@ -638,7 +638,7 @@ docker stop a0-instance
 docker rm a0-instance
 
 # Recreate with same settings
-docker run -d   --name a0-instance   --restart unless-stopped   -p 50080:80   -v /opt/a0-instance/.env:/a0/.env   -v /opt/a0-instance/usr:/a0/usr   -v /opt/ctxai:latest
+docker run -d   --name a0-instance   --restart unless-stopped   -p 50080:80   -v /opt/a0-instance/.env:/ctx/.env   -v /opt/a0-instance/usr:/ctx/usr   -v /opt/ctxai:latest
 ```
 
 ### Backup Strategy
@@ -690,7 +690,7 @@ docker restart a0-instance
 docker logs a0-instance
 docker exec -it a0-instance bash
 
-# Apache Management  
+# Apache Management
 systemctl restart httpd    # RHEL/AlmaLinux
 systemctl restart apache2  # Debian/Ubuntu
 httpd -t                   # Test config
@@ -748,7 +748,7 @@ For running multiple A0 instances on the same server:
 mkdir -p /opt/a0-primary
 # ... create .env, run container on port 50080
 
-# Instance 2: a0-dev on port 50081  
+# Instance 2: a0-dev on port 50081
 mkdir -p /opt/a0-dev
 # ... create .env, run container on port 50081
 

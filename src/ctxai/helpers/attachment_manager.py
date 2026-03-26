@@ -1,12 +1,12 @@
-import os
-import io
 import base64
+import io
+import os
+
 from PIL import Image
-from typing import Dict, Optional, Tuple
-from ctxai.helpers.security import safe_filename
 from werkzeug.datastructures import FileStorage
 
 from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.security import safe_filename
 
 
 class AttachmentManager:
@@ -43,7 +43,7 @@ class AttachmentManager:
         except AttributeError:
             return False
 
-    def save_file(self, file: FileStorage, name: str) -> Tuple[str, Dict]:
+    def save_file(self, file: FileStorage, name: str) -> tuple[str, dict]:
         """Save file and return path and metadata"""
         try:
             filename = safe_filename(name)
@@ -73,7 +73,7 @@ class AttachmentManager:
             PrintStyle.error(f"Error saving file {name}: {e}")
             return None, {}  # type: ignore
 
-    def generate_image_preview(self, image_path: str, max_size: int = 800) -> Optional[str]:
+    def generate_image_preview(self, image_path: str, max_size: int = 800) -> str | None:
         try:
             with Image.open(image_path) as img:
                 # Convert image if needed

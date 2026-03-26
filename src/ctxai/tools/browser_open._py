@@ -14,7 +14,7 @@
 #             if url:
 #                 self.update_progress("Opening page...")
 #                 await self.state.browser.open(url)
-            
+
 #             self.update_progress("Retrieving...")
 #             await self.state.browser.wait_for_action()
 #             response = await self.state.browser.get_clean_dom()

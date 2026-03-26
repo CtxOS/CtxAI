@@ -1,13 +1,14 @@
 import base64
-from io import BytesIO
 import mimetypes
 import os
+from io import BytesIO
+from urllib.parse import quote
 
 from flask import Response
-from ctxai.helpers.api import ApiHandler, Input, Output, Request
-from ctxai.helpers import files, runtime
+
 from ctxai.api import file_info
-from urllib.parse import quote
+from ctxai.helpers import files, runtime
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
 
 
 def stream_file_download(file_source, download_name, chunk_size=8192):

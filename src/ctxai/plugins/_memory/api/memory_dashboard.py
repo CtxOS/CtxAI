@@ -1,8 +1,8 @@
-from ctxai.helpers.api import ApiHandler, Request, Response
 from langchain_core.documents import Document
-from ctxai.agent import AgentContext
 
-from ctxai.plugins._memory.helpers.memory import Memory, get_existing_memory_subdirs, get_context_memory_subdir
+from ctxai.agent import AgentContext
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.plugins._memory.helpers.memory import Memory, get_context_memory_subdir, get_existing_memory_subdirs
 
 
 class MemoryDashboard(ApiHandler):
@@ -163,7 +163,7 @@ class MemoryDashboard(ApiHandler):
             else:
                 # If no search query, get all memories from specified area(s)
                 all_docs = memory.db.get_all_docs()
-                for doc_id, doc in all_docs.items():
+                for _doc_id, doc in all_docs.items():
                     # Apply area filter if specified
                     if area_filter and doc.metadata.get("area", "") != area_filter:
                         continue

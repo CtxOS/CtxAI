@@ -1,9 +1,11 @@
 import base64
+
 from werkzeug.datastructures import FileStorage
+
+from ctxai.api import get_work_dir_files
+from ctxai.helpers import runtime
 from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers.file_browser import FileBrowser
-from ctxai.helpers import runtime
-from ctxai.api import get_work_dir_files
 
 
 class UploadWorkDirFiles(ApiHandler):

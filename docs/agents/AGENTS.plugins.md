@@ -58,6 +58,9 @@ per_project_config: false
 per_agent_config: false
 # Optional: lock plugin permanently ON in UI/back-end
 always_enabled: false
+# Optional compatibility fields
+framework_version: ">=0.1.0"
+plugin_dependencies: []
 ```
 
 Field reference:
@@ -68,6 +71,8 @@ Field reference:
 - `per_project_config`: Enables project-scoped settings and toggle rules
 - `per_agent_config`: Enables agent-profile-scoped settings and toggle rules
 - `always_enabled`: Forces ON and disables toggle controls in the UI (reserved for framework use)
+- `framework_version`: Minimum Ctx AI version required for this plugin
+- `plugin_dependencies`: Required plugin names that must be installed and enabled
 
 ### hooks.py (framework runtime hooks)
 
@@ -235,7 +240,7 @@ your-plugin-repo/          ← GitHub repository root
 └── webui/
 ```
 
-Users install it locally by cloning (or downloading) the repo contents into `/a0/usr/plugins/<plugin_name>/`.
+Users install it locally by cloning (or downloading) the repo contents into `/ctx/usr/plugins/<plugin_name>/`.
 
 ### Submitting to the Plugin Index
 

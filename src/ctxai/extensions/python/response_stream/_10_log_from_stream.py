@@ -1,17 +1,20 @@
-from ctxai.helpers.extension import Extension
-from ctxai.agent import LoopData
 import math
-from ctxai.extensions.python.before_main_llm_call._10_log_for_stream import build_heading, build_default_heading
+
+from ctxai.agent import LoopData
+from ctxai.extensions.python.before_main_llm_call._10_log_for_stream import build_default_heading, build_heading
+from ctxai.helpers.extension import Extension
 
 
 class LogFromStream(Extension):
     async def execute(
         self,
-        loop_data: LoopData = LoopData(),
+        loop_data: LoopData | None = None,
         text: str = "",
-        parsed: dict = {},
+        parsed: dict = None,
         **kwargs,
     ):
+        if parsed is None:
+            parsed = {}
         if not self.agent:
             return
 

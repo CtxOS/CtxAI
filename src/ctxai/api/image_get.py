@@ -1,10 +1,12 @@
 import base64
-import os
-from flask import send_file  # type: ignore[attr-defined]
-from ctxai.helpers.api import ApiHandler, Request, Response
-from ctxai.helpers import files, runtime
 import io
+import os
 from mimetypes import guess_type
+
+from flask import send_file  # type: ignore[attr-defined]
+
+from ctxai.helpers import files, runtime
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class ImageGet(ApiHandler):
@@ -15,7 +17,6 @@ class ImageGet(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
         # input data
         path = input.get("path", request.args.get("path", ""))
-        metadata = input.get("metadata", request.args.get("metadata", "false")).lower() == "true"
 
         if not path:
             raise ValueError("No path provided")

@@ -1,6 +1,8 @@
+from typing import Literal, TypedDict
+
 import yaml  # type: ignore[import-untyped]
-from ctxai.helpers import files, cache
-from typing import List, Dict, Optional, TypedDict, Literal
+
+from ctxai.helpers import cache, files
 
 ModelType = Literal["chat", "embedding"]
 
@@ -15,8 +17,8 @@ class FieldOption(TypedDict):
 
 
 class ProviderManager:
-    _raw: Optional[Dict[str, List[Dict[str, str]]]] = None  # full provider data
-    _options: Optional[Dict[str, List[FieldOption]]] = None  # UI-friendly list
+    _raw: dict[str, list[dict[str, str]]] | None = None  # full provider data
+    _options: dict[str, list[FieldOption]] | None = None  # UI-friendly list
 
     @classmethod
     def get_instance(cls):
@@ -40,17 +42,17 @@ class ProviderManager:
     @staticmethod
     def _load_yaml(path: str) -> dict:
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 return yaml.safe_load(f) or {}
         except (FileNotFoundError, yaml.YAMLError):
             return {}
 
     @staticmethod
-    def _normalise_yaml(raw_yaml: dict) -> Dict[str, Dict[str, Dict[str, str]]]:
+    def _normalise_yaml(raw_yaml: dict) -> dict[str, dict[str, dict[str, str]]]:
         """Normalise YAML into {type: {id: config}} mapping format."""
-        result: Dict[str, Dict[str, Dict[str, str]]] = {}
+        result: dict[str, dict[str, dict[str, str]]] = {}
         for p_type, providers in (raw_yaml or {}).items():
-            entries: Dict[str, Dict[str, str]] = {}
+            entries: dict[str, dict[str, str]] = {}
             if isinstance(providers, dict):
                 for pid, cfg in providers.items():
                     entries[pid] = cfg or {}
@@ -82,9 +84,9 @@ class ProviderManager:
 
         # Convert merged {type: {id: config}} to normalised list format,
         # sorted by name with "other" always last.
-        normalised: Dict[str, List[Dict[str, str]]] = {}
+        normalised: dict[str, list[dict[str, str]]] = {}
         for p_type, providers in merged.items():
-            items: List[Dict[str, str]] = []
+            items: list[dict[str, str]] = []
             for pid, cfg in providers.items():
                 entry = {"id": pid, **cfg}
                 items.append(entry)
@@ -92,7 +94,7 @@ class ProviderManager:
                 key=lambda p: (
                     p.get("id") == "other",  # False (0) first, True (1) last
                     (p.get("name") or p.get("id") or "").lower(),
-                )
+                ),
             )
             normalised[p_type] = items
 
@@ -102,7 +104,7 @@ class ProviderManager:
         # Build UI-friendly option list (value / label)
         self._options = {}
         for p_type, providers in normalised.items():
-            opts: List[FieldOption] = []
+            opts: list[FieldOption] = []
             for p in providers:
                 pid = (p.get("id") or p.get("value") or "").lower()
                 name = p.get("name") or p.get("label") or pid
@@ -110,15 +112,15 @@ class ProviderManager:
                     opts.append({"value": pid, "label": name})
             self._options[p_type] = opts
 
-    def get_providers(self, provider_type: ModelType) -> List[FieldOption]:
+    def get_providers(self, provider_type: ModelType) -> list[FieldOption]:
         """Returns a list of providers for a given type (e.g., 'chat', 'embedding')."""
         return self._options.get(provider_type, []) if self._options else []
 
-    def get_raw_providers(self, provider_type: ModelType) -> List[Dict[str, str]]:
+    def get_raw_providers(self, provider_type: ModelType) -> list[dict[str, str]]:
         """Return raw provider dictionaries for advanced use-cases."""
         return self._raw.get(provider_type, []) if self._raw else []
 
-    def get_provider_config(self, provider_type: ModelType, provider_id: str) -> Optional[Dict[str, str]]:
+    def get_provider_config(self, provider_type: ModelType, provider_id: str) -> dict[str, str] | None:
         """Return the metadata dict for a single provider id (case-insensitive)."""
         provider_id_low = provider_id.lower()
         for p in self.get_raw_providers(provider_type):
@@ -127,17 +129,17 @@ class ProviderManager:
         return None
 
 
-def get_providers(provider_type: ModelType) -> List[FieldOption]:
+def get_providers(provider_type: ModelType) -> list[FieldOption]:
     """Convenience function to get providers of a specific type."""
     return ProviderManager.get_instance().get_providers(provider_type)
 
 
-def get_raw_providers(provider_type: ModelType) -> List[Dict[str, str]]:
+def get_raw_providers(provider_type: ModelType) -> list[dict[str, str]]:
     """Return full metadata for providers of a given type."""
     return ProviderManager.get_instance().get_raw_providers(provider_type)
 
 
-def get_provider_config(provider_type: ModelType, provider_id: str) -> Optional[Dict[str, str]]:
+def get_provider_config(provider_type: ModelType, provider_id: str) -> dict[str, str] | None:
     """Return metadata for a single provider (None if not found)."""
     return ProviderManager.get_instance().get_provider_config(provider_type, provider_id)
 

@@ -54,7 +54,7 @@
 
 #         for msg in self.agent.history.current.messages:
 #             cleanup_message(msg)
-        
+
 #         for prev in self.agent.history.topics:
 #             if not prev.summary:
 #                 for msg in prev.messages:

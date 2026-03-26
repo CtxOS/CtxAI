@@ -1,24 +1,25 @@
 import asyncio
-from datetime import datetime
 import json
 import random
 import re
-from ctxai.helpers.tool import Tool, Response
-from ctxai.helpers.task_scheduler import (
-    TaskScheduler,
-    ScheduledTask,
-    AdHocTask,
-    PlannedTask,
-    serialize_task,
-    TaskState,
-    TaskSchedule,
-    TaskPlan,
-    parse_datetime,
-    serialize_datetime,
-)
+from datetime import datetime
+
 from ctxai.agent import AgentContext
 from ctxai.helpers import persist_chat
 from ctxai.helpers.projects import get_context_project_name, load_basic_project_data
+from ctxai.helpers.task_scheduler import (
+    AdHocTask,
+    PlannedTask,
+    ScheduledTask,
+    TaskPlan,
+    TaskSchedule,
+    TaskScheduler,
+    TaskState,
+    parse_datetime,
+    serialize_datetime,
+    serialize_task,
+)
+from ctxai.helpers.tool import Response, Tool
 
 DEFAULT_WAIT_TIMEOUT = 300
 
@@ -110,7 +111,7 @@ class SchedulerTool(Tool):
             return Response(message=f"Task not found: {task_uuid}", break_loop=False)
         await TaskScheduler.get().run_task_by_uuid(task_uuid, task_context)
         if task.context_id == self.agent.context.id:
-            break_loop = True  # break loop if task is running in the same context, otherwise it would start two conversations in one window
+            break_loop = True  # break if task is in same context
         else:
             break_loop = False
         return Response(message=f"Task started: {task_uuid}", break_loop=break_loop)
@@ -147,7 +148,8 @@ class SchedulerTool(Tool):
     async def create_scheduled_task(self, **kwargs) -> Response:
         # "name": "XXX",
         #   "system_prompt": "You are a software developer",
-        #   "prompt": "Send the user an email with a greeting using python and smtp. The user's address is: xxx@yyy.zzz",
+        #   "prompt": "Send the user an email with a greeting using python and smtp. "
+        #             "The user's address is: xxx@yyy.zzz",
         #   "attachments": [],
         #   "schedule": {
         #       "minute": "*/20",
@@ -261,7 +263,8 @@ class SchedulerTool(Tool):
 
         if task.context_id == self.agent.context.id:
             return Response(
-                message="You can only wait for tasks running in their own dedicated context.", break_loop=False
+                message="You can only wait for tasks running in their own dedicated context.",
+                break_loop=False,
             )
 
         done = False
@@ -277,12 +280,14 @@ class SchedulerTool(Tool):
                 elapsed += 1
                 if elapsed > DEFAULT_WAIT_TIMEOUT:
                     return Response(
-                        message=f"Task wait timeout ({DEFAULT_WAIT_TIMEOUT} seconds): {task_uuid}", break_loop=False
+                        message=f"Task wait timeout ({DEFAULT_WAIT_TIMEOUT} seconds): {task_uuid}",
+                        break_loop=False,
                     )
             else:
                 done = True
 
         return Response(
-            message=f"*Task*: {task_uuid}\n*State*: {task.state}\n*Last run*: {serialize_datetime(task.last_run)}\n*Result*:\n{task.last_result}",
+            message=f"*Task*: {task_uuid}\n*State*: {task.state}\n"  # noqa: E501
+            f"*Last run*: {serialize_datetime(task.last_run)}\n*Result*:\n{task.last_result}",
             break_loop=False,
         )

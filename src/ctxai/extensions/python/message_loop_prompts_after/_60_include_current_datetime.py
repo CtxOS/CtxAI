@@ -1,17 +1,20 @@
-from datetime import datetime, timezone
-from ctxai.helpers.extension import Extension
+from datetime import UTC, datetime
+
 from ctxai.agent import LoopData
+from ctxai.helpers.extension import Extension
 from ctxai.helpers.localization import Localization
 
 
 class IncludeCurrentDatetime(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 
         # get current datetime
         current_datetime = Localization.get().utc_dt_to_localtime_str(
-            datetime.now(timezone.utc), sep=" ", timespec="seconds"
+            datetime.now(UTC),
+            sep=" ",
+            timespec="seconds",
         )
         # remove timezone offset
         if current_datetime and "+" in current_datetime:

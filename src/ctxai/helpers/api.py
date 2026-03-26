@@ -1,26 +1,29 @@
-from abc import abstractmethod
+import asyncio
 import json
 import socket
 import struct
 import threading
+from abc import abstractmethod
 from functools import wraps
 from pathlib import Path
-from typing import Union, TypedDict, Dict, Any
-from flask import Request, Response, Flask, session, request, redirect, url_for
-from werkzeug.wrappers.response import Response as BaseResponse
-from ctxai.agent import AgentContext
-from ctxai import initialize
-from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.errors import format_error
-from ctxai.helpers import files, cache
+from typing import Any, TypedDict, Union
 
-ThreadLockType = Union[threading.Lock, threading.RLock]
+from flask import Flask, Request, Response, redirect, request, session, url_for
+from werkzeug.wrappers.response import Response as BaseResponse
+
+from ctxai import initialize
+from ctxai.agent import AgentContext
+from ctxai.helpers import cache, files
+from ctxai.helpers.errors import format_error
+from ctxai.helpers.print_style import PrintStyle
+
+ThreadLockType = Union[threading.Lock, threading.RLock, asyncio.Lock]  # noqa: UP007
 
 CACHE_AREA = "api_handlers(api)(plugins)(extensions)"
 cache.toggle_area(CACHE_AREA, False)  # cache off for now
 
 Input = dict
-Output = Union[Dict[str, Any], Response, TypedDict]  # type: ignore
+Output = Union[dict[str, Any], Response, TypedDict]  # type: ignore  # noqa: UP007
 
 
 class ApiHandler:
@@ -114,11 +117,11 @@ def is_loopback_address(address: str) -> bool:
     try:
         socket.inet_pton(socket.AF_INET6, address)
         address_type = "ipv6"
-    except socket.error:
+    except OSError:
         try:
             socket.inet_pton(socket.AF_INET, address)
             address_type = "ipv4"
-        except socket.error:
+        except OSError:
             address_type = "hostname"
 
     if address_type == "ipv4":
@@ -200,10 +203,17 @@ def csrf_protect(f):
 
 
 def register_api_route(app: Flask, lock: ThreadLockType) -> None:
-    from ctxai.helpers.extract_tools import load_classes_from_file
     from ctxai.helpers import plugins
+    from ctxai.helpers.extract_tools import load_classes_from_file
 
     async def _dispatch(path: str) -> BaseResponse:
+        # Check API rate limit
+        from ctxai.run_ui import _check_api_rate_limit
+
+        remote_addr = request.remote_addr or "unknown"
+        if not _check_api_rate_limit(remote_addr):
+            return Response("Rate limit exceeded. Please slow down.", 429)
+
         # Return cached wrapped handler if available
         cached = cache.get(CACHE_AREA, path)
         if cached is not None:
@@ -212,6 +222,7 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
         # Resolve file path for the handler
         # Try built-in api folder first, then plugin api folders
         handler_cls: type[ApiHandler] | None = None
+        is_plugin_handler = False
 
         # Check built-in python/api/<path>.py
         builtin_file = files.get_abs_path(f"api/{path}.py")
@@ -232,6 +243,7 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
                         classes = load_classes_from_file(str(plugin_file), ApiHandler)  # type: ignore[type-abstract]
                         if classes:
                             handler_cls = classes[0]
+                            is_plugin_handler = True
 
         if handler_cls is None:
             return Response(f"API endpoint not found: {path}", 404)
@@ -242,15 +254,17 @@ def register_api_route(app: Flask, lock: ThreadLockType) -> None:
 
         # Build handler call, wrapping with security decorators as required
         async def call_handler() -> BaseResponse:
-            instance = handler_cls(app, lock)
+            instance = handler_cls(app, lock)  # type: ignore[misc]
             return await instance.handle_request(request=request)
 
         handler_fn = call_handler
-        if handler_cls.requires_csrf():
+        # Plugin handlers MUST always require auth + CSRF regardless of
+        # what the handler class declares.  Only built-in handlers may opt out.
+        if is_plugin_handler or handler_cls.requires_csrf():
             handler_fn = csrf_protect(handler_fn)
-        if handler_cls.requires_api_key():
+        if is_plugin_handler or handler_cls.requires_api_key():
             handler_fn = requires_api_key(handler_fn)
-        if handler_cls.requires_auth():
+        if is_plugin_handler or handler_cls.requires_auth():
             handler_fn = requires_auth(handler_fn)
         if handler_cls.requires_loopback():
             handler_fn = requires_loopback(handler_fn)

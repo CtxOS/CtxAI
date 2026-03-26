@@ -1,14 +1,15 @@
 import base64
 import os
+import threading
 from datetime import datetime, timedelta
-from ctxai.agent import AgentContext, UserMessage, AgentContextType
-from ctxai.helpers.api import ApiHandler, Request, Response
+
+from ctxai import initialize
+from ctxai.agent import AgentContext, AgentContextType, UserMessage
 from ctxai.helpers import files, projects
+from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.projects import activate_project
 from ctxai.helpers.security import safe_filename
-from ctxai import initialize
-import threading
 
 
 class ApiMessage(ApiHandler):
@@ -92,7 +93,9 @@ class ApiMessage(ApiHandler):
             existing_project = context.get_data(projects.CONTEXT_DATA_KEY_PROJECT)
             if project_name and existing_project and existing_project != project_name:
                 return Response(
-                    '{"error": "Project can only be set on first message"}', status=400, mimetype="application/json"
+                    '{"error": "Project can only be set on first message"}',
+                    status=400,
+                    mimetype="application/json",
                 )
         else:
             config = initialize.initialize_agent(override_settings=override_settings)
@@ -107,7 +110,7 @@ class ApiMessage(ApiHandler):
                     # Handle project or context errors more gracefully
                     error_msg = str(e)
                     PrintStyle.error(
-                        f"Failed to activate project '{project_name}' for context '{context_id}': {error_msg}"
+                        f"Failed to activate project '{project_name}' for context '{context_id}': {error_msg}",
                     )
                     return Response(
                         f'{{"error": "Failed to activate project \\"{project_name}\\""}}',
@@ -121,7 +124,9 @@ class ApiMessage(ApiHandler):
                     projects.activate_project(context_id, project_name)
                 except Exception as e:
                     return Response(
-                        f'{{"error": "Failed to activate project: {str(e)}"}}', status=400, mimetype="application/json"
+                        f'{{"error": "Failed to activate project: {str(e)}"}}',
+                        status=400,
+                        mimetype="application/json",
                     )
 
         # Update chat lifetime
@@ -134,7 +139,7 @@ class ApiMessage(ApiHandler):
             attachment_filenames = [os.path.basename(path) for path in attachment_paths] if attachment_paths else []
 
             PrintStyle(background_color="#6C3483", font_color="white", bold=True, padding=True).print(
-                "External API message:"
+                "External API message:",
             )
             PrintStyle(font_color="white", padding=False).print(f"> {message}")
             if attachment_filenames:

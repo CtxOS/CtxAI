@@ -1,0 +1,20 @@
+name: Contributors
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  add-contributor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Add contributor via script
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.issue.number || github.event.pull_request.number }}
+          body: "Thank you for your contribution! If you want to be listed as a contributor, add yourself to CONTRIBUTORS.md."

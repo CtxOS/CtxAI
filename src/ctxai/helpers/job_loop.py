@@ -1,10 +1,9 @@
 import asyncio
 import time
-from ctxai.helpers.task_scheduler import TaskScheduler
-from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers import errors
-from ctxai.helpers import runtime
 
+from ctxai.helpers import errors, runtime
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.task_scheduler import TaskScheduler
 
 SLEEP_TIME = 60
 
@@ -31,7 +30,7 @@ async def run_loop():
             except Exception as e:
                 PrintStyle().error(errors.format_error(e))
         await asyncio.sleep(
-            SLEEP_TIME
+            SLEEP_TIME,
         )  # TODO! - if we lower it under 1min, it can run a 5min job multiple times in it's target minute
 
 

@@ -50,7 +50,7 @@
 #         except Exception as e:
 #             response = str(e)
 #             self.log.update(error=response)
-            
+
 #             try:
 #                 screenshot = await self.save_screenshot()
 #                 dom = await self.state.browser.get_clean_dom()

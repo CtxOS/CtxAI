@@ -1,4 +1,5 @@
 import { createStore } from "/js/AlpineStore.js";
+import { ensureAce } from "/js/ace-loader.js";
 
 // Global function references
 const sendJsonData = globalThis.sendJsonData;
@@ -151,6 +152,7 @@ const model = {
   async initBackupEditor() {
     const container = document.getElementById("backup-metadata-editor");
     if (container) {
+      await ensureAce();
       const editor = ace.edit("backup-metadata-editor");
 
       const dark = localStorage.getItem("darkMode");
@@ -183,6 +185,7 @@ const model = {
   async initRestoreEditor() {
     const container = document.getElementById("restore-metadata-editor");
     if (container) {
+      await ensureAce();
       const editor = ace.edit("restore-metadata-editor");
 
       const dark = localStorage.getItem("darkMode");

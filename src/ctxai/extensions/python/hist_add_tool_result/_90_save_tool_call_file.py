@@ -1,7 +1,8 @@
-from typing import Any
-from ctxai.helpers.extension import Extension
-from ctxai.helpers import files, persist_chat
 import os
+from typing import Any
+
+from ctxai.helpers import files, persist_chat
+from ctxai.helpers.extension import Extension
 
 LEN_MIN = 500
 

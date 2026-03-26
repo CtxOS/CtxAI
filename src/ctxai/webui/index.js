@@ -227,8 +227,18 @@ async function updateUserTime() {
   const options = { year: "numeric", month: "short", day: "numeric" };
   const dateString = now.toLocaleDateString(undefined, options);
 
-  // Update the HTML
-  userTimeElement.innerHTML = `${timeString}<br><span id="user-date">${dateString}</span>`;
+  // Update the HTML - use safe DOM manipulation
+  const timeSpan = document.createElement("span");
+  timeSpan.textContent = timeString;
+
+  const dateSpan = document.createElement("span");
+  dateSpan.id = "user-date";
+  dateSpan.textContent = dateString;
+
+  userTimeElement.innerHTML = "";
+  userTimeElement.appendChild(timeSpan);
+  userTimeElement.appendChild(document.createElement("br"));
+  userTimeElement.appendChild(dateSpan);
 }
 
 updateUserTime();
@@ -502,9 +512,13 @@ function updateProgress(progress, active) {
   setProgressBarShine(progressBarEl, active);
 
   progress = msgs.convertIcons(progress);
+  // Sanitize progress content to prevent XSS
+  const sanitizedProgress = typeof DOMPurify !== "undefined"
+    ? DOMPurify.sanitize(progress, { USE_PROFILES: { html: true } })
+    : progress;
 
-  if (progressBarEl.innerHTML != progress) {
-    progressBarEl.innerHTML = progress;
+  if (progressBarEl.innerHTML != sanitizedProgress) {
+    progressBarEl.innerHTML = sanitizedProgress;
   }
 }
 
@@ -640,6 +654,9 @@ async function startPolling() {
   // - DISCONNECTED: do not poll (transport down, avoid request spam)
   // - HANDSHAKE_PENDING/DEGRADED: steady fallback cadence to keep UI responsive
   const degradedIntervalMs = 250;
+  const jitterRangeMs = 50; // ±50ms random jitter to prevent thundering herd
+  const backoffBaseMs = 250; // base for exponential backoff on failures
+  const backoffCapMs = 5000; // max backoff interval
   let missingSyncSinceMs = null;
   let consecutivePollFailures = 0;
   let lastHandshakeKickMs = 0;
@@ -647,9 +664,19 @@ async function startPolling() {
   const initialNoPollGraceMs = 2000;
   let pollInFlight = false;
 
+  function _jitteredInterval(baseMs) {
+    const jitter = Math.random() * jitterRangeMs * 2 - jitterRangeMs;
+    return Math.max(50, baseMs + jitter);
+  }
+
+  function _backoffInterval(failures) {
+    const delay = Math.min(backoffCapMs, backoffBaseMs * 2 ** (failures - 1));
+    return _jitteredInterval(delay);
+  }
+
   async function _doPoll() {
     const tickStartedAt = Date.now();
-    let nextInterval = degradedIntervalMs;
+    let nextInterval = _jitteredInterval(degradedIntervalMs);
 
     try {
       const syncMode =
@@ -662,6 +689,103 @@ async function startPolling() {
         if (missingSyncSinceMs == null) {
           missingSyncSinceMs = Date.now();
         }
+      } else {
+        missingSyncSinceMs = null;
+      }
+
+      const shouldPoll =
+        syncMode === "DEGRADED" ||
+        (missingSyncSinceMs != null && Date.now() - missingSyncSinceMs > 2000);
+      if (!shouldPoll) {
+        setTimeout(_doPoll.bind(this), nextInterval);
+        return;
+      }
+
+      if (pollInFlight) {
+        setTimeout(_doPoll.bind(this), nextInterval);
+        return;
+      }
+
+      // Avoid a "single poll on boot" while the websocket handshake is racing to take over.
+      if (
+        Date.now() - startedAtMs < initialNoPollGraceMs &&
+        (!syncStore || !syncMode)
+      ) {
+        setTimeout(_doPoll.bind(this), nextInterval);
+        return;
+      }
+
+      // Call through `globalThis.poll` so test harnesses (and future instrumentation)
+      // can wrap/spy on polling behaviour. Fall back to the module-local function
+      // if the global is unavailable.
+      const pollFn =
+        typeof globalThis.poll === "function" ? globalThis.poll : poll;
+      pollInFlight = true;
+      let result;
+      try {
+        result = await pollFn();
+      } finally {
+        pollInFlight = false;
+      }
+      const pollOk = Boolean(result && result.ok);
+
+      if (!pollOk) {
+        consecutivePollFailures += 1;
+      } else {
+        consecutivePollFailures = 0;
+      }
+
+      // If we are degraded but polling repeatedly fails, upgrade to DISCONNECTED.
+      if (
+        syncStore &&
+        syncMode === "DEGRADED" &&
+        !pollOk &&
+        consecutivePollFailures >= 3
+      ) {
+        syncStore.mode = "DISCONNECTED";
+      }
+
+      // If we're polling and the backend responds, try to re-establish push sync immediately.
+      if (syncStore && pollOk) {
+        const now = Date.now();
+        const modeNow =
+          typeof syncStore.mode === "string" ? syncStore.mode : null;
+        const kickCooldownMs = modeNow === "DISCONNECTED" ? 0 : 3000;
+        const eligible =
+          (modeNow === "DISCONNECTED" || modeNow === "DEGRADED") &&
+          typeof syncStore.sendStateRequest === "function" &&
+          now - lastHandshakeKickMs >= kickCooldownMs;
+        if (eligible) {
+          lastHandshakeKickMs = now;
+          syncStore.sendStateRequest({ forceFull: true }).catch(() => {});
+        }
+      }
+
+      // Use backoff interval on failures, base cadence on success
+      if (consecutivePollFailures > 0) {
+        nextInterval = _backoffInterval(consecutivePollFailures);
+      } else {
+        const effectiveMode =
+          syncStore && typeof syncStore.mode === "string"
+            ? syncStore.mode
+            : syncMode;
+        nextInterval =
+          effectiveMode === "DEGRADED" || effectiveMode === "HANDSHAKE_PENDING"
+            ? _jitteredInterval(degradedIntervalMs)
+            : _jitteredInterval(degradedIntervalMs);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+
+    // Call the function again after the selected interval
+    const elapsedMs = Date.now() - tickStartedAt;
+    const delayMs = Math.max(0, nextInterval - elapsedMs);
+    setTimeout(_doPoll.bind(this), delayMs);
+  }
+
+  _doPoll();
+}
       } else {
         missingSyncSinceMs = null;
       }

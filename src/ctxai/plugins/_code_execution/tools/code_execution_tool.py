@@ -1,17 +1,15 @@
 import asyncio
-from dataclasses import dataclass
 import re
 import shlex
 import time
+from dataclasses import dataclass
 from typing import Any
 
-from ctxai.helpers.tool import Tool, Response
-from ctxai.helpers import files, rfc_exchange, projects, runtime, settings
+from ctxai.helpers import files, plugins, projects, rfc_exchange, runtime, settings
+from ctxai.helpers.messages import truncate_text as truncate_text_agent
 from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.strings import truncate_text as truncate_text_string
-from ctxai.helpers.messages import truncate_text as truncate_text_agent
-from ctxai.helpers import plugins
-
+from ctxai.helpers.tool import Response, Tool
 from ctxai.plugins._code_execution.helpers.shell_local import LocalInteractiveSession
 from ctxai.plugins._code_execution.helpers.shell_ssh import SSHInteractiveSession
 
@@ -140,7 +138,13 @@ class CodeExecution(Tool):
         return await self.terminal_session(cfg, session, command, reset, prefix)
 
     async def terminal_session(
-        self, cfg: dict, session: int, command: str, reset: bool = False, prefix: str = "", timeouts: dict | None = None
+        self,
+        cfg: dict,
+        session: int,
+        command: str,
+        reset: bool = False,
+        prefix: str = "",
+        timeouts: dict | None = None,
     ):
         self.state = await self.prepare_state(cfg, reset=reset, session=session)
 
@@ -168,7 +172,7 @@ class CodeExecution(Tool):
                 )
 
                 PrintStyle(background_color="white", font_color="#1B4F72", bold=True).print(
-                    f"{self.agent.agent_name} code execution output{locl}"
+                    f"{self.agent.agent_name} code execution output{locl}",
                 )
                 return await self.get_terminal_output(
                     cfg,
@@ -229,7 +233,8 @@ class CodeExecution(Tool):
         while True:
             await asyncio.sleep(sleep_time)
             full_output, partial_output = await self.state.shells[session].session.read_output(
-                timeout=1, reset_full_output=reset_full_output
+                timeout=1,
+                reset_full_output=reset_full_output,
             )
             reset_full_output = False  # only reset once
 
@@ -316,7 +321,8 @@ class CodeExecution(Tool):
         dialog_patterns = cfg["dialog_patterns"]
 
         full_output, _ = await self.state.shells[session].session.read_output(
-            timeout=1, reset_full_output=reset_full_output
+            timeout=1,
+            reset_full_output=reset_full_output,
         )
         truncated_output = self.fix_full_output(full_output)
         self.set_progress(truncated_output)
@@ -359,7 +365,7 @@ class CodeExecution(Tool):
     async def reset_terminal(self, cfg: dict, session=0, reason: str | None = None):
         if reason:
             PrintStyle(font_color="#FFA500", bold=True).print(
-                f"Resetting terminal session {session}... Reason: {reason}"
+                f"Resetting terminal session {session}... Reason: {reason}",
             )
         else:
             PrintStyle(font_color="#FFA500", bold=True).print(f"Resetting terminal session {session}...")
@@ -446,7 +452,9 @@ _TIMEOUT_KEYS = ("first_output_timeout", "between_output_timeout", "max_exec_tim
 
 
 def _parse_timeouts(cfg: dict, prefix: str, defaults: tuple[int, ...]) -> dict:
-    return {key: int(cfg.get(f"{prefix}_{key}", default)) for key, default in zip(_TIMEOUT_KEYS, defaults)}
+    return {
+        key: int(cfg.get(f"{prefix}_{key}", default)) for key, default in zip(_TIMEOUT_KEYS, defaults, strict=False)
+    }
 
 
 def _get_config(agent) -> dict:

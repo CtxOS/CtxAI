@@ -1,11 +1,12 @@
+import asyncio
+
+from ctxai.agent import LoopData
 from ctxai.helpers import persist_chat, tokens
 from ctxai.helpers.extension import Extension
-from ctxai.agent import LoopData
-import asyncio
 
 
 class RenameChat(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         asyncio.create_task(self.change_name())
 
     async def change_name(self):

@@ -1,19 +1,54 @@
 import argparse
+import asyncio
 import inspect
 import secrets
-from pathlib import Path
-from typing import TypeVar, Callable, Awaitable, Union, overload, cast, Any
-from ctxai.helpers import dotenv, rfc, settings, files
-import asyncio
-import threading
-import queue
 import sys
-import nest_asyncio
+import threading
+from collections.abc import Awaitable, Callable
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Any, cast, overload
 
-nest_asyncio.apply()
+from ctxai.helpers import dotenv, files, rfc, settings
 
-T = TypeVar("T")
-R = TypeVar("R")
+# Thread pool for running async coroutines from sync contexts
+_async_thread_pool: ThreadPoolExecutor | None = None
+_async_thread_pool_lock = threading.Lock()
+
+
+def _get_async_thread_pool() -> ThreadPoolExecutor:
+    """Get or create a singleton thread pool for async bridging."""
+    global _async_thread_pool
+    if _async_thread_pool is None:
+        with _async_thread_pool_lock:
+            if _async_thread_pool is None:
+                _async_thread_pool = ThreadPoolExecutor(
+                    max_workers=4,
+                    thread_name_prefix="async-bridge",
+                )
+    return _async_thread_pool
+
+
+def safe_run_async[T](coro: Awaitable[T]) -> T:
+    """Run an async coroutine safely from a synchronous context.
+
+    Handles two cases:
+    1. No running loop: uses asyncio.run() directly (most efficient).
+    2. Running loop exists: delegates to a thread pool with its own event loop.
+
+    This replaces nest_asyncio.apply() with a thread-safe alternative.
+    """
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop — safe to use asyncio.run()
+        return asyncio.run(coro)
+    else:
+        # Running loop exists — delegate to thread pool
+        pool = _get_async_thread_pool()
+        future = pool.submit(asyncio.run, coro)
+        return future.result()
+
 
 parser = argparse.ArgumentParser()
 args: dict[str, Any] = {}
@@ -84,14 +119,14 @@ def get_persistent_id() -> str:
 
 
 @overload
-async def call_development_function(func: Callable[..., Awaitable[T]], *args, **kwargs) -> T: ...
+async def call_development_function[T](func: Callable[..., Awaitable[T]], *args, **kwargs) -> T: ...
 
 
 @overload
-async def call_development_function(func: Callable[..., T], *args, **kwargs) -> T: ...
+async def call_development_function[T](func: Callable[..., T], *args, **kwargs) -> T: ...
 
 
-async def call_development_function(func: Union[Callable[..., T], Callable[..., Awaitable[T]]], *args, **kwargs) -> T:
+async def call_development_function[T](func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs) -> T:
     if is_development():
         url = _get_rfc_url()
         password = _get_rfc_password()
@@ -137,23 +172,14 @@ def _get_rfc_url() -> str:
     return url
 
 
-def call_development_function_sync(func: Union[Callable[..., T], Callable[..., Awaitable[T]]], *args, **kwargs) -> T:
-    # run async function in sync manner
-    result_queue: queue.Queue[T | None] = queue.Queue()
-
-    def run_in_thread():
-        result = asyncio.run(call_development_function(func, *args, **kwargs))
-        result_queue.put(result)
-
-    thread = threading.Thread(target=run_in_thread)
-    thread.start()
-    thread.join(timeout=30)  # wait for thread with timeout
-
-    if thread.is_alive():
-        raise TimeoutError("Function call timed out after 30 seconds")
-
-    result = result_queue.get_nowait()
-    return cast(T, result)
+def call_development_function_sync[T](func: Callable[..., T] | Callable[..., Awaitable[T]], *args, **kwargs) -> T:
+    # run async function in sync manner using thread pool to avoid thread explosion
+    pool = _get_async_thread_pool()
+    future = pool.submit(asyncio.run, call_development_function(func, *args, **kwargs))
+    try:
+        return cast(T, future.result(timeout=30))
+    except TimeoutError as err:
+        raise TimeoutError("Function call timed out after 30 seconds") from err
 
 
 def get_web_ui_port():

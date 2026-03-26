@@ -2,8 +2,9 @@ import asyncio
 import contextlib
 import socket
 import sys
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
 
 import pytest
 
@@ -73,7 +74,7 @@ def _write_handler_module(path: Path, class_name: str, event_type: str) -> None:
                 "    async def process_event(self, event_type: str, data: dict[str, Any], sid: str):",
                 "        return {'ok': True}",
                 "",
-            ]
+            ],
         ),
         encoding="utf-8",
     )
@@ -112,8 +113,8 @@ def test_discovery_folder_suffix_handler_stripped(tmp_path: Path) -> None:
 
 
 def test_discovery_empty_folder_warns_and_treats_namespace_unregistered(tmp_path: Path, monkeypatch) -> None:
-    from flask import Flask
     import socketio
+    from flask import Flask
 
     from ctxai.helpers.websocket_manager import WebSocketManager
     from ctxai.helpers.websocket_namespace_discovery import discover_websocket_namespaces
@@ -211,7 +212,7 @@ def test_discovery_invalid_modules_fail_fast_with_descriptive_errors(tmp_path: P
                 "    def get_event_types(cls): return ['two_b']",
                 "    async def process_event(self, event_type, data, sid): return {'ok': True}",
                 "",
-            ]
+            ],
         ),
         encoding="utf-8",
     )

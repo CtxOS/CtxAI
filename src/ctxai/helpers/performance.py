@@ -1,5 +1,6 @@
 import functools
 import inspect
+
 from pyinstrument import Profiler
 
 
@@ -27,7 +28,7 @@ def trace_performance(*, show_all=False, color=True, unicode=True):
                         color=color,
                         unicode=unicode,
                         show_all=show_all,
-                    )
+                    ),
                 )
 
         @functools.wraps(func)
@@ -44,7 +45,7 @@ def trace_performance(*, show_all=False, color=True, unicode=True):
                         color=color,
                         unicode=unicode,
                         show_all=show_all,
-                    )
+                    ),
                 )
 
         return async_wrapper if is_coro else sync_wrapper

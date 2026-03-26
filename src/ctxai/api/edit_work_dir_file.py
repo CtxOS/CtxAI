@@ -1,9 +1,9 @@
 import mimetypes
 import os
 
+from ctxai.helpers import files, runtime
 from ctxai.helpers.api import ApiHandler, Input, Output, Request
 from ctxai.helpers.file_browser import FileBrowser
-from ctxai.helpers import runtime, files
 
 MAX_EDIT_FILE_SIZE = 1024 * 1024
 BINARY_SAMPLE_SIZE = 10 * 1024
@@ -75,10 +75,10 @@ async def load_file(file_path: str) -> dict:
 
     mime_type, _ = mimetypes.guess_type(full_path)
     try:
-        with open(full_path, "r", encoding="utf-8", errors="strict") as file:
+        with open(full_path, encoding="utf-8", errors="strict") as file:
             content = file.read()
     except UnicodeDecodeError:
-        raise Exception("Unable to decode file as UTF-8; editing is not supported")
+        raise Exception("Unable to decode file as UTF-8; editing is not supported") from None
 
     return {
         "path": file_path,

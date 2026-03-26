@@ -1,4 +1,4 @@
-from ctxai.helpers.tool import Tool, Response
+from ctxai.helpers.tool import Response, Tool
 from ctxai.plugins._memory.helpers.memory import Memory
 
 DEFAULT_THRESHOLD = 0.7

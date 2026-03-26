@@ -1,5 +1,4 @@
 # from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
-
 # def search(query: str, results = 5, region = "wt-wt", time="y") -> str:
 #     # Create an instance with custom parameters
 #     api = DuckDuckGoSearchAPIWrapper(
@@ -11,7 +10,6 @@
 #     # Perform a search
 #     result = api.run(query)
 #     return result
-
 from duckduckgo_search import DDGS
 
 

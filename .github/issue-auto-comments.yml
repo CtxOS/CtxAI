@@ -1,0 +1,21 @@
+# Auto comment configuration for issue-manager workflow
+# This file configures automatic responses for issue labels and comments.
+
+answered:
+  delay: 864000
+  message: "Assuming the original need was handled, this issue will be auto-closed. Reply to keep it open."
+
+waiting:
+  delay: 2628000
+  message: "This issue has been waiting for a response for a while and will be closed soon. Please reply if you'd like to keep it open."
+  reminder:
+    before: "P3D"
+    message: "Heads-up: this issue will close in 3 days unless updated."
+
+invalid:
+  delay: 0
+  message: "Marked invalid and closed. If this is a mistake, please provide more detail."
+
+maybe-ai:
+  delay: 0
+  message: "Potential AI-generated content flagged. If this was valid, please clarify and we can reopen."

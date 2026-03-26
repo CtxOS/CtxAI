@@ -47,7 +47,7 @@ export async function importComponent(path, targetElement) {
     if (componentCache[componentUrl]) {
       html = componentCache[componentUrl];
     } else {
-      const response = await fetch(componentUrl);
+      const response = await fetch(componentUrl, { cache: "force-cache" });
       if (!response.ok) {
         throw new Error(
           `Error loading component ${path}: ${response.statusText}`,

@@ -1,9 +1,9 @@
 import base64
-from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.tool import Tool, Response
-from ctxai.helpers import runtime, files, images
 from mimetypes import guess_type
-from ctxai.helpers import history
+
+from ctxai.helpers import files, history, images, runtime
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.tool import Response, Tool
 
 # image optimization and token estimation for context window
 MAX_PIXELS = 768_000
@@ -12,9 +12,10 @@ TOKENS_ESTIMATE = 1500
 
 
 class VisionLoad(Tool):
-    async def execute(self, paths: list[str] = [], **kwargs) -> Response:
+    async def execute(self, paths: list[str] = None, **kwargs) -> Response:
+        if paths is None:
+            paths = []
         self.images_dict: dict[str, str | None] = {}
-        template: list[dict[str, str]] = []  # type: ignore
 
         for path in paths:
             if not await runtime.call_development_function(files.exists, str(path)):
@@ -56,14 +57,14 @@ class VisionLoad(Tool):
                         {
                             "type": "image_url",
                             "image_url": {"url": f"data:image/jpeg;base64,{image}"},
-                        }
+                        },
                     )
                 else:
                     content.append(
                         {
                             "type": "text",
                             "text": "Error processing image " + path,
-                        }
+                        },
                     )
             # append as raw message content for LLMs with vision tokens estimate
             msg = history.RawMessage(raw_content=content, preview="<Base64 encoded image data>")  # type: ignore[typeddict-item]
@@ -74,7 +75,7 @@ class VisionLoad(Tool):
         # print and log short version
         message = "No images processed" if not self.images_dict else f"{len(self.images_dict)} images processed"
         PrintStyle(font_color="#1B4F72", background_color="white", padding=True, bold=True).print(
-            f"{self.agent.agent_name}: Response from tool '{self.name}'"
+            f"{self.agent.agent_name}: Response from tool '{self.name}'",
         )
         PrintStyle(font_color="#85C1E9").print(message)
         self.log.update(result=message)

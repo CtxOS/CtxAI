@@ -9,13 +9,13 @@
   <div x-data>
     <template x-if="$store.fileBrowser">
       <div class="file-browser-root">
-        
+
         <!-- Loading State -->
         <div x-show="$store.fileBrowser.isLoading" class="loading-state">
           <div class="loading-spinner"></div>
           <p>Loading files...</p>
         </div>
-        
+
         <!-- File Browser Content -->
         <div x-show="!$store.fileBrowser.isLoading" class="file-browser-content">
                 <!-- Path navigator -->
@@ -121,10 +121,10 @@
               </div>
             </div>
         </div>
-        
+
       </div>
     </template>
-    
+
     <!-- Modal Footer (outside template x-if so it exists immediately) -->
     <template x-if="$store.fileBrowser">
       <div class="modal-footer" data-modal-footer>
@@ -288,7 +288,7 @@
     .new-item-buttons button {
     margin-left: 0.5em;
     }
-    
+
     .nav-button {
     padding: 4px 12px;
     border: 1px solid var(--color-border);

@@ -1,6 +1,6 @@
-from ctxai.helpers.api import ApiHandler, Input, Output, Request
 from ctxai.helpers import projects
-from ctxai.helpers.notification import NotificationManager, NotificationType, NotificationPriority
+from ctxai.helpers.api import ApiHandler, Input, Output, Request
+from ctxai.helpers.notification import NotificationManager, NotificationPriority, NotificationType
 
 
 class Projects(ApiHandler):
@@ -70,7 +70,7 @@ class Projects(ApiHandler):
             raise Exception("Git URL is required")
 
         # Progress notification
-        notification = NotificationManager.send_notification(
+        NotificationManager.send_notification(
             NotificationType.PROGRESS,
             NotificationPriority.NORMAL,
             "Cloning repository...",

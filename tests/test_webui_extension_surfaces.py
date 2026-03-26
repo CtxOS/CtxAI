@@ -3,9 +3,9 @@ from __future__ import annotations
 import sys
 import tempfile
 import threading
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator
 
 import pytest
 from flask import Flask
@@ -15,7 +15,6 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from ctxai.api.load_webui_extensions import LoadWebuiExtensions
-
 
 SURFACE_SCENARIOS: list[tuple[str, str]] = [
     ("sidebar-start", "webui/components/sidebar/left-sidebar.html"),

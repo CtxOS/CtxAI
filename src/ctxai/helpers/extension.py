@@ -1,10 +1,10 @@
-from abc import abstractmethod
-from typing import Awaitable, Type
-from ctxai.helpers import extract_tools, files
-from ctxai.helpers import cache, subagents
-from typing import TYPE_CHECKING
-from functools import wraps
 import inspect
+from abc import abstractmethod
+from collections.abc import Awaitable
+from functools import wraps
+from typing import TYPE_CHECKING
+
+from ctxai.helpers import cache, extract_tools, files, subagents
 
 if TYPE_CHECKING:
     from ctxai.agent import Agent
@@ -165,7 +165,7 @@ def extensible(func):
 
 class Extension:
     def __init__(self, agent: "Agent|None", **kwargs):
-        self.agent: "Agent|None" = agent
+        self.agent: Agent | None = agent
         self.kwargs = kwargs
 
     @abstractmethod
@@ -202,7 +202,7 @@ def get_webui_extensions(agent: "Agent | None", extension_point: str, filters: l
     effective_filters = filters or ["*"]
 
     base_dir = files.get_base_dir()
-    plugins_dir = files.get_abs_path(base_dir, "plugins")
+    files.get_abs_path(base_dir, "plugins")
 
     folders = get_plugin_paths("extensions/webui", extension_point)
 
@@ -227,7 +227,7 @@ def get_webui_extensions(agent: "Agent | None", extension_point: str, filters: l
     return entries
 
 
-def _get_extension_classes(extension_point: str, agent: "Agent|None" = None, **kwargs) -> list[Type[Extension]]:
+def _get_extension_classes(extension_point: str, agent: "Agent|None" = None, **kwargs) -> list[type[Extension]]:
     # search for extension folders in all agent's paths
     paths = subagents.get_paths(agent, "extensions/python", extension_point)
 

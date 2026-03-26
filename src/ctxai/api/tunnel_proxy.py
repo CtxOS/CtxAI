@@ -1,6 +1,7 @@
-from ctxai.helpers.api import ApiHandler, Request, Response
-from ctxai.helpers import dotenv, runtime
 import requests  # type: ignore[import-untyped]
+
+from ctxai.helpers import dotenv, runtime
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class TunnelProxy(ApiHandler):

@@ -1,8 +1,10 @@
-from datetime import datetime, timezone as dt_timezone, timedelta
+from datetime import UTC, datetime, timedelta
+from datetime import timezone as dt_timezone
+
 import pytz  # type: ignore
 
-from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.dotenv import get_dotenv_value, save_dotenv_value
+from ctxai.helpers.print_style import PrintStyle
 
 
 class Localization:
@@ -80,7 +82,7 @@ class Localization:
                 prev_tz = getattr(self, "timezone", "None")
                 prev_off = getattr(self, "_offset_minutes", None)
                 PrintStyle.debug(
-                    f"Changing timezone from {prev_tz} (offset {prev_off}) to {timezone} (offset {new_offset})"
+                    f"Changing timezone from {prev_tz} (offset {prev_off}) to {timezone} (offset {new_offset})",
                 )
                 self._offset_minutes = new_offset
                 self.timezone = timezone
@@ -118,18 +120,18 @@ class Localization:
                 if local_datetime_obj.tzinfo is None:
                     # If no timezone info, assume fixed offset
                     local_datetime_obj = local_datetime_obj.replace(
-                        tzinfo=dt_timezone(timedelta(minutes=self._offset_minutes))
+                        tzinfo=dt_timezone(timedelta(minutes=self._offset_minutes)),
                     )
             except ValueError:
                 # If timezone parsing fails, try without timezone
                 base = localtime_str.split("Z")[0].split("+")[0]
                 local_datetime_obj = datetime.fromisoformat(base)
                 local_datetime_obj = local_datetime_obj.replace(
-                    tzinfo=dt_timezone(timedelta(minutes=self._offset_minutes))
+                    tzinfo=dt_timezone(timedelta(minutes=self._offset_minutes)),
                 )
 
             # Convert to UTC
-            return local_datetime_obj.astimezone(dt_timezone.utc)
+            return local_datetime_obj.astimezone(UTC)
         except Exception as e:
             PrintStyle.error(f"Error converting localtime string to UTC: {e}")
             return None
@@ -148,9 +150,9 @@ class Localization:
         try:
             # Ensure datetime is timezone aware in UTC
             if utc_dt.tzinfo is None:
-                utc_dt = utc_dt.replace(tzinfo=dt_timezone.utc)
+                utc_dt = utc_dt.replace(tzinfo=UTC)
             else:
-                utc_dt = utc_dt.astimezone(dt_timezone.utc)
+                utc_dt = utc_dt.astimezone(UTC)
 
             # Convert to local time using fixed offset
             local_tz = dt_timezone(timedelta(minutes=self._offset_minutes))
@@ -174,7 +176,7 @@ class Localization:
         try:
             # Ensure datetime is timezone aware (if not, assume UTC)
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=dt_timezone.utc)
+                dt = dt.replace(tzinfo=UTC)
 
             local_tz = dt_timezone(timedelta(minutes=self._offset_minutes))
             local_dt = dt.astimezone(local_tz)

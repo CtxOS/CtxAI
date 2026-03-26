@@ -1,5 +1,6 @@
 import os
 from typing import TYPE_CHECKING
+
 from ctxai.helpers import guids
 
 if TYPE_CHECKING:
@@ -38,7 +39,7 @@ def _sync_output(context: "AgentContext"):
                 "text": item["text"][:100] + "..." if len(item["text"]) > 100 else item["text"],
                 "attachments": [a.split("/")[-1] for a in item.get("attachments", [])],
                 "attachment_count": len(item.get("attachments", [])),
-            }
+            },
         )
     context.set_output_data(QUEUE_KEY, truncated)
 

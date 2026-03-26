@@ -1,8 +1,9 @@
-from ctxai.helpers.api import ApiHandler, Request, Response
+import os
+
 from ctxai.helpers import files
+from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers.security import safe_filename
 from ctxai.plugins._memory.helpers.memory import Memory, get_custom_knowledge_subdir_abs
-import os
 
 
 class ImportKnowledge(ApiHandler):
@@ -23,7 +24,7 @@ class ImportKnowledge(ApiHandler):
         try:
             os.makedirs(KNOWLEDGE_FOLDER, exist_ok=True)
         except (OSError, PermissionError) as e:
-            raise Exception(f"Failed to create knowledge folder {KNOWLEDGE_FOLDER}: {e}")
+            raise Exception(f"Failed to create knowledge folder {KNOWLEDGE_FOLDER}: {e}") from e
 
         # Verify the directory is accessible
         if not os.access(KNOWLEDGE_FOLDER, os.W_OK):

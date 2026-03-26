@@ -1,12 +1,17 @@
-from ctxai.helpers.extension import Extension
-from ctxai.helpers import dotenv
 import re
+
+from ctxai.helpers import dotenv
+from ctxai.helpers.extension import Extension
 
 
 class UnsecuredConnectionCheck(Extension):
     """Check: non-local without credentials, or credentials over non-HTTPS."""
 
-    async def execute(self, banners: list = [], frontend_context: dict = {}, **kwargs):
+    async def execute(self, banners: list = None, frontend_context: dict = None, **kwargs):
+        if frontend_context is None:
+            frontend_context = {}
+        if banners is None:
+            banners = []
         hostname = frontend_context.get("hostname", "")
         protocol = frontend_context.get("protocol", "")
 
@@ -24,12 +29,12 @@ class UnsecuredConnectionCheck(Extension):
                     "type": "warning",
                     "priority": 80,
                     "title": "Unsecured Connection",
-                    "html": """You are accessing Ctx AI from a non-local address without authentication. 
+                    "html": """You are accessing Ctx AI from a non-local address without authentication.
                          <a href="#" onclick="document.getElementById('settings').click(); return false;">
                          Configure credentials</a> in Settings → External Services → Authentication.""",
                     "dismissible": True,
                     "source": "backend",
-                }
+                },
             )
 
         if has_credentials and not is_local and not is_https:
@@ -39,11 +44,11 @@ class UnsecuredConnectionCheck(Extension):
                     "type": "warning",
                     "priority": 90,
                     "title": "Credentials May Be Sent Unencrypted",
-                    "html": """Your connection is not using HTTPS. Login credentials may be transmitted in plain text. 
+                    "html": """Your connection is not using HTTPS. Login credentials may be transmitted in plain text.
                          Consider using HTTPS or a secure tunnel.""",
                     "dismissible": True,
                     "source": "backend",
-                }
+                },
             )
 
     def _is_localhost(self, hostname: str) -> bool:

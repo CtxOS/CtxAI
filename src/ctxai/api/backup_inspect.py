@@ -1,6 +1,7 @@
+from werkzeug.datastructures import FileStorage
+
 from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers.backup import BackupService
-from werkzeug.datastructures import FileStorage
 
 
 class BackupInspect(ApiHandler):

@@ -1,6 +1,6 @@
-from ctxai.helpers.tool import Tool, Response
 from ctxai.agent import AgentContext
 from ctxai.helpers.notification import NotificationPriority, NotificationType
+from ctxai.helpers.tool import Response, Tool
 
 
 class NotifyUserTool(Tool):
@@ -10,7 +10,8 @@ class NotifyUserTool(Tool):
         detail = self.args.get("detail", "")
         notification_type = self.args.get("type", NotificationType.INFO)
         priority = self.args.get(
-            "priority", NotificationPriority.HIGH
+            "priority",
+            NotificationPriority.HIGH,
         )  # by default, agents should notify with high priority
         timeout = int(self.args.get("timeout", 30))  # agent's notifications should have longer timeouts
 

@@ -1,10 +1,10 @@
+import asyncio
 import sys
 import threading
+import time
 from pathlib import Path
 
 import pytest
-import asyncio
-import time
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -27,8 +27,8 @@ async def _create_manager() -> WebSocketManager:
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
 
-    from ctxai.python.websocket_handlers.state_sync_handler import StateSyncHandler
     from ctxai.helpers.state_monitor import _reset_state_monitor_for_testing
+    from ctxai.python.websocket_handlers.state_sync_handler import StateSyncHandler
 
     _reset_state_monitor_for_testing()
     StateSyncHandler._reset_instance_for_testing()
@@ -42,8 +42,8 @@ async def _create_manager_with_socketio() -> tuple[WebSocketManager, FakeSocketI
     socketio = FakeSocketIOServer()
     manager = WebSocketManager(socketio, threading.RLock())
 
-    from ctxai.python.websocket_handlers.state_sync_handler import StateSyncHandler
     from ctxai.helpers.state_monitor import _reset_state_monitor_for_testing
+    from ctxai.python.websocket_handlers.state_sync_handler import StateSyncHandler
 
     _reset_state_monitor_for_testing()
     StateSyncHandler._reset_instance_for_testing()

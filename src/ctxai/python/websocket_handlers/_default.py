@@ -26,6 +26,9 @@ class RootDefaultHandler(WebSocketHandler):
         return ["ws_root_echo"]
 
     async def process_event(
-        self, event_type: str, data: dict[str, Any], sid: str
+        self,
+        event_type: str,
+        data: dict[str, Any],
+        sid: str,
     ) -> dict[str, Any] | WebSocketResult | None:
         return {"ok": True, "namespace": self.namespace, "sid": sid, "echo": data}

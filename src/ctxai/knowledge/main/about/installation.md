@@ -62,7 +62,7 @@ Once installed, launch Docker Desktop from your Start menu or desktop shortcut.
 
 <img src="../res/setup/image-11.png" alt="docker installed" height="100"/>
 
-✅ **Docker is now installed!** 
+✅ **Docker is now installed!**
 
 ### Continue to [Step 2: Run Ctx AI](#step-2-run-ctxai)
 
@@ -99,7 +99,7 @@ Open Docker Desktop from your Applications folder.
 
 ![docker socket macOS](../res/setup/macsocket.png)
 
-✅ **Docker is now installed!** 
+✅ **Docker is now installed!**
 
 ### Continue to [Step 2: Run Ctx AI](#step-2-run-ctxai)
 
@@ -138,7 +138,7 @@ docker login
 
 If you installed Docker Desktop, launch it from your applications menu.
 
-✅ **Docker is now installed!** 
+✅ **Docker is now installed!**
 
 > [!TIP]
 > **Deploying on a VPS/Server?** For production deployments with reverse proxy, SSL, and domain configuration, see the [VPS Deployment Guide](vps-deployment.md).
@@ -165,16 +165,16 @@ docker pull ctxos/ctxai
 
 ### 2.2. (Optional) Map Folders for Persistence
 
-Choose or create a folder on your computer where Ctx AI will save its data. 
+Choose or create a folder on your computer where Ctx AI will save its data.
 
-### Setting up persistence is needed only if you want your data and files to remain available even after you delete the container. 
+### Setting up persistence is needed only if you want your data and files to remain available even after you delete the container.
 
 You can pick any location you find convenient:
 
 - **Windows:** `C:\ctxai-data`
 - **macOS/Linux:** `/home/user/ctxai-data`
 
-You can map just the `/a0/usr` directory (recommended) or individual subfolders of `/a0` to a local directory.
+You can map just the `/ctx/usr` directory (recommended) or individual subfolders of `/a0` to a local directory.
 
 > [!CAUTION]
 > Do **not** map the entire `/a0` directory: it contains the application code and can break upgrades.
@@ -218,7 +218,7 @@ Open `http://localhost:<PORT>` in your browser. The Web UI will open - Ctx AI is
 **Running A0 using Terminal?**
 
 ```bash
-docker run -p 0:80 -v /path/to/your/work_dir:/a0/usr ctxos/ctxai
+docker run -p 0:80 -v /path/to/your/work_dir:/ctx/usr ctxos/ctxai
 ```
 
 - Replace `0` with a fixed port if you prefer (e.g., `50080:80`)
@@ -240,7 +240,7 @@ Ctx AI provides a comprehensive settings interface to customize various aspects 
 - **Knowledge Subdirectory:** Specify the location of custom knowledge files to enhance the agent's understanding.
 
 > [!NOTE]
-> Since v0.9.7, custom prompts belong in `/a0/agents/<agent_name>/prompts/` rather than a shared `/prompts` folder. See the [Extensions guide](../developer/extensions.md#prompts) for details.
+> Since v0.9.7, custom prompts belong in `/ctx/agents/<agent_name>/prompts/` rather than a shared `/prompts` folder. See the [Extensions guide](../developer/extensions.md#prompts) for details.
 
 > [!NOTE]
 > The Hacker profile is included in the main image. After launch, choose the **hacker** agent profile in Settings if you want the security-focused prompts and tooling. The "hacker" branch is deprecated.
@@ -464,7 +464,7 @@ ollama rm <model-name>
 ```
 
 > [!TIP]
-> Experiment with different model combinations to find the balance of performance and cost that best suits your needs. E.g., faster and lower latency LLMs will help, and you can also use `faiss_gpu` instead of `faiss_cpu` for the memory. 
+> Experiment with different model combinations to find the balance of performance and cost that best suits your needs. E.g., faster and lower latency LLMs will help, and you can also use `faiss_gpu` instead of `faiss_cpu` for the memory.
 
 ---
 
@@ -482,7 +482,7 @@ ollama rm <model-name>
 5. In the **new** instance, restore that backup from the same panel.
 
 > [!TIP]
-> If the new instance fails to load settings, remove `/a0/usr/settings.json` and restart to regenerate default settings.
+> If the new instance fails to load settings, remove `/ctx/usr/settings.json` and restart to regenerate default settings.
 
 ---
 

@@ -155,14 +155,14 @@ class Tools(VariablesPlugin):
         folders = [folder]
         if backup_dirs:
             folders.extend([files.get_abs_path(d) for d in backup_dirs])
-        
+
         prompt_files = files.get_unique_filenames_in_dirs(folders, "agent.system.tool.*.md")
-        
+
         tools = []
         for prompt_file in prompt_files:
             tool = files.read_file(prompt_file)
             tools.append(tool)
-        
+
         return {"tools": "\n\n".join(tools)}
 ```
 
@@ -251,14 +251,14 @@ Projects are ideal for multi-client or multi-domain work because each project ca
 
 ### Project Location and Structure
 
-- Projects are located under `/a0/usr/projects/`
+- Projects are located under `/ctx/usr/projects/`
 - Each project has its own subdirectory, created by users via the UI
 - A project can be backed up or restored by copying or downloading its entire directory
 
 Each project directory contains a hidden `.a0proj` folder with project metadata and configuration:
 
 ```
-/a0/usr/projects/{project_name}/
+/ctx/usr/projects/{project_name}/
 └── .a0proj/
     ├── project.json          # project metadata and settings
     ├── instructions/         # additional prompt/instruction files

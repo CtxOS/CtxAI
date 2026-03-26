@@ -1,4 +1,5 @@
 from typing import Any
+
 from ctxai.helpers.extension import Extension
 
 
