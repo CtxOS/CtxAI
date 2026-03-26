@@ -1,5 +1,6 @@
-from ctxai.helpers import git, runtime
 import hashlib
+
+from ctxai.helpers import git, runtime
 
 
 async def check_version():

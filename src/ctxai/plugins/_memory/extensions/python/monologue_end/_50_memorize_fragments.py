@@ -1,17 +1,17 @@
-from ctxai.helpers import errors, plugins
-from ctxai.helpers.extension import Extension
-from ctxai.helpers.dirty_json import DirtyJson
 from ctxai.agent import LoopData
+from ctxai.helpers import errors, plugins
+from ctxai.helpers.defer import THREAD_BACKGROUND, DeferredTask
+from ctxai.helpers.dirty_json import DirtyJson
+from ctxai.helpers.extension import Extension
 from ctxai.helpers.log import LogItem
-from ctxai.helpers.defer import DeferredTask, THREAD_BACKGROUND
-
-# Direct import - this extension lives inside the memory plugin
 from ctxai.plugins._memory.helpers.memory import Memory
 from ctxai.plugins._memory.tools.memory_load import DEFAULT_THRESHOLD as DEFAULT_MEMORY_THRESHOLD
 
+# Direct import - this extension lives inside the memory plugin
+
 
 class MemorizeMemories(Extension):
-    def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    def execute(self, loop_data: LoopData | None = None, **kwargs):
         # try:
         if not self.agent:
             return
@@ -89,7 +89,7 @@ class MemorizeMemories(Extension):
 
             # If memories is not a list, try to make it one
             if not isinstance(memories, list):
-                if isinstance(memories, (str, dict)):
+                if isinstance(memories, str | dict):
                     memories = [memories]
                 else:
                     log_item.update(heading="Invalid memories format received.")
@@ -164,7 +164,8 @@ class MemorizeMemories(Extension):
 
                     # Update final results with structured logging
                     log_item.update(
-                        heading=f"Memorization completed: {total_processed} memories processed, {total_consolidated} intelligently consolidated",
+                        heading=f"Memorization completed: {total_processed} memories processed, "  # noqa: E501
+                        f"{total_consolidated} intelligently consolidated",
                         memories=memories_txt,
                         result=f"{total_processed} memories processed, {total_consolidated} intelligently consolidated",
                         memories_processed=total_processed,

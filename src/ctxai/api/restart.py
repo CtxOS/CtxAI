@@ -1,6 +1,5 @@
-from ctxai.helpers.api import ApiHandler, Request, Response
-
 from ctxai.helpers import process
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class Restart(ApiHandler):

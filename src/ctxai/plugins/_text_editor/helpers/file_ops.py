@@ -109,7 +109,7 @@ def read_file(
         )
 
     try:
-        with open(path, "r", encoding="utf-8", errors="replace") as f:
+        with open(path, encoding="utf-8", errors="replace") as f:
             all_lines = f.readlines()
     except OSError as exc:
         return ReadResult(
@@ -162,7 +162,7 @@ def read_file(
     if trimmed_by_total:
         actual_end = line_from + len(output_lines)
         warn_parts.append(
-            f"output trimmed at line {actual_end} due to token limit - use line_from/line_to for remaining"
+            f"output trimmed at line {actual_end} due to token limit - use line_from/line_to for remaining",
         )
 
     warn_str = ""
@@ -248,7 +248,7 @@ def validate_edits(edits: list | None) -> tuple[list[dict], str]:
                 "to": to,
                 "content": e.get("content", ""),
                 "insert": is_insert,
-            }
+            },
         )
 
     parsed.sort(key=lambda x: (x["from"], 0 if x["insert"] else 1))
@@ -284,7 +284,7 @@ def apply_patch(path: str, edits: list[dict]) -> int:
     fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
     try:
         with (
-            open(path, "r", encoding="utf-8", errors="replace") as src,
+            open(path, encoding="utf-8", errors="replace") as src,
             os.fdopen(fd, "w", encoding="utf-8") as dst,
         ):
             edit_idx = 0

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import types
-from typing import Any, Mapping, TypedDict, Union, get_args, get_origin, get_type_hints
-
+from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Any, TypedDict, Union, get_args, get_origin, get_type_hints
 
 import pytz  # type: ignore[import-untyped]
 
 from ctxai.agent import AgentContext, AgentContextType
-
 from ctxai.helpers.dotenv import get_dotenv_value
 from ctxai.helpers.localization import Localization
 from ctxai.helpers.task_scheduler import TaskScheduler
@@ -273,7 +272,7 @@ async def build_snapshot_from_request(*, request: StateRequestV1) -> SnapshotV1:
                         "last_result": task_details.get("last_result"),
                         "attachments": task_details.get("attachments", []),
                         "context_id": task_details.get("context_id"),
-                    }
+                    },
                 )
 
                 if task_details.get("type") == "scheduled":

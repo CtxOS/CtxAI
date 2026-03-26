@@ -1,16 +1,17 @@
-from flaredantic import (
-    FlareTunnel,
-    FlareConfig,
-    ServeoConfig,
-    ServeoTunnel,
-    MicrosoftTunnel,
-    MicrosoftConfig,
-    notifier,
-    NotifyData,
-    NotifyEvent,
-)
 import threading
 from collections import deque
+
+from flaredantic import (
+    FlareConfig,
+    FlareTunnel,
+    MicrosoftConfig,
+    MicrosoftTunnel,
+    NotifyData,
+    NotifyEvent,
+    ServeoConfig,
+    ServeoTunnel,
+    notifier,
+)
 
 from ctxai.helpers.print_style import PrintStyle
 

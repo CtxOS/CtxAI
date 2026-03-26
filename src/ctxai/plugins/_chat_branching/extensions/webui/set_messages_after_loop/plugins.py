@@ -1,22 +1,18 @@
 from __future__ import annotations
 
 import asyncio
-import re
-import json
 import glob
+import json
+import re
 import time
+from collections.abc import Iterator
 from pathlib import Path
-from typing import (
-    Iterator,
-    List,
-    Literal,
-    TYPE_CHECKING,
-    TypedDict,
-)
+from typing import TYPE_CHECKING, Literal, TypedDict
 
-from ctxai.helpers import files, notification, print_style, yaml as yaml_helper, cache
 from pydantic import BaseModel, Field
 
+from ctxai.helpers import cache, files, notification, print_style
+from ctxai.helpers import yaml as yaml_helper
 from ctxai.helpers.defer import DeferredTask
 
 if TYPE_CHECKING:
@@ -51,7 +47,7 @@ class PluginMetadata(BaseModel):
     title: str = ""
     description: str = ""
     version: str = ""
-    settings_sections: List[str] = Field(default_factory=list)
+    settings_sections: list[str] = Field(default_factory=list)
     per_project_config: bool = False
     per_agent_config: bool = False
     always_enabled: bool = False
@@ -63,7 +59,7 @@ class PluginListItem(BaseModel):
     display_name: str = ""
     description: str = ""
     version: str = ""
-    settings_sections: List[str] = Field(default_factory=list)
+    settings_sections: list[str] = Field(default_factory=list)
     per_project_config: bool = False
     per_agent_config: bool = False
     always_enabled: bool = False
@@ -85,7 +81,7 @@ def clear_plugin_cache():
     cache.clear("*(plugins)*")
 
 
-def get_plugin_roots(plugin_name: str = "") -> List[str]:
+def get_plugin_roots(plugin_name: str = "") -> list[str]:
     """Plugin root directories, ordered by priority (user first)."""
     return [
         files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR, plugin_name),
@@ -109,7 +105,7 @@ def get_plugins_list():
     return result
 
 
-def get_enhanced_plugins_list(custom: bool = True, builtin: bool = True) -> List[PluginListItem]:
+def get_enhanced_plugins_list(custom: bool = True, builtin: bool = True) -> list[PluginListItem]:
     """Discover plugins by directory convention. First root wins on ID conflict."""
     results = []
 
@@ -146,7 +142,7 @@ def get_enhanced_plugins_list(custom: bool = True, builtin: bool = True) -> List
                         has_license=has_license,
                         has_init_script=has_init_script,
                         toggle_state=toggle_state,
-                    )
+                    ),
                 )
             except Exception as e:
                 print_style.PrintStyle.error(f"Failed to load plugin {d.name}: {e}")
@@ -191,21 +187,21 @@ def delete_plugin(plugin_name: str):
     if not files.is_in_dir(plugin_dir, custom_plugins_dir):
         raise ValueError("Only custom plugins can be deleted")
     send_frontend_reload_notification(
-        [plugin_name]
+        [plugin_name],
     )  # send before deletion to properly check the extensions, second notification will be skipped automatically
     files.delete_dir(plugin_dir)
     after_plugin_change([plugin_name])
 
 
-def get_plugin_paths(*subpaths: str) -> List[str]:
+def get_plugin_paths(*subpaths: str) -> list[str]:
     sub = "*/" + "/".join(subpaths) if subpaths else "*"
-    paths: List[str] = []
+    paths: list[str] = []
     for root in get_plugin_roots():
         paths.extend(files.find_existing_paths_by_pattern(files.get_abs_path(root, sub)))
     return paths
 
 
-def get_enabled_plugin_paths(agent: Agent | None, *subpaths: str) -> List[str]:
+def get_enabled_plugin_paths(agent: Agent | None, *subpaths: str) -> list[str]:
     enabled = get_enabled_plugins(agent)
     paths: list[str] = []
 
@@ -284,10 +280,10 @@ def get_toggle_state(plugin_name: str) -> ToggleState:
     state: ToggleState = "enabled" if determined_toggle_from_paths(True, reversed(plugin_paths)) else "disabled"
 
     # global toggles
-    usr_toggles = [
+    [
         files.find_existing_paths_by_pattern(files.get_abs_path(files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN)),
         files.find_existing_paths_by_pattern(
-            files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN)
+            files.get_abs_path(files.USER_DIR, files.PLUGINS_DIR, plugin_name, TOGGLE_FILE_PATTERN),
         ),
     ]
 
@@ -431,7 +427,7 @@ def find_plugin_assets(
                     "project_name": inferred_proj,
                     "agent_profile": inferred_prof,
                     "path": matched,
-                }
+                },
             )
             if only_first:
                 return True
@@ -548,7 +544,10 @@ def send_frontend_reload_notification(plugin_names: list[str] | None = None):
             type=notification.NotificationType.INFO,
             priority=notification.NotificationPriority.NORMAL,
             title="Plugins with frontend extensions updated, page plugins/_plugin_scanmended",
-            message="""<button type="button" class="button confirm" onclick="window.location.reload()"><span class="icon material-symbols-outlined">refresh</span>Reload page</button>""",
+            message=(
+                '<button type="button" class="button confirm" onclick="window.location.reload()">'
+                '<span class="icon material-symbols-outlined">refresh</span>Reload page</button>'
+            ),
             detail="",
             display_time=display_time,
             group="plugins_changed",

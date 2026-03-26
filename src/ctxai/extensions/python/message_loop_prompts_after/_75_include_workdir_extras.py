@@ -1,14 +1,10 @@
-from ctxai.helpers.extension import Extension
 from ctxai.agent import LoopData
-from ctxai.helpers import projects
-from ctxai.helpers import settings
-from ctxai.helpers import runtime
-from ctxai.helpers import file_tree
-from ctxai.helpers import files
+from ctxai.helpers import file_tree, files, projects, runtime, settings
+from ctxai.helpers.extension import Extension
 
 
 class IncludeWorkdirExtras(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 
@@ -37,7 +33,7 @@ class IncludeWorkdirExtras(Extension):
             if runtime.is_development():
                 folder = files.normalize_a0_path(folder)
 
-            file_structure = projects.get_file_structure(project_name)
+            file_structure = await projects.get_file_structure(project_name)
         else:
             set = settings.get_settings()
             enabled = bool(set["workdir_show"])
@@ -57,7 +53,7 @@ class IncludeWorkdirExtras(Extension):
             files.create_dir(scan_path)
 
             file_structure = str(
-                file_tree.file_tree(
+                await file_tree.afile_tree(
                     scan_path,
                     max_depth=max_depth,
                     max_files=max_files,
@@ -65,7 +61,7 @@ class IncludeWorkdirExtras(Extension):
                     max_lines=max_lines,
                     ignore=gitignore_raw,
                     output_mode=file_tree.OUTPUT_MODE_STRING,
-                )
+                ),
             )
 
         gitignore = cleanup_gitignore(gitignore_raw)

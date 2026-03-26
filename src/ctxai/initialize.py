@@ -1,7 +1,8 @@
 from typing import Any
-from ctxai.agent import AgentConfig
+
 import ctxai.models as models
-from ctxai.helpers import runtime, settings, defer, extension
+from ctxai.agent import AgentConfig
+from ctxai.helpers import defer, extension, runtime, settings
 
 
 @extension.extensible
@@ -153,7 +154,7 @@ def initialize_preload():
 
 @extension.extensible
 def initialize_migration():
-    from ctxai.helpers import migration, dotenv
+    from ctxai.helpers import dotenv, migration
 
     # run migration
     migration.startup_migration()

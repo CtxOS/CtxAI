@@ -1,9 +1,10 @@
 import base64
-import os
-from ctxai.helpers.api import ApiHandler, Request, Response
-from ctxai.helpers import files
-from ctxai.helpers.print_style import PrintStyle
 import json
+import os
+
+from ctxai.helpers import files
+from ctxai.helpers.api import ApiHandler, Request, Response
+from ctxai.helpers.print_style import PrintStyle
 
 
 class ApiFilesGet(ApiHandler):
@@ -78,7 +79,7 @@ class ApiFilesGet(ApiHandler):
 
             # Log the retrieval
             PrintStyle(background_color="#2ECC71", font_color="white", bold=True, padding=True).print(
-                f"API Files retrieved: {len(result)} files"
+                f"API Files retrieved: {len(result)} files",
             )
 
             return result
@@ -86,5 +87,7 @@ class ApiFilesGet(ApiHandler):
         except Exception as e:
             PrintStyle.error(f"API files get error: {str(e)}")
             return Response(
-                json.dumps({"error": f"Internal server error: {str(e)}"}), status=500, mimetype="application/json"
+                json.dumps({"error": f"Internal server error: {str(e)}"}),
+                status=500,
+                mimetype="application/json",
             )

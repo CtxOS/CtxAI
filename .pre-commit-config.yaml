@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.6
+    rev: v0.15.7
     hooks:
       - id: ruff
         args: [--fix]
@@ -21,15 +21,9 @@ repos:
       - id: debug-statements
 
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v3.9.0
+    rev: v4.0.0
     hooks:
       - id: add-trailing-comma
-
-  - repo: https://github.com/asottile/reorder-python-imports
-    rev: v3.15.2
-    hooks:
-      - id: reorder-python-imports
-        args: [--force-single-line]
 
 default_language_version:
   python: python3.12

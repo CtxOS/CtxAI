@@ -1,7 +1,7 @@
 from ctxai.helpers.api import ApiHandler, Input, Output, Request
-from ctxai.helpers.task_scheduler import TaskScheduler, TaskState
-from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.localization import Localization
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.task_scheduler import TaskScheduler, TaskState
 
 
 class SchedulerTaskRun(ApiHandler):

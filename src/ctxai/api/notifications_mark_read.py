@@ -1,6 +1,8 @@
-from ctxai.helpers.api import ApiHandler
-from flask import Request, Response
+from typing import Any
+
 from ctxai.agent import AgentContext
+from ctxai.helpers.api import ApiHandler
+from ctxai.helpers.flask_compat import Response
 
 
 class NotificationsMarkRead(ApiHandler):
@@ -8,7 +10,7 @@ class NotificationsMarkRead(ApiHandler):
     def requires_auth(cls) -> bool:
         return True
 
-    async def process(self, input: dict, request: Request) -> dict | Response:
+    async def process(self, input: dict, request: Any) -> dict | Response:
         notification_ids = input.get("notification_ids", [])
         mark_all = input.get("mark_all", False)
 

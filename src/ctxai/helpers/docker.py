@@ -1,9 +1,9 @@
 import time
+
 import docker
-from typing import Optional
 from ctxai.helpers.errors import format_error
-from ctxai.helpers.print_style import PrintStyle
 from ctxai.helpers.log import Log
+from ctxai.helpers.print_style import PrintStyle
 
 
 class DockerContainerManager:
@@ -11,8 +11,8 @@ class DockerContainerManager:
         self,
         image: str,
         name: str,
-        ports: Optional[dict[str, int]] = None,
-        volumes: Optional[dict[str, dict[str, str]]] = None,
+        ports: dict[str, int] | None = None,
+        volumes: dict[str, dict[str, str]] | None = None,
         logger: Log | None = None,
     ):
         self.logger = logger
@@ -32,11 +32,12 @@ class DockerContainerManager:
                 err = format_error(e)
                 if "ConnectionRefusedError(61," in err or "Error while fetching server API version" in err:
                     PrintStyle.hint(
-                        "Connection to Docker failed. Is docker or Docker Desktop running?"
+                        "Connection to Docker failed. Is docker or Docker Desktop running?",
                     )  # hint for user
                     if self.logger:
                         self.logger.log(
-                            type="hint", content="Connection to Docker failed. Is docker or Docker Desktop running?"
+                            type="hint",
+                            content="Connection to Docker failed. Is docker or Docker Desktop running?",
                         )
                     PrintStyle.error(err)
                     if self.logger:
@@ -75,8 +76,8 @@ class DockerContainerManager:
                     "web_port": (container.ports.get("80/tcp") or [{}])[0].get("HostPort"),
                     "ssh_port": (container.ports.get("22/tcp") or [{}])[0].get("HostPort"),
                     # "volumes": container.volumes,
-                    # "data_folder": container.volumes["/a0"],
-                }
+                    # "data_folder": container.volumes["/ctx"],
+                },
             )
         return infos
 
@@ -94,7 +95,8 @@ class DockerContainerManager:
                 PrintStyle.standard(f"Starting existing container: {self.name} for safe code execution...")
                 if self.logger:
                     self.logger.log(
-                        type="info", content=f"Starting existing container: {self.name} for safe code execution..."
+                        type="info",
+                        content=f"Starting existing container: {self.name} for safe code execution...",
                     )
 
                 existing_container.start()
@@ -103,12 +105,14 @@ class DockerContainerManager:
 
             else:
                 self.container = existing_container
-                # PrintStyle.standard(f"Container with name '{self.name}' is already running with ID: {existing_container.id}")
+                # PrintStyle.standard(
+                #     f"Container with name '{self.name}' is already running with ID: {existing_container.id}")
         else:
             PrintStyle.standard(f"Initializing docker container {self.name} for safe code execution...")
             if self.logger:
                 self.logger.log(
-                    type="info", content=f"Initializing docker container {self.name} for safe code execution..."
+                    type="info",
+                    content=f"Initializing docker container {self.name} for safe code execution...",
                 )
 
             self.container = self.client.containers.run(

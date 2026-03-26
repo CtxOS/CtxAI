@@ -66,7 +66,7 @@ Ctx AI's **Git Projects** feature allows you to clone repositories directly into
 ![Git Clone Progress](../res/usage/projects/projects-gitprojects-clone.png)
 
 The cloning process:
-- Downloads the repository to `/a0/usr/projects/<project_name>/`
+- Downloads the repository to `/ctx/usr/projects/<project_name>/`
 - By default, clones the `main` branch
 - Supports authentication via token (stored securely, never in URLs)
 - You can ask the agent to checkout different branches later
@@ -95,8 +95,8 @@ The **Description** field helps both you and the agent understand the project's 
 
 **Example:**
 ```
-An intelligent Excel automation system that processes financial spreadsheets 
-from multiple sources, performs data validation and cleaning, consolidates 
+An intelligent Excel automation system that processes financial spreadsheets
+from multiple sources, performs data validation and cleaning, consolidates
 information, generates executive reports, and flags anomalies or compliance issues.
 ```
 
@@ -106,8 +106,8 @@ The **Instructions** field is critical - these are automatically injected into t
 **Example:**
 ```markdown
 ## Your Role
-You are an expert Financial Data Analyst and Excel Automation Specialist. 
-Your job is to process, analyze, and report on financial spreadsheet data 
+You are an expert Financial Data Analyst and Excel Automation Specialist.
+Your job is to process, analyze, and report on financial spreadsheet data
 with precision and business acumen.
 
 ## Operational Context
@@ -181,7 +181,7 @@ Projects support two memory modes:
   - Memories stored under `vector_db/projects/<project_name>/`
   - Prevents context bleed between projects
   - Ideal for client work, sensitive projects, or distinct domains
-  
+
 - **Global memory**: The project shares the default memory pool
   - Memories stored under `vector_db/default/`
   - Useful when projects need shared knowledge
@@ -192,7 +192,7 @@ Projects support two memory modes:
 > - Client projects with confidential information
 > - Different programming languages/frameworks
 > - Distinct domains (e.g., finance vs. marketing)
-> 
+>
 > Use **global memory** for:
 > - Related sub-projects in the same domain
 > - When you want the agent to remember across all work
@@ -308,7 +308,7 @@ The agent will understand the context based on the project's instructions and wo
 Understanding the project directory structure helps you work effectively:
 
 ```
-/a0/usr/projects/<project_name>/
+/ctx/usr/projects/<project_name>/
 ├── .a0proj/                    # Project metadata (hidden)
 │   ├── project.json            # Main configuration
 │   ├── variables.env           # Non-sensitive variables

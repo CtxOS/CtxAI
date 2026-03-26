@@ -6,6 +6,16 @@ This page documents the current Ctx AI plugin system, including manifest format,
 
 Plugins extend Ctx AI through convention-based folders. A plugin can provide:
 
+### CLI helper
+
+You can manage plugin scaffolds from command line:
+- `python -m ctxai.helpers.plugins_cli list`
+- `python -m ctxai.helpers.plugins_cli create <plugin-name>`
+- `python -m ctxai.helpers.plugins_cli validate <plugin-name>`
+- `python -m ctxai.helpers.plugins_cli show <plugin-name>`
+
+
+
 - Backend: API handlers, tools, helpers, Python lifecycle extensions
 - Frontend: WebUI components and extension-point injections
 - Agent profiles: plugin-scoped subagent definitions
@@ -32,6 +42,8 @@ settings_sections:
 per_project_config: false
 per_agent_config: false
 always_enabled: false
+framework_version: ">=0.1.0"
+plugin_dependencies: []
 ```
 
 Field reference:
@@ -43,6 +55,8 @@ Field reference:
 - `per_project_config`: enables project-scoped settings/toggles
 - `per_agent_config`: enables agent-profile-scoped settings/toggles
 - `always_enabled`: forces ON state and disables toggle controls
+- `framework_version`: optional minimum framework version requirement
+- `plugin_dependencies`: optional list of other plugin names that must be installed and enabled
 
 ## Recommended Structure
 

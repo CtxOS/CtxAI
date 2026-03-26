@@ -1,6 +1,7 @@
-from PIL import Image
 import io
 import math
+
+from PIL import Image
 
 
 def compress_image(image_data: bytes, *, max_pixels: int = 256_000, quality: int = 50) -> bytes:

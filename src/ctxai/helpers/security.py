@@ -1,7 +1,7 @@
 import re
 import unicodedata
 from pathlib import Path
-from typing import Final, Optional
+from typing import Final
 
 # Forbidden characters:
 # Linux/Unix: / and NULL byte
@@ -36,13 +36,13 @@ WINDOWS_RESERVED: Final = frozenset(
         "LPT7",
         "LPT8",
         "LPT9",
-    }
+    },
 )
 
 FILENAME_MAX_LENGTH: Final = 255
 
 
-def safe_filename(filename: str) -> Optional[str]:
+def safe_filename(filename: str) -> str | None:
     # Normalize Unicode (NFC)
     filename = unicodedata.normalize("NFC", str(filename))
     # Replace forbidden chars

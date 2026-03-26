@@ -1,13 +1,10 @@
 import glob
-import os
 import hashlib
-from typing import Any, Dict, Literal, TypedDict
-from langchain_community.document_loaders import (
-    CSVLoader,
-    PyPDFLoader,
-    TextLoader,
-    UnstructuredHTMLLoader,
-)
+import os
+from typing import Any, Literal, TypedDict
+
+from langchain_community.document_loaders import CSVLoader, PyPDFLoader, TextLoader, UnstructuredHTMLLoader
+
 from ctxai.helpers.log import LogItem
 from ctxai.helpers.print_style import PrintStyle
 
@@ -33,11 +30,11 @@ def calculate_checksum(file_path: str) -> str:
 def load_knowledge(
     log_item: LogItem | None,
     knowledge_dir: str,
-    index: Dict[str, KnowledgeImport],
-    metadata: dict[str, Any] = {},
+    index: dict[str, KnowledgeImport],
+    metadata: dict[str, Any] = None,
     filename_pattern: str = "**/*",
     recursive: bool = True,
-) -> Dict[str, KnowledgeImport]:
+) -> dict[str, KnowledgeImport]:
     """
     Load knowledge files from a directory with change detection and metadata enhancement.
 
@@ -47,6 +44,8 @@ def load_knowledge(
 
     # Mapping file extensions to corresponding loader classes
     # Note: Using TextLoader for JSON and MD to avoid parsing issues with consolidation
+    if metadata is None:
+        metadata = {}
     file_types_loaders = {
         "txt": TextLoader,
         "pdf": PyPDFLoader,
@@ -131,7 +130,8 @@ def load_knowledge(
 
             # Load existing data from the index or create a new entry
             file_data: KnowledgeImport = index.get(
-                file_key, {"file": file_key, "checksum": "", "ids": [], "state": "changed", "documents": []}
+                file_key,
+                {"file": file_key, "checksum": "", "ids": [], "state": "changed", "documents": []},
             )
 
             # Check if file has changed

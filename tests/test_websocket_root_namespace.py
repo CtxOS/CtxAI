@@ -1,7 +1,8 @@
 import asyncio
 import contextlib
 import socket
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
 
 import pytest
 
@@ -48,8 +49,8 @@ async def test_root_namespace_request_style_calls_resolve_with_no_handlers() -> 
     events by default, but request-style calls must not hang (NO_HANDLERS).
     """
 
-    from flask import Flask
     import socketio
+    from flask import Flask
 
     from ctxai.helpers.websocket import WebSocketHandler
     from ctxai.helpers.websocket_manager import WebSocketManager
@@ -121,8 +122,8 @@ async def test_root_namespace_fire_and_forget_does_not_invoke_application_handle
     Fire-and-forget emits on `/` must not invoke any application handler.
     """
 
-    from flask import Flask
     import socketio
+    from flask import Flask
 
     from ctxai.helpers.websocket import WebSocketHandler
     from ctxai.helpers.websocket_manager import WebSocketManager

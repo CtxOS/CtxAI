@@ -1,8 +1,8 @@
-from ctxai.helpers import dotenv, runtime, settings
-import string
 import random
-from ctxai.helpers.print_style import PrintStyle
+import string
 
+from ctxai.helpers import dotenv, runtime, settings
+from ctxai.helpers.print_style import PrintStyle
 
 PrintStyle.standard("Preparing environment...")
 

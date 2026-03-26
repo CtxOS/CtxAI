@@ -1,12 +1,12 @@
+import json
+import uuid
 from collections import OrderedDict
 from datetime import datetime
 from typing import Any
-import uuid
+
+from ctxai import initialize
 from ctxai.agent import Agent, AgentConfig, AgentContext, AgentContextType
 from ctxai.helpers import files, history
-import json
-from ctxai import initialize
-
 from ctxai.helpers.log import Log, LogItem
 
 CHATS_FOLDER = "usr/chats"
@@ -182,7 +182,7 @@ def _deserialize_context(data):
         created_at=(
             datetime.fromisoformat(
                 # older chats may not have created_at - backcompat
-                data.get("created_at", datetime.fromtimestamp(0).isoformat())
+                data.get("created_at", datetime.fromtimestamp(0).isoformat()),
             )
         ),
         type=AgentContextType(data.get("type", AgentContextType.USER.value)),
@@ -265,7 +265,7 @@ def _deserialize_log(data: dict[str, Any]) -> "Log":
                 timestamp=item_data.get("timestamp", 0.0),
                 agentno=agentno,
                 id=item_data.get("id"),
-            )
+            ),
         )
         log.updates.append(i)
         i += 1
@@ -277,7 +277,7 @@ def _safe_json_serialize(obj, **kwargs):
     def serializer(o):
         if isinstance(o, dict):
             return {k: v for k, v in o.items() if is_json_serializable(v)}
-        elif isinstance(o, (list, tuple)):
+        elif isinstance(o, list | tuple):
             return [item for item in o if is_json_serializable(item)]
         elif is_json_serializable(o):
             return o

@@ -1,0 +1,18 @@
+/* Vite CSS entry point — imports all application CSS for bundling */
+
+/* Critical (render-blocking) */
+@import "../index.css";
+@import "./messages.css";
+@import "../components/messages/action-buttons/simple-action-buttons.css";
+@import "../components/messages/process-group/process-group.css";
+@import "./toast.css";
+@import "./notification.css";
+@import "./buttons.css";
+
+/* Deferred (non-critical) */
+@import "./settings.css";
+@import "./modals.css";
+@import "./speech.css";
+@import "./scheduler-datepicker.css";
+@import "./scheduler.css";
+@import "./tables.css";

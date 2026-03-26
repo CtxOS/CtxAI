@@ -1,6 +1,5 @@
-from ctxai.helpers.api import ApiHandler, Request, Response
-
 from ctxai.helpers import settings, whisper
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class Transcribe(ApiHandler):
@@ -9,7 +8,7 @@ class Transcribe(ApiHandler):
         ctxid = input.get("ctxid", "")
 
         if ctxid:
-            context = self.use_context(ctxid)
+            self.use_context(ctxid)
 
         # if not await whisper.is_downloaded():
         #     context.log.log(type="info", content="Whisper STT model is currently being initialized, please wait...")

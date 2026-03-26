@@ -1,11 +1,11 @@
-from ctxai.helpers.extension import Extension
-from ctxai.helpers import skills
-from ctxai.tools.skills_tool import DATA_NAME_LOADED_SKILLS
 from ctxai.agent import LoopData
+from ctxai.helpers import skills
+from ctxai.helpers.extension import Extension
+from ctxai.tools.skills_tool import DATA_NAME_LOADED_SKILLS
 
 
 class IncludeLoadedSkills(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, **kwargs):
         if not self.agent:
             return
 

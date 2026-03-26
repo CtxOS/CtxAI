@@ -47,7 +47,7 @@ class Tool:
 
     async def before_execution(self, **kwargs):
         PrintStyle(font_color="#1B4F72", padding=True, background_color="white", bold=True).print(
-            f"{self.agent.agent_name}: Using tool '{self.name}'"
+            f"{self.agent.agent_name}: Using tool '{self.name}'",
         )
         self.log = self.get_log_object()
         if self.args and isinstance(self.args, dict):
@@ -60,7 +60,7 @@ class Tool:
         text = sanitize_string(response.message.strip())
         self.agent.hist_add_tool_result(self.name, text, **(response.additional or {}))
         PrintStyle(font_color="#1B4F72", background_color="white", padding=True, bold=True).print(
-            f"{self.agent.agent_name}: Response from tool '{self.name}'"
+            f"{self.agent.agent_name}: Response from tool '{self.name}'",
         )
         PrintStyle(font_color="#85C1E9").print(text)
         self.log.update(content=text)
@@ -71,7 +71,11 @@ class Tool:
         else:
             heading = f"icon://construction {self.agent.agent_name}: Using tool '{self.name}'"
         return self.agent.context.log.log(
-            type="tool", heading=heading, content="", kvps=self.args, _tool_name=self.name
+            type="tool",
+            heading=heading,
+            content="",
+            kvps=self.args,
+            _tool_name=self.name,
         )
 
     def nice_key(self, key: str):

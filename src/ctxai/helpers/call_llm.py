@@ -1,5 +1,5 @@
-from typing import Callable, TypedDict
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
     from langchain_core.language_models.chat_models import BaseChatModel
@@ -15,7 +15,7 @@ async def call_llm(
     system: str,
     model: "BaseChatModel | BaseLLM",
     message: str,
-    examples: list[Example] = [],
+    examples: list[Example] = None,
     callback: Callable[[str], None] | None = None,
 ):
     from langchain.prompts import (
@@ -25,11 +25,13 @@ async def call_llm(
     from langchain.schema import AIMessage
     from langchain_core.messages import HumanMessage, SystemMessage
 
+    if examples is None:
+        examples = []
     example_prompt = ChatPromptTemplate.from_messages(
         [
             HumanMessage(content="{input}"),
             AIMessage(content="{output}"),
-        ]
+        ],
     )
 
     few_shot_prompt = FewShotChatMessagePromptTemplate(
@@ -45,7 +47,7 @@ async def call_llm(
             SystemMessage(content=system),
             few_shot_prompt,
             HumanMessage(content=message),
-        ]
+        ],
     )
 
     chain = final_prompt | model

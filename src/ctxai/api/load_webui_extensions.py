@@ -1,5 +1,5 @@
-from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers import extension
+from ctxai.helpers.api import ApiHandler, Request, Response
 
 
 class LoadWebuiExtensions(ApiHandler):

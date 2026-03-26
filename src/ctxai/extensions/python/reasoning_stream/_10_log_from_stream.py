@@ -1,11 +1,12 @@
-from ctxai.helpers.extension import Extension
-from ctxai.agent import LoopData
 import math
+
+from ctxai.agent import LoopData
 from ctxai.extensions.python.before_main_llm_call._10_log_for_stream import build_heading
+from ctxai.helpers.extension import Extension
 
 
 class LogFromStream(Extension):
-    async def execute(self, loop_data: LoopData = LoopData(), text: str = "", **kwargs):
+    async def execute(self, loop_data: LoopData | None = None, text: str = "", **kwargs):
         if not self.agent:
             return
 
@@ -18,7 +19,9 @@ class LogFromStream(Extension):
         # create log message and store it in loop data temporary params
         if "log_item_generating" not in loop_data.params_temporary:
             loop_data.params_temporary["log_item_generating"] = self.agent.context.log.log(
-                type="agent", heading=heading, step=step
+                type="agent",
+                heading=heading,
+                step=step,
             )
 
         # update log message

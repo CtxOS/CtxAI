@@ -3,8 +3,9 @@ import contextlib
 import socket
 import sys
 import threading
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
@@ -105,8 +106,8 @@ async def test_namespace_isolation_state_sync_vs_dev_websocket_test() -> None:
     Acceptance proof for `/state_sync` vs `/dev_websocket_test` namespaces.
     """
 
-    from flask import Flask
     import socketio
+    from flask import Flask
 
     from ctxai.helpers.websocket import WebSocketHandler
     from ctxai.helpers.websocket_manager import WebSocketManager
@@ -245,7 +246,7 @@ async def test_diagnostics_include_source_namespace_and_deliver_on_dev_namespace
 
     await manager.handle_connect(ns_dev, "sid-watcher")
     await manager.handle_connect(ns_state, "sid-client")
-    assert manager.register_diagnostic_watcher(ns_dev, "sid-watcher") is True
+    assert await manager.register_diagnostic_watcher(ns_dev, "sid-watcher") is True
 
     socketio.emit.reset_mock()
 

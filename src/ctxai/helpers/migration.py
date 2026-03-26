@@ -1,14 +1,80 @@
-import os
 import json
-from ctxai.helpers import files
-from ctxai.helpers import subagents
+import os
+from typing import Any
+
+from ctxai.helpers import files, subagents
 from ctxai.helpers import yaml as yaml_helper
 from ctxai.helpers.print_style import PrintStyle
 
+# Current schema version — increment when adding new migrations
+SCHEMA_VERSION = 1
+MIGRATION_STATE_FILE = "usr/.migration_state.json"
 
-def startup_migration() -> None:
+
+def _get_current_version() -> int:
+    """Read the stored migration version, defaulting to 0."""
+    path = files.get_abs_path(MIGRATION_STATE_FILE)
+    if os.path.isfile(path):
+        try:
+            with open(path) as f:
+                data = json.load(f)
+            return int(data.get("version", 0))
+        except (json.JSONDecodeError, ValueError, KeyError):
+            return 0
+    return 0
+
+
+def _set_current_version(version: int) -> None:
+    """Persist the migration version."""
+    path = files.get_abs_path(MIGRATION_STATE_FILE)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump({"version": version, "migrated_at": __import__("datetime").datetime.utcnow().isoformat()}, f)
+
+
+# ── Versioned migrations ─────────────────────────────────────────────────────
+# Each entry: (version, description, callable)
+# The callable is invoked when upgrading FROM version-1 TO version.
+# Add new migrations by appending to this list and bumping SCHEMA_VERSION.
+
+MIGRATIONS: list[tuple[int, str, Any]] = []
+
+
+def _migrate_v1_initial() -> None:
+    """Version 1: Move user data from tmp/ and other locations to usr/."""
     migrate_user_data()
     convert_agents_json_yaml()
+
+
+# Wire up the v1 migration
+MIGRATIONS.append((1, "Initial schema — file moves from tmp/ to usr/", _migrate_v1_initial))
+
+
+def run_versioned_migrations() -> None:
+    """Run all pending versioned migrations sequentially."""
+    current = _get_current_version()
+    if current >= SCHEMA_VERSION:
+        return
+
+    PrintStyle().print(f"Schema migration: v{current} → v{SCHEMA_VERSION}")
+
+    for version, description, fn in MIGRATIONS:
+        if version <= current:
+            continue
+        PrintStyle().print(f"  Running migration v{version}: {description}")
+        try:
+            fn()
+        except Exception as e:
+            PrintStyle.error(f"  Migration v{version} failed: {e}")
+            raise
+
+    _set_current_version(SCHEMA_VERSION)
+    PrintStyle().print(f"Schema migration complete (v{SCHEMA_VERSION}).")
+
+
+def startup_migration() -> None:
+    """Entry point called at server startup."""
+    run_versioned_migrations()
 
 
 def migrate_user_data() -> None:

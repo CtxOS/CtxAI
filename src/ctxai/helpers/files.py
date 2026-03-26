@@ -11,9 +11,8 @@ from abc import ABC, abstractmethod
 from fnmatch import fnmatch
 from typing import Any, Literal
 
-from simpleeval import simple_eval
-
 from ctxai.helpers import yaml
+from ctxai.helpers.safe_eval import safe_eval_condition
 
 AGENTS_DIR = "agents"
 PLUGINS_DIR = "plugins"
@@ -88,7 +87,7 @@ def parse_file(_filename: str, _directories: list[str] | None = None, _encoding=
     absolute_path = find_file_in_dirs(_filename, _directories)
 
     # Read the file content
-    with open(absolute_path, "r", encoding=_encoding) as f:
+    with open(absolute_path, encoding=_encoding) as f:
         # content = remove_code_fences(f.read())
         content = f.read()
 
@@ -127,7 +126,7 @@ def read_prompt_file(_file: str, _directories: list[str] | None = None, _encodin
     absolute_path = find_file_in_dirs(_file, _directories)
 
     # Read the file content
-    with open(absolute_path, "r", encoding=_encoding) as f:
+    with open(absolute_path, encoding=_encoding) as f:
         # content = remove_code_fences(f.read())
         content = f.read()
 
@@ -180,7 +179,7 @@ def evaluate_text_conditions(_content: str, **kwargs):
         after = text[m.end() :]
 
         try:
-            result = simple_eval(condition, names=kwargs)
+            result = safe_eval_condition(condition, kwargs)
         except Exception:
             # On evaluation error, do not modify this block
             return text
@@ -203,7 +202,7 @@ def read_file(relative_path: str, encoding="utf-8"):
     absolute_path = get_abs_path(relative_path)
 
     # Read the file content
-    with open(absolute_path, "r", encoding=encoding) as f:
+    with open(absolute_path, encoding=encoding) as f:
         return f.read()
 
 
@@ -212,14 +211,14 @@ def read_file_json(relative_path: str, encoding="utf-8"):
     absolute_path = get_abs_path(relative_path)
 
     # Read the file content
-    with open(absolute_path, "r", encoding=encoding) as f:
+    with open(absolute_path, encoding=encoding) as f:
         return json.load(f)
 
 
 def read_file_yaml(relative_path: str, encoding="utf-8"):
     absolute_path = get_abs_path(relative_path)
 
-    with open(absolute_path, "r", encoding=encoding) as f:
+    with open(absolute_path, encoding=encoding) as f:
         return yaml.loads(f.read())
 
 
@@ -267,7 +266,7 @@ def is_probably_binary_file(file_path: str, sample_size: int = 10 * 1024, thresh
         with open(file_path, "rb") as f:
             sample = f.read(sample_size)
     except (FileNotFoundError, PermissionError, OSError):
-        raise OSError(f"Unable to read file for binary detection: {file_path}")
+        raise OSError(f"Unable to read file for binary detection: {file_path}") from None
     return is_probably_binary_bytes(sample, threshold=threshold)
 
 
@@ -300,7 +299,7 @@ def replace_placeholders_dict(_content: dict, **kwargs):
                         replacement = kwargs[placeholder]
                         if value == f"{{{{{placeholder}}}}}":
                             return replacement
-                        elif isinstance(replacement, (dict, list)):
+                        elif isinstance(replacement, dict | list):
                             value = value.replace(f"{{{{{placeholder}}}}}", json.dumps(replacement))
                         else:
                             value = value.replace(f"{{{{{placeholder}}}}}", str(replacement))
@@ -689,7 +688,7 @@ def list_files_in_dir_recursively(relative_path: str) -> list[str]:
     if not os.path.exists(abs_path):
         return []
     result = []
-    for root, dirs, files in os.walk(abs_path):
+    for root, _dirs, files in os.walk(abs_path):
         for file in files:
             file_path = os.path.join(root, file)
             # Return relative path from the base directory

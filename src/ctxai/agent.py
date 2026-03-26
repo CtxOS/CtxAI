@@ -2,37 +2,26 @@ import asyncio
 import random
 import string
 import threading
-
+import time
 from collections import OrderedDict
+from collections.abc import Awaitable, Callable, Coroutine
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Awaitable, Coroutine, Dict
+from datetime import UTC, datetime
 from enum import Enum
-import ctxai.models as models
+from typing import Any
 
-from ctxai.helpers import (
-    extract_tools,
-    files,
-    history,
-    tokens,
-    context as context_helper,
-    dirty_json,
-    subagents,
-)
-from ctxai.helpers import extension
-from ctxai.helpers.print_style import PrintStyle
-
-from langchain_core.prompts import (
-    ChatPromptTemplate,
-)
-from langchain_core.messages import SystemMessage, BaseMessage
+from langchain_core.messages import BaseMessage
 
 import ctxai.helpers.log as Log
-from ctxai.helpers.dirty_json import DirtyJson
+import ctxai.models as models
+from ctxai.helpers import context as context_helper
+from ctxai.helpers import extension, files, history, subagents
 from ctxai.helpers.defer import DeferredTask
-from typing import Callable
-from ctxai.helpers.localization import Localization
+from ctxai.helpers.dirty_json import DirtyJson
 from ctxai.helpers.errors import InterventionException
+from ctxai.helpers.localization import Localization
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.prometheus_metrics import metrics
 
 
 class AgentContextType(Enum):
@@ -41,11 +30,22 @@ class AgentContextType(Enum):
     BACKGROUND = "background"
 
 
+# Maximum number of concurrent agent contexts before eviction kicks in.
+# Oldest non-running contexts are evicted first.
+DEFAULT_MAX_CONTEXTS = 64
+
+# Maximum concurrent agent execution tasks.
+DEFAULT_MAX_CONCURRENT_TASKS = 16
+
+
 class AgentContext:
-    _contexts: dict[str, "AgentContext"] = {}
+    _contexts: OrderedDict[str, "AgentContext"] = OrderedDict()
     _contexts_lock = threading.RLock()
     _counter: int = 0
     _notification_manager = None
+    _max_contexts = DEFAULT_MAX_CONTEXTS
+    _max_concurrent_tasks = DEFAULT_MAX_CONCURRENT_TASKS
+    _task_semaphore = threading.BoundedSemaphore(DEFAULT_MAX_CONCURRENT_TASKS)
 
     @extension.extensible
     def __init__(
@@ -63,15 +63,16 @@ class AgentContext:
         data: dict | None = None,
         output_data: dict | None = None,
         set_current: bool = False,
+        timeout: float = 0.0,
     ):
         # initialize context
         self.id = id or AgentContext.generate_id()
         existing = None
         with AgentContext._contexts_lock:
-            existing = AgentContext._contexts.get(self.id, None)
-            if existing:
-                AgentContext._contexts.pop(self.id, None)
+            existing = AgentContext._contexts.pop(self.id, None)
             AgentContext._contexts[self.id] = self
+            # Evict oldest non-running contexts if over capacity
+            AgentContext._evict_overflow()
         if existing and existing.task:
             existing.task.kill()
         if set_current:
@@ -84,17 +85,33 @@ class AgentContext:
         self.output_data = output_data or {}
         self.log = log or Log.Log()
         self.log.context = self
+        self.trace_id = self.log.guid  # correlation ID for observability
         self.paused = paused
         self.streaming_agent = streaming_agent
         self.task: DeferredTask | None = None
-        self.created_at = created_at or datetime.now(timezone.utc)
+        self.created_at = created_at or datetime.now(UTC)
         self.type = type
+        self.timeout = timeout  # per-context execution timeout in seconds (0 = no limit)
         AgentContext._counter += 1
         self.no = AgentContext._counter
-        self.last_message = last_message or datetime.now(timezone.utc)
+        self.last_message = last_message or datetime.now(UTC)
+
+        # Product metrics for this context
+        self.product_metrics: dict[str, Any] = {
+            "tasks_started": 0,
+            "tasks_completed": 0,
+            "tasks_failed": 0,
+            "tasks_timed_out": 0,
+            "total_task_duration_ms": 0.0,
+            "avg_task_duration_ms": 0.0,
+            "last_task_duration_ms": 0.0,
+        }
 
         # initialize agent at last (context is complete now)
         self.agent0 = agent0 or Agent(0, self.config, self)
+
+        # Update Prometheus metrics
+        metrics.set_active_contexts(len(AgentContext._contexts))
 
     @staticmethod
     def get(id: str):
@@ -145,6 +162,44 @@ class AgentContext:
                     return short_id
 
     @classmethod
+    def set_max_contexts(cls, max_contexts: int) -> None:
+        cls._max_contexts = max(1, int(max_contexts))
+
+    @classmethod
+    def set_max_concurrent_tasks(cls, max_tasks: int) -> None:
+        cls._max_concurrent_tasks = max(1, int(max_tasks))
+        cls._task_semaphore = threading.BoundedSemaphore(cls._max_concurrent_tasks)
+
+    @classmethod
+    def get_max_contexts(cls) -> int:
+        return cls._max_contexts
+
+    @classmethod
+    def get_max_concurrent_tasks(cls) -> int:
+        return cls._max_concurrent_tasks
+
+    @staticmethod
+    def _evict_overflow():
+        """Evict oldest non-running contexts when capacity is exceeded.
+
+        Must be called while holding ``_contexts_lock``.
+        """
+        while len(AgentContext._contexts) > AgentContext._max_contexts:
+            evicted = None
+            # Walk from oldest to newest; prefer evicting non-running contexts
+            for ctx_id, ctx in AgentContext._contexts.items():
+                if not ctx.is_running():
+                    evicted = ctx_id
+                    break
+            # If every context is running, evict the oldest regardless
+            if evicted is None:
+                evicted = next(iter(AgentContext._contexts))
+            context = AgentContext._contexts.pop(evicted, None)
+            if context and context.task:
+                context.task.kill()
+        metrics.set_active_contexts(len(AgentContext._contexts))
+
+    @classmethod
     def get_notification_manager(cls):
         if cls._notification_manager is None:
             from ctxai.helpers.notification import NotificationManager  # type: ignore
@@ -159,6 +214,7 @@ class AgentContext:
             context = AgentContext._contexts.pop(id, None)
         if context and context.task:
             context.task.kill()
+        metrics.set_active_contexts(len(AgentContext._contexts))
         return context
 
     def get_data(self, key: str, recursive: bool = True):
@@ -181,6 +237,7 @@ class AgentContext:
     def output(self):
         return {
             "id": self.id,
+            "trace_id": self.trace_id,
             "name": self.name,
             "created_at": (
                 Localization.get().serialize_datetime(self.created_at)
@@ -199,6 +256,8 @@ class AgentContext:
             ),
             "type": self.type.value,
             "running": self.is_running(),
+            "timeout": self.timeout,
+            "product_metrics": self.product_metrics,
             **self.output_data,
         }
 
@@ -268,30 +327,55 @@ class AgentContext:
             self.task = DeferredTask(
                 thread_name=self.__class__.__name__,
             )
-        self.task.start_task(func, *args, **kwargs)
+
+        async def _guarded(*a: Any, **kw: Any) -> Any:
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, AgentContext._task_semaphore.acquire)
+            self.product_metrics["tasks_started"] += 1
+            metrics.inc_task("started")
+            started_at = time.monotonic()
+            try:
+                coro = func(*a, **kw)
+                if self.timeout and self.timeout > 0:
+                    result = await asyncio.wait_for(coro, timeout=self.timeout)
+                else:
+                    result = await coro
+                self.product_metrics["tasks_completed"] += 1
+                metrics.inc_task("completed")
+                return result
+            except TimeoutError:
+                self.product_metrics["tasks_timed_out"] += 1
+                metrics.inc_task("timed_out")
+                raise
+            except Exception:
+                self.product_metrics["tasks_failed"] += 1
+                metrics.inc_task("failed")
+                raise
+            finally:
+                ended_at = time.monotonic()
+                duration_ms = (ended_at - started_at) * 1000.0
+                duration_s = duration_ms / 1000.0
+                metrics.observe_task_latency(duration_s)
+                self.product_metrics["last_task_duration_ms"] = duration_ms
+                self.product_metrics["total_task_duration_ms"] += duration_ms
+                completed = self.product_metrics["tasks_completed"]
+                if completed > 0:
+                    self.product_metrics["avg_task_duration_ms"] = (
+                        self.product_metrics["total_task_duration_ms"] / completed
+                    )
+                await loop.run_in_executor(None, AgentContext._task_semaphore.release)
+
+        self.task.start_task(_guarded, *args, **kwargs)
         return self.task
 
-    # this wrapper ensures that superior agents are called back if the chat was loaded from file and original callstack is gone
+    # this wrapper ensures that superior agents are called back if the chat was loaded from file
+    # and original callstack is gone
     @extension.extensible
     async def _process_chain(self, agent: "Agent", msg: "UserMessage|str", user=True):
+        from ctxai.helpers.agent_orchestrator import run_process_chain
+
         try:
-            msg_template = (
-                agent.hist_add_user_message(msg)  # type: ignore
-                if user
-                else agent.hist_add_tool_result(
-                    tool_name="call_subordinate",
-                    tool_result=msg,  # type: ignore
-                )
-            )
-            response = await agent.monologue()  # type: ignore
-            superior = agent.data.get(Agent.DATA_NAME_SUPERIOR, None)
-            if superior:
-                response = await self._process_chain(superior, response, False)  # type: ignore
-
-            # call end of process extensions
-            await extension.call_extensions_async("process_chain_end", agent=self.get_agent(), data={})
-
-            return response
+            return await run_process_chain(self, agent, msg, user=user)
         except Exception as e:
             await self.handle_exception("process_chain", e)
 
@@ -311,7 +395,7 @@ class AgentConfig:
     profile: str = ""
     knowledge_subdirs: list[str] = field(default_factory=lambda: ["default", "custom"])
     browser_http_headers: dict[str, str] = field(default_factory=dict)  # Custom HTTP headers for browser requests
-    additional: Dict[str, Any] = field(default_factory=dict)
+    additional: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -361,174 +445,34 @@ class Agent:
         self.intervention: UserMessage | None = None
         self.data: dict[str, Any] = {}  # free data object all the tools can use
 
+        # Agent memory context — short-lived observations + long-lived facts
+        self.memory: AgentMemory = AgentMemory()
+
         extension.call_extensions_sync("agent_init", self)
 
     @extension.extensible
     async def monologue(self):
+        """Run the agent's reasoning loop.
+
+        The outer layer (extension hooks, exception handling) stays here.
+        The inner message-loop iteration is delegated to
+        ``agent_orchestrator.run_monologue``.
+        """
+        from ctxai.helpers.agent_orchestrator import run_monologue
+
         while True:
             try:
-                # loop data dictionary to pass to extensions
-                self.loop_data = LoopData(user_message=self.last_user_message)
-                # call monologue_start extensions
-                await extension.call_extensions_async("monologue_start", self, loop_data=self.loop_data)
-
-                printer = PrintStyle(italic=True, font_color="#b3ffd9", padding=False)
-
-                # let the agent run message loop until he stops it with a response tool
-                while True:
-                    self.context.streaming_agent = self  # mark self as current streamer
-                    self.loop_data.iteration += 1
-                    self.loop_data.params_temporary = {}  # clear temporary params
-
-                    # call message_loop_start extensions
-                    await extension.call_extensions_async("message_loop_start", self, loop_data=self.loop_data)
-                    await self.handle_intervention()
-
-                    try:
-                        # prepare LLM chain (model, system, history)
-                        prompt = await self.prepare_prompt(loop_data=self.loop_data)
-
-                        # call before_main_llm_call extensions
-                        await extension.call_extensions_async("before_main_llm_call", self, loop_data=self.loop_data)
-                        await self.handle_intervention()
-
-                        async def reasoning_callback(chunk: str, full: str):
-                            await self.handle_intervention()
-                            if chunk == full:
-                                printer.print("Reasoning: ")  # start of reasoning
-                            # Pass chunk and full data to extensions for processing
-                            stream_data = {"chunk": chunk, "full": full}
-                            await extension.call_extensions_async(
-                                "reasoning_stream_chunk",
-                                self,
-                                loop_data=self.loop_data,
-                                stream_data=stream_data,
-                            )
-                            # Stream masked chunk after extensions processed it
-                            if stream_data.get("chunk"):
-                                printer.stream(stream_data["chunk"])
-                            # Use the potentially modified full text for downstream processing
-                            await self.handle_reasoning_stream(stream_data["full"])
-
-                        async def stream_callback(chunk: str, full: str):
-                            await self.handle_intervention()
-                            # output the agent response stream
-                            if chunk == full:
-                                printer.print("Response: ")  # start of response
-                            # Pass chunk and full data to extensions for processing
-                            stream_data = {"chunk": chunk, "full": full}
-                            await extension.call_extensions_async(
-                                "response_stream_chunk",
-                                self,
-                                loop_data=self.loop_data,
-                                stream_data=stream_data,
-                            )
-                            # Stream masked chunk after extensions processed it
-                            if stream_data.get("chunk"):
-                                printer.stream(stream_data["chunk"])
-                            # Use the potentially modified full text for downstream processing
-                            await self.handle_response_stream(stream_data["full"])
-
-                        # call main LLM
-                        agent_response, _reasoning = await self.call_chat_model(
-                            messages=prompt,
-                            response_callback=stream_callback,
-                            reasoning_callback=reasoning_callback,
-                        )
-                        await self.handle_intervention(agent_response)
-
-                        # Notify extensions to finalize their stream filters
-                        await extension.call_extensions_async("reasoning_stream_end", self, loop_data=self.loop_data)
-                        await self.handle_intervention(agent_response)
-
-                        await extension.call_extensions_async("response_stream_end", self, loop_data=self.loop_data)
-
-                        await self.handle_intervention(agent_response)
-
-                        if (
-                            self.loop_data.last_response == agent_response
-                        ):  # if assistant_response is the same as last message in history, let him know
-                            # Append the assistant's response to the history
-                            self.hist_add_ai_response(agent_response)
-                            # Append warning message to the history
-                            warning_msg = self.read_prompt("fw.msg_repeat.md")
-                            self.hist_add_warning(message=warning_msg)
-                            PrintStyle(font_color="orange", padding=True).print(warning_msg)
-                            self.context.log.log(type="warning", content=warning_msg)
-
-                        else:  # otherwise proceed with tool
-                            # Append the assistant's response to the history
-                            self.hist_add_ai_response(agent_response)
-                            # process tools requested in agent message
-                            tools_result = await self.process_tools(agent_response)
-                            if tools_result:  # final response of message loop available
-                                return tools_result  # break the execution if the task is done
-
-                    # exceptions inside message loop:
-                    except Exception as e:
-                        await self.handle_exception("message_loop", e)
-
-                    finally:
-                        # call message_loop_end extensions
-                        if self.context.task and self.context.task.is_alive():  # don't call extensions post mortem
-                            await extension.call_extensions_async("message_loop_end", self, loop_data=self.loop_data)
-
-            # exceptions outside message loop:
+                return await run_monologue(self)
             except Exception as e:
                 await self.handle_exception("monologue", e)
             finally:
-                self.context.streaming_agent = None  # unset current streamer
-                # call monologue_end extensions
-                if self.context.task and self.context.task.is_alive():  # don't call extensions post mortem
-                    await extension.call_extensions_async("monologue_end", self, loop_data=self.loop_data)  # type: ignore
+                self.context.streaming_agent = None
 
     @extension.extensible
     async def prepare_prompt(self, loop_data: LoopData) -> list[BaseMessage]:
-        self.context.log.set_progress("Building prompt")
+        from ctxai.helpers.reasoning_engine import build_prompt
 
-        # call extensions before setting prompts
-        await extension.call_extensions_async("message_loop_prompts_before", self, loop_data=loop_data)
-
-        # set system prompt and message history
-        loop_data.system = await self.get_system_prompt(self.loop_data)
-        loop_data.history_output = self.history.output()
-
-        # and allow extensions to edit them
-        await extension.call_extensions_async("message_loop_prompts_after", self, loop_data=loop_data)
-
-        # concatenate system prompt
-        system_text = "\n\n".join(loop_data.system)
-
-        # join extras
-        extras = history.Message(  # type: ignore[abstract]
-            False,
-            content=self.read_prompt(
-                "agent.context.extras.md",
-                extras=dirty_json.stringify({**loop_data.extras_persistent, **loop_data.extras_temporary}),
-            ),
-        ).output()
-        loop_data.extras_temporary.clear()
-
-        # convert history + extras to LLM format
-        history_langchain: list[BaseMessage] = history.output_langchain(loop_data.history_output + extras)
-
-        # build full prompt from system prompt, message history and extrS
-        full_prompt: list[BaseMessage] = [
-            SystemMessage(content=system_text),
-            *history_langchain,
-        ]
-        full_text = ChatPromptTemplate.from_messages(full_prompt).format()
-
-        # store as last context window content
-        self.set_data(
-            Agent.DATA_NAME_CTX_WINDOW,
-            {
-                "text": full_text,
-                "tokens": tokens.approximate_tokens(full_text),
-            },
-        )
-
-        return full_prompt
+        return await build_prompt(self, loop_data)
 
     @extension.extensible
     async def handle_exception(self, location: str, exception: Exception):
@@ -600,7 +544,7 @@ class Agent:
 
     @extension.extensible
     def hist_add_message(self, ai: bool, content: history.MessageContent, tokens: int = 0):
-        self.last_message = datetime.now(timezone.utc)
+        self.last_message = datetime.now(UTC)
         # Allow extensions to process content before adding to history
         content_data = {"content": content}
         extension.call_extensions_sync("hist_add_before", self, content_data=content_data, ai=ai)
@@ -703,33 +647,9 @@ class Agent:
         callback: Callable[[str], Awaitable[None]] | None = None,
         background: bool = False,
     ):
-        model = self.get_utility_model()
+        from ctxai.helpers.reasoning_engine import call_utility_model
 
-        # call extensions
-        call_data = {
-            "model": model,
-            "system": system,
-            "message": message,
-            "callback": callback,
-            "background": background,
-        }
-        await extension.call_extensions_async("util_model_call_before", self, call_data=call_data)
-
-        # propagate stream to callback if set
-        async def stream_callback(chunk: str, total: str):
-            if call_data["callback"]:
-                await call_data["callback"](chunk)
-
-        response, _reasoning = await call_data["model"].unified_call(
-            system_message=call_data["system"],
-            user_message=call_data["message"],
-            response_callback=stream_callback if call_data["callback"] else None,
-            rate_limiter_callback=(self.rate_limiter_callback if not call_data["background"] else None),
-        )
-
-        await extension.call_extensions_async("util_model_call_after", self, call_data=call_data, response=response)
-
-        return response
+        return await call_utility_model(self, system, message, callback=callback, background=background)
 
     @extension.extensible
     async def call_chat_model(
@@ -740,21 +660,16 @@ class Agent:
         background: bool = False,
         explicit_caching: bool = True,
     ):
-        response = ""
+        from ctxai.helpers.reasoning_engine import call_chat_model
 
-        # model class
-        model = self.get_chat_model()
-
-        # call model
-        response, reasoning = await model.unified_call(
-            messages=messages,
-            reasoning_callback=reasoning_callback,
+        return await call_chat_model(
+            self,
+            messages,
             response_callback=response_callback,
-            rate_limiter_callback=(self.rate_limiter_callback if not background else None),
+            reasoning_callback=reasoning_callback,
+            background=background,
             explicit_caching=explicit_caching,
         )
-
-        return response, reasoning
 
     @extension.extensible
     async def rate_limiter_callback(self, message: str, key: str, total: int, limit: int):
@@ -787,92 +702,17 @@ class Agent:
 
     @extension.extensible
     async def process_tools(self, msg: str):
-        # search for tool usage requests in agent message
-        tool_request = extract_tools.json_parse_dirty(msg)
+        """Parse, resolve, and execute tool requests from an agent message.
 
-        # basic validation + extensions
-        await self.validate_tool_request(tool_request)
+        Delegates resolution and execution to ``reasoning_engine``.
+        """
+        from ctxai.helpers.reasoning_engine import execute_tool, parse_tool_request
+        from ctxai.helpers.tool import Response as ToolResponse
 
-        if tool_request is not None:
-            raw_tool_name = tool_request.get("tool_name", tool_request.get("tool", ""))  # Get the raw tool name
-            tool_args = tool_request.get("tool_args", tool_request.get("args", {}))
+        raw_tool_name, tool_name, tool_args, tool, error = await parse_tool_request(self, msg)
 
-            tool_name = raw_tool_name  # Initialize tool_name with raw_tool_name
-            tool_method = None  # Initialize tool_method
-
-            # Split raw_tool_name into tool_name and tool_method if applicable
-            if ":" in raw_tool_name:
-                tool_name, tool_method = raw_tool_name.split(":", 1)
-
-            tool = None  # Initialize tool to None
-
-            # Try getting tool from MCP first
-            try:
-                import ctxai.helpers.mcp_handler as mcp_helper
-
-                mcp_tool_candidate = mcp_helper.MCPConfig.get_instance().get_tool(self, tool_name)
-                if mcp_tool_candidate:
-                    tool = mcp_tool_candidate
-            except ImportError:
-                PrintStyle(background_color="black", font_color="yellow", padding=True).print(
-                    "MCP helper module not found. Skipping MCP tool lookup."
-                )
-            except Exception as e:
-                PrintStyle(background_color="black", font_color="red", padding=True).print(
-                    f"Failed to get MCP tool '{tool_name}': {e}"
-                )
-
-            # Fallback to local get_tool if MCP tool was not found or MCP lookup failed
-            if not tool:
-                tool = self.get_tool(
-                    name=tool_name,
-                    method=tool_method,
-                    args=tool_args,
-                    message=msg,
-                    loop_data=self.loop_data,
-                )
-
-            if tool:
-                self.loop_data.current_tool = tool  # type: ignore
-                try:
-                    await self.handle_intervention()
-
-                    # Call tool hooks for compatibility
-                    await tool.before_execution(**tool_args)
-                    await self.handle_intervention()
-
-                    # Allow extensions to preprocess tool arguments
-                    await extension.call_extensions_async(
-                        "tool_execute_before",
-                        self,
-                        tool_args=tool_args or {},
-                        tool_name=tool_name,
-                    )
-
-                    response = await tool.execute(**tool_args)
-                    await self.handle_intervention()
-
-                    # Allow extensions to postprocess tool response
-                    await extension.call_extensions_async(
-                        "tool_execute_after",
-                        self,
-                        response=response,
-                        tool_name=tool_name,
-                    )
-
-                    await tool.after_execution(response)
-                    await self.handle_intervention()
-
-                    if response.break_loop:
-                        return response.message
-                finally:
-                    self.loop_data.current_tool = None
-            else:
-                error_detail = f"Tool '{raw_tool_name}' not found or could not be initialized."
-                self.hist_add_warning(error_detail)
-                PrintStyle(font_color="red", padding=True).print(error_detail)
-                self.context.log.log(type="warning", content=f"{self.agent_name}: {error_detail}")
-        else:
+        # No valid tool request at all
+        if raw_tool_name is None and tool is None and error is None:
             warning_msg_misformat = self.read_prompt("fw.msg_misformat.md")
             self.hist_add_warning(warning_msg_misformat)
             PrintStyle(font_color="red", padding=True).print(warning_msg_misformat)
@@ -880,6 +720,29 @@ class Agent:
                 type="warning",
                 content=f"{self.agent_name}: Message misformat, no valid tool request found.",
             )
+            return None
+
+        if error:
+            self.hist_add_warning(error)
+            PrintStyle(font_color="red", padding=True).print(error)
+            self.context.log.log(type="warning", content=f"{self.agent_name}: {error}")
+            return None
+
+        if tool:
+            self.loop_data.current_tool = tool
+            try:
+                response: ToolResponse = await execute_tool(self, tool, tool_args, tool_name)
+                if response.break_loop:
+                    return response.message
+            finally:
+                self.loop_data.current_tool = None
+        else:
+            error_detail = f"Tool '{raw_tool_name}' not found or could not be initialized."
+            self.hist_add_warning(error_detail)
+            PrintStyle(font_color="red", padding=True).print(error_detail)
+            self.context.log.log(type="warning", content=f"{self.agent_name}: {error_detail}")
+
+        return None
 
     @extension.extensible
     async def validate_tool_request(self, tool_request: Any):
@@ -927,28 +790,132 @@ class Agent:
         loop_data: LoopData | None,
         **kwargs,
     ):
-        from ctxai.tools.unknown import Unknown
-        from ctxai.helpers.tool import Tool
+        from ctxai.helpers.reasoning_engine import resolve_tool
 
-        classes = []
+        return resolve_tool(self, name, method, args, message, loop_data)  # type: ignore[arg-type]
 
-        # search for tools in agent's folder hierarchy
-        paths = subagents.get_paths(self, "tools", name + ".py")
 
-        for path in paths:
-            try:
-                classes = extract_tools.load_classes_from_file(path, Tool)  # type: ignore[type-abstract]
-                break
-            except Exception:
-                continue
+# ---------------------------------------------------------------------------
+# Agent memory context
+# ---------------------------------------------------------------------------
 
-        tool_class = classes[0] if classes else Unknown
-        return tool_class(
-            agent=self,
-            name=name,
-            method=method,
-            args=args,
-            message=message,
-            loop_data=loop_data,
-            **kwargs,
+
+class AgentMemory:
+    """Per-agent memory backed by ``MemoryManager``.
+
+    Three memory tiers:
+      - ``observations``: transient session notes (cleared on reset)
+      - ``facts`` via MemoryManager: persistent knowledge with importance + TTL
+      - ``recent_tool_results``: rolling window of the last *N* tool outputs
+    """
+
+    MAX_RECENT_TOOLS = 20
+
+    def __init__(self, manager: Any = None) -> None:
+        self.observations: list[dict[str, Any]] = []
+        self.recent_tool_results: list[dict[str, Any]] = []
+
+        # Lazy import to avoid circular deps at module load
+        from ctxai.helpers.memory_manager import MemoryManager
+
+        self._manager: Any = manager or MemoryManager()
+
+    @property
+    def manager(self) -> Any:
+        return self._manager
+
+    # -- observations -------------------------------------------------------
+
+    def observe(self, key: str, value: Any, importance: float = 0.3) -> None:
+        """Record a short-lived observation in both local list and manager."""
+        self.observations.append(
+            {
+                "key": key,
+                "value": value,
+                "timestamp": datetime.now(UTC).isoformat(),
+            },
         )
+        self._manager.remember(
+            key=key,
+            value=value,
+            importance=importance,
+            memory_type="short",
+            source="observation",
+            ttl=3600,  # 1 hour default TTL for observations
+        )
+
+    def get_observations(self, key: str | None = None) -> list[dict[str, Any]]:
+        if key is None:
+            return list(self.observations)
+        return [o for o in self.observations if o["key"] == key]
+
+    # -- facts --------------------------------------------------------------
+
+    def remember(self, key: str, value: Any, importance: float = 0.8, topic: str = "") -> None:
+        """Store a persistent fact with importance rating."""
+        self._manager.remember(
+            key=key,
+            value=value,
+            importance=importance,
+            memory_type="long",
+            topic=topic,
+            source="agent",
+        )
+
+    def recall(self, key: str, default: Any = None) -> Any:
+        entry = self._manager.get(key, memory_type="long")
+        if entry:
+            return entry.value
+        return default
+
+    def recall_by_query(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
+        """Search long-term memory by keyword."""
+        entries = self._manager.retrieve(query, top_k=top_k, memory_type="long")
+        return [{"key": e.key, "value": e.value, "importance": e.importance} for e in entries]
+
+    def forget(self, key: str | None = None, policy: str = "exact") -> int:
+        """Remove facts by key or policy (age/budget/importance/expired)."""
+        return self._manager.forget(key=key, policy=policy, memory_type="long")
+
+    # -- tool results -------------------------------------------------------
+
+    def record_tool_result(self, tool_name: str, result: str) -> None:
+        self.recent_tool_results.append(
+            {
+                "tool": tool_name,
+                "result": result[:500],  # truncate to avoid bloat
+                "timestamp": datetime.now(UTC).isoformat(),
+            },
+        )
+        if len(self.recent_tool_results) > self.MAX_RECENT_TOOLS:
+            self.recent_tool_results = self.recent_tool_results[-self.MAX_RECENT_TOOLS :]
+
+    def get_recent_tool_results(self, tool_name: str | None = None) -> list[dict[str, Any]]:
+        if tool_name is None:
+            return list(self.recent_tool_results)
+        return [r for r in self.recent_tool_results if r["tool"] == tool_name]
+
+    # -- lifecycle ----------------------------------------------------------
+
+    def reset(self) -> None:
+        """Clear observations and tool results (facts persist via manager)."""
+        self.observations.clear()
+        self.recent_tool_results.clear()
+        self._manager.forget(policy="expired")
+
+    def enforce_budget(self, max_short: int = 200, max_long: int = 1000) -> None:
+        """Apply memory budget limits."""
+        self._manager.enforce_budget(max_short=max_short, max_long=max_long)
+
+    def summary(self) -> str:
+        """Return a compact text summary of current memory state."""
+        stats = self._manager.stats()
+        parts: list[str] = []
+        if stats["long_term_count"] > 0:
+            parts.append(f"Long-term: {stats['long_term_count']} entries")
+        if stats["short_term_count"] > 0:
+            parts.append(f"Short-term: {stats['short_term_count']} entries")
+        if self.recent_tool_results:
+            tools = [r["tool"] for r in self.recent_tool_results[-5:]]
+            parts.append("Recent tools: " + ", ".join(tools))
+        return "\n".join(parts) if parts else "(empty memory)"

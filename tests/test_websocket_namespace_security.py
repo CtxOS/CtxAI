@@ -3,8 +3,9 @@ import contextlib
 import socket
 import sys
 import threading
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
 
 import pytest
 
@@ -58,12 +59,12 @@ def _make_session_cookie(app: Any, data: dict[str, Any]) -> str:
 
 @pytest.mark.asyncio
 async def test_connect_security_is_computed_per_namespace_and_enforced(monkeypatch) -> None:
-    from flask import Flask
     import socketio
+    from flask import Flask
 
+    from ctxai.helpers import runtime
     from ctxai.helpers.websocket import WebSocketHandler
     from ctxai.helpers.websocket_manager import WebSocketManager
-    from ctxai.helpers import runtime
     from ctxai.run_ui import configure_websocket_namespaces
 
     class OpenHandler(WebSocketHandler):
@@ -178,8 +179,8 @@ async def test_connect_security_is_computed_per_namespace_and_enforced(monkeypat
 
 @pytest.mark.asyncio
 async def test_unknown_namespace_rejected_with_deterministic_connect_error_payload() -> None:
-    from flask import Flask
     import socketio
+    from flask import Flask
 
     from ctxai.helpers.websocket import WebSocketHandler
     from ctxai.helpers.websocket_manager import WebSocketManager
@@ -245,12 +246,12 @@ async def test_unknown_namespace_rejected_with_deterministic_connect_error_paylo
 
 @pytest.mark.asyncio
 async def test_secure_namespace_rejects_missing_auth_even_with_valid_csrf(monkeypatch) -> None:
-    from flask import Flask
     import socketio
+    from flask import Flask
 
+    from ctxai.helpers import runtime
     from ctxai.helpers.websocket import WebSocketHandler
     from ctxai.helpers.websocket_manager import WebSocketManager
-    from ctxai.helpers import runtime
     from ctxai.run_ui import configure_websocket_namespaces
 
     class SecureHandler(WebSocketHandler):
@@ -311,12 +312,12 @@ async def test_secure_namespace_rejects_missing_auth_even_with_valid_csrf(monkey
 
 @pytest.mark.asyncio
 async def test_secure_namespace_rejects_invalid_csrf_cookie(monkeypatch) -> None:
-    from flask import Flask
     import socketio
+    from flask import Flask
 
+    from ctxai.helpers import runtime
     from ctxai.helpers.websocket import WebSocketHandler
     from ctxai.helpers.websocket_manager import WebSocketManager
-    from ctxai.helpers import runtime
     from ctxai.run_ui import configure_websocket_namespaces
 
     class SecureHandler(WebSocketHandler):
@@ -378,12 +379,12 @@ async def test_secure_namespace_rejects_invalid_csrf_cookie(monkeypatch) -> None
 
 @pytest.mark.asyncio
 async def test_csrf_required_without_auth_is_enforced(monkeypatch) -> None:
-    from flask import Flask
     import socketio
+    from flask import Flask
 
+    from ctxai.helpers import runtime
     from ctxai.helpers.websocket import WebSocketHandler
     from ctxai.helpers.websocket_manager import WebSocketManager
-    from ctxai.helpers import runtime
     from ctxai.run_ui import configure_websocket_namespaces
 
     class CsrfOnlyHandler(WebSocketHandler):

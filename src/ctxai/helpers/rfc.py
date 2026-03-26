@@ -2,9 +2,10 @@ import importlib
 import inspect
 import json
 from typing import Any, TypedDict
-import aiohttp
-from ctxai.helpers import crypto
 
+import aiohttp
+
+from ctxai.helpers import crypto
 
 # Remote Function Call library
 # Call function via http request

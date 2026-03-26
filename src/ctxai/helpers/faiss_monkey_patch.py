@@ -1,21 +1,17 @@
 # import sys
 # from types import ModuleType, SimpleNamespace
-
 # import numpy  # real numpy
-
 # # for python 3.12 on arm, faiss needs a fake cpuinfo module
-
-
 # """ This disgusting hack was brought to you by:
 # https://github.com/facebookresearch/faiss/issues/3936
 # """
-
 # faiss_monkey_patch.py  – import this before faiss -----------------
 import sys
 import types
 import warnings
-import numpy as np
 from types import SimpleNamespace
+
+import numpy as np
 
 # fake numpy.distutils and numpy.distutils.cpuinfo packages
 dist = types.ModuleType("numpy.distutils")
@@ -24,7 +20,7 @@ cpuinfo = types.ModuleType("numpy.distutils.cpuinfo")
 # cpu attribute that looks like the real one
 cpuinfo.cpu = SimpleNamespace(  # type: ignore
     # FAISS only does   .info[0].get('Features', '')
-    info=[{}]
+    info=[{}],
 )
 
 # register in sys.modules

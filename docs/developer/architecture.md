@@ -27,8 +27,8 @@ This architecture ensures:
 - Flexible deployment options for advanced users
 
 > [!NOTE]
-> The legacy approach of running Ctx AI directly on the host system (using Python, Conda, etc.) 
-> is still possible but requires Remote Function Calling (RFC) configuration through the Settings 
+> The legacy approach of running Ctx AI directly on the host system (using Python, Conda, etc.)
+> is still possible but requires Remote Function Calling (RFC) configuration through the Settings
 > page. See the [development guide](development.md) for detailed instructions.
 
 ## Implementation Details
@@ -131,8 +131,8 @@ The integration provides access to various types of content, including images, v
 In cases where SearXNG might not return satisfactory results, Ctx AI can be configured to fall back on other sources or methods, ensuring that users always have access to information.
 
 > [!NOTE]
-> The Knowledge Tool is designed to work seamlessly with both online searches through 
-> SearXNG and local knowledge base queries, providing a comprehensive information 
+> The Knowledge Tool is designed to work seamlessly with both online searches through
+> SearXNG and local knowledge base queries, providing a comprehensive information
 > retrieval system.
 
 #### Custom Tools
@@ -224,7 +224,7 @@ The `prompts` directory contains various Markdown files that control agent behav
 4. Select the **Agent Profile** in Settings to activate the overrides
 
 #### Dynamic Behavior System
-- **Behavior Adjustment**: 
+- **Behavior Adjustment**:
   - Agents can modify their behavior in real-time based on user instructions
   - Behavior changes are automatically integrated into the system prompt
   - Behavioral rules are merged intelligently, avoiding duplicates and conflicts
@@ -246,7 +246,7 @@ The `prompts` directory contains various Markdown files that control agent behav
   - Changes are applied without disrupting other components
   - Maintains separation between core functionality and behavioral rules
 
-> [!NOTE]  
+> [!NOTE]
 > You can customize any of these files. Ctx AI will use files in `agents/<agent_profile>/prompts/` when present, and fall back to `prompts/` for everything else.
 
 > [!TIP]
@@ -261,7 +261,7 @@ Knowledge refers to the user-provided information and data that agents can lever
   - Automatically imported and indexed
   - Expandable format support
 
-- **Knowledge Base**: 
+- **Knowledge Base**:
   - Can include PDFs, databases, books, documentation
   - `/docs` folder automatically added
   - Used for answering questions and decision-making
@@ -337,6 +337,6 @@ Extensions can be found in `python/extensions` directory:
 4. Ensure compatibility with main system
 5. Test thoroughly before deployment
 
-> [!NOTE]  
+> [!NOTE]
 > Consider contributing valuable custom components to the main repository.
 > See [Contributing](../guides/contribution.md) for more information.

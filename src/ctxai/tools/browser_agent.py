@@ -1,18 +1,19 @@
 import asyncio
 import time
-from typing import Optional, cast
-from ctxai.agent import Agent, InterventionException
 from pathlib import Path
+from typing import cast
 
-from ctxai.helpers.tool import Tool, Response
-from ctxai.helpers import files, defer, persist_chat, strings
-from ctxai.helpers.browser_use import browser_use  # type: ignore[attr-defined]
-from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.playwright import ensure_playwright_binary
-from ctxai.helpers.secrets import get_secrets_manager
-from ctxai.extensions.python.message_loop_start._10_iteration_no import get_iter_no
 from pydantic import BaseModel
+
+from ctxai.agent import Agent, InterventionException
+from ctxai.extensions.python.message_loop_start._10_iteration_no import get_iter_no
+from ctxai.helpers import defer, files, persist_chat, strings
+from ctxai.helpers.browser_use import browser_use  # type: ignore[attr-defined]
 from ctxai.helpers.dirty_json import DirtyJson
+from ctxai.helpers.playwright import ensure_playwright_binary
+from ctxai.helpers.print_style import PrintStyle
+from ctxai.helpers.secrets import get_secrets_manager
+from ctxai.helpers.tool import Response, Tool
 
 
 class State:
@@ -23,10 +24,10 @@ class State:
 
     def __init__(self, agent: Agent):
         self.agent = agent
-        self.browser_session: Optional[browser_use.BrowserSession] = None
-        self.task: Optional[defer.DeferredTask] = None
-        self.use_agent: Optional[browser_use.Agent] = None
-        self.secrets_dict: Optional[dict[str, str]] = None
+        self.browser_session: browser_use.BrowserSession | None = None
+        self.task: defer.DeferredTask | None = None
+        self.use_agent: browser_use.Agent | None = None
+        self.secrets_dict: dict[str, str] | None = None
         self.iter_no = 0
 
     def __del__(self):
@@ -64,7 +65,7 @@ class State:
                 # Use a unique user data directory to avoid conflicts
                 user_data_dir=self.get_user_data_dir(),
                 extra_http_headers=self.agent.config.browser_http_headers or {},
-            )
+            ),
         )
 
         await self.browser_session.start() if self.browser_session else None
@@ -91,7 +92,7 @@ class State:
         if self.browser_session and self.browser_session.browser_context:
             js_override = files.get_abs_path("lib/browser/init_override.js")
             await self.browser_session.browser_context.add_init_script(
-                path=js_override
+                path=js_override,
             ) if self.browser_session else None
 
     def start_task(self, task: str):
@@ -159,7 +160,7 @@ class State:
             )
         except Exception as e:
             raise Exception(
-                f"Browser agent initialization failed. This might be due to model compatibility issues. Error: {e}"
+                f"Browser agent initialization failed. This might be due to model compatibility issues. Error: {e}",
             ) from e
 
         self.iter_no = get_iter_no(self.agent)
@@ -190,7 +191,7 @@ class State:
         """Get the selector map for the current page state."""
         if self.use_agent:
             await self.use_agent.browser_session.get_state_summary(
-                cache_clickable_elements_hashes=True
+                cache_clickable_elements_hashes=True,
             ) if self.use_agent.browser_session else None
             return await self.use_agent.browser_session.get_selector_map() if self.use_agent.browser_session else None
             await self.use_agent.browser_session.get_state_summary(cache_clickable_elements_hashes=True)
@@ -204,7 +205,8 @@ class BrowserAgent(Tool):
         reset = str(reset).lower().strip() == "true"
         await self.prepare_state(reset=reset)
         message = get_secrets_manager(self.agent.context).mask_values(
-            message, placeholder="<secret>{key}</secret>"
+            message,
+            placeholder="<secret>{key}</secret>",
         )  # mask any potential passwords passed from A0 to browser-use to browser-use format
         task = self.state.start_task(message) if self.state else None
 
@@ -217,7 +219,7 @@ class BrowserAgent(Tool):
             # Check for timeout to prevent infinite waiting
             if time.time() - start_time > timeout_seconds:
                 PrintStyle().warning(
-                    self._mask(f"Browser agent task timeout after {timeout_seconds} seconds, forcing completion")
+                    self._mask(f"Browser agent task timeout after {timeout_seconds} seconds, forcing completion"),
                 )
                 break
 
@@ -229,12 +231,12 @@ class BrowserAgent(Tool):
                 try:
                     update = await asyncio.wait_for(self.get_update(), timeout=10)
                     fail_counter = 0  # reset on success
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     fail_counter += 1
                     PrintStyle().warning(self._mask(f"browser_agent.get_update timed out ({fail_counter}/3)"))
                     if fail_counter >= 3:
                         PrintStyle().warning(
-                            self._mask("3 consecutive browser_agent.get_update timeouts, breaking loop")
+                            self._mask("3 consecutive browser_agent.get_update timeouts, breaking loop"),
                         )
                         break
                     continue

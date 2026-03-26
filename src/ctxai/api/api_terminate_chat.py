@@ -1,8 +1,9 @@
+import json
+
 from ctxai.agent import AgentContext
 from ctxai.helpers.api import ApiHandler, Request, Response
 from ctxai.helpers.persist_chat import remove_chat
 from ctxai.helpers.print_style import PrintStyle
-import json
 
 
 class ApiTerminateChat(ApiHandler):
@@ -41,7 +42,7 @@ class ApiTerminateChat(ApiHandler):
 
             # Log the deletion
             PrintStyle(background_color="#E74C3C", font_color="white", bold=True, padding=True).print(
-                f"API Chat deleted: {context_id}"
+                f"API Chat deleted: {context_id}",
             )
 
             # Return success response
@@ -50,5 +51,7 @@ class ApiTerminateChat(ApiHandler):
         except Exception as e:
             PrintStyle.error(f"API terminate chat error: {str(e)}")
             return Response(
-                json.dumps({"error": f"Internal server error: {str(e)}"}), status=500, mimetype="application/json"
+                json.dumps({"error": f"Internal server error: {str(e)}"}),
+                status=500,
+                mimetype="application/json",
             )

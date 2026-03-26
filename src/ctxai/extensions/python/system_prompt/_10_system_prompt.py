@@ -1,13 +1,16 @@
 from typing import Any
+
+from ctxai.agent import Agent, LoopData
+from ctxai.helpers import projects, skills
 from ctxai.helpers.extension import Extension
 from ctxai.helpers.mcp_handler import MCPConfig
-from ctxai.agent import Agent, LoopData
 from ctxai.helpers.settings import get_settings
-from ctxai.helpers import projects, skills
 
 
 class SystemPrompt(Extension):
-    async def execute(self, system_prompt: list[str] = [], loop_data: LoopData = LoopData(), **kwargs: Any):
+    async def execute(self, system_prompt: list[str] = None, loop_data: LoopData | None = None, **kwargs: Any):
+        if system_prompt is None:
+            system_prompt = []
         if not self.agent:
             return
 
@@ -47,7 +50,7 @@ def get_mcp_tools_prompt(agent: Agent):
     if mcp_config.servers:
         pre_progress = agent.context.log.progress
         agent.context.log.set_progress(
-            "Collecting MCP tools"
+            "Collecting MCP tools",
         )  # MCP might be initializing, better inform via progress bar
         tools = MCPConfig.get_instance().get_tools_prompt()
         agent.context.log.set_progress(pre_progress)  # return original progress

@@ -2,6 +2,7 @@ import { createStore } from "/js/AlpineStore.js";
 import sleep from "/js/sleep.js";
 import * as API from "/js/api.js";
 import { store as settingsStore } from "/components/settings/settings-store.js";
+import { ensureAce } from "/js/ace-loader.js";
 
 const model = {
   editor: null,
@@ -14,6 +15,7 @@ const model = {
     // Initialize the JSON Viewer after the modal is rendered
     const container = document.getElementById("mcp-servers-config-json");
     if (container) {
+      await ensureAce();
       const editor = ace.edit("mcp-servers-config-json");
 
       const dark = localStorage.getItem("darkMode");

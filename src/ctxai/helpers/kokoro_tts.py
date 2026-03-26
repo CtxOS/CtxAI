@@ -1,12 +1,13 @@
 # kokoro_tts.py
-
+import asyncio
 import base64
 import io
 import warnings
-import asyncio
+
 import soundfile as sf
+
+from ctxai.helpers.notification import NotificationManager, NotificationPriority, NotificationType
 from ctxai.helpers.print_style import PrintStyle
-from ctxai.helpers.notification import NotificationManager, NotificationType, NotificationPriority
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)

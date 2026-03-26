@@ -1,25 +1,20 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import json
 import os
 import time
 import urllib.request
 import uuid
 import zipfile
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from ctxai.helpers import files, print_style, plugins, git
+from ctxai.helpers import files, git, plugins, print_style
 from ctxai.helpers import yaml as yaml_helper
-from ctxai.helpers.plugins import (
-    META_FILE_NAME,
-    PluginMetadata,
-    get_plugins_list,
-    after_plugin_change,
-)
-from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
+from ctxai.helpers.flask_compat import UploadFileAdapter as FileStorage
+from ctxai.helpers.flask_compat import secure_filename
+from ctxai.helpers.plugins import META_FILE_NAME, PluginMetadata, after_plugin_change, get_plugins_list
 
 
 def _get_user_plugins_dir() -> str:
@@ -40,13 +35,14 @@ def validate_plugin_dir(path: str, plugin_name: str = "") -> PluginMetadata:
     meta_path = os.path.join(path, META_FILE_NAME)
     if not os.path.isfile(meta_path):
         raise ValueError(f"No {META_FILE_NAME} found in {os.path.basename(path)}")
-    with open(meta_path, "r", encoding="utf-8") as f:
+    with open(meta_path, encoding="utf-8") as f:
         content = f.read()
     data = yaml_helper.loads(content)
     model = PluginMetadata.model_validate(data)
     if plugin_name and plugin_name != model.name:
         raise ValueError(
-            f"Plugin name is incorrect: expected '{plugin_name}', got '{model.name}'. The author needs to correct this in the plugin.yaml file."
+            f"Plugin name is incorrect: expected '{plugin_name}', got '{model.name}'. "
+            "The author needs to correct this in the plugin.yaml file.",
         )
     return model
 
@@ -61,7 +57,7 @@ def check_plugin_conflict(name: str) -> None:
 def _find_plugin_root(extracted_dir: str) -> str:
     """Walk extracted directory to find the parent of plugin.yaml.
     Returns absolute path to the plugin root directory."""
-    for root, dirs, dir_files in os.walk(extracted_dir):
+    for root, _dirs, dir_files in os.walk(extracted_dir):
         if META_FILE_NAME in dir_files:
             return root
     raise ValueError(f"No {META_FILE_NAME} found in the uploaded archive")
@@ -224,8 +220,8 @@ def update_from_git(plugin_name: str) -> dict:
         "title": meta.title if meta else plugin_name,
         "path": files.deabsolute_path(plugin_dir),
         "current_commit": head.hexsha,
-        "current_commit_timestamp": datetime.fromtimestamp(head.committed_date, timezone.utc).strftime(
-            "%Y-%m-%d %H:%M:%S"
+        "current_commit_timestamp": datetime.fromtimestamp(head.committed_date, UTC).strftime(
+            "%Y-%m-%d %H:%M:%S",
         ),
         "version": getattr(meta, "version", "") or "",
         "branch": repo.active_branch.name if not repo.head.is_detached else "",

@@ -1,5 +1,5 @@
+from ctxai.helpers import files, projects, runtime, skills
 from ctxai.helpers.api import ApiHandler, Input, Output, Request
-from ctxai.helpers import runtime, skills, projects, files
 
 
 class Skills(ApiHandler):
@@ -52,7 +52,7 @@ class Skills(ApiHandler):
                     "name": skill.name,
                     "description": skill.description,
                     "path": str(skill.path),
-                }
+                },
             )
         result.sort(key=lambda x: (x["name"], x["path"]))
         return result
