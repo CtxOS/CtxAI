@@ -85,7 +85,7 @@ dependencies = [
   # Embeddings / Vector
   "sentence-transformers>=3.0,<4.0",
   "faiss-cpu>=1.9.0; sys_platform != 'darwin'",
-  "faiss-cpu>=1.7.4,<1.8.1; sys_platform == 'darwin'",
+  "faiss-cpu>=1.7.4,<1.13.3; sys_platform == 'darwin'",
 
   # --- Agent Protocols ---
   "mcp>=1.22,<2.0",
